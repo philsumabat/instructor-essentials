@@ -1,0 +1,21 @@
+{
+  "id": "hist110-quiz-tf",
+  "title": "HIST 110 — Quiz 3 (True / False & Short Answer)",
+  "paper": "A4",
+  "zones": [
+    { "type": "student_id", "id": "sid", "label": "Student ID", "digits": 6 },
+    {
+      "type": "fields",
+      "id": "info",
+      "inline": true,
+      "fields": [
+        { "id": "name", "label": "Name", "role": "name" },
+        { "id": "date", "label": "Date" }
+      ]
+    },
+    { "type": "truefalse", "id": "tf", "label": "True / False (1–40)", "count": 40, "columns": 4, "w": 186 },
+    { "type": "text", "id": "s1", "label": "41. In what year did the Berlin Wall fall?", "w": 60, "boxHeight": 14, "points": 1, "charset": "digits" },
+    { "type": "text", "id": "s2", "inline": true, "label": "42. Who wrote the Communist Manifesto with Engels?", "w": 60, "boxHeight": 14, "points": 1, "charset": "alpha" },
+    { "type": "text", "id": "s3", "inline": true, "label": "43. Capital of the Byzantine Empire?", "w": 58, "boxHeight": 14, "points": 1, "charset": "alpha" }
+  ]
+}

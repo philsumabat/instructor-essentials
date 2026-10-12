@@ -1,0 +1,2642 @@
+{
+  "schema": "omr-layout/1",
+  "generator": "omr-sheet-builder/1.0.0",
+  "templateId": "hist110-quiz-tf",
+  "title": "HIST 110 — Quiz 3 (True / False & Short Answer)",
+  "units": "mm",
+  "page": {
+    "paper": "A4",
+    "width": 210,
+    "height": 297
+  },
+  "content": {
+    "x": 12,
+    "y": 20,
+    "w": 186,
+    "h": 257
+  },
+  "fiducial": {
+    "type": "aruco",
+    "dictionary": "DICT_4X4_50",
+    "size": 10,
+    "inset": 7,
+    "quietZone": 2
+  },
+  "fiducials": [
+    {
+      "id": 0,
+      "corner": "tl",
+      "x": 7,
+      "y": 7,
+      "size": 10,
+      "center": [
+        12,
+        12
+      ],
+      "corners": [
+        [
+          7,
+          7
+        ],
+        [
+          17,
+          7
+        ],
+        [
+          17,
+          17
+        ],
+        [
+          7,
+          17
+        ]
+      ]
+    },
+    {
+      "id": 1,
+      "corner": "tr",
+      "x": 193,
+      "y": 7,
+      "size": 10,
+      "center": [
+        198,
+        12
+      ],
+      "corners": [
+        [
+          193,
+          7
+        ],
+        [
+          203,
+          7
+        ],
+        [
+          203,
+          17
+        ],
+        [
+          193,
+          17
+        ]
+      ]
+    },
+    {
+      "id": 2,
+      "corner": "br",
+      "x": 193,
+      "y": 280,
+      "size": 10,
+      "center": [
+        198,
+        285
+      ],
+      "corners": [
+        [
+          193,
+          280
+        ],
+        [
+          203,
+          280
+        ],
+        [
+          203,
+          290
+        ],
+        [
+          193,
+          290
+        ]
+      ]
+    },
+    {
+      "id": 3,
+      "corner": "bl",
+      "x": 7,
+      "y": 280,
+      "size": 10,
+      "center": [
+        12,
+        285
+      ],
+      "corners": [
+        [
+          7,
+          280
+        ],
+        [
+          17,
+          280
+        ],
+        [
+          17,
+          290
+        ],
+        [
+          7,
+          290
+        ]
+      ]
+    }
+  ],
+  "bubble": {
+    "diameter": 4.2,
+    "pitchX": 5.6,
+    "pitchY": 5.4,
+    "groupEvery": 5,
+    "groupGap": 1.6,
+    "stroke": 0.25
+  },
+  "typography": {
+    "title": 4.2,
+    "label": 3,
+    "body": 2.8,
+    "bubble": 2.1,
+    "number": 2.6,
+    "small": 2.2
+  },
+  "header": {
+    "title": {
+      "x": 105,
+      "y": 12,
+      "maxWidth": 168
+    },
+    "footer": {
+      "text": "Use a dark pencil or black pen. Fill each bubble completely. Do not fold or staple this sheet. · hist110-quiz-tf",
+      "x": 105,
+      "y": 285,
+      "maxWidth": 168
+    }
+  },
+  "zones": [
+    {
+      "id": "sid",
+      "type": "student_id",
+      "label": "Student ID",
+      "bbox": {
+        "x": 12,
+        "y": 20,
+        "w": 41,
+        "h": 72
+      },
+      "grids": [
+        {
+          "x": 14.5,
+          "y": 27.5,
+          "columns": [
+            6,
+            6,
+            6,
+            6,
+            6,
+            6
+          ],
+          "rows": [
+            6.5,
+            1.5,
+            5.4,
+            5.4,
+            5.4,
+            5.4,
+            5.4,
+            5.4,
+            5.4,
+            5.4,
+            5.4,
+            5.4
+          ],
+          "cells": [
+            {
+              "row": 0,
+              "col": 0,
+              "kind": "box"
+            },
+            {
+              "row": 2,
+              "col": 0,
+              "kind": "bubble",
+              "text": "0"
+            },
+            {
+              "row": 3,
+              "col": 0,
+              "kind": "bubble",
+              "text": "1"
+            },
+            {
+              "row": 4,
+              "col": 0,
+              "kind": "bubble",
+              "text": "2"
+            },
+            {
+              "row": 5,
+              "col": 0,
+              "kind": "bubble",
+              "text": "3"
+            },
+            {
+              "row": 6,
+              "col": 0,
+              "kind": "bubble",
+              "text": "4"
+            },
+            {
+              "row": 7,
+              "col": 0,
+              "kind": "bubble",
+              "text": "5"
+            },
+            {
+              "row": 8,
+              "col": 0,
+              "kind": "bubble",
+              "text": "6"
+            },
+            {
+              "row": 9,
+              "col": 0,
+              "kind": "bubble",
+              "text": "7"
+            },
+            {
+              "row": 10,
+              "col": 0,
+              "kind": "bubble",
+              "text": "8"
+            },
+            {
+              "row": 11,
+              "col": 0,
+              "kind": "bubble",
+              "text": "9"
+            },
+            {
+              "row": 0,
+              "col": 1,
+              "kind": "box"
+            },
+            {
+              "row": 2,
+              "col": 1,
+              "kind": "bubble",
+              "text": "0"
+            },
+            {
+              "row": 3,
+              "col": 1,
+              "kind": "bubble",
+              "text": "1"
+            },
+            {
+              "row": 4,
+              "col": 1,
+              "kind": "bubble",
+              "text": "2"
+            },
+            {
+              "row": 5,
+              "col": 1,
+              "kind": "bubble",
+              "text": "3"
+            },
+            {
+              "row": 6,
+              "col": 1,
+              "kind": "bubble",
+              "text": "4"
+            },
+            {
+              "row": 7,
+              "col": 1,
+              "kind": "bubble",
+              "text": "5"
+            },
+            {
+              "row": 8,
+              "col": 1,
+              "kind": "bubble",
+              "text": "6"
+            },
+            {
+              "row": 9,
+              "col": 1,
+              "kind": "bubble",
+              "text": "7"
+            },
+            {
+              "row": 10,
+              "col": 1,
+              "kind": "bubble",
+              "text": "8"
+            },
+            {
+              "row": 11,
+              "col": 1,
+              "kind": "bubble",
+              "text": "9"
+            },
+            {
+              "row": 0,
+              "col": 2,
+              "kind": "box"
+            },
+            {
+              "row": 2,
+              "col": 2,
+              "kind": "bubble",
+              "text": "0"
+            },
+            {
+              "row": 3,
+              "col": 2,
+              "kind": "bubble",
+              "text": "1"
+            },
+            {
+              "row": 4,
+              "col": 2,
+              "kind": "bubble",
+              "text": "2"
+            },
+            {
+              "row": 5,
+              "col": 2,
+              "kind": "bubble",
+              "text": "3"
+            },
+            {
+              "row": 6,
+              "col": 2,
+              "kind": "bubble",
+              "text": "4"
+            },
+            {
+              "row": 7,
+              "col": 2,
+              "kind": "bubble",
+              "text": "5"
+            },
+            {
+              "row": 8,
+              "col": 2,
+              "kind": "bubble",
+              "text": "6"
+            },
+            {
+              "row": 9,
+              "col": 2,
+              "kind": "bubble",
+              "text": "7"
+            },
+            {
+              "row": 10,
+              "col": 2,
+              "kind": "bubble",
+              "text": "8"
+            },
+            {
+              "row": 11,
+              "col": 2,
+              "kind": "bubble",
+              "text": "9"
+            },
+            {
+              "row": 0,
+              "col": 3,
+              "kind": "box"
+            },
+            {
+              "row": 2,
+              "col": 3,
+              "kind": "bubble",
+              "text": "0"
+            },
+            {
+              "row": 3,
+              "col": 3,
+              "kind": "bubble",
+              "text": "1"
+            },
+            {
+              "row": 4,
+              "col": 3,
+              "kind": "bubble",
+              "text": "2"
+            },
+            {
+              "row": 5,
+              "col": 3,
+              "kind": "bubble",
+              "text": "3"
+            },
+            {
+              "row": 6,
+              "col": 3,
+              "kind": "bubble",
+              "text": "4"
+            },
+            {
+              "row": 7,
+              "col": 3,
+              "kind": "bubble",
+              "text": "5"
+            },
+            {
+              "row": 8,
+              "col": 3,
+              "kind": "bubble",
+              "text": "6"
+            },
+            {
+              "row": 9,
+              "col": 3,
+              "kind": "bubble",
+              "text": "7"
+            },
+            {
+              "row": 10,
+              "col": 3,
+              "kind": "bubble",
+              "text": "8"
+            },
+            {
+              "row": 11,
+              "col": 3,
+              "kind": "bubble",
+              "text": "9"
+            },
+            {
+              "row": 0,
+              "col": 4,
+              "kind": "box"
+            },
+            {
+              "row": 2,
+              "col": 4,
+              "kind": "bubble",
+              "text": "0"
+            },
+            {
+              "row": 3,
+              "col": 4,
+              "kind": "bubble",
+              "text": "1"
+            },
+            {
+              "row": 4,
+              "col": 4,
+              "kind": "bubble",
+              "text": "2"
+            },
+            {
+              "row": 5,
+              "col": 4,
+              "kind": "bubble",
+              "text": "3"
+            },
+            {
+              "row": 6,
+              "col": 4,
+              "kind": "bubble",
+              "text": "4"
+            },
+            {
+              "row": 7,
+              "col": 4,
+              "kind": "bubble",
+              "text": "5"
+            },
+            {
+              "row": 8,
+              "col": 4,
+              "kind": "bubble",
+              "text": "6"
+            },
+            {
+              "row": 9,
+              "col": 4,
+              "kind": "bubble",
+              "text": "7"
+            },
+            {
+              "row": 10,
+              "col": 4,
+              "kind": "bubble",
+              "text": "8"
+            },
+            {
+              "row": 11,
+              "col": 4,
+              "kind": "bubble",
+              "text": "9"
+            },
+            {
+              "row": 0,
+              "col": 5,
+              "kind": "box"
+            },
+            {
+              "row": 2,
+              "col": 5,
+              "kind": "bubble",
+              "text": "0"
+            },
+            {
+              "row": 3,
+              "col": 5,
+              "kind": "bubble",
+              "text": "1"
+            },
+            {
+              "row": 4,
+              "col": 5,
+              "kind": "bubble",
+              "text": "2"
+            },
+            {
+              "row": 5,
+              "col": 5,
+              "kind": "bubble",
+              "text": "3"
+            },
+            {
+              "row": 6,
+              "col": 5,
+              "kind": "bubble",
+              "text": "4"
+            },
+            {
+              "row": 7,
+              "col": 5,
+              "kind": "bubble",
+              "text": "5"
+            },
+            {
+              "row": 8,
+              "col": 5,
+              "kind": "bubble",
+              "text": "6"
+            },
+            {
+              "row": 9,
+              "col": 5,
+              "kind": "bubble",
+              "text": "7"
+            },
+            {
+              "row": 10,
+              "col": 5,
+              "kind": "bubble",
+              "text": "8"
+            },
+            {
+              "row": 11,
+              "col": 5,
+              "kind": "bubble",
+              "text": "9"
+            }
+          ]
+        }
+      ],
+      "groups": [
+        {
+          "key": "sid[0]",
+          "kind": "sid",
+          "label": "ID digit 1",
+          "index": 0,
+          "options": [
+            {
+              "value": "0",
+              "cx": 17.5,
+              "cy": 38.2
+            },
+            {
+              "value": "1",
+              "cx": 17.5,
+              "cy": 43.6
+            },
+            {
+              "value": "2",
+              "cx": 17.5,
+              "cy": 49
+            },
+            {
+              "value": "3",
+              "cx": 17.5,
+              "cy": 54.4
+            },
+            {
+              "value": "4",
+              "cx": 17.5,
+              "cy": 59.8
+            },
+            {
+              "value": "5",
+              "cx": 17.5,
+              "cy": 65.2
+            },
+            {
+              "value": "6",
+              "cx": 17.5,
+              "cy": 70.6
+            },
+            {
+              "value": "7",
+              "cx": 17.5,
+              "cy": 76
+            },
+            {
+              "value": "8",
+              "cx": 17.5,
+              "cy": 81.4
+            },
+            {
+              "value": "9",
+              "cx": 17.5,
+              "cy": 86.8
+            }
+          ]
+        },
+        {
+          "key": "sid[1]",
+          "kind": "sid",
+          "label": "ID digit 2",
+          "index": 1,
+          "options": [
+            {
+              "value": "0",
+              "cx": 23.5,
+              "cy": 38.2
+            },
+            {
+              "value": "1",
+              "cx": 23.5,
+              "cy": 43.6
+            },
+            {
+              "value": "2",
+              "cx": 23.5,
+              "cy": 49
+            },
+            {
+              "value": "3",
+              "cx": 23.5,
+              "cy": 54.4
+            },
+            {
+              "value": "4",
+              "cx": 23.5,
+              "cy": 59.8
+            },
+            {
+              "value": "5",
+              "cx": 23.5,
+              "cy": 65.2
+            },
+            {
+              "value": "6",
+              "cx": 23.5,
+              "cy": 70.6
+            },
+            {
+              "value": "7",
+              "cx": 23.5,
+              "cy": 76
+            },
+            {
+              "value": "8",
+              "cx": 23.5,
+              "cy": 81.4
+            },
+            {
+              "value": "9",
+              "cx": 23.5,
+              "cy": 86.8
+            }
+          ]
+        },
+        {
+          "key": "sid[2]",
+          "kind": "sid",
+          "label": "ID digit 3",
+          "index": 2,
+          "options": [
+            {
+              "value": "0",
+              "cx": 29.5,
+              "cy": 38.2
+            },
+            {
+              "value": "1",
+              "cx": 29.5,
+              "cy": 43.6
+            },
+            {
+              "value": "2",
+              "cx": 29.5,
+              "cy": 49
+            },
+            {
+              "value": "3",
+              "cx": 29.5,
+              "cy": 54.4
+            },
+            {
+              "value": "4",
+              "cx": 29.5,
+              "cy": 59.8
+            },
+            {
+              "value": "5",
+              "cx": 29.5,
+              "cy": 65.2
+            },
+            {
+              "value": "6",
+              "cx": 29.5,
+              "cy": 70.6
+            },
+            {
+              "value": "7",
+              "cx": 29.5,
+              "cy": 76
+            },
+            {
+              "value": "8",
+              "cx": 29.5,
+              "cy": 81.4
+            },
+            {
+              "value": "9",
+              "cx": 29.5,
+              "cy": 86.8
+            }
+          ]
+        },
+        {
+          "key": "sid[3]",
+          "kind": "sid",
+          "label": "ID digit 4",
+          "index": 3,
+          "options": [
+            {
+              "value": "0",
+              "cx": 35.5,
+              "cy": 38.2
+            },
+            {
+              "value": "1",
+              "cx": 35.5,
+              "cy": 43.6
+            },
+            {
+              "value": "2",
+              "cx": 35.5,
+              "cy": 49
+            },
+            {
+              "value": "3",
+              "cx": 35.5,
+              "cy": 54.4
+            },
+            {
+              "value": "4",
+              "cx": 35.5,
+              "cy": 59.8
+            },
+            {
+              "value": "5",
+              "cx": 35.5,
+              "cy": 65.2
+            },
+            {
+              "value": "6",
+              "cx": 35.5,
+              "cy": 70.6
+            },
+            {
+              "value": "7",
+              "cx": 35.5,
+              "cy": 76
+            },
+            {
+              "value": "8",
+              "cx": 35.5,
+              "cy": 81.4
+            },
+            {
+              "value": "9",
+              "cx": 35.5,
+              "cy": 86.8
+            }
+          ]
+        },
+        {
+          "key": "sid[4]",
+          "kind": "sid",
+          "label": "ID digit 5",
+          "index": 4,
+          "options": [
+            {
+              "value": "0",
+              "cx": 41.5,
+              "cy": 38.2
+            },
+            {
+              "value": "1",
+              "cx": 41.5,
+              "cy": 43.6
+            },
+            {
+              "value": "2",
+              "cx": 41.5,
+              "cy": 49
+            },
+            {
+              "value": "3",
+              "cx": 41.5,
+              "cy": 54.4
+            },
+            {
+              "value": "4",
+              "cx": 41.5,
+              "cy": 59.8
+            },
+            {
+              "value": "5",
+              "cx": 41.5,
+              "cy": 65.2
+            },
+            {
+              "value": "6",
+              "cx": 41.5,
+              "cy": 70.6
+            },
+            {
+              "value": "7",
+              "cx": 41.5,
+              "cy": 76
+            },
+            {
+              "value": "8",
+              "cx": 41.5,
+              "cy": 81.4
+            },
+            {
+              "value": "9",
+              "cx": 41.5,
+              "cy": 86.8
+            }
+          ]
+        },
+        {
+          "key": "sid[5]",
+          "kind": "sid",
+          "label": "ID digit 6",
+          "index": 5,
+          "options": [
+            {
+              "value": "0",
+              "cx": 47.5,
+              "cy": 38.2
+            },
+            {
+              "value": "1",
+              "cx": 47.5,
+              "cy": 43.6
+            },
+            {
+              "value": "2",
+              "cx": 47.5,
+              "cy": 49
+            },
+            {
+              "value": "3",
+              "cx": 47.5,
+              "cy": 54.4
+            },
+            {
+              "value": "4",
+              "cx": 47.5,
+              "cy": 59.8
+            },
+            {
+              "value": "5",
+              "cx": 47.5,
+              "cy": 65.2
+            },
+            {
+              "value": "6",
+              "cx": 47.5,
+              "cy": 70.6
+            },
+            {
+              "value": "7",
+              "cx": 47.5,
+              "cy": 76
+            },
+            {
+              "value": "8",
+              "cx": 47.5,
+              "cy": 81.4
+            },
+            {
+              "value": "9",
+              "cx": 47.5,
+              "cy": 86.8
+            }
+          ]
+        }
+      ],
+      "rois": [],
+      "digits": 6,
+      "shading": true
+    },
+    {
+      "id": "info",
+      "type": "fields",
+      "label": "",
+      "bbox": {
+        "x": 57,
+        "y": 20,
+        "w": 141,
+        "h": 22
+      },
+      "grids": [],
+      "groups": [],
+      "rois": [
+        {
+          "id": "info.name",
+          "key": "name",
+          "label": "Name",
+          "role": "name",
+          "x": 70.7,
+          "y": 22.5,
+          "w": 124.8,
+          "h": 7.5,
+          "charset": "any",
+          "multiline": false,
+          "ocr": true,
+          "graded": false,
+          "points": 0,
+          "digits": 0
+        },
+        {
+          "id": "info.date",
+          "key": "date",
+          "label": "Date",
+          "role": null,
+          "x": 70.7,
+          "y": 32,
+          "w": 124.8,
+          "h": 7.5,
+          "charset": "any",
+          "multiline": false,
+          "ocr": true,
+          "graded": false,
+          "points": 0,
+          "digits": 0
+        }
+      ],
+      "rows": [
+        {
+          "label": "Name",
+          "x": 59.5,
+          "y": 22.5,
+          "labelW": 11.2,
+          "h": 7.5,
+          "digits": 0
+        },
+        {
+          "label": "Date",
+          "x": 59.5,
+          "y": 32,
+          "labelW": 11.2,
+          "h": 7.5,
+          "digits": 0
+        }
+      ],
+      "fieldH": 7.5
+    },
+    {
+      "id": "tf",
+      "type": "truefalse",
+      "label": "True / False (1–40)",
+      "bbox": {
+        "x": 12,
+        "y": 96,
+        "w": 186,
+        "h": 65.6
+      },
+      "grids": [
+        {
+          "x": 14.5,
+          "y": 103.5,
+          "columns": [
+            7,
+            5.6,
+            5.6
+          ],
+          "rows": [
+            5.4,
+            5.4,
+            5.4,
+            5.4,
+            7,
+            5.4,
+            5.4,
+            5.4,
+            5.4,
+            5.4
+          ],
+          "cells": [
+            {
+              "row": 0,
+              "col": 0,
+              "kind": "num",
+              "text": "1"
+            },
+            {
+              "row": 0,
+              "col": 1,
+              "kind": "bubble",
+              "text": "T"
+            },
+            {
+              "row": 0,
+              "col": 2,
+              "kind": "bubble",
+              "text": "F"
+            },
+            {
+              "row": 1,
+              "col": 0,
+              "kind": "num",
+              "text": "2"
+            },
+            {
+              "row": 1,
+              "col": 1,
+              "kind": "bubble",
+              "text": "T"
+            },
+            {
+              "row": 1,
+              "col": 2,
+              "kind": "bubble",
+              "text": "F"
+            },
+            {
+              "row": 2,
+              "col": 0,
+              "kind": "num",
+              "text": "3"
+            },
+            {
+              "row": 2,
+              "col": 1,
+              "kind": "bubble",
+              "text": "T"
+            },
+            {
+              "row": 2,
+              "col": 2,
+              "kind": "bubble",
+              "text": "F"
+            },
+            {
+              "row": 3,
+              "col": 0,
+              "kind": "num",
+              "text": "4"
+            },
+            {
+              "row": 3,
+              "col": 1,
+              "kind": "bubble",
+              "text": "T"
+            },
+            {
+              "row": 3,
+              "col": 2,
+              "kind": "bubble",
+              "text": "F"
+            },
+            {
+              "row": 4,
+              "col": 0,
+              "kind": "num",
+              "text": "5"
+            },
+            {
+              "row": 4,
+              "col": 1,
+              "kind": "bubble",
+              "text": "T"
+            },
+            {
+              "row": 4,
+              "col": 2,
+              "kind": "bubble",
+              "text": "F"
+            },
+            {
+              "row": 5,
+              "col": 0,
+              "kind": "num",
+              "text": "6"
+            },
+            {
+              "row": 5,
+              "col": 1,
+              "kind": "bubble",
+              "text": "T"
+            },
+            {
+              "row": 5,
+              "col": 2,
+              "kind": "bubble",
+              "text": "F"
+            },
+            {
+              "row": 6,
+              "col": 0,
+              "kind": "num",
+              "text": "7"
+            },
+            {
+              "row": 6,
+              "col": 1,
+              "kind": "bubble",
+              "text": "T"
+            },
+            {
+              "row": 6,
+              "col": 2,
+              "kind": "bubble",
+              "text": "F"
+            },
+            {
+              "row": 7,
+              "col": 0,
+              "kind": "num",
+              "text": "8"
+            },
+            {
+              "row": 7,
+              "col": 1,
+              "kind": "bubble",
+              "text": "T"
+            },
+            {
+              "row": 7,
+              "col": 2,
+              "kind": "bubble",
+              "text": "F"
+            },
+            {
+              "row": 8,
+              "col": 0,
+              "kind": "num",
+              "text": "9"
+            },
+            {
+              "row": 8,
+              "col": 1,
+              "kind": "bubble",
+              "text": "T"
+            },
+            {
+              "row": 8,
+              "col": 2,
+              "kind": "bubble",
+              "text": "F"
+            },
+            {
+              "row": 9,
+              "col": 0,
+              "kind": "num",
+              "text": "10"
+            },
+            {
+              "row": 9,
+              "col": 1,
+              "kind": "bubble",
+              "text": "T"
+            },
+            {
+              "row": 9,
+              "col": 2,
+              "kind": "bubble",
+              "text": "F"
+            }
+          ]
+        },
+        {
+          "x": 68.767,
+          "y": 103.5,
+          "columns": [
+            7,
+            5.6,
+            5.6
+          ],
+          "rows": [
+            5.4,
+            5.4,
+            5.4,
+            5.4,
+            7,
+            5.4,
+            5.4,
+            5.4,
+            5.4,
+            5.4
+          ],
+          "cells": [
+            {
+              "row": 0,
+              "col": 0,
+              "kind": "num",
+              "text": "11"
+            },
+            {
+              "row": 0,
+              "col": 1,
+              "kind": "bubble",
+              "text": "T"
+            },
+            {
+              "row": 0,
+              "col": 2,
+              "kind": "bubble",
+              "text": "F"
+            },
+            {
+              "row": 1,
+              "col": 0,
+              "kind": "num",
+              "text": "12"
+            },
+            {
+              "row": 1,
+              "col": 1,
+              "kind": "bubble",
+              "text": "T"
+            },
+            {
+              "row": 1,
+              "col": 2,
+              "kind": "bubble",
+              "text": "F"
+            },
+            {
+              "row": 2,
+              "col": 0,
+              "kind": "num",
+              "text": "13"
+            },
+            {
+              "row": 2,
+              "col": 1,
+              "kind": "bubble",
+              "text": "T"
+            },
+            {
+              "row": 2,
+              "col": 2,
+              "kind": "bubble",
+              "text": "F"
+            },
+            {
+              "row": 3,
+              "col": 0,
+              "kind": "num",
+              "text": "14"
+            },
+            {
+              "row": 3,
+              "col": 1,
+              "kind": "bubble",
+              "text": "T"
+            },
+            {
+              "row": 3,
+              "col": 2,
+              "kind": "bubble",
+              "text": "F"
+            },
+            {
+              "row": 4,
+              "col": 0,
+              "kind": "num",
+              "text": "15"
+            },
+            {
+              "row": 4,
+              "col": 1,
+              "kind": "bubble",
+              "text": "T"
+            },
+            {
+              "row": 4,
+              "col": 2,
+              "kind": "bubble",
+              "text": "F"
+            },
+            {
+              "row": 5,
+              "col": 0,
+              "kind": "num",
+              "text": "16"
+            },
+            {
+              "row": 5,
+              "col": 1,
+              "kind": "bubble",
+              "text": "T"
+            },
+            {
+              "row": 5,
+              "col": 2,
+              "kind": "bubble",
+              "text": "F"
+            },
+            {
+              "row": 6,
+              "col": 0,
+              "kind": "num",
+              "text": "17"
+            },
+            {
+              "row": 6,
+              "col": 1,
+              "kind": "bubble",
+              "text": "T"
+            },
+            {
+              "row": 6,
+              "col": 2,
+              "kind": "bubble",
+              "text": "F"
+            },
+            {
+              "row": 7,
+              "col": 0,
+              "kind": "num",
+              "text": "18"
+            },
+            {
+              "row": 7,
+              "col": 1,
+              "kind": "bubble",
+              "text": "T"
+            },
+            {
+              "row": 7,
+              "col": 2,
+              "kind": "bubble",
+              "text": "F"
+            },
+            {
+              "row": 8,
+              "col": 0,
+              "kind": "num",
+              "text": "19"
+            },
+            {
+              "row": 8,
+              "col": 1,
+              "kind": "bubble",
+              "text": "T"
+            },
+            {
+              "row": 8,
+              "col": 2,
+              "kind": "bubble",
+              "text": "F"
+            },
+            {
+              "row": 9,
+              "col": 0,
+              "kind": "num",
+              "text": "20"
+            },
+            {
+              "row": 9,
+              "col": 1,
+              "kind": "bubble",
+              "text": "T"
+            },
+            {
+              "row": 9,
+              "col": 2,
+              "kind": "bubble",
+              "text": "F"
+            }
+          ]
+        },
+        {
+          "x": 123.033,
+          "y": 103.5,
+          "columns": [
+            7,
+            5.6,
+            5.6
+          ],
+          "rows": [
+            5.4,
+            5.4,
+            5.4,
+            5.4,
+            7,
+            5.4,
+            5.4,
+            5.4,
+            5.4,
+            5.4
+          ],
+          "cells": [
+            {
+              "row": 0,
+              "col": 0,
+              "kind": "num",
+              "text": "21"
+            },
+            {
+              "row": 0,
+              "col": 1,
+              "kind": "bubble",
+              "text": "T"
+            },
+            {
+              "row": 0,
+              "col": 2,
+              "kind": "bubble",
+              "text": "F"
+            },
+            {
+              "row": 1,
+              "col": 0,
+              "kind": "num",
+              "text": "22"
+            },
+            {
+              "row": 1,
+              "col": 1,
+              "kind": "bubble",
+              "text": "T"
+            },
+            {
+              "row": 1,
+              "col": 2,
+              "kind": "bubble",
+              "text": "F"
+            },
+            {
+              "row": 2,
+              "col": 0,
+              "kind": "num",
+              "text": "23"
+            },
+            {
+              "row": 2,
+              "col": 1,
+              "kind": "bubble",
+              "text": "T"
+            },
+            {
+              "row": 2,
+              "col": 2,
+              "kind": "bubble",
+              "text": "F"
+            },
+            {
+              "row": 3,
+              "col": 0,
+              "kind": "num",
+              "text": "24"
+            },
+            {
+              "row": 3,
+              "col": 1,
+              "kind": "bubble",
+              "text": "T"
+            },
+            {
+              "row": 3,
+              "col": 2,
+              "kind": "bubble",
+              "text": "F"
+            },
+            {
+              "row": 4,
+              "col": 0,
+              "kind": "num",
+              "text": "25"
+            },
+            {
+              "row": 4,
+              "col": 1,
+              "kind": "bubble",
+              "text": "T"
+            },
+            {
+              "row": 4,
+              "col": 2,
+              "kind": "bubble",
+              "text": "F"
+            },
+            {
+              "row": 5,
+              "col": 0,
+              "kind": "num",
+              "text": "26"
+            },
+            {
+              "row": 5,
+              "col": 1,
+              "kind": "bubble",
+              "text": "T"
+            },
+            {
+              "row": 5,
+              "col": 2,
+              "kind": "bubble",
+              "text": "F"
+            },
+            {
+              "row": 6,
+              "col": 0,
+              "kind": "num",
+              "text": "27"
+            },
+            {
+              "row": 6,
+              "col": 1,
+              "kind": "bubble",
+              "text": "T"
+            },
+            {
+              "row": 6,
+              "col": 2,
+              "kind": "bubble",
+              "text": "F"
+            },
+            {
+              "row": 7,
+              "col": 0,
+              "kind": "num",
+              "text": "28"
+            },
+            {
+              "row": 7,
+              "col": 1,
+              "kind": "bubble",
+              "text": "T"
+            },
+            {
+              "row": 7,
+              "col": 2,
+              "kind": "bubble",
+              "text": "F"
+            },
+            {
+              "row": 8,
+              "col": 0,
+              "kind": "num",
+              "text": "29"
+            },
+            {
+              "row": 8,
+              "col": 1,
+              "kind": "bubble",
+              "text": "T"
+            },
+            {
+              "row": 8,
+              "col": 2,
+              "kind": "bubble",
+              "text": "F"
+            },
+            {
+              "row": 9,
+              "col": 0,
+              "kind": "num",
+              "text": "30"
+            },
+            {
+              "row": 9,
+              "col": 1,
+              "kind": "bubble",
+              "text": "T"
+            },
+            {
+              "row": 9,
+              "col": 2,
+              "kind": "bubble",
+              "text": "F"
+            }
+          ]
+        },
+        {
+          "x": 177.3,
+          "y": 103.5,
+          "columns": [
+            7,
+            5.6,
+            5.6
+          ],
+          "rows": [
+            5.4,
+            5.4,
+            5.4,
+            5.4,
+            7,
+            5.4,
+            5.4,
+            5.4,
+            5.4,
+            5.4
+          ],
+          "cells": [
+            {
+              "row": 0,
+              "col": 0,
+              "kind": "num",
+              "text": "31"
+            },
+            {
+              "row": 0,
+              "col": 1,
+              "kind": "bubble",
+              "text": "T"
+            },
+            {
+              "row": 0,
+              "col": 2,
+              "kind": "bubble",
+              "text": "F"
+            },
+            {
+              "row": 1,
+              "col": 0,
+              "kind": "num",
+              "text": "32"
+            },
+            {
+              "row": 1,
+              "col": 1,
+              "kind": "bubble",
+              "text": "T"
+            },
+            {
+              "row": 1,
+              "col": 2,
+              "kind": "bubble",
+              "text": "F"
+            },
+            {
+              "row": 2,
+              "col": 0,
+              "kind": "num",
+              "text": "33"
+            },
+            {
+              "row": 2,
+              "col": 1,
+              "kind": "bubble",
+              "text": "T"
+            },
+            {
+              "row": 2,
+              "col": 2,
+              "kind": "bubble",
+              "text": "F"
+            },
+            {
+              "row": 3,
+              "col": 0,
+              "kind": "num",
+              "text": "34"
+            },
+            {
+              "row": 3,
+              "col": 1,
+              "kind": "bubble",
+              "text": "T"
+            },
+            {
+              "row": 3,
+              "col": 2,
+              "kind": "bubble",
+              "text": "F"
+            },
+            {
+              "row": 4,
+              "col": 0,
+              "kind": "num",
+              "text": "35"
+            },
+            {
+              "row": 4,
+              "col": 1,
+              "kind": "bubble",
+              "text": "T"
+            },
+            {
+              "row": 4,
+              "col": 2,
+              "kind": "bubble",
+              "text": "F"
+            },
+            {
+              "row": 5,
+              "col": 0,
+              "kind": "num",
+              "text": "36"
+            },
+            {
+              "row": 5,
+              "col": 1,
+              "kind": "bubble",
+              "text": "T"
+            },
+            {
+              "row": 5,
+              "col": 2,
+              "kind": "bubble",
+              "text": "F"
+            },
+            {
+              "row": 6,
+              "col": 0,
+              "kind": "num",
+              "text": "37"
+            },
+            {
+              "row": 6,
+              "col": 1,
+              "kind": "bubble",
+              "text": "T"
+            },
+            {
+              "row": 6,
+              "col": 2,
+              "kind": "bubble",
+              "text": "F"
+            },
+            {
+              "row": 7,
+              "col": 0,
+              "kind": "num",
+              "text": "38"
+            },
+            {
+              "row": 7,
+              "col": 1,
+              "kind": "bubble",
+              "text": "T"
+            },
+            {
+              "row": 7,
+              "col": 2,
+              "kind": "bubble",
+              "text": "F"
+            },
+            {
+              "row": 8,
+              "col": 0,
+              "kind": "num",
+              "text": "39"
+            },
+            {
+              "row": 8,
+              "col": 1,
+              "kind": "bubble",
+              "text": "T"
+            },
+            {
+              "row": 8,
+              "col": 2,
+              "kind": "bubble",
+              "text": "F"
+            },
+            {
+              "row": 9,
+              "col": 0,
+              "kind": "num",
+              "text": "40"
+            },
+            {
+              "row": 9,
+              "col": 1,
+              "kind": "bubble",
+              "text": "T"
+            },
+            {
+              "row": 9,
+              "col": 2,
+              "kind": "bubble",
+              "text": "F"
+            }
+          ]
+        }
+      ],
+      "groups": [
+        {
+          "key": "1",
+          "kind": "tf",
+          "label": "1",
+          "options": [
+            {
+              "value": "T",
+              "cx": 24.3,
+              "cy": 106.2
+            },
+            {
+              "value": "F",
+              "cx": 29.9,
+              "cy": 106.2
+            }
+          ]
+        },
+        {
+          "key": "2",
+          "kind": "tf",
+          "label": "2",
+          "options": [
+            {
+              "value": "T",
+              "cx": 24.3,
+              "cy": 111.6
+            },
+            {
+              "value": "F",
+              "cx": 29.9,
+              "cy": 111.6
+            }
+          ]
+        },
+        {
+          "key": "3",
+          "kind": "tf",
+          "label": "3",
+          "options": [
+            {
+              "value": "T",
+              "cx": 24.3,
+              "cy": 117
+            },
+            {
+              "value": "F",
+              "cx": 29.9,
+              "cy": 117
+            }
+          ]
+        },
+        {
+          "key": "4",
+          "kind": "tf",
+          "label": "4",
+          "options": [
+            {
+              "value": "T",
+              "cx": 24.3,
+              "cy": 122.4
+            },
+            {
+              "value": "F",
+              "cx": 29.9,
+              "cy": 122.4
+            }
+          ]
+        },
+        {
+          "key": "5",
+          "kind": "tf",
+          "label": "5",
+          "options": [
+            {
+              "value": "T",
+              "cx": 24.3,
+              "cy": 127.8
+            },
+            {
+              "value": "F",
+              "cx": 29.9,
+              "cy": 127.8
+            }
+          ]
+        },
+        {
+          "key": "6",
+          "kind": "tf",
+          "label": "6",
+          "options": [
+            {
+              "value": "T",
+              "cx": 24.3,
+              "cy": 134.8
+            },
+            {
+              "value": "F",
+              "cx": 29.9,
+              "cy": 134.8
+            }
+          ]
+        },
+        {
+          "key": "7",
+          "kind": "tf",
+          "label": "7",
+          "options": [
+            {
+              "value": "T",
+              "cx": 24.3,
+              "cy": 140.2
+            },
+            {
+              "value": "F",
+              "cx": 29.9,
+              "cy": 140.2
+            }
+          ]
+        },
+        {
+          "key": "8",
+          "kind": "tf",
+          "label": "8",
+          "options": [
+            {
+              "value": "T",
+              "cx": 24.3,
+              "cy": 145.6
+            },
+            {
+              "value": "F",
+              "cx": 29.9,
+              "cy": 145.6
+            }
+          ]
+        },
+        {
+          "key": "9",
+          "kind": "tf",
+          "label": "9",
+          "options": [
+            {
+              "value": "T",
+              "cx": 24.3,
+              "cy": 151
+            },
+            {
+              "value": "F",
+              "cx": 29.9,
+              "cy": 151
+            }
+          ]
+        },
+        {
+          "key": "10",
+          "kind": "tf",
+          "label": "10",
+          "options": [
+            {
+              "value": "T",
+              "cx": 24.3,
+              "cy": 156.4
+            },
+            {
+              "value": "F",
+              "cx": 29.9,
+              "cy": 156.4
+            }
+          ]
+        },
+        {
+          "key": "11",
+          "kind": "tf",
+          "label": "11",
+          "options": [
+            {
+              "value": "T",
+              "cx": 78.567,
+              "cy": 106.2
+            },
+            {
+              "value": "F",
+              "cx": 84.167,
+              "cy": 106.2
+            }
+          ]
+        },
+        {
+          "key": "12",
+          "kind": "tf",
+          "label": "12",
+          "options": [
+            {
+              "value": "T",
+              "cx": 78.567,
+              "cy": 111.6
+            },
+            {
+              "value": "F",
+              "cx": 84.167,
+              "cy": 111.6
+            }
+          ]
+        },
+        {
+          "key": "13",
+          "kind": "tf",
+          "label": "13",
+          "options": [
+            {
+              "value": "T",
+              "cx": 78.567,
+              "cy": 117
+            },
+            {
+              "value": "F",
+              "cx": 84.167,
+              "cy": 117
+            }
+          ]
+        },
+        {
+          "key": "14",
+          "kind": "tf",
+          "label": "14",
+          "options": [
+            {
+              "value": "T",
+              "cx": 78.567,
+              "cy": 122.4
+            },
+            {
+              "value": "F",
+              "cx": 84.167,
+              "cy": 122.4
+            }
+          ]
+        },
+        {
+          "key": "15",
+          "kind": "tf",
+          "label": "15",
+          "options": [
+            {
+              "value": "T",
+              "cx": 78.567,
+              "cy": 127.8
+            },
+            {
+              "value": "F",
+              "cx": 84.167,
+              "cy": 127.8
+            }
+          ]
+        },
+        {
+          "key": "16",
+          "kind": "tf",
+          "label": "16",
+          "options": [
+            {
+              "value": "T",
+              "cx": 78.567,
+              "cy": 134.8
+            },
+            {
+              "value": "F",
+              "cx": 84.167,
+              "cy": 134.8
+            }
+          ]
+        },
+        {
+          "key": "17",
+          "kind": "tf",
+          "label": "17",
+          "options": [
+            {
+              "value": "T",
+              "cx": 78.567,
+              "cy": 140.2
+            },
+            {
+              "value": "F",
+              "cx": 84.167,
+              "cy": 140.2
+            }
+          ]
+        },
+        {
+          "key": "18",
+          "kind": "tf",
+          "label": "18",
+          "options": [
+            {
+              "value": "T",
+              "cx": 78.567,
+              "cy": 145.6
+            },
+            {
+              "value": "F",
+              "cx": 84.167,
+              "cy": 145.6
+            }
+          ]
+        },
+        {
+          "key": "19",
+          "kind": "tf",
+          "label": "19",
+          "options": [
+            {
+              "value": "T",
+              "cx": 78.567,
+              "cy": 151
+            },
+            {
+              "value": "F",
+              "cx": 84.167,
+              "cy": 151
+            }
+          ]
+        },
+        {
+          "key": "20",
+          "kind": "tf",
+          "label": "20",
+          "options": [
+            {
+              "value": "T",
+              "cx": 78.567,
+              "cy": 156.4
+            },
+            {
+              "value": "F",
+              "cx": 84.167,
+              "cy": 156.4
+            }
+          ]
+        },
+        {
+          "key": "21",
+          "kind": "tf",
+          "label": "21",
+          "options": [
+            {
+              "value": "T",
+              "cx": 132.833,
+              "cy": 106.2
+            },
+            {
+              "value": "F",
+              "cx": 138.433,
+              "cy": 106.2
+            }
+          ]
+        },
+        {
+          "key": "22",
+          "kind": "tf",
+          "label": "22",
+          "options": [
+            {
+              "value": "T",
+              "cx": 132.833,
+              "cy": 111.6
+            },
+            {
+              "value": "F",
+              "cx": 138.433,
+              "cy": 111.6
+            }
+          ]
+        },
+        {
+          "key": "23",
+          "kind": "tf",
+          "label": "23",
+          "options": [
+            {
+              "value": "T",
+              "cx": 132.833,
+              "cy": 117
+            },
+            {
+              "value": "F",
+              "cx": 138.433,
+              "cy": 117
+            }
+          ]
+        },
+        {
+          "key": "24",
+          "kind": "tf",
+          "label": "24",
+          "options": [
+            {
+              "value": "T",
+              "cx": 132.833,
+              "cy": 122.4
+            },
+            {
+              "value": "F",
+              "cx": 138.433,
+              "cy": 122.4
+            }
+          ]
+        },
+        {
+          "key": "25",
+          "kind": "tf",
+          "label": "25",
+          "options": [
+            {
+              "value": "T",
+              "cx": 132.833,
+              "cy": 127.8
+            },
+            {
+              "value": "F",
+              "cx": 138.433,
+              "cy": 127.8
+            }
+          ]
+        },
+        {
+          "key": "26",
+          "kind": "tf",
+          "label": "26",
+          "options": [
+            {
+              "value": "T",
+              "cx": 132.833,
+              "cy": 134.8
+            },
+            {
+              "value": "F",
+              "cx": 138.433,
+              "cy": 134.8
+            }
+          ]
+        },
+        {
+          "key": "27",
+          "kind": "tf",
+          "label": "27",
+          "options": [
+            {
+              "value": "T",
+              "cx": 132.833,
+              "cy": 140.2
+            },
+            {
+              "value": "F",
+              "cx": 138.433,
+              "cy": 140.2
+            }
+          ]
+        },
+        {
+          "key": "28",
+          "kind": "tf",
+          "label": "28",
+          "options": [
+            {
+              "value": "T",
+              "cx": 132.833,
+              "cy": 145.6
+            },
+            {
+              "value": "F",
+              "cx": 138.433,
+              "cy": 145.6
+            }
+          ]
+        },
+        {
+          "key": "29",
+          "kind": "tf",
+          "label": "29",
+          "options": [
+            {
+              "value": "T",
+              "cx": 132.833,
+              "cy": 151
+            },
+            {
+              "value": "F",
+              "cx": 138.433,
+              "cy": 151
+            }
+          ]
+        },
+        {
+          "key": "30",
+          "kind": "tf",
+          "label": "30",
+          "options": [
+            {
+              "value": "T",
+              "cx": 132.833,
+              "cy": 156.4
+            },
+            {
+              "value": "F",
+              "cx": 138.433,
+              "cy": 156.4
+            }
+          ]
+        },
+        {
+          "key": "31",
+          "kind": "tf",
+          "label": "31",
+          "options": [
+            {
+              "value": "T",
+              "cx": 187.1,
+              "cy": 106.2
+            },
+            {
+              "value": "F",
+              "cx": 192.7,
+              "cy": 106.2
+            }
+          ]
+        },
+        {
+          "key": "32",
+          "kind": "tf",
+          "label": "32",
+          "options": [
+            {
+              "value": "T",
+              "cx": 187.1,
+              "cy": 111.6
+            },
+            {
+              "value": "F",
+              "cx": 192.7,
+              "cy": 111.6
+            }
+          ]
+        },
+        {
+          "key": "33",
+          "kind": "tf",
+          "label": "33",
+          "options": [
+            {
+              "value": "T",
+              "cx": 187.1,
+              "cy": 117
+            },
+            {
+              "value": "F",
+              "cx": 192.7,
+              "cy": 117
+            }
+          ]
+        },
+        {
+          "key": "34",
+          "kind": "tf",
+          "label": "34",
+          "options": [
+            {
+              "value": "T",
+              "cx": 187.1,
+              "cy": 122.4
+            },
+            {
+              "value": "F",
+              "cx": 192.7,
+              "cy": 122.4
+            }
+          ]
+        },
+        {
+          "key": "35",
+          "kind": "tf",
+          "label": "35",
+          "options": [
+            {
+              "value": "T",
+              "cx": 187.1,
+              "cy": 127.8
+            },
+            {
+              "value": "F",
+              "cx": 192.7,
+              "cy": 127.8
+            }
+          ]
+        },
+        {
+          "key": "36",
+          "kind": "tf",
+          "label": "36",
+          "options": [
+            {
+              "value": "T",
+              "cx": 187.1,
+              "cy": 134.8
+            },
+            {
+              "value": "F",
+              "cx": 192.7,
+              "cy": 134.8
+            }
+          ]
+        },
+        {
+          "key": "37",
+          "kind": "tf",
+          "label": "37",
+          "options": [
+            {
+              "value": "T",
+              "cx": 187.1,
+              "cy": 140.2
+            },
+            {
+              "value": "F",
+              "cx": 192.7,
+              "cy": 140.2
+            }
+          ]
+        },
+        {
+          "key": "38",
+          "kind": "tf",
+          "label": "38",
+          "options": [
+            {
+              "value": "T",
+              "cx": 187.1,
+              "cy": 145.6
+            },
+            {
+              "value": "F",
+              "cx": 192.7,
+              "cy": 145.6
+            }
+          ]
+        },
+        {
+          "key": "39",
+          "kind": "tf",
+          "label": "39",
+          "options": [
+            {
+              "value": "T",
+              "cx": 187.1,
+              "cy": 151
+            },
+            {
+              "value": "F",
+              "cx": 192.7,
+              "cy": 151
+            }
+          ]
+        },
+        {
+          "key": "40",
+          "kind": "tf",
+          "label": "40",
+          "options": [
+            {
+              "value": "T",
+              "cx": 187.1,
+              "cy": 156.4
+            },
+            {
+              "value": "F",
+              "cx": 192.7,
+              "cy": 156.4
+            }
+          ]
+        }
+      ],
+      "rois": [],
+      "choices": [
+        "T",
+        "F"
+      ],
+      "start": 1,
+      "count": 40,
+      "columns": 4
+    },
+    {
+      "id": "s1",
+      "type": "text",
+      "label": "",
+      "bbox": {
+        "x": 12,
+        "y": 165.6,
+        "w": 60,
+        "h": 28
+      },
+      "grids": [],
+      "groups": [],
+      "rois": [
+        {
+          "id": "s1",
+          "key": "s1",
+          "label": "41. In what year did the Berlin Wall fall?",
+          "role": null,
+          "x": 14.5,
+          "y": 177.1,
+          "w": 55,
+          "h": 14,
+          "charset": "digits",
+          "multiline": false,
+          "ocr": true,
+          "graded": true,
+          "points": 1
+        }
+      ],
+      "prompt": "41. In what year did the Berlin Wall fall?",
+      "points": 1,
+      "isInline": false,
+      "labelW": 0
+    },
+    {
+      "id": "s2",
+      "type": "text",
+      "label": "",
+      "bbox": {
+        "x": 76,
+        "y": 165.6,
+        "w": 60,
+        "h": 28
+      },
+      "grids": [],
+      "groups": [],
+      "rois": [
+        {
+          "id": "s2",
+          "key": "s2",
+          "label": "42. Who wrote the Communist Manifesto with Engels?",
+          "role": null,
+          "x": 78.5,
+          "y": 177.1,
+          "w": 55,
+          "h": 14,
+          "charset": "alpha",
+          "multiline": false,
+          "ocr": true,
+          "graded": true,
+          "points": 1
+        }
+      ],
+      "prompt": "42. Who wrote the Communist Manifesto with Engels?",
+      "points": 1,
+      "isInline": false,
+      "labelW": 0
+    },
+    {
+      "id": "s3",
+      "type": "text",
+      "label": "",
+      "bbox": {
+        "x": 140,
+        "y": 165.6,
+        "w": 58,
+        "h": 28
+      },
+      "grids": [],
+      "groups": [],
+      "rois": [
+        {
+          "id": "s3",
+          "key": "s3",
+          "label": "43. Capital of the Byzantine Empire?",
+          "role": null,
+          "x": 142.5,
+          "y": 177.1,
+          "w": 53,
+          "h": 14,
+          "charset": "alpha",
+          "multiline": false,
+          "ocr": true,
+          "graded": true,
+          "points": 1
+        }
+      ],
+      "prompt": "43. Capital of the Byzantine Empire?",
+      "points": 1,
+      "isInline": false,
+      "labelW": 0
+    }
+  ],
+  "warnings": []
+}

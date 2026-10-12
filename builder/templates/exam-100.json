@@ -1,0 +1,21 @@
+{
+  "id": "chem201-final-100",
+  "title": "CHEM 201 — Final Examination",
+  "paper": "Letter",
+  "bubble": { "diameter": 4.0, "pitchX": 5.4, "pitchY": 5.0, "groupEvery": 5, "groupGap": 1.4 },
+  "zones": [
+    { "type": "student_id", "id": "sid", "label": "Student ID", "digits": 9 },
+    {
+      "type": "fields",
+      "id": "info",
+      "inline": true,
+      "label": "Student Information",
+      "fields": [
+        { "id": "name", "label": "Name", "role": "name" },
+        { "id": "section", "label": "Section" },
+        { "id": "signature", "label": "Signature", "ocr": false }
+      ]
+    },
+    { "type": "mcq", "id": "items", "label": "Multiple Choice (1–100)", "count": 100, "choices": "ABCD", "columns": 5, "w": 191.9 }
+  ]
+}

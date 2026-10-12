@@ -1,0 +1,640 @@
+/**
+ * OMR layout engine (isomorphic ES module: runs in the browser and in Node).
+ *
+ * Converts a template JSON payload into a fully resolved geometric layout in
+ * millimetres. The resolved layout is the single source of truth shared by:
+ *   - the DOM / CSS Grid renderer (printable sheet),
+ *   - the SVG renderer,
+ *   - the Python computer-vision pipeline (layout.json).
+ *
+ * Because every bubble centre is computed here (not measured from the
+ * browser), print output and CV sampling coordinates cannot drift apart.
+ */
+import { ARUCO_DICTIONARY, SUPPORTED_MARKER_IDS } from './aruco.js';
+
+export const LAYOUT_SCHEMA = 'omr-layout/1';
+export const GENERATOR = 'omr-sheet-builder/1.0.0';
+
+export const PAPER_SIZES = Object.freeze({
+  A4: Object.freeze({ width: 210, height: 297 }),
+  Letter: Object.freeze({ width: 215.9, height: 279.4 }),
+  Folio: Object.freeze({ width: 215.9, height: 330.2 }),
+  'Half-A4': Object.freeze({ width: 148.5, height: 210 }),
+  'Half-Letter': Object.freeze({ width: 139.7, height: 215.9 }),
+  'Half-Folio': Object.freeze({ width: 165.1, height: 215.9 }),
+});
+
+const PAPER_ALIASES = {
+  a4: 'A4',
+  letter: 'Letter',
+  'us-letter': 'Letter',
+  usletter: 'Letter',
+  folio: 'Folio',
+  '8.5x13': 'Folio',
+  '8.5*13': 'Folio',
+  f4: 'Folio',
+  'half-a4': 'Half-A4',
+  halfa4: 'Half-A4',
+  a5: 'Half-A4',
+  'half-letter': 'Half-Letter',
+  halfletter: 'Half-Letter',
+  statement: 'Half-Letter',
+  'half-folio': 'Half-Folio',
+  halffolio: 'Half-Folio',
+};
+
+export const DEFAULTS = Object.freeze({
+  paper: 'A4',
+  margin: 12, // left/right content margin (mm)
+  gap: 4, // vertical/horizontal gap between flowed zones (mm)
+  footer: 'Use a dark pencil or black pen. Fill each bubble completely. Do not fold or staple this sheet.',
+  fiducial: Object.freeze({ type: 'aruco', dictionary: ARUCO_DICTIONARY, size: 10, inset: 7, quietZone: 2, ids: [0, 1, 2, 3] }),
+  bubble: Object.freeze({ diameter: 4.2, pitchX: 5.6, pitchY: 5.4, groupEvery: 5, groupGap: 1.6, stroke: 0.25 }),
+  typography: Object.freeze({ title: 4.2, label: 3.0, body: 2.8, bubble: 2.1, number: 2.6, small: 2.2 }),
+});
+
+// Zone chrome constants (mm).
+const PAD = 2.5;
+const TITLE_H = 5;
+const NUMBER_W = 7;
+const FIELD_H = 8;
+const FIELD_GAP = 2;
+const FIELD_LABEL_W = 20;
+const SID_BOX_H = 6.5;
+const SID_BOX_GAP = 1.5;
+const CHAR_W_EM = 0.52; // average Helvetica glyph advance in em, used for wrap estimates
+const LINE_HEIGHT = 1.3;
+
+const CORNERS = ['tl', 'tr', 'br', 'bl'];
+const CHARSETS = new Set(['any', 'digits', 'alpha', 'upper', 'alnum']);
+
+export class TemplateError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'TemplateError';
+  }
+}
+
+const r3 = (v) => Math.round(v * 1000) / 1000;
+const sum = (arr) => arr.reduce((a, b) => a + b, 0);
+const isPlainObject = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
+
+function deepMerge(base, override) {
+  const out = { ...base };
+  for (const [k, v] of Object.entries(override ?? {})) {
+    out[k] = isPlainObject(v) && isPlainObject(base[k]) ? deepMerge(base[k], v) : v;
+  }
+  return out;
+}
+
+function positiveNumber(value, name) {
+  const n = Number(value);
+  if (!Number.isFinite(n) || n <= 0) throw new TemplateError(`${name} must be a positive number (got ${JSON.stringify(value)})`);
+  return n;
+}
+
+function positiveInt(value, name) {
+  const n = positiveNumber(value, name);
+  if (!Number.isInteger(n)) throw new TemplateError(`${name} must be an integer (got ${value})`);
+  return n;
+}
+
+function resolveChoices(zone) {
+  if (zone.type === 'truefalse') {
+    const c = zone.choices ?? ['T', 'F'];
+    if (!Array.isArray(c) || c.length !== 2) throw new TemplateError(`Zone "${zone.id}": truefalse choices must be a 2-item array`);
+    return c.map(String);
+  }
+  const raw = zone.choices ?? 'ABCD';
+  let choices;
+  if (typeof raw === 'number') choices = Array.from({ length: positiveInt(raw, `Zone "${zone.id}" choices`) }, (_, i) => String.fromCharCode(65 + i));
+  else if (typeof raw === 'string') choices = [...raw];
+  else if (Array.isArray(raw)) choices = raw.map(String);
+  else throw new TemplateError(`Zone "${zone.id}": choices must be a string, number or array`);
+  if (choices.length < 2 || choices.length > 10) throw new TemplateError(`Zone "${zone.id}": 2-10 choices are supported`);
+  if (new Set(choices).size !== choices.length) throw new TemplateError(`Zone "${zone.id}": duplicate choice labels`);
+  return choices;
+}
+
+/** Rough wrapped line count for a text block rendered at `fontSize` mm in `width` mm. */
+export function estimateLines(text, fontSize, width) {
+  const perLine = Math.max(1, Math.floor(width / (fontSize * CHAR_W_EM)));
+  return String(text ?? '')
+    .split('\n')
+    .reduce((n, para) => n + Math.max(1, Math.ceil(para.length / perLine)), 0);
+}
+
+/** Bubble centre for a grid cell: horizontally centred, vertically centred in the first pitchY of the row. */
+function bubbleCenter(grid, row, col, pitchY) {
+  const cx = grid.x + sum(grid.columns.slice(0, col)) + grid.columns[col] / 2;
+  const cy = grid.y + sum(grid.rows.slice(0, row)) + pitchY / 2;
+  return { cx: r3(cx), cy: r3(cy) };
+}
+
+function makeGrid(x, y, columns, rows) {
+  return { x: r3(x), y: r3(y), columns: columns.map(r3), rows: rows.map(r3), cells: [] };
+}
+
+export function normalizeTemplate(input) {
+  if (!isPlainObject(input)) throw new TemplateError('Template must be a JSON object');
+  const tpl = deepMerge(DEFAULTS, input);
+  tpl.paper = PAPER_ALIASES[String(tpl.paper).toLowerCase()] ?? tpl.paper;
+  if (!PAPER_SIZES[tpl.paper]) throw new TemplateError(`Unsupported paper "${input.paper}" (use A4 or Letter)`);
+  if (!tpl.id || typeof tpl.id !== 'string') throw new TemplateError('Template requires a string "id"');
+  if (!Array.isArray(tpl.zones) || tpl.zones.length === 0) throw new TemplateError('Template requires a non-empty "zones" array');
+  positiveNumber(tpl.margin, 'margin');
+  positiveNumber(tpl.fiducial.size, 'fiducial.size');
+  positiveNumber(tpl.fiducial.inset, 'fiducial.inset');
+  for (const k of ['diameter', 'pitchX', 'pitchY']) positiveNumber(tpl.bubble[k], `bubble.${k}`);
+  if (tpl.bubble.diameter >= Math.min(tpl.bubble.pitchX, tpl.bubble.pitchY)) {
+    throw new TemplateError('bubble.diameter must be smaller than both pitches (bubbles would touch)');
+  }
+  const ids = tpl.fiducial.ids;
+  if (!Array.isArray(ids) || ids.length !== 4 || ids.some((id) => !SUPPORTED_MARKER_IDS.includes(id)) || new Set(ids).size !== 4) {
+    throw new TemplateError(`fiducial.ids must be 4 distinct ids from [${SUPPORTED_MARKER_IDS.join(', ')}]`);
+  }
+  return tpl;
+}
+
+// ---------------------------------------------------------------------------
+// Zone layout functions. Each returns { bbox, grids, groups, rois, extra }.
+// ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+
+function layoutStudentId(zone, ctx, x, y) {
+  const { bubble } = ctx.tpl;
+  const digits = positiveInt(zone.digits ?? 8, `Zone "${zone.id}" digits`);
+  if (digits > 20) throw new TemplateError(`Zone "${zone.id}": at most 20 ID digits are supported`);
+  const colW = Math.max(bubble.pitchX, 6);
+  const titleH = zone.label === '' ? 0 : TITLE_H;
+  const shading = zone.shading !== false && zone.mode !== 'ocr' && zone.mode !== 'digits';
+
+  if (!shading) {
+    // Pure digit write-in boxes (image number recognition, no 10-row shading matrix)
+    const boxH = zone.boxHeight ?? SID_BOX_H;
+    const gridW = digits * colW;
+    const w = Math.max(zone.w ?? 0, 2 * PAD + gridW);
+    const boxX = x + (w - gridW) / 2;
+    const boxY = y + PAD + titleH;
+    const grid = makeGrid(boxX, boxY, Array(digits).fill(colW), [boxH]);
+    for (let d = 0; d < digits; d += 1) {
+      grid.cells.push({ row: 0, col: d, kind: 'box' });
+    }
+    const roi = {
+      id: zone.id,
+      key: zone.id,
+      label: zone.label || 'Student ID',
+      role: 'student_id',
+      x: r3(boxX),
+      y: r3(boxY),
+      w: r3(gridW),
+      h: r3(boxH),
+      charset: 'digits',
+      multiline: false,
+      ocr: true,
+      graded: false,
+      points: 0,
+      digits,
+    };
+    const h = 2 * PAD + titleH + boxH;
+    return { bbox: { x, y, w, h }, grids: [grid], groups: [], rois: [roi], extra: { digits, shading: false } };
+  }
+
+  // Shading bubble matrix mode
+  const rows = [SID_BOX_H, SID_BOX_GAP, ...Array(10).fill(bubble.pitchY)];
+  const w = Math.max(zone.w ?? 0, 2 * PAD + digits * colW);
+  const gridW = digits * colW;
+  const grid = makeGrid(x + (w - gridW) / 2, y + PAD + titleH, Array(digits).fill(colW), rows);
+  const groups = [];
+  for (let d = 0; d < digits; d += 1) {
+    grid.cells.push({ row: 0, col: d, kind: 'box' });
+    const options = [];
+    for (let v = 0; v <= 9; v += 1) {
+      grid.cells.push({ row: v + 2, col: d, kind: 'bubble', text: String(v) });
+      options.push({ value: String(v), ...bubbleCenter(grid, v + 2, d, bubble.pitchY) });
+    }
+    groups.push({ key: `${zone.id}[${d}]`, kind: 'sid', label: `ID digit ${d + 1}`, index: d, options });
+  }
+  const h = 2 * PAD + titleH + sum(rows);
+  return { bbox: { x, y, w, h }, grids: [grid], groups, rois: [], extra: { digits, shading: true } };
+}
+
+function layoutChoices(zone, ctx, x, y, availW) {
+  const { bubble } = ctx.tpl;
+  const kind = zone.type === 'truefalse' ? 'tf' : 'mcq';
+  const choices = resolveChoices(zone);
+  const count = positiveInt(zone.count, `Zone "${zone.id}" count`);
+  const start = zone.start == null ? ctx.nextQuestion : positiveInt(zone.start, `Zone "${zone.id}" start`);
+  const numberW = zone.numberWidth ?? NUMBER_W;
+  const blockW = numberW + choices.length * bubble.pitchX;
+  const minBlockGap = 4;
+  const titleH = zone.label ? TITLE_H : 0;
+
+  let columns = zone.columns == null ? null : positiveInt(zone.columns, `Zone "${zone.id}" columns`);
+  const targetW = zone.w ?? null;
+  if (columns == null) {
+    const usable = (targetW ?? availW) - 2 * PAD;
+    columns = Math.max(1, Math.min(count, Math.floor((usable + minBlockGap) / (blockW + minBlockGap))));
+  }
+  const rowsPerCol = Math.ceil(count / columns);
+  const naturalW = 2 * PAD + columns * blockW + (columns - 1) * minBlockGap;
+  const w = targetW ?? naturalW;
+  if (w + 0.01 < naturalW) ctx.warn(`Zone "${zone.id}": width ${w}mm is narrower than the ${r3(naturalW)}mm required for ${columns} column(s)`);
+  const blockPitch = columns > 1 ? (w - 2 * PAD - blockW) / (columns - 1) : 0;
+
+  const rowHeights = Array.from({ length: rowsPerCol }, (_, r) => {
+    const groupBreak = bubble.groupEvery > 0 && (r + 1) % bubble.groupEvery === 0 && r < rowsPerCol - 1;
+    return bubble.pitchY + (groupBreak ? bubble.groupGap : 0);
+  });
+
+  const grids = [];
+  const groups = [];
+  for (let c = 0; c < columns; c += 1) {
+    const grid = makeGrid(x + PAD + c * blockPitch, y + PAD + titleH, [numberW, ...choices.map(() => bubble.pitchX)], rowHeights);
+    for (let r = 0; r < rowsPerCol; r += 1) {
+      const idx = c * rowsPerCol + r; // column-major numbering, the convention on paper answer sheets
+      if (idx >= count) break;
+      const q = start + idx;
+      grid.cells.push({ row: r, col: 0, kind: 'num', text: String(q) });
+      const options = choices.map((choice, j) => {
+        grid.cells.push({ row: r, col: j + 1, kind: 'bubble', text: choice });
+        return { value: choice, ...bubbleCenter(grid, r, j + 1, bubble.pitchY) };
+      });
+      groups.push({ key: String(q), kind, label: String(q), options });
+    }
+    grids.push(grid);
+  }
+  ctx.nextQuestion = start + count;
+  const h = 2 * PAD + titleH + sum(rowHeights);
+  return { bbox: { x, y, w, h }, grids, groups, rois: [], extra: { choices, start, count, columns } };
+}
+
+function layoutModifiedTrueFalse(zone, ctx, x, y, availW) {
+  const { bubble } = ctx.tpl;
+  const count = positiveInt(zone.count, `Zone "${zone.id}" count`);
+  const start = zone.start == null ? ctx.nextQuestion : positiveInt(zone.start, `Zone "${zone.id}" start`);
+  const numberW = zone.numberWidth ?? NUMBER_W;
+  const choices = ['T', 'F'];
+  const bubbleBlockW = numberW + choices.length * bubble.pitchX;
+  const correctionW = zone.correctionWidth ?? zone.corrWidth ?? 45;
+  const blockW = bubbleBlockW + correctionW + 2.5;
+  const titleH = zone.label ? TITLE_H : 0;
+
+  let columns = zone.columns == null ? 1 : positiveInt(zone.columns, `Zone "${zone.id}" columns`);
+  const targetW = zone.w ?? null;
+  const rowsPerCol = Math.ceil(count / columns);
+  const minBlockGap = 4;
+  const naturalW = 2 * PAD + columns * blockW + (columns - 1) * minBlockGap;
+  const w = targetW ?? naturalW;
+  const blockPitch = columns > 1 ? (w - 2 * PAD - blockW) / (columns - 1) : 0;
+
+  const rowH = Math.max(bubble.pitchY, 7);
+  const rowHeights = Array(rowsPerCol).fill(rowH);
+
+  const grids = [];
+  const groups = [];
+  const rois = [];
+
+  for (let c = 0; c < columns; c += 1) {
+    const colX = x + PAD + c * (columns > 1 ? blockPitch : blockW);
+    const grid = makeGrid(colX, y + PAD + titleH, [numberW, bubble.pitchX, bubble.pitchX], rowHeights);
+
+    for (let r = 0; r < rowsPerCol; r += 1) {
+      const idx = c * rowsPerCol + r;
+      if (idx >= count) break;
+      const q = start + idx;
+
+      grid.cells.push({ row: r, col: 0, kind: 'num', text: String(q) });
+      const options = choices.map((choice, j) => {
+        grid.cells.push({ row: r, col: j + 1, kind: 'bubble', text: choice });
+        return { value: choice, ...bubbleCenter(grid, r, j + 1, rowH) };
+      });
+      groups.push({ key: String(q), kind: 'tf', label: String(q), options });
+
+      const boxX = colX + bubbleBlockW + 1.5;
+      const boxY = y + PAD + titleH + r * rowH + 0.6;
+      const boxH = rowH - 1.2;
+
+      rois.push({
+        id: `${zone.id}.${q}.correction`,
+        key: `${q}_corr`,
+        label: `${q} Correction`,
+        role: 'correction',
+        x: r3(boxX),
+        y: r3(boxY),
+        w: r3(correctionW),
+        h: r3(boxH),
+        charset: 'any',
+        multiline: false,
+        ocr: true,
+        graded: zone.graded !== false,
+        points: zone.correctionPoints ?? 1,
+      });
+    }
+    grids.push(grid);
+  }
+
+  ctx.nextQuestion = start + count;
+  const h = 2 * PAD + titleH + sum(rowHeights);
+  return { bbox: { x, y, w, h }, grids, groups, rois, extra: { start, count, columns, isModified: true } };
+}
+
+function layoutFields(zone, ctx, x, y, availW) {
+  const fields = zone.fields;
+  if (!Array.isArray(fields) || fields.length === 0) throw new TemplateError(`Zone "${zone.id}": "fields" must be a non-empty array`);
+  const titleH = zone.label ? TITLE_H : 0;
+  const w = zone.w ?? availW;
+  const fieldH = zone.fieldHeight ?? 7.5;
+  const gapY = zone.gapY ?? 2;
+  const innerW = w - 2 * PAD;
+
+  // Group fields into rows (supports explicit columns or row property)
+  let rowGroups = [];
+  if (zone.columns && zone.columns > 0) {
+    const cols = zone.columns;
+    for (let i = 0; i < fields.length; i += cols) {
+      rowGroups.push(fields.slice(i, i + cols));
+    }
+  } else {
+    const hasExplicitRows = fields.some((f) => f.row !== undefined);
+    if (hasExplicitRows) {
+      const map = new Map();
+      for (const f of fields) {
+        const r = f.row ?? 0;
+        if (!map.has(r)) map.set(r, []);
+        map.get(r).push(f);
+      }
+      const sortedKeys = [...map.keys()].sort((a, b) => a - b);
+      rowGroups = sortedKeys.map((k) => map.get(k));
+    } else {
+      rowGroups = fields.map((f) => [f]);
+    }
+  }
+
+  const rows = [];
+  const rois = [];
+  let curY = y + PAD + titleH;
+
+  for (let rIdx = 0; rIdx < rowGroups.length; rIdx += 1) {
+    const group = rowGroups[rIdx];
+    const nFields = group.length;
+    const interGap = 3;
+    const totalGap = (nFields - 1) * interGap;
+    const availRowW = innerW - totalGap;
+
+    const specifiedW = group.reduce((acc, f) => acc + (f.w ?? 0), 0);
+    const unspecCount = group.filter((f) => !f.w).length;
+    const defaultW = unspecCount > 0 ? (availRowW - specifiedW) / unspecCount : 0;
+
+    let curX = x + PAD;
+    for (let cIdx = 0; cIdx < group.length; cIdx += 1) {
+      const field = group[cIdx];
+      if (!field.id) throw new TemplateError(`Zone "${zone.id}": every field needs an "id"`);
+      const fieldTotalW = field.w ?? defaultW;
+      const labelW = field.labelWidth ?? Math.min(18, Math.max(10, (field.label ?? field.id).length * 2.8));
+      const boxW = Math.max(10, fieldTotalW - labelW);
+      const isSid = field.id === 'sid' || field.role === 'student_id' || (field.digits != null && field.digits > 0);
+      const digits = field.digits ?? (isSid ? 8 : 0);
+
+      rows.push({
+        label: field.label ?? field.id,
+        x: r3(curX),
+        y: r3(curY),
+        labelW: r3(labelW),
+        h: fieldH,
+        digits,
+      });
+
+      rois.push({
+        id: `${zone.id}.${field.id}`,
+        key: field.id,
+        label: field.label ?? field.id,
+        role: field.role ?? (field.id === 'name' ? 'name' : field.id === 'score' ? 'score' : isSid ? 'student_id' : null),
+        x: r3(curX + labelW),
+        y: r3(curY),
+        w: r3(boxW),
+        h: fieldH,
+        charset: CHARSETS.has(field.charset) ? field.charset : isSid ? 'digits' : 'any',
+        multiline: false,
+        ocr: field.ocr !== false && field.role !== 'score' && field.id !== 'score',
+        graded: false,
+        points: 0,
+        digits,
+      });
+
+      curX += fieldTotalW + interGap;
+    }
+    curY += fieldH + gapY;
+  }
+
+  const h = curY - gapY + PAD - y;
+  return { bbox: { x, y, w, h }, grids: [], groups: [], rois, extra: { rows, fieldH } };
+}
+
+function layoutInstructions(zone, ctx, x, y, availW) {
+  const { typography } = ctx.tpl;
+  const w = zone.w ?? availW;
+  const fontSize = zone.fontSize ?? typography.body;
+  const lines = estimateLines(zone.text, fontSize, w - 2);
+  const h = 2 + lines * fontSize * LINE_HEIGHT;
+  return { bbox: { x, y, w, h }, grids: [], groups: [], rois: [], extra: { text: String(zone.text ?? ''), fontSize, lines } };
+}
+
+function layoutText(zone, ctx, x, y, availW) {
+  const { typography } = ctx.tpl;
+  const w = zone.w ?? availW;
+  const innerW = w - 2 * PAD;
+  const boxH = zone.boxHeight ?? 8;
+  positiveNumber(boxH, `Zone "${zone.id}" boxHeight`);
+  const prompt = String(zone.label ?? '');
+  const points = zone.points ?? 1;
+
+  const isInline = zone.inlineLabel ?? (prompt.length <= 10 || boxH <= 10);
+  let promptH = 0;
+  let boxX = x + PAD;
+  let boxY = y + PAD;
+  let boxW = innerW;
+  let labelW = 0;
+
+  if (isInline && prompt) {
+    labelW = zone.labelWidth ?? Math.min(18, Math.max(8, prompt.length * 3.0));
+    boxX = x + PAD + labelW;
+    boxW = innerW - labelW;
+  } else if (prompt) {
+    const promptLines = estimateLines(`${prompt} (${points} pts)`, typography.label, innerW);
+    promptH = promptLines * typography.label * LINE_HEIGHT;
+    boxY = y + PAD + promptH + 1.2;
+  }
+
+  const roi = {
+    id: zone.id,
+    key: zone.key ?? zone.id,
+    label: prompt || zone.id,
+    role: null,
+    x: r3(boxX),
+    y: r3(boxY),
+    w: r3(boxW),
+    h: r3(boxH),
+    charset: CHARSETS.has(zone.charset) ? zone.charset : 'any',
+    multiline: zone.multiline ?? boxH > 15,
+    ocr: true,
+    graded: zone.graded !== false,
+    points,
+  };
+  const h = (isInline ? y + PAD + boxH + PAD : boxY + boxH + PAD) - y;
+  return { bbox: { x, y, w, h }, grids: [], groups: [], rois: [roi], extra: { prompt, points, isInline, labelW } };
+}
+
+const ZONE_LAYOUTS = {
+  student_id: layoutStudentId,
+  mcq: layoutChoices,
+  truefalse: layoutChoices,
+  modified_tf: layoutModifiedTrueFalse,
+  fields: layoutFields,
+  instructions: layoutInstructions,
+  text: layoutText,
+  text_short: layoutText,
+  text_essay: layoutText,
+};
+
+export const ZONE_TYPES = Object.freeze(Object.keys(ZONE_LAYOUTS));
+
+function intersects(a, b, tolerance = 0.01) {
+  return a.x + tolerance < b.x + b.w && b.x + tolerance < a.x + a.w && a.y + tolerance < b.y + b.h && b.y + tolerance < a.y + a.h;
+}
+
+/**
+ * Resolve a template into absolute geometry.
+ * @param {object} input template payload
+ * @returns {object} resolved layout (see LAYOUT_SCHEMA)
+ */
+export function buildLayout(input) {
+  const tpl = normalizeTemplate(input);
+  const page = { paper: tpl.paper, ...PAPER_SIZES[tpl.paper] };
+  const { size, inset, quietZone } = tpl.fiducial;
+  const warnings = [];
+
+  const fiducials = tpl.fiducial.ids.map((id, i) => {
+    const corner = CORNERS[i];
+    const fx = corner === 'tl' || corner === 'bl' ? inset : page.width - inset - size;
+    const fy = corner === 'tl' || corner === 'tr' ? inset : page.height - inset - size;
+    return {
+      id,
+      corner,
+      x: r3(fx),
+      y: r3(fy),
+      size,
+      center: [r3(fx + size / 2), r3(fy + size / 2)],
+      // Marker-local corner order used by OpenCV ArUco: TL, TR, BR, BL.
+      corners: [[fx, fy], [fx + size, fy], [fx + size, fy + size], [fx, fy + size]].map((p) => p.map(r3)),
+    };
+  });
+
+  const contentTop = inset + size + 3;
+  const contentBottom = page.height - inset - size - 3;
+  const content = { x: tpl.margin, y: r3(contentTop), w: r3(page.width - 2 * tpl.margin), h: r3(contentBottom - contentTop) };
+  const contentRight = content.x + content.w;
+
+  const ctx = { tpl, nextQuestion: 1, warn: (m) => warnings.push(m) };
+  const zones = [];
+  const seenZoneIds = new Set();
+  const seenKeys = new Map();
+  let rowBottom = content.y;
+  let prev = null;
+
+  for (const raw of tpl.zones) {
+    if (!isPlainObject(raw)) throw new TemplateError('Every zone must be an object');
+    const layoutFn = ZONE_LAYOUTS[raw.type];
+    if (!layoutFn) throw new TemplateError(`Unknown zone type "${raw.type}" (expected one of ${ZONE_TYPES.join(', ')})`);
+    if (!raw.id || typeof raw.id !== 'string') throw new TemplateError(`A "${raw.type}" zone is missing a string "id"`);
+    if (seenZoneIds.has(raw.id)) throw new TemplateError(`Duplicate zone id "${raw.id}"`);
+    seenZoneIds.add(raw.id);
+
+    const inline = Boolean(raw.inline && prev);
+    const x = raw.x ?? (inline ? prev.bbox.x + prev.bbox.w + tpl.gap : content.x);
+    const y = raw.y ?? (inline ? prev.bbox.y : rowBottom + (prev ? tpl.gap : 0));
+    const availW = contentRight - x;
+    const res = layoutFn(raw, ctx, x, y, availW);
+    const bbox = { x: r3(res.bbox.x), y: r3(res.bbox.y), w: r3(res.bbox.w), h: r3(res.bbox.h) };
+
+    for (const g of res.groups) {
+      if (seenKeys.has(g.key)) throw new TemplateError(`Item key "${g.key}" is defined by both "${seenKeys.get(g.key)}" and "${raw.id}"`);
+      seenKeys.set(g.key, raw.id);
+    }
+    for (const roi of res.rois) {
+      if (roi.graded && seenKeys.has(roi.key)) throw new TemplateError(`Item key "${roi.key}" is defined by both "${seenKeys.get(roi.key)}" and "${raw.id}"`);
+      if (roi.graded) seenKeys.set(roi.key, raw.id);
+    }
+
+    if (bbox.x < content.x - 0.01 || bbox.x + bbox.w > contentRight + 0.01 || bbox.y < content.y - 0.01 || bbox.y + bbox.h > contentBottom + 0.01) {
+      warnings.push(`Zone "${raw.id}" extends outside the printable content area (${r3(bbox.x)},${r3(bbox.y)} ${r3(bbox.w)}x${r3(bbox.h)} mm)`);
+    }
+    for (const other of zones) {
+      if (intersects(bbox, other.bbox)) warnings.push(`Zone "${raw.id}" overlaps zone "${other.id}"`);
+    }
+    for (const f of fiducials) {
+      const q = { x: f.x - quietZone, y: f.y - quietZone, w: size + 2 * quietZone, h: size + 2 * quietZone };
+      if (intersects(bbox, q)) warnings.push(`Zone "${raw.id}" intrudes on the quiet zone of fiducial ${f.id} (${f.corner})`);
+    }
+
+    const isTextType = raw.type === 'text' || raw.type === 'text_short' || raw.type === 'text_essay';
+    const zone = {
+      id: raw.id,
+      type: raw.type,
+      label: isTextType ? '' : String(raw.label ?? ''),
+      bbox,
+      grids: res.grids,
+      groups: res.groups,
+      rois: res.rois,
+      ...res.extra,
+    };
+    zones.push(zone);
+    rowBottom = Math.max(rowBottom, bbox.y + bbox.h);
+    prev = zone;
+  }
+
+  if (zones.filter((z) => z.type === 'student_id').length > 1) warnings.push('More than one student_id zone; only the first is used for roster matching');
+  const hasSid = zones.some((z) => z.type === 'student_id' || (z.rois && z.rois.some((r) => r.role === 'student_id')));
+  if (!hasSid) warnings.push('No student_id zone: scans cannot be matched to the roster');
+
+  const titleMaxW = page.width - 2 * (inset + size + 4);
+  return {
+    schema: LAYOUT_SCHEMA,
+    generator: GENERATOR,
+    templateId: tpl.id,
+    title: String(tpl.title ?? ''),
+    units: 'mm',
+    page,
+    content,
+    fiducial: { type: 'aruco', dictionary: tpl.fiducial.dictionary, size, inset, quietZone },
+    fiducials,
+    bubble: { ...tpl.bubble },
+    typography: { ...tpl.typography },
+    header: {
+      title: { x: r3(page.width / 2), y: r3(inset + size / 2), maxWidth: r3(titleMaxW) },
+      footer: { text: `${tpl.footer} · ${tpl.id}`, x: r3(page.width / 2), y: r3(page.height - inset - size / 2), maxWidth: r3(titleMaxW) },
+    },
+    zones,
+    warnings,
+  };
+}
+
+/** Flat list of every bubble group (student ID digits + questions) in layout order. */
+export function allGroups(layout) {
+  return layout.zones.flatMap((z) => z.groups.map((g) => ({ ...g, zoneId: z.id })));
+}
+
+/** Summary counts for UI display. */
+export function layoutStats(layout) {
+  const groups = allGroups(layout);
+  const sidZone = layout.zones.find((z) => z.type === 'student_id');
+  const sidRoi = layout.zones.flatMap((z) => z.rois ?? []).find((r) => r.role === 'student_id');
+  const idDigits = sidZone ? (sidZone.digits ?? groups.filter((g) => g.kind === 'sid').length) : (sidRoi?.digits ?? 0);
+  return {
+    questions: groups.filter((g) => g.kind !== 'sid').length,
+    bubbles: groups.reduce((n, g) => n + g.options.length, 0),
+    textRegions: layout.zones.flatMap((z) => z.rois).filter((r) => r.graded).length,
+    idDigits,
+  };
+}

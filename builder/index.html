@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Grader — Visual OMR Exam Sheet Studio</title>
+  <link rel="stylesheet" href="css/sheet.css">
+  <link rel="stylesheet" href="css/app.css">
+  <style id="page-rule">@page { size: A4; margin: 0; }</style>
+  <script type="module" src="js/app.js"></script>
+</head>
+<body>
+  <!-- Top Navigation Bar -->
+  <header class="app-header app-chrome">
+    <div class="app-brand">
+      <div class="app-brand__logo" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <circle cx="10" cy="13" r="1.5" fill="currentColor"/>
+          <circle cx="14" cy="13" r="1.5"/>
+          <circle cx="10" cy="17" r="1.5"/>
+          <polyline points="9 9 10.5 10.5 13 8"/>
+        </svg>
+      </div>
+      <div>
+        <h1 class="app-brand__title">Grader <span>Studio</span></h1>
+        <span class="app-brand__badge">Visual Exam Builder</span>
+      </div>
+    </div>
+
+    <!-- Live Exam Stats -->
+    <div class="stat-pills" id="stat-pills" aria-label="Exam statistics">
+      <div class="stat-pill" title="Total gradable questions">
+        <span class="stat-pill__label">Questions</span>
+        <strong id="stat-questions" class="stat-pill__value">0</strong>
+      </div>
+      <div class="stat-pill" title="Total points achievable">
+        <span class="stat-pill__label">Points</span>
+        <strong id="stat-points" class="stat-pill__value">0</strong>
+      </div>
+      <div class="stat-pill" title="Student ID digits">
+        <span class="stat-pill__label">ID Digits</span>
+        <strong id="stat-id-digits" class="stat-pill__value">0</strong>
+      </div>
+      <div class="stat-pill" id="stat-fill-pill" title="Vertical sheet space utilized">
+        <span class="stat-pill__label">Page Fill</span>
+        <div class="stat-fill-bar"><div id="stat-fill-bar-inner" class="stat-fill-bar__inner"></div></div>
+        <strong id="stat-fill" class="stat-pill__value">0%</strong>
+      </div>
+    </div>
+
+    <!-- Top Action Toolbar -->
+    <div class="app-header__actions">
+      <!-- Preset selector -->
+      <div class="preset-dropdown">
+        <select id="sample-preset" aria-label="Exam presets">
+          <option value="" disabled selected>Presets...</option>
+          <option value="exam-50">50 MCQ + T/F + Short Answer (A4)</option>
+          <option value="exam-100">100-Item MCQ (Letter)</option>
+          <option value="quiz-tf">Quiz: Simple + Modified T/F + Essay (Folio 8.5x13)</option>
+          <option value="blank">Blank Sheet</option>
+        </select>
+      </div>
+
+      <!-- Save & Load Exam Builds -->
+      <button type="button" id="btn-save-build" class="btn btn--secondary" title="Save current exam build to browser library">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        <span>Save Build</span>
+      </button>
+
+      <button type="button" id="btn-library" class="btn btn--secondary" title="Open saved exam builds library">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6 6h10M6 10h10"/></svg>
+        <span>Saved Builds</span>
+      </button>
+
+      <!-- CV overlay toggle -->
+      <label class="toggle-pill" title="Show CV bubble sampling centroids and OCR regions of interest">
+        <input type="checkbox" id="overlay" name="overlay">
+        <span class="toggle-pill__box"></span>
+        <span class="toggle-pill__text">CV Targets</span>
+      </label>
+
+      <!-- Download Answer Key Button -->
+      <button type="button" id="btn-dl-key" class="btn btn--accent" title="Download pre-filled answer key template (no JSON writing needed!)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 3-9.5 9.5"/><path d="m15.5 7.5 3 3M18 5l2 2"/></svg>
+        <span>Answer Key</span>
+      </button>
+
+      <!-- Print Sheet Primary Button -->
+      <button type="button" id="btn-print" class="btn btn--primary" title="Print physical exam sheet at 100% millimeter-accurate scale">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
+        <span>Print Sheet</span>
+      </button>
+
+      <!-- Export Dropdown -->
+      <div class="dropdown-menu">
+        <button type="button" id="btn-export-toggle" class="btn btn--secondary" aria-haspopup="true" aria-expanded="false" title="Export files for grading and vector printing">
+          <span>Export</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <div class="dropdown-menu__content" id="export-dropdown-content">
+          <button type="button" id="dl-svg">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/></svg>
+            Download SVG Vector
+          </button>
+          <button type="button" id="dl-html">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+            Download Printable HTML
+          </button>
+          <button type="button" id="dl-layout">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="8" height="8" x="2" y="2" rx="1"/><rect width="8" height="8" x="14" y="2" rx="1"/><rect width="8" height="8" x="2" y="14" rx="1"/><rect width="8" height="8" x="14" y="14" rx="1"/></svg>
+            Download layout.json (CV coordinates)
+          </button>
+          <button type="button" id="dl-template">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Export Build File (.grader.json)
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Studio Main Layout -->
+  <div class="app-layout">
+    <!-- Left Sidebar: Builder Studio Controls -->
+    <aside class="panel studio-sidebar app-chrome" aria-label="Exam Builder Sidebar">
+      <!-- Exam Global Card: Title & Paper Size -->
+      <div class="exam-global-card">
+        <label for="exam-title-input" class="visually-hidden">Exam Title</label>
+        <div class="input-with-icon">
+          <svg class="input-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          <input type="text" id="exam-title-input" class="exam-title-input" placeholder="Exam Title (e.g., Biology Midterm)" value="General Examination">
+        </div>
+
+        <div class="paper-selector-row">
+          <label for="paper-select" class="field-label">Paper Size:</label>
+          <select id="paper-select" class="paper-dropdown" aria-label="Paper Size">
+            <option value="A4">A4 (210 × 297 mm)</option>
+            <option value="Letter">US Letter (8.5 × 11 in)</option>
+            <option value="Folio" selected>Folio (8.5 × 13 in / 215.9 × 330.2 mm)</option>
+            <option value="Half-A4">Half A4 / A5 (148.5 × 210 mm)</option>
+            <option value="Half-Letter">Half Letter (5.5 × 8.5 in)</option>
+            <option value="Half-Folio">Half Folio (6.5 × 8.5 in)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Studio Tab Navigation -->
+      <nav class="studio-tabs" aria-label="Sidebar Sections">
+        <button type="button" class="studio-tab-btn is-active" data-tab="palette">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          <span>Add Blocks</span>
+        </button>
+        <button type="button" class="studio-tab-btn" data-tab="inspector">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <span>Settings</span>
+        </button>
+        <button type="button" class="studio-tab-btn" data-tab="outline">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          <span>Outline</span>
+        </button>
+      </nav>
+
+      <!-- Tab Content 1: Component Palette (Draggable Cards) -->
+      <div class="studio-tab-panel is-active" id="panel-palette">
+        <p class="panel-hint">Drag any card onto the exam sheet, or click <strong>+ Add</strong> to place it at the end.</p>
+        <div class="palette-grid">
+          <!-- Student Info Card (with integrated Student ID digit boxes) -->
+          <div class="palette-card" draggable="true" data-type="fields">
+            <div class="palette-card__icon">📝</div>
+            <div class="palette-card__body">
+              <h3 class="palette-card__title">Student Info &amp; ID</h3>
+              <p class="palette-card__desc">Name, Student ID digit boxes, Score box, Date &amp; Section</p>
+            </div>
+            <button type="button" class="btn-palette-add" title="Add Student Info to sheet">+ Add</button>
+          </div>
+
+          <!-- Multiple Choice Card -->
+          <div class="palette-card" draggable="true" data-type="mcq">
+            <div class="palette-card__icon">🔘</div>
+            <div class="palette-card__body">
+              <h3 class="palette-card__title">Multiple Choice (MCQ)</h3>
+              <p class="palette-card__desc">A–D / A–E bubble questions in 1 to 5 columns</p>
+            </div>
+            <button type="button" class="btn-palette-add" title="Add Multiple Choice to sheet">+ Add</button>
+          </div>
+
+          <!-- Simple True / False Card -->
+          <div class="palette-card" draggable="true" data-type="truefalse">
+            <div class="palette-card__icon">⚖️</div>
+            <div class="palette-card__body">
+              <h3 class="palette-card__title">Simple True / False</h3>
+              <p class="palette-card__desc">Standard T / F choice bubbles</p>
+            </div>
+            <button type="button" class="btn-palette-add" title="Add Simple True/False to sheet">+ Add</button>
+          </div>
+
+          <!-- Modified True / False Card -->
+          <div class="palette-card" draggable="true" data-type="modified_tf">
+            <div class="palette-card__icon">✍️⚖️</div>
+            <div class="palette-card__body">
+              <h3 class="palette-card__title">Modified True / False</h3>
+              <p class="palette-card__desc">T / F bubbles + write-in box to correct if false</p>
+            </div>
+            <button type="button" class="btn-palette-add" title="Add Modified True/False to sheet">+ Add</button>
+          </div>
+
+          <!-- Short Answer Card -->
+          <div class="palette-card" draggable="true" data-type="text_short">
+            <div class="palette-card__icon">✏️</div>
+            <div class="palette-card__body">
+              <h3 class="palette-card__title">Short Answer</h3>
+              <p class="palette-card__desc">Compact single-term / definition write-in box</p>
+            </div>
+            <button type="button" class="btn-palette-add" title="Add Short Answer to sheet">+ Add</button>
+          </div>
+
+          <!-- Essay / Long Answer Card -->
+          <div class="palette-card" draggable="true" data-type="text_essay">
+            <div class="palette-card__icon">📄</div>
+            <div class="palette-card__body">
+              <h3 class="palette-card__title">Essay / Long Answer</h3>
+              <p class="palette-card__desc">Multi-line extended explanation / proof box</p>
+            </div>
+            <button type="button" class="btn-palette-add" title="Add Essay Answer to sheet">+ Add</button>
+          </div>
+
+          <!-- Instructions Card -->
+          <div class="palette-card" draggable="true" data-type="instructions">
+            <div class="palette-card__icon">ℹ️</div>
+            <div class="palette-card__body">
+              <h3 class="palette-card__title">Instructions &amp; Notes</h3>
+              <p class="palette-card__desc">Guidelines banner for student directions</p>
+            </div>
+            <button type="button" class="btn-palette-add" title="Add Instructions to sheet">+ Add</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab Content 2: Block Inspector -->
+      <div class="studio-tab-panel" id="panel-inspector">
+        <div id="inspector-content" class="inspector-form">
+          <!-- Populated dynamically by app.js based on selected zone -->
+          <div class="empty-inspector">
+            <div class="empty-inspector__icon">👆</div>
+            <h3 class="empty-inspector__title">No Block Selected</h3>
+            <p class="empty-inspector__desc">Click on any section of the exam sheet or choose a block from the <strong>Outline</strong> tab to customize its properties.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab Content 3: Exam Outline (Layer List) -->
+      <div class="studio-tab-panel" id="panel-outline">
+        <p class="panel-hint">Reorder blocks by dragging the ⠿ handle or using the arrow buttons.</p>
+        <div class="outline-list" id="outline-list">
+          <!-- Populated dynamically by app.js -->
+        </div>
+      </div>
+
+      <!-- Advanced Drawer (Raw JSON & Developer Tools - Collapsed by default) -->
+      <details class="advanced-drawer" id="advanced-drawer">
+        <summary class="advanced-drawer__summary">
+          <span>Advanced (Raw JSON &amp; Files)</span>
+          <svg class="chevron-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg>
+        </summary>
+        <div class="advanced-drawer__body">
+          <label for="template-file-input">Open Build File (.json / .grader):</label>
+          <input type="file" id="template-file-input" accept="application/json,.json,.grader">
+
+          <label for="raw-json-textarea">Template JSON Payload:</label>
+          <textarea id="raw-json-textarea" rows="10" spellcheck="false" autocomplete="off"></textarea>
+          <output id="json-status" class="json-status" aria-live="polite"></output>
+          <ul id="warnings-list" class="warnings-list" aria-live="polite"></ul>
+        </div>
+      </details>
+    </aside>
+
+    <!-- Center Workspace: Interactive Sheet Canvas -->
+    <main class="preview" id="preview" aria-label="Sheet preview canvas">
+      <!-- Canvas Controls Bar -->
+      <div class="canvas-bar app-chrome">
+        <div class="zoom-controls">
+          <button type="button" id="btn-zoom-out" class="btn-icon" title="Zoom out">−</button>
+          <span id="zoom-label" class="zoom-label">100%</span>
+          <button type="button" id="btn-zoom-in" class="btn-icon" title="Zoom in">+</button>
+          <button type="button" id="btn-zoom-fit" class="btn-chip" title="Fit to window">Fit</button>
+          <button type="button" id="btn-zoom-reset" class="btn-chip" title="Actual size">100%</button>
+        </div>
+
+        <div class="paper-badge" id="paper-badge">Folio · 215.9 × 330.2 mm</div>
+
+        <div class="render-mode-toggle" role="radiogroup" aria-label="Render Mode">
+          <button type="button" class="render-mode-btn is-active" data-mode="dom" title="DOM CSS Grid (Printable)">DOM</button>
+          <button type="button" class="render-mode-btn" data-mode="svg" title="Scalable Vector Graphics">SVG</button>
+        </div>
+      </div>
+
+      <!-- Sheet Scaler Frame -->
+      <div class="preview__frame" id="frame">
+        <!-- Rendered sheet will be placed here -->
+      </div>
+    </main>
+  </div>
+
+  <!-- Saved Builds Library Modal Dialog -->
+  <dialog class="modal-dialog app-chrome" id="modal-library">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title">Saved Exam Builds Library</h2>
+        <button type="button" class="btn-close-modal" id="btn-close-library" aria-label="Close">✕</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-desc">All exam builds saved in your browser. You can load, export, or delete them anytime.</p>
+        <div class="saved-builds-list" id="saved-builds-list">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="btn-import-file-trigger" class="btn btn--secondary">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Import Build File (.json)
+        </button>
+        <button type="button" id="btn-modal-close" class="btn btn--primary">Done</button>
+      </div>
+    </div>
+  </dialog>
+</body>
+</html>

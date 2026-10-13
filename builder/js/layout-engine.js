@@ -472,7 +472,7 @@ function layoutText(zone, ctx, x, y, availW) {
     boxX = x + PAD + labelW;
     boxW = innerW - labelW;
   } else if (prompt) {
-    const promptLines = estimateLines(`${prompt} (${points} pts)`, typography.label, innerW);
+    const promptLines = estimateLines(prompt, typography.label, innerW);
     promptH = promptLines * typography.label * LINE_HEIGHT;
     boxY = y + PAD + promptH + 1.2;
   }

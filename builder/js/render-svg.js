@@ -103,7 +103,7 @@ function zoneSVG(zone, layout) {
     if (zone.isInline && zone.prompt) {
       out.push(text(b.x + 2.5, roi.y + roi.h / 2, zone.prompt, { size: typography.label, weight: 700 }));
     } else if (zone.prompt) {
-      const lines = wrap(`${zone.prompt} (${zone.points} pt${zone.points === 1 ? '' : 's'})`, typography.label, roi.w);
+      const lines = wrap(zone.prompt, typography.label, roi.w);
       lines.forEach((line, i) => out.push(text(roi.x, b.y + 2.5 + (i + 0.5) * typography.label * 1.3, line, { size: typography.label })));
     }
     out.push(`<rect data-roi="${esc(roi.id)}" x="${f(roi.x + 0.15)}" y="${f(roi.y + 0.15)}" width="${f(roi.w - 0.3)}" height="${f(roi.h - 0.3)}" fill="none" stroke="#000" stroke-width="0.3"/>`);

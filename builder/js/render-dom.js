@@ -180,8 +180,6 @@ function zoneNode(zone, layout, index = 0) {
           'div',
           { class: 'omr-prompt', style: box(roi.x, b.y + 2.5, roi.w, Math.max(promptH, 0)) },
           zone.prompt,
-          ' ',
-          h('span', { class: 'omr-points' }, `(${zone.points} pt${zone.points === 1 ? '' : 's'})`),
         ),
       );
     }

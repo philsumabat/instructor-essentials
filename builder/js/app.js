@@ -50,6 +50,8 @@ function initElements() {
     btnModalClose: $('#btn-modal-close'),
     savedBuildsList: $('#saved-builds-list'),
     btnImportFileTrigger: $('#btn-import-file-trigger'),
+    btnViewToggle: $('#btn-view-toggle'),
+    viewDropdownContent: $('#view-dropdown-content'),
     overlay: $('#overlay'),
     btnDlKey: $('#btn-dl-key'),
     btnPrint: $('#btn-print'),
@@ -61,7 +63,7 @@ function initElements() {
       layout: $('#dl-layout'),
       template: $('#dl-template'),
     },
-    // Generator Dialog
+    // Generator Dialog & Live Preview
     btnGenerator: $('#btn-generator'),
     modalGenerator: $('#modal-generator'),
     btnCloseGenerator: $('#btn-close-generator'),
@@ -73,6 +75,25 @@ function initElements() {
     genInstructions: $('#gen-instructions'),
     genPartsList: $('#gen-parts-list'),
     btnGenAddPart: $('#btn-gen-add-part'),
+    genPreviewPaperLabel: $('#gen-preview-paper-label'),
+    genStatQuestions: $('#gen-stat-questions'),
+    genStatPoints: $('#gen-stat-points'),
+    genStatFill: $('#gen-stat-fill'),
+    genWireframe: $('#gen-wireframe'),
+    // Answer Key Modal
+    modalAnswerKey: $('#modal-answer-key'),
+    btnCloseAnswerKey: $('#btn-close-answer-key'),
+    keyMetricCount: $('#key-metric-count'),
+    keyMetricPoints: $('#key-metric-points'),
+    keyPassingInput: $('#key-passing-input'),
+    btnKeyFillA: $('#btn-key-fill-a'),
+    btnKeyFillT: $('#btn-key-fill-t'),
+    btnKeyRandom: $('#btn-key-random'),
+    btnKeyClear: $('#btn-key-clear'),
+    keyFileImport: $('#key-file-import'),
+    keyItemsContainer: $('#key-items-container'),
+    btnKeyDownload: $('#btn-key-download'),
+    btnKeySaveApply: $('#btn-key-save-apply'),
     // Tab navigation
     tabBtns: $$('.studio-tab-btn'),
     tabPanels: {
@@ -163,6 +184,7 @@ function createDefaultZone(type) {
         digits: 8,
         shading: true,
         boxHeight: 7.5,
+        w: availW,
       };
 
     case 'fields':
@@ -212,7 +234,7 @@ function createDefaultZone(type) {
       return {
         type: 'modified_tf',
         id: uid('mod_tf'),
-        label: 'Modified True / False (Write correction if False)',
+        label: 'Modified True / False',
         count: 5,
         start: nextQ,
         choices: ['T', 'F'],
@@ -227,7 +249,7 @@ function createDefaultZone(type) {
       return {
         type: type === 'text' ? 'text' : 'text_short',
         id: uid('q'),
-        label: `${nextQ}. Short Answer Question`,
+        label: `${nextQ}.`,
         boxHeight: 12,
         points: 2,
         charset: 'any',
@@ -238,7 +260,7 @@ function createDefaultZone(type) {
       return {
         type: 'text_essay',
         id: uid('q'),
-        label: `${nextQ}. Essay Question / Discussion Prompt`,
+        label: `${nextQ}.`,
         boxHeight: 45,
         points: 5,
         charset: 'any',
@@ -797,11 +819,6 @@ function renderInspector() {
       </div>
 
       <div class="form-group">
-        <label class="form-label">ID Digits</label>
-        <div style="font-size: 0.82rem; font-weight: 600; color: var(--text-muted); padding: 0.35rem 0.5rem; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); display: inline-block;">8 Digits (Standardized)</div>
-      </div>
-
-      <div class="form-group">
         <label class="form-label">Recognition Mode</label>
         <div class="pills-group" id="insp-sid-mode">
           <button type="button" class="pill-btn ${isShading ? 'is-active' : ''}" data-mode="shading">Bubble Grid (OMR)</button>
@@ -818,21 +835,6 @@ function renderInspector() {
       <div class="form-group">
         <label class="form-label" for="insp-label">Section Title</label>
         <input type="text" id="insp-label" class="form-input" value="${zone.label || ''}" placeholder="(Leave blank to hide heading)">
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">Columns</label>
-        <div class="pills-group" id="insp-fields-cols">
-          <button type="button" class="pill-btn ${(zone.columns || 3) === 1 ? 'is-active' : ''}" data-cols="1">1 Col</button>
-          <button type="button" class="pill-btn ${(zone.columns || 3) === 2 ? 'is-active' : ''}" data-cols="2">2 Cols</button>
-          <button type="button" class="pill-btn ${(zone.columns || 3) === 3 ? 'is-active' : ''}" data-cols="3">3 Cols</button>
-          <button type="button" class="pill-btn ${(zone.columns || 3) === 4 ? 'is-active' : ''}" data-cols="4">4 Cols</button>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">Student ID Digits</label>
-        <div style="font-size: 0.82rem; font-weight: 600; color: var(--text-muted); padding: 0.35rem 0.5rem; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); display: inline-block;">8 Digits (Standardized)</div>
       </div>
 
       <div class="form-group">
@@ -866,15 +868,6 @@ function renderInspector() {
             <input type="checkbox" id="field-sig" ${hasField('signature') ? 'checked' : ''}>
             <span>Signature</span>
           </label>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">Module Page Placement</label>
-        <div class="pills-group" id="insp-placement-pills">
-          <button type="button" class="pill-btn ${(!zone.layout && !zone.side && !zone.inline) || zone.layout === 'full' ? 'is-active' : ''}" data-placement="full">Full Width</button>
-          <button type="button" class="pill-btn ${zone.layout === 'half-left' || zone.side === 'left' ? 'is-active' : ''}" data-placement="left">Side-by-Side (Left)</button>
-          <button type="button" class="pill-btn ${zone.layout === 'half-right' || zone.side === 'right' || zone.inline ? 'is-active' : ''}" data-placement="right">Side-by-Side (Right)</button>
         </div>
       </div>
     `;
@@ -1088,13 +1081,11 @@ function bindInspectorEvents(zone) {
     });
   }
 
-  // Fields columns selector
-  const fieldsColPills = $$('#insp-fields-cols .pill-btn');
-  for (const pill of fieldsColPills) {
-    pill.addEventListener('click', () => {
-      zone.columns = parseInt(pill.dataset.cols, 10) || 3;
-      update();
-    });
+  if (zone.type === 'fields' || zone.type === 'student_id') {
+    delete zone.columns;
+    delete zone.layout;
+    delete zone.side;
+    delete zone.inline;
   }
 
   if (zone.type === 'student_id') {
@@ -1359,52 +1350,224 @@ function update() {
   }
 }
 
-// ---- Generate & Download Pre-Filled Answer Key ----
-function downloadAnswerKey() {
+// ---- Modal Open/Close Utilities ----
+function openModal(modalEl) {
+  if (!modalEl) return;
+  if (typeof modalEl.showModal === 'function') {
+    try {
+      modalEl.showModal();
+      return;
+    } catch {}
+  }
+  modalEl.setAttribute('open', '');
+}
+
+function closeModal(modalEl) {
+  if (!modalEl) return;
+  if (typeof modalEl.close === 'function') {
+    try {
+      modalEl.close();
+      return;
+    } catch {}
+  }
+  modalEl.removeAttribute('open');
+}
+
+// ---- Interactive Answer Key Editor UI ----
+const currentAnswerKey = {
+  items: {},
+  passScore: 0,
+};
+
+function getActiveAnswerKeyPayload() {
+  const layout = state.layout;
+  if (!layout) return null;
+  let totalPoints = 0;
+  for (const item of Object.values(currentAnswerKey.items)) {
+    totalPoints += Number(item.points || 1);
+  }
+  return {
+    title: `${layout.title || 'Exam'} Answer Key`,
+    templateId: layout.templateId,
+    exam_id: layout.templateId,
+    total_points: totalPoints,
+    pass_score: currentAnswerKey.passScore || Math.round(totalPoints * 0.6),
+    items: currentAnswerKey.items,
+  };
+}
+
+function downloadCurrentAnswerKey() {
+  const payload = getActiveAnswerKeyPayload();
+  if (!payload) return;
+  download(`${state.layout?.templateId || 'exam'}-answer-key.json`, `${JSON.stringify(payload, null, 2)}\n`, 'application/json');
+}
+
+function openAnswerKeyModal() {
   const layout = state.layout;
   if (!layout) return;
 
-  const items = {};
-  let totalPoints = 0;
+  currentAnswerKey.items = {};
+  const existingKey = state.template?.answerKey?.items || {};
 
   // 1. MCQ and True/False bubbles
   for (const g of allGroups(layout)) {
     if (g.kind === 'mcq' || g.kind === 'tf') {
-      const defaultAnswer = g.options[0]?.value || (g.kind === 'tf' ? 'T' : 'A');
-      const pts = g.points || 1.0;
-      items[g.key] = {
-        answer: defaultAnswer,
-        points: pts,
+      const existing = existingKey[g.key];
+      const defaultAns = g.options[0]?.value || (g.kind === 'tf' ? 'T' : 'A');
+      currentAnswerKey.items[g.key] = {
+        answer: existing ? existing.answer : defaultAns,
+        points: existing ? Number(existing.points || 1) : Number(g.points || 1),
         kind: g.kind,
+        options: g.options.map((o) => o.value),
+        label: g.label || g.key,
       };
-      totalPoints += pts;
     }
   }
 
-  // 2. Graded handwriting OCR boxes
+  // 2. Graded handwriting OCR boxes (modified_tf correction, short answer, essay)
   for (const roi of layout.zones.flatMap((z) => z.rois)) {
     if (roi.graded) {
-      const pts = roi.points || 1.0;
-      items[roi.key] = {
-        answer: ['SAMPLE_ANSWER'],
-        points: pts,
+      const existing = existingKey[roi.key];
+      currentAnswerKey.items[roi.key] = {
+        answer: existing ? existing.answer : (roi.role === 'correction' ? 'Correction' : 'Sample Answer'),
+        points: existing ? Number(existing.points || 1) : Number(roi.points || 1),
         kind: 'text',
         rubric: roi.charset === 'digits' ? 'exact' : 'case_insensitive',
+        label: roi.label || roi.key,
       };
-      totalPoints += pts;
     }
   }
 
-  const answerKeyPayload = {
-    title: layout.title || 'Answer Key',
-    templateId: layout.templateId,
-    exam_id: layout.templateId,
-    total_points: totalPoints,
-    pass_score: Math.round(totalPoints * 0.6),
-    items,
-  };
+  const totalPoints = Object.values(currentAnswerKey.items).reduce((s, it) => s + Number(it.points || 1), 0);
+  currentAnswerKey.passScore = state.template?.answerKey?.pass_score ?? Math.round(totalPoints * 0.6);
 
-  download(`${layout.templateId}-answer-key.json`, `${JSON.stringify(answerKeyPayload, null, 2)}\n`, 'application/json');
+  renderAnswerKeyModalContent();
+  openModal(els.modalAnswerKey);
+}
+
+function renderAnswerKeyModalContent() {
+  if (!els.keyItemsContainer) return;
+  const layout = state.layout;
+  if (!layout) return;
+
+  const totalItems = Object.keys(currentAnswerKey.items).length;
+  let totalPoints = 0;
+  for (const it of Object.values(currentAnswerKey.items)) {
+    totalPoints += Number(it.points || 1);
+  }
+
+  if (els.keyMetricCount) els.keyMetricCount.textContent = String(totalItems);
+  if (els.keyMetricPoints) els.keyMetricPoints.textContent = String(totalPoints);
+  if (els.keyPassingInput) {
+    els.keyPassingInput.value = currentAnswerKey.passScore;
+  }
+
+  if (totalItems === 0) {
+    els.keyItemsContainer.innerHTML = `
+      <div class="empty-library">
+        <p>No gradable questions found on the current exam sheet.</p>
+        <p class="empty-sub">Add Multiple Choice, True/False, or Short Answer blocks from the palette to configure correct answers.</p>
+      </div>
+    `;
+    return;
+  }
+
+  let html = '';
+  for (const zone of layout.zones) {
+    const zoneGroups = zone.groups.filter((g) => g.kind === 'mcq' || g.kind === 'tf');
+    const zoneRois = (zone.rois || []).filter((r) => r.graded);
+
+    if (zoneGroups.length === 0 && zoneRois.length === 0) continue;
+
+    html += `
+      <div class="key-section-card">
+        <h4 class="key-section-title">${escapeHTML(zone.label || zone.type.toUpperCase())}</h4>
+        <div class="key-matrix-grid">
+    `;
+
+    for (const g of zoneGroups) {
+      const item = currentAnswerKey.items[g.key];
+      if (!item) continue;
+      const opts = item.options || ['A', 'B', 'C', 'D'];
+      const currentAns = String(item.answer || '');
+
+      html += `
+        <div class="key-item-cell" data-key="${g.key}">
+          <span class="key-item-num">${g.key}.</span>
+          <div class="key-bubbles-row">
+            ${opts
+              .map((opt) => `
+                <button type="button" class="key-bubble-btn ${currentAns === opt ? 'is-active' : ''}" data-key="${g.key}" data-val="${opt}">${opt}</button>
+              `)
+              .join('')}
+          </div>
+          <input type="number" class="key-pts-input" data-key="${g.key}" value="${item.points}" min="1" max="50" title="Points">
+        </div>
+      `;
+    }
+
+    for (const roi of zoneRois) {
+      const item = currentAnswerKey.items[roi.key];
+      if (!item) continue;
+      const ansVal = Array.isArray(item.answer) ? item.answer.join(', ') : String(item.answer || '');
+
+      html += `
+        <div class="key-item-cell" data-key="${roi.key}" style="grid-column: 1 / -1; display: flex; gap: 0.5rem;">
+          <span class="key-item-num">${escapeHTML(item.label || roi.key)}:</span>
+          <input type="text" class="key-text-input" data-key="${roi.key}" value="${escapeHTML(ansVal)}" placeholder="Accepted answer">
+          <input type="number" class="key-pts-input" data-key="${roi.key}" value="${item.points}" min="1" max="50" title="Points">
+        </div>
+      `;
+    }
+
+    html += `
+        </div>
+      </div>
+    `;
+  }
+
+  els.keyItemsContainer.innerHTML = html;
+
+  // Bind bubble clicks
+  els.keyItemsContainer.querySelectorAll('.key-bubble-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const k = btn.dataset.key;
+      const val = btn.dataset.val;
+      if (currentAnswerKey.items[k]) {
+        currentAnswerKey.items[k].answer = val;
+        renderAnswerKeyModalContent();
+      }
+    });
+  });
+
+  // Bind points input changes
+  els.keyItemsContainer.querySelectorAll('.key-pts-input').forEach((input) => {
+    input.addEventListener('input', () => {
+      const k = input.dataset.key;
+      const pts = Math.max(1, parseFloat(input.value) || 1);
+      if (currentAnswerKey.items[k]) {
+        currentAnswerKey.items[k].points = pts;
+        let newTotal = 0;
+        for (const it of Object.values(currentAnswerKey.items)) newTotal += Number(it.points || 1);
+        if (els.keyMetricPoints) els.keyMetricPoints.textContent = String(newTotal);
+      }
+    });
+  });
+
+  // Bind text answer changes
+  els.keyItemsContainer.querySelectorAll('.key-text-input').forEach((input) => {
+    input.addEventListener('input', () => {
+      const k = input.dataset.key;
+      if (currentAnswerKey.items[k]) {
+        currentAnswerKey.items[k].answer = input.value.trim();
+      }
+    });
+  });
+}
+
+// Pre-fill answer key download helper (for backwards compatibility)
+function downloadAnswerKey() {
+  openAnswerKeyModal();
 }
 
 // ---- Load Template Helper ----
@@ -1428,8 +1591,8 @@ async function loadSample(urlOrKey) {
       return;
     }
   } catch {}
-  // Reliable instant fallback
-  await loadTemplate(JSON.parse(JSON.stringify(SAMPLE_TEMPLATES['exam-50'])));
+  // Reliable instant fallback to Blank Sheet
+  await loadTemplate(JSON.parse(JSON.stringify(SAMPLE_TEMPLATES['blank'])));
 }
 
 // ---- Saved Exam Builds Feature ----
@@ -1504,7 +1667,7 @@ function renderSavedBuildsList() {
       const b = getSavedBuilds().find((x) => x.id === id);
       if (b && b.template) {
         await loadTemplate(JSON.parse(JSON.stringify(b.template)));
-        els.modalLibrary?.close();
+        closeModal(els.modalLibrary);
       }
     });
   });
@@ -1522,8 +1685,10 @@ function renderSavedBuildsList() {
   listEl.querySelectorAll('.btn-delete-build').forEach((btn) => {
     btn.addEventListener('click', () => {
       const id = btn.dataset.buildId;
-      deleteBuildFromLibrary(id);
-      renderSavedBuildsList();
+      if (confirm('Delete this exam build from your library?')) {
+        deleteBuildFromLibrary(id);
+        renderSavedBuildsList();
+      }
     });
   });
 }
@@ -1727,22 +1892,195 @@ function renderGeneratorParts() {
 
     // Input listeners
     const countInput = card.querySelector('.part-input-count');
-    if (countInput) countInput.addEventListener('input', () => { part.count = Math.max(1, parseInt(countInput.value, 10) || 1); });
+    if (countInput) {
+      countInput.addEventListener('input', () => {
+        part.count = Math.max(1, parseInt(countInput.value, 10) || 1);
+        updateGeneratorLivePreview();
+      });
+    }
 
     const choicesSelect = card.querySelector('.part-select-choices');
-    if (choicesSelect) choicesSelect.addEventListener('change', () => { part.choices = choicesSelect.value; });
+    if (choicesSelect) {
+      choicesSelect.addEventListener('change', () => {
+        part.choices = choicesSelect.value;
+        updateGeneratorLivePreview();
+      });
+    }
 
     const colsSelect = card.querySelector('.part-select-cols');
-    if (colsSelect) colsSelect.addEventListener('change', () => { part.cols = colsSelect.value; });
+    if (colsSelect) {
+      colsSelect.addEventListener('change', () => {
+        part.cols = colsSelect.value;
+        updateGeneratorLivePreview();
+      });
+    }
 
     const ptsInput = card.querySelector('.part-input-pts');
-    if (ptsInput) ptsInput.addEventListener('input', () => { part.pts = Math.max(1, parseFloat(ptsInput.value) || 1); });
+    if (ptsInput) {
+      ptsInput.addEventListener('input', () => {
+        part.pts = Math.max(1, parseFloat(ptsInput.value) || 1);
+        updateGeneratorLivePreview();
+      });
+    }
 
     const heightInput = card.querySelector('.part-input-height');
-    if (heightInput) heightInput.addEventListener('input', () => { part.boxHeight = Math.max(6, parseInt(heightInput.value, 10) || 12); });
+    if (heightInput) {
+      heightInput.addEventListener('input', () => {
+        part.boxHeight = Math.max(6, parseInt(heightInput.value, 10) || 12);
+        updateGeneratorLivePreview();
+      });
+    }
 
     els.genPartsList.appendChild(card);
   });
+
+  updateGeneratorLivePreview();
+}
+
+// ---- Live Exam Generator Preview ----
+function updateGeneratorLivePreview() {
+  if (!els.genWireframe) return;
+  const paper = els.genPaper?.value || 'A4';
+  const paperSpec = PAPER_SIZES[paper] || PAPER_SIZES['A4'];
+  const title = (els.genTitle?.value || '').trim() || 'EXAMINATION';
+  const sidMode = els.genSidMode?.value || 'fields';
+  const includeInstructions = els.genInstructions ? els.genInstructions.checked : true;
+
+  if (els.genPreviewPaperLabel) {
+    els.genPreviewPaperLabel.textContent = `${paper} · ${paperSpec.width} × ${paperSpec.height} mm`;
+  }
+
+  const toRoman = (n) => ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'][n - 1] || String(n);
+
+  let totalQuestions = 0;
+  let totalPoints = 0;
+  let estimatedHeight = 24 + 12; // margins & fiducials
+
+  let wfHtml = '';
+
+  // 1. Header wireframe
+  wfHtml += `
+    <div class="wf-header-block">
+      <div class="wf-title-text">${escapeHTML(title)}</div>
+      <div class="wf-details-row">
+        <span>Name: ______________________</span>
+        <span>ID: [ 8 Digits ]</span>
+      </div>
+      <div class="wf-details-row">
+        <span>Offer No. _______</span>
+        <span>Sched _______</span>
+        <span>Score: [____]</span>
+      </div>
+    </div>
+  `;
+  estimatedHeight += 24;
+
+  if (sidMode === 'grid') {
+    wfHtml += `
+      <div class="wf-section-block">
+        <div class="wf-sec-title"><span>Student ID (8 Digits)</span><span class="wf-sec-badge">OMR Shading Grid</span></div>
+        <div style="font-size: 0.65rem; color: #64748b; text-align: center;">[ 8 Columns × 10 Rows Bubble Matrix ]</div>
+      </div>
+    `;
+    estimatedHeight += 48;
+  }
+
+  // 2. Instructions wireframe
+  if (includeInstructions) {
+    wfHtml += `
+      <div style="font-size: 0.65rem; color: #64748b; border: 1px dashed #cbd5e1; border-radius: 3px; padding: 0.25rem 0.4rem; background: #f8fafc;">
+        Instructions: Shade bubbles completely with dark pencil. Print write-in answers clearly.
+      </div>
+    `;
+    estimatedHeight += 10;
+  }
+
+  // 3. Sections wireframe
+  let curQ = 1;
+  generatorParts.forEach((part, idx) => {
+    const roman = toRoman(idx + 1);
+    const count = Math.max(1, part.count || 1);
+    const pts = Math.max(1, part.pts || 1);
+    totalQuestions += count;
+    totalPoints += count * pts;
+
+    const startQ = curQ;
+    const endQ = curQ + count - 1;
+    curQ += count;
+
+    let secTypeName = 'Multiple Choice';
+    let sampleBadges = '';
+
+    if (part.type === 'mcq') {
+      secTypeName = `Multiple Choice (${part.choices || 'ABCD'})`;
+      const numChoices = (part.choices || 'ABCD').length;
+      estimatedHeight += Math.ceil(count / 2) * 5.4 + 10;
+      sampleBadges = `
+        <div class="wf-bubbles-matrix">
+          <div class="wf-item-row">${startQ}. ${Array(numChoices).fill('<span class="wf-dot"></span>').join('')}</div>
+          ${count > 1 ? `<div class="wf-item-row">${startQ + 1}. ${Array(numChoices).fill('<span class="wf-dot"></span>').join('')}</div>` : ''}
+          ${count > 2 ? `<div class="wf-item-row">...</div><div class="wf-item-row">${endQ}. ${Array(numChoices).fill('<span class="wf-dot"></span>').join('')}</div>` : ''}
+        </div>
+      `;
+    } else if (part.type === 'truefalse') {
+      secTypeName = 'True / False';
+      estimatedHeight += Math.ceil(count / 2) * 5.4 + 10;
+      sampleBadges = `
+        <div class="wf-bubbles-matrix">
+          <div class="wf-item-row">${startQ}. <span class="wf-dot"></span> <span class="wf-dot"></span></div>
+          ${count > 1 ? `<div class="wf-item-row">${startQ + 1}. <span class="wf-dot"></span> <span class="wf-dot"></span></div>` : ''}
+          ${count > 2 ? `<div class="wf-item-row">...</div><div class="wf-item-row">${endQ}. <span class="wf-dot"></span> <span class="wf-dot"></span></div>` : ''}
+        </div>
+      `;
+    } else if (part.type === 'modified_tf') {
+      secTypeName = 'Modified True / False';
+      estimatedHeight += count * 7.5 + 10;
+      sampleBadges = `
+        <div class="wf-bubbles-matrix">
+          <div class="wf-item-row">${startQ}. <span class="wf-dot"></span> <span class="wf-dot"></span> [ Correction Box ]</div>
+          ${count > 1 ? `<div class="wf-item-row">... ${count} items total</div>` : ''}
+        </div>
+      `;
+    } else if (part.type === 'text_short') {
+      secTypeName = 'Short Answer';
+      estimatedHeight += count * ((part.boxHeight || 12) + 4);
+      sampleBadges = `
+        <div class="wf-bubbles-matrix">
+          <div class="wf-item-row">${startQ}. [ Written Box · ${part.boxHeight || 12}mm ]</div>
+          ${count > 1 ? `<div class="wf-item-row">... ${count} items total</div>` : ''}
+        </div>
+      `;
+    } else if (part.type === 'text_essay') {
+      secTypeName = 'Essay / Discussion';
+      estimatedHeight += count * ((part.boxHeight || 36) + 4);
+      sampleBadges = `
+        <div class="wf-bubbles-matrix">
+          <div class="wf-item-row">${startQ}. [ Essay Box · ${part.boxHeight || 36}mm ]</div>
+        </div>
+      `;
+    }
+
+    wfHtml += `
+      <div class="wf-section-block">
+        <div class="wf-sec-title">
+          <span>Part ${roman} — ${secTypeName} (${count} item${count > 1 ? 's' : ''})</span>
+          <span class="wf-sec-badge">${pts} pt${pts > 1 ? 's' : ''} each</span>
+        </div>
+        ${sampleBadges}
+      </div>
+    `;
+  });
+
+  const fillPct = Math.min(100, Math.round((estimatedHeight / paperSpec.height) * 100));
+
+  if (els.genStatQuestions) els.genStatQuestions.textContent = String(totalQuestions);
+  if (els.genStatPoints) els.genStatPoints.textContent = String(totalPoints);
+  if (els.genStatFill) {
+    els.genStatFill.textContent = `${fillPct}%`;
+    els.genStatFill.style.color = fillPct > 95 ? 'var(--danger)' : fillPct > 80 ? 'var(--warning)' : 'var(--text)';
+  }
+
+  els.genWireframe.innerHTML = wfHtml;
 }
 
 // ---- Exam Generator Logic ----
@@ -1827,7 +2165,7 @@ function generateExamFromGeneratorModal() {
       zones.push({
         type: 'mcq',
         id: uid('mcq'),
-        label: `Part ${roman} — Multiple Choice (${currentQ}–${currentQ + count - 1})`,
+        label: `Part ${roman} — Multiple Choice`,
         count,
         start: currentQ,
         choices,
@@ -1844,7 +2182,7 @@ function generateExamFromGeneratorModal() {
       zones.push({
         type: 'truefalse',
         id: uid('tf'),
-        label: `Part ${roman} — True or False (${currentQ}–${currentQ + count - 1})`,
+        label: `Part ${roman} — True / False`,
         count,
         start: currentQ,
         choices: ['T', 'F'],
@@ -1860,7 +2198,7 @@ function generateExamFromGeneratorModal() {
       zones.push({
         type: 'modified_tf',
         id: uid('modtf'),
-        label: `Part ${roman} — Modified True / False (${currentQ}–${currentQ + count - 1})`,
+        label: `Part ${roman} — Modified True / False`,
         count,
         start: currentQ,
         choices: ['T', 'F'],
@@ -1879,7 +2217,7 @@ function generateExamFromGeneratorModal() {
         zones.push({
           type: 'text_short',
           id: uid('sa'),
-          label: `${currentQ}. Short Answer / Identification (${pts} pt${pts > 1 ? 's' : ''})`,
+          label: `${currentQ}.`,
           w: availW,
           boxHeight: h,
           points: pts,
@@ -1896,7 +2234,7 @@ function generateExamFromGeneratorModal() {
         zones.push({
           type: 'text_essay',
           id: uid('essay'),
-          label: `${currentQ}. Essay / Discussion (${pts} pts)`,
+          label: `${currentQ}.`,
           w: availW,
           boxHeight: h,
           points: pts,
@@ -1916,7 +2254,7 @@ function generateExamFromGeneratorModal() {
   };
 
   loadTemplate(generatedTemplate);
-  els.modalGenerator?.close();
+  closeModal(els.modalGenerator);
 }
 
 // ---- Event Listeners Setup ----
@@ -1929,19 +2267,25 @@ function initEvents() {
 
   // Generator modal events
   els.btnGenerator?.addEventListener('click', () => {
-    if (els.modalGenerator?.showModal) {
-      renderGeneratorParts();
-      els.modalGenerator.showModal();
-    }
+    renderGeneratorParts();
+    updateGeneratorLivePreview();
+    openModal(els.modalGenerator);
   });
+
   els.btnGenAddPart?.addEventListener('click', () => {
     generatorParts.push({ type: 'mcq', count: 10, choices: 'ABCD', cols: 'auto', pts: 1 });
     renderGeneratorParts();
   });
-  els.btnCloseGenerator?.addEventListener('click', () => els.modalGenerator?.close());
-  els.btnCancelGenerator?.addEventListener('click', () => els.modalGenerator?.close());
+
+  els.genTitle?.addEventListener('input', updateGeneratorLivePreview);
+  els.genPaper?.addEventListener('change', updateGeneratorLivePreview);
+  els.genSidMode?.addEventListener('change', updateGeneratorLivePreview);
+  els.genInstructions?.addEventListener('change', updateGeneratorLivePreview);
+
+  els.btnCloseGenerator?.addEventListener('click', () => closeModal(els.modalGenerator));
+  els.btnCancelGenerator?.addEventListener('click', () => closeModal(els.modalGenerator));
   els.modalGenerator?.addEventListener('click', (e) => {
-    if (e.target === els.modalGenerator) els.modalGenerator.close();
+    if (e.target === els.modalGenerator) closeModal(els.modalGenerator);
   });
   els.btnGenerateExam?.addEventListener('click', () => {
     generateExamFromGeneratorModal();
@@ -1984,11 +2328,21 @@ function initEvents() {
   // Save current build to library
   els.btnSaveBuild?.addEventListener('click', () => {
     if (!state.template || !state.layout) return;
-    const title = (state.template.title || '').trim() || 'General Examination';
+    const currentTitle = (state.template.title || '').trim() || 'New Exam Sheet';
+    const entered = window.prompt('Name this exam build:', currentTitle);
+    if (entered === null) return; // user cancelled prompt
+    const title = entered.trim() || currentTitle;
     state.template.title = title;
+    if (els.examTitle) els.examTitle.value = title;
+
+    // Ensure a unique ID for this saved build so it doesn't overwrite preset IDs
+    if (!state.template.id || state.template.id === 'blank' || state.template.id.startsWith('exam-') || state.template.id.startsWith('bio101')) {
+      state.template.id = `build_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`;
+    }
+
     const stats = layoutStats(state.layout);
     const entry = {
-      id: state.template.id || `exam_${Date.now().toString(36)}`,
+      id: state.template.id,
       title,
       paper: state.template.paper || 'Folio',
       questionCount: stats.questions,
@@ -2013,17 +2367,15 @@ function initEvents() {
   // Open library modal
   els.btnLibrary?.addEventListener('click', () => {
     renderSavedBuildsList();
-    if (els.modalLibrary?.showModal) {
-      els.modalLibrary.showModal();
-    }
+    openModal(els.modalLibrary);
   });
 
   // Close library modal handlers
-  els.btnCloseLibrary?.addEventListener('click', () => els.modalLibrary?.close());
-  els.btnModalClose?.addEventListener('click', () => els.modalLibrary?.close());
+  els.btnCloseLibrary?.addEventListener('click', () => closeModal(els.modalLibrary));
+  els.btnModalClose?.addEventListener('click', () => closeModal(els.modalLibrary));
   els.modalLibrary?.addEventListener('click', (e) => {
     if (e.target === els.modalLibrary) {
-      els.modalLibrary.close();
+      closeModal(els.modalLibrary);
     }
   });
 
@@ -2053,7 +2405,7 @@ function initEvents() {
         saveBuildToLibrary(entry);
         await loadTemplate(tpl);
         renderSavedBuildsList();
-        els.modalLibrary?.close();
+        closeModal(els.modalLibrary);
       } catch (err) {
         alert(`Failed to import build file: ${err.message}`);
       }
@@ -2062,13 +2414,14 @@ function initEvents() {
   });
 
   // Presets dropdown
-  els.samplePreset.addEventListener('change', () => {
+  els.samplePreset?.addEventListener('change', () => {
     const val = els.samplePreset.value;
     if (val === 'blank') {
       loadTemplate({
         id: `exam-${Date.now().toString(36).slice(-4)}`,
         title: 'New Exam Sheet',
-        paper: 'A4',
+        paper: 'Folio',
+        bubble: { diameter: 4.2, pitchX: 5.6, pitchY: 5.4 },
         zones: [],
       });
     } else if (val) {
@@ -2105,14 +2458,93 @@ function initEvents() {
   }
 
   // CV overlay toggle
-  els.overlay.addEventListener('change', () => state.layout && renderPreview());
+  els.overlay?.addEventListener('change', () => state.layout && renderPreview());
 
-  // Top action buttons
-  els.btnDlKey.addEventListener('click', downloadAnswerKey);
-  els.btnPrint.addEventListener('click', () => window.print());
+  // View options dropdown
+  els.btnViewToggle?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const parent = els.btnViewToggle.closest('.dropdown-menu');
+    const isOpen = parent.classList.toggle('is-open');
+    els.btnViewToggle.setAttribute('aria-expanded', String(isOpen));
+  });
+
+  // Answer Key modal opening & controls
+  els.btnDlKey?.addEventListener('click', openAnswerKeyModal);
+  els.btnCloseAnswerKey?.addEventListener('click', () => closeModal(els.modalAnswerKey));
+  els.modalAnswerKey?.addEventListener('click', (e) => {
+    if (e.target === els.modalAnswerKey) closeModal(els.modalAnswerKey);
+  });
+
+  els.btnKeyFillA?.addEventListener('click', () => {
+    for (const it of Object.values(currentAnswerKey.items)) {
+      if (it.options?.includes('A')) it.answer = 'A';
+    }
+    renderAnswerKeyModalContent();
+  });
+
+  els.btnKeyFillT?.addEventListener('click', () => {
+    for (const it of Object.values(currentAnswerKey.items)) {
+      if (it.options?.includes('T')) it.answer = 'T';
+    }
+    renderAnswerKeyModalContent();
+  });
+
+  els.btnKeyRandom?.addEventListener('click', () => {
+    for (const it of Object.values(currentAnswerKey.items)) {
+      if (Array.isArray(it.options) && it.options.length > 0) {
+        it.answer = it.options[Math.floor(Math.random() * it.options.length)];
+      }
+    }
+    renderAnswerKeyModalContent();
+  });
+
+  els.btnKeyClear?.addEventListener('click', () => {
+    for (const it of Object.values(currentAnswerKey.items)) {
+      it.answer = '';
+    }
+    renderAnswerKeyModalContent();
+  });
+
+  els.keyPassingInput?.addEventListener('input', () => {
+    currentAnswerKey.passScore = Math.max(0, parseInt(els.keyPassingInput.value, 10) || 0);
+    els.keyPassingInput.dataset.userEdited = 'true';
+  });
+
+  els.btnKeySaveApply?.addEventListener('click', () => {
+    if (state.template) {
+      state.template.answerKey = getActiveAnswerKeyPayload();
+      update();
+    }
+    closeModal(els.modalAnswerKey);
+  });
+
+  els.btnKeyDownload?.addEventListener('click', downloadCurrentAnswerKey);
+
+  els.keyFileImport?.addEventListener('change', async () => {
+    const file = els.keyFileImport.files?.[0];
+    if (!file) return;
+    try {
+      const parsed = JSON.parse(await file.text());
+      if (parsed && typeof parsed.items === 'object') {
+        for (const [k, v] of Object.entries(parsed.items)) {
+          if (currentAnswerKey.items[k]) {
+            currentAnswerKey.items[k].answer = typeof v === 'object' && v.answer !== undefined ? v.answer : v;
+            if (typeof v === 'object' && v.points) currentAnswerKey.items[k].points = v.points;
+          }
+        }
+        if (parsed.pass_score !== undefined) currentAnswerKey.passScore = parsed.pass_score;
+        renderAnswerKeyModalContent();
+      }
+    } catch (err) {
+      alert(`Invalid Answer Key JSON: ${err.message}`);
+    }
+  });
+
+  // Print button
+  els.btnPrint?.addEventListener('click', () => window.print());
 
   // Export dropdown
-  els.btnExportToggle.addEventListener('click', (e) => {
+  els.btnExportToggle?.addEventListener('click', (e) => {
     e.stopPropagation();
     const parent = els.btnExportToggle.closest('.dropdown-menu');
     const isOpen = parent.classList.toggle('is-open');
@@ -2122,44 +2554,45 @@ function initEvents() {
   document.addEventListener('click', (e) => {
     if (!e.target.closest('.dropdown-menu')) {
       $$('.dropdown-menu').forEach((d) => d.classList.remove('is-open'));
-      els.btnExportToggle.setAttribute('aria-expanded', 'false');
+      els.btnExportToggle?.setAttribute('aria-expanded', 'false');
+      els.btnViewToggle?.setAttribute('aria-expanded', 'false');
     }
   });
 
   // Export actions
-  els.buttons.svg.addEventListener('click', () => {
+  els.buttons.svg?.addEventListener('click', () => {
     download(`${state.layout.templateId}.svg`, renderSVG(state.layout), 'image/svg+xml');
   });
 
-  els.buttons.html.addEventListener('click', async () => {
+  els.buttons.html?.addEventListener('click', async () => {
     download(`${state.layout.templateId}.sheet.html`, renderStandaloneHTML(state.layout, await getSheetCss()), 'text/html');
   });
 
-  els.buttons.layout.addEventListener('click', () => {
+  els.buttons.layout?.addEventListener('click', () => {
     download(`${state.layout.templateId}.layout.json`, `${JSON.stringify(state.layout, null, 2)}\n`, 'application/json');
   });
 
-  els.buttons.template.addEventListener('click', () => {
+  els.buttons.template?.addEventListener('click', () => {
     download(`${state.layout.templateId}.template.json`, `${JSON.stringify(state.template, null, 2)}\n`, 'application/json');
   });
 
   // Canvas zoom
-  els.btnZoomIn.addEventListener('click', () => {
+  els.btnZoomIn?.addEventListener('click', () => {
     state.zoom = Math.min(2.0, state.zoom + 0.1);
     applyZoom();
   });
 
-  els.btnZoomOut.addEventListener('click', () => {
+  els.btnZoomOut?.addEventListener('click', () => {
     state.zoom = Math.max(0.3, state.zoom - 0.1);
     applyZoom();
   });
 
-  els.btnZoomReset.addEventListener('click', () => {
+  els.btnZoomReset?.addEventListener('click', () => {
     state.zoom = 1.0;
     applyZoom();
   });
 
-  els.btnZoomFit.addEventListener('click', fitPreview);
+  els.btnZoomFit?.addEventListener('click', fitPreview);
 
   // Render mode buttons (DOM vs SVG)
   for (const btn of els.renderModeBtns) {
@@ -2171,7 +2604,7 @@ function initEvents() {
   }
 
   // Advanced drawer events
-  els.rawJson.addEventListener('input', () => {
+  els.rawJson?.addEventListener('input', () => {
     try {
       state.template = JSON.parse(els.rawJson.value);
       update();
@@ -2181,7 +2614,7 @@ function initEvents() {
     }
   });
 
-  els.fileInput.addEventListener('change', async () => {
+  els.fileInput?.addEventListener('change', async () => {
     const file = els.fileInput.files?.[0];
     if (!file) return;
     try {
@@ -2218,15 +2651,16 @@ async function init() {
   if (saved) {
     try {
       const parsed = JSON.parse(saved);
-      if (parsed && Array.isArray(parsed.zones) && parsed.zones.length > 0) {
+      if (parsed && Array.isArray(parsed.zones)) {
         await loadTemplate(parsed);
         return;
       }
     } catch {}
   }
 
-  // Guaranteed instant load without network dependency
-  await loadSample('exam-50');
+  // Guaranteed instant load: default starting template is Blank Sheet
+  await loadSample('blank');
 }
 
 onReady(init);
+

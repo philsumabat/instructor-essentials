@@ -220,4 +220,12 @@ export const SAMPLE_TEMPLATES = {
       },
     ],
   },
+  blank: {
+    id: 'blank',
+    title: 'New Exam Sheet',
+    paper: 'Folio',
+    bubble: { diameter: 4.2, pitchX: 5.6, pitchY: 5.4 },
+    zones: [],
+  },
 };
+

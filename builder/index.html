@@ -37,15 +37,6 @@
         <span class="stat-pill__label">Points</span>
         <strong id="stat-points" class="stat-pill__value">0</strong>
       </div>
-      <div class="stat-pill" title="Student ID digits">
-        <span class="stat-pill__label">ID Digits</span>
-        <strong id="stat-id-digits" class="stat-pill__value">0</strong>
-      </div>
-      <div class="stat-pill" id="stat-fill-pill" title="Vertical sheet space utilized">
-        <span class="stat-pill__label">Page Fill</span>
-        <div class="stat-fill-bar"><div id="stat-fill-bar-inner" class="stat-fill-bar__inner"></div></div>
-        <strong id="stat-fill" class="stat-pill__value">0%</strong>
-      </div>
     </div>
 
     <!-- Top Action Toolbar -->
@@ -53,12 +44,11 @@
       <!-- Preset selector -->
       <div class="preset-dropdown">
         <select id="sample-preset" aria-label="Exam presets">
-          <option value="" disabled selected>Presets...</option>
+          <option value="blank" selected>Blank Sheet</option>
           <option value="exam-50">50 MCQ + T/F + Short Answer (A4)</option>
           <option value="exam-100">100-Item MCQ (Letter)</option>
           <option value="quiz-tf">20 T/F &amp; Mod T/F (Folio)</option>
           <option value="quiz-bonus">10 MCQ + Bonus Identification (A4)</option>
-          <option value="blank">Blank Sheet</option>
         </select>
       </div>
 
@@ -79,12 +69,30 @@
         <span>Saved Builds</span>
       </button>
 
-      <!-- CV overlay toggle -->
-      <label class="toggle-pill" title="Show CV bubble sampling centroids and OCR regions of interest">
-        <input type="checkbox" id="overlay" name="overlay">
-        <span class="toggle-pill__box"></span>
-        <span class="toggle-pill__text">CV Targets</span>
-      </label>
+      <!-- View & Display Options Dropdown -->
+      <div class="dropdown-menu">
+        <button type="button" id="btn-view-toggle" class="btn btn--secondary" aria-haspopup="true" aria-expanded="false" title="View & inspection options">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+          <span>View</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <div class="dropdown-menu__content view-dropdown-content" id="view-dropdown-content">
+          <label class="view-dropdown-item toggle-item" title="Show CV bubble sampling centroids and OCR regions of interest">
+            <input type="checkbox" id="overlay" name="overlay">
+            <span>Show CV Targets</span>
+          </label>
+          <div class="dropdown-divider"></div>
+          <div class="view-dropdown-item view-stat-item" title="Standardized Student ID digits">
+            <span class="view-stat-label">ID Digits</span>
+            <strong id="stat-id-digits" class="view-stat-val">8</strong>
+          </div>
+          <div class="view-dropdown-item view-stat-item" id="stat-fill-pill" title="Vertical sheet space utilized">
+            <span class="view-stat-label">Page Fill</span>
+            <div class="stat-fill-bar" style="width: 70px;"><div id="stat-fill-bar-inner" class="stat-fill-bar__inner"></div></div>
+            <strong id="stat-fill" class="view-stat-val">0%</strong>
+          </div>
+        </div>
+      </div>
 
       <!-- Switch to Checker Studio -->
       <a href="checker.html" class="btn btn--secondary" title="Open In-Browser Exam Checker">
@@ -92,8 +100,8 @@
         <span>Checker Studio</span>
       </a>
 
-      <!-- Download Answer Key Button -->
-      <button type="button" id="btn-dl-key" class="btn btn--accent" title="Download pre-filled answer key template (no JSON writing needed!)">
+      <!-- Answer Key Button -->
+      <button type="button" id="btn-dl-key" class="btn btn--accent" title="Open visual Answer Key editor (no JSON writing needed!)">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 3-9.5 9.5"/><path d="m15.5 7.5 3 3M18 5l2 2"/></svg>
         <span>Answer Key</span>
       </button>
@@ -355,7 +363,7 @@
 
   <!-- Exam Generator Modal Dialog -->
   <dialog class="modal-dialog modal-dialog--generator app-chrome" id="modal-generator">
-    <div class="modal-card">
+    <div class="modal-card modal-card--generator">
       <div class="modal-header">
         <div>
           <h2 class="modal-title">✨ Exam Sheet Generator</h2>
@@ -364,50 +372,80 @@
         <button type="button" class="btn-close-modal" id="btn-close-generator" aria-label="Close">✕</button>
       </div>
 
-      <div class="modal-body" style="display: flex; flex-direction: column; gap: 1rem; max-height: 70vh; overflow-y: auto;">
-        <!-- 1. Document & Header Settings -->
-        <fieldset class="gen-fieldset">
-          <legend class="gen-legend">1. Document &amp; Student Header</legend>
-          <div class="gen-form-grid">
-            <div class="gen-field gen-field--span-2">
-              <label class="gen-label" for="gen-exam-title">Exam Title</label>
-              <input type="text" id="gen-exam-title" class="gen-input" value="MIDTERM EXAMINATION" placeholder="e.g. GENERAL ASSESSMENT">
+      <div class="modal-body generator-body-grid">
+        <!-- Left: Form Configuration Column -->
+        <div class="gen-config-col">
+          <!-- 1. Document & Header Settings -->
+          <fieldset class="gen-fieldset">
+            <legend class="gen-legend">1. Document &amp; Student Header</legend>
+            <div class="gen-form-grid">
+              <div class="gen-field gen-field--span-2">
+                <label class="gen-label" for="gen-exam-title">Exam Title</label>
+                <input type="text" id="gen-exam-title" class="gen-input" value="MIDTERM EXAMINATION" placeholder="e.g. GENERAL ASSESSMENT">
+              </div>
+              <div class="gen-field">
+                <label class="gen-label" for="gen-paper">Paper Size</label>
+                <select id="gen-paper" class="gen-select">
+                  <option value="A4" selected>A4 (210 × 297 mm)</option>
+                  <option value="Letter">Letter (215.9 × 279.4 mm)</option>
+                  <option value="Folio">Folio (215.9 × 330.2 mm)</option>
+                </select>
+              </div>
+              <div class="gen-field">
+                <label class="gen-label" for="gen-sid-mode">Student ID Format (Standard 8 Digits)</label>
+                <select id="gen-sid-mode" class="gen-select">
+                  <option value="fields" selected>Standard 2-Line Header (Partitioned Digits)</option>
+                  <option value="grid">Dedicated 10-Row Bubble Grid (OMR Shading)</option>
+                </select>
+              </div>
+              <div class="gen-field gen-field--span-2">
+                <label class="gen-checkbox-label">
+                  <input type="checkbox" id="gen-instructions" checked>
+                  <span>Include Standard Student Instructions Banner</span>
+                </label>
+              </div>
             </div>
-            <div class="gen-field">
-              <label class="gen-label" for="gen-paper">Paper Size</label>
-              <select id="gen-paper" class="gen-select">
-                <option value="A4" selected>A4 (210 × 297 mm)</option>
-                <option value="Letter">Letter (215.9 × 279.4 mm)</option>
-                <option value="Folio">Folio (215.9 × 330.2 mm)</option>
-              </select>
-            </div>
-            <div class="gen-field">
-              <label class="gen-label" for="gen-sid-mode">Student ID Format (Standard 8 Digits)</label>
-              <select id="gen-sid-mode" class="gen-select">
-                <option value="fields" selected>Standard 2-Line Header (Partitioned Digits)</option>
-                <option value="grid">Dedicated 10-Row Bubble Grid (OMR Shading)</option>
-              </select>
-            </div>
-            <div class="gen-field gen-field--span-2">
-              <label class="gen-checkbox-label">
-                <input type="checkbox" id="gen-instructions" checked>
-                <span>Include Standard Student Instructions Banner</span>
-              </label>
-            </div>
-          </div>
-        </fieldset>
+          </fieldset>
 
-        <!-- 2. Dynamic Section Builder (Choose Exam Types for Each Part) -->
-        <fieldset class="gen-fieldset">
-          <legend class="gen-legend">2. Exam Parts (Configure &amp; Order Exam Types)</legend>
-          <p style="font-size: 0.78rem; color: var(--text-muted); margin: 0 0 0.5rem;">Choose which type of exam belongs to each part of the exam. Reorder or customize parts to match your syllabus.</p>
-          <div class="gen-parts-list" id="gen-parts-list">
-            <!-- Dynamically populated by app.js -->
+          <!-- 2. Dynamic Section Builder (Choose Exam Types for Each Part) -->
+          <fieldset class="gen-fieldset">
+            <legend class="gen-legend">2. Exam Parts (Configure &amp; Order Exam Types)</legend>
+            <p style="font-size: 0.78rem; color: var(--text-muted); margin: 0 0 0.5rem;">Choose which type of exam belongs to each part of the exam. Reorder or customize parts to match your syllabus.</p>
+            <div class="gen-parts-list" id="gen-parts-list">
+              <!-- Dynamically populated by app.js -->
+            </div>
+            <button type="button" id="btn-gen-add-part" class="btn btn--secondary" style="margin-top: 0.5rem; width: 100%;">
+              + Add Another Exam Part
+            </button>
+          </fieldset>
+        </div>
+
+        <!-- Right: Real-time Live Sheet Preview Panel -->
+        <aside class="gen-preview-col" aria-label="Live Exam Layout Preview">
+          <div class="gen-preview-card">
+            <div class="gen-preview-header">
+              <span class="gen-preview-badge">Live Sheet Preview</span>
+              <span class="gen-preview-paper" id="gen-preview-paper-label">A4 · 210 × 297 mm</span>
+            </div>
+            <div class="gen-stats-strip">
+              <div class="gen-stat-item">
+                <span class="gen-stat-lbl">Questions</span>
+                <strong id="gen-stat-questions" class="gen-stat-val">40</strong>
+              </div>
+              <div class="gen-stat-item">
+                <span class="gen-stat-lbl">Points</span>
+                <strong id="gen-stat-points" class="gen-stat-val">40</strong>
+              </div>
+              <div class="gen-stat-item">
+                <span class="gen-stat-lbl">Est. Fill</span>
+                <strong id="gen-stat-fill" class="gen-stat-val">58%</strong>
+              </div>
+            </div>
+            <div class="gen-wireframe" id="gen-wireframe">
+              <!-- Rendered miniature wireframe sheet populated dynamically -->
+            </div>
           </div>
-          <button type="button" id="btn-gen-add-part" class="btn btn--secondary" style="margin-top: 0.5rem; width: 100%;">
-            + Add Another Exam Part
-          </button>
-        </fieldset>
+        </aside>
       </div>
 
       <div class="modal-footer">
@@ -419,6 +457,65 @@
       </div>
     </div>
   </dialog>
+
+  <!-- Answer Key Editor Modal Dialog -->
+  <dialog class="modal-dialog modal-dialog--answer-key app-chrome" id="modal-answer-key">
+    <div class="modal-card modal-card--answer-key">
+      <div class="modal-header">
+        <div>
+          <h2 class="modal-title">🔑 Answer Key Editor</h2>
+          <p class="modal-desc">Configure correct answer options and item points visually. No JSON editing required.</p>
+        </div>
+        <button type="button" class="btn-close-modal" id="btn-close-answer-key" aria-label="Close">✕</button>
+      </div>
+
+      <!-- Quick Action Toolbar & Key Metrics -->
+      <div class="key-toolbar-strip">
+        <div class="key-metrics-pills">
+          <div class="key-metric-pill">
+            <span class="key-metric-label">Items</span>
+            <strong id="key-metric-count">0</strong>
+          </div>
+          <div class="key-metric-pill">
+            <span class="key-metric-label">Total Points</span>
+            <strong id="key-metric-points">0</strong>
+          </div>
+          <div class="key-metric-pill">
+            <span class="key-metric-label">Passing Score</span>
+            <input type="number" id="key-passing-input" class="key-passing-input" value="0" min="0" title="Passing score required to pass">
+          </div>
+        </div>
+
+        <div class="key-actions-row">
+          <button type="button" id="btn-key-fill-a" class="btn btn--secondary btn-xs" title="Set all multiple-choice answers to A">All A</button>
+          <button type="button" id="btn-key-fill-t" class="btn btn--secondary btn-xs" title="Set all True/False answers to True">All T</button>
+          <button type="button" id="btn-key-random" class="btn btn--secondary btn-xs" title="Quickly generate a sample key for testing">Sample Key</button>
+          <button type="button" id="btn-key-clear" class="btn btn--secondary btn-xs is-danger" title="Clear all answers">Clear</button>
+          <label class="btn btn--secondary btn-xs" style="cursor: pointer;" title="Import answer key JSON file">
+            <span>Import Key</span>
+            <input type="file" id="key-file-import" accept=".json" style="display: none;">
+          </label>
+        </div>
+      </div>
+
+      <!-- Scrollable Matrix / Question List -->
+      <div class="modal-body key-body" id="key-items-container">
+        <!-- Rendered items matrix -->
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" id="btn-key-download" class="btn btn--secondary">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download Key (.json)
+        </button>
+        <button type="button" id="btn-key-save-apply" class="btn btn--primary">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m5 12 5 5L20 7"/></svg>
+          Save &amp; Apply
+        </button>
+      </div>
+    </div>
+  </dialog>
+
 
   <script type="module" src="js/app.js"></script>
 </body>

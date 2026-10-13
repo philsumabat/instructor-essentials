@@ -83,8 +83,9 @@ graph TD
 - [`builder/js/render-svg.js`](file:///Users/philsumabat/coding-projects/grader/builder/js/render-svg.js) — True-scale Scalable Vector Graphic (SVG) generator.
 - [`builder/js/templates.js`](file:///Users/philsumabat/coding-projects/grader/builder/js/templates.js) — Inlined sample templates for offline execution.
 - [`builder/templates/`](file:///Users/philsumabat/coding-projects/grader/builder/templates/) — Canonical exam template definitions:
+  - `blank.json` (Blank Sheet with Corner Markers, Folio)
   - `exam-50.json` (50 MCQ + T/F + Short Answer, A4)
-  - `exam-100.json` (100 MCQ + 9-digit Student ID, Letter)
+  - `exam-100.json` (100 MCQ + 8-digit Student ID, Letter)
   - `quiz-tf.json` (20 Simple T/F + 10 Modified T/F + Essay, Folio)
   - `quiz-bonus.json` (10 MCQ + 5 pt Bonus Identification, A4)
 
@@ -287,6 +288,13 @@ flowchart LR
 - **Decision**: Engineered the 8-state interactive feedback system across all buttons and cards (tactile `:active` micro-scaling `transform: scale(0.97)`, visible `:focus-visible` keyboard focus rings, and smooth hover lifts).
 - **Decision**: Enforced `font-variant-numeric: tabular-nums` across all statistical metrics, data tables, score summaries, and item difficulty calculations to eliminate layout shift and visual jitter.
 - **Decision**: Elevated studio navigation into capsule segmented controls and upgraded dialog windows with glassmorphic depth (`backdrop-filter: blur(12px)`).
+
+### Decision 25: Streamlined Topbar Metrics, Visual Answer Key Editor & Clean Question Numbering
+- **Decision**: Streamlined visible topbar stat pills to strictly "Questions" and "Points". Relocated "Show CV Targets", "ID Digits: 8", and "Page Fill %" into a dedicated, clean "View" dropdown menu to prevent toolbar clutter.
+- **Decision**: Integrated a fully visual, interactive Answer Key Editor (`#modal-answer-key`) into Sheet Builder. Instructors can configure correct keys by clicking bubble buttons directly, set passing scores, adjust point weights, use quick-fill shortcuts (`All A`, `All T`, `Sample Key`, `Clear`), and export JSON keys with zero manual code or JSON editing.
+- **Decision**: Enhanced the Exam Sheet Generator modal (`#modal-generator`) with a real-time live preview panel featuring dynamic metrics calculation (Questions, Points, Page Fill %) and a live miniature wireframe representing header blocks, section modules, and bubble rows as instructors adjust parts.
+- **Decision**: Standardized all question rendering across DOM, SVG, and generator modules to output strictly the clean question number (e.g., `1.`, `2.`), completely removing test-type labels or question prompts from printed exam sheets.
+- **Decision**: Standardized initial application boot and preset default to "Blank Sheet" (`zones: []`), giving instructors an immediate, clean canvas to design custom exams or generate structures from scratch.
 
 ---
 

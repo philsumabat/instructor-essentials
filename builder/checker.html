@@ -1,0 +1,1572 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Checker — In-Browser OMR Exam Grading & Psychometrics</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: light-dark(#f1f3f7, #121417);
+      --panel: light-dark(#ffffff, #1c1f24);
+      --panel-alt: light-dark(#f8f9fa, #22262c);
+      --text: light-dark(#191d24, #e8eaee);
+      --text-muted: light-dark(#606875, #939aa5);
+      --border: light-dark(#dbe0e7, #323842);
+      --border-focus: light-dark(#1a5fd0, #6ea2ff);
+      --accent: light-dark(#1a5fd0, #4d8bf5);
+      --accent-hover: light-dark(#154db0, #3c7ce6);
+      --accent-light: light-dark(#eaf2fd, #19273f);
+      --success: light-dark(#138654, #36b37e);
+      --success-light: light-dark(#e7f7ee, #153325);
+      --danger: light-dark(#d92d20, #f04438);
+      --danger-light: light-dark(#fef3f2, #391817);
+      --warning: light-dark(#b54708, #f79009);
+      --warning-light: light-dark(#fffaeb, #392b15);
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-full: 9999px;
+      --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.05);
+      --shadow-md: 0 4px 12px rgb(0 0 0 / 0.08);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    /* Top Navigation Bar */
+    .app-header {
+      height: 56px;
+      background: var(--panel);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1.25rem;
+      gap: 1rem;
+      flex-shrink: 0;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .app-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+    }
+
+    .app-brand__logo {
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-md);
+      background: var(--accent);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .app-brand__title {
+      margin: 0;
+      font-size: 1.05rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .app-brand__title span { color: var(--accent); }
+
+    .app-brand__badge {
+      display: inline-block;
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      padding: 0.45rem 0.85rem;
+      border-radius: var(--radius-md);
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      border: 1px solid transparent;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .btn--primary {
+      background: var(--accent);
+      color: #fff;
+    }
+    .btn--primary:hover { background: var(--accent-hover); }
+
+    .btn--secondary {
+      background: var(--panel-alt);
+      border-color: var(--border);
+      color: var(--text);
+    }
+    .btn--secondary:hover { background: var(--panel); border-color: var(--border-focus); }
+
+    .btn--accent {
+      background: var(--accent-light);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    .btn--accent:hover { background: var(--accent); color: #fff; }
+
+    .btn--sm {
+      padding: 0.25rem 0.55rem;
+      font-size: 0.75rem;
+    }
+
+    /* Main Workspace Layout */
+    .workspace {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      flex: 1;
+      height: calc(100vh - 56px);
+      overflow: hidden;
+    }
+
+    @media (max-width: 900px) {
+      .workspace {
+        grid-template-columns: 1fr;
+        height: auto;
+        overflow: visible;
+      }
+    }
+
+    /* Left Sidebar: Controls */
+    .sidebar {
+      background: var(--panel);
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .section-card {
+      background: var(--panel-alt);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .section-title {
+      margin: 0;
+      font-size: 0.9rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .dropzone {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius-md);
+      padding: 1.5rem 1rem;
+      text-align: center;
+      cursor: pointer;
+      background: var(--panel);
+      transition: all 0.2s ease;
+    }
+
+    .dropzone:hover, .dropzone.is-dragover {
+      border-color: var(--accent);
+      background: var(--accent-light);
+    }
+
+    .dropzone__icon {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .dropzone__text {
+      font-weight: 600;
+      font-size: 0.85rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .dropzone__hint {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+    }
+
+    .input-file-hidden {
+      display: none;
+    }
+
+    .file-badge-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      max-height: 140px;
+      overflow-y: auto;
+    }
+
+    .file-badge {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      padding: 0.35rem 0.6rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.78rem;
+    }
+
+    .file-badge__name {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .file-badge__size {
+      color: var(--text-muted);
+      font-size: 0.7rem;
+      margin-left: 0.5rem;
+    }
+
+    .stepper {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .stepper input {
+      width: 60px;
+      text-align: center;
+      padding: 0.35rem;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .btn-step {
+      width: 28px;
+      height: 28px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .btn-step:hover { background: var(--accent-light); border-color: var(--accent); }
+
+    /* Right Main Content */
+    .main-content {
+      background: var(--bg);
+      overflow-y: auto;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    /* Tabs Bar */
+    .tabs-bar {
+      display: flex;
+      gap: 0.5rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.5rem;
+    }
+
+    .tab-btn {
+      padding: 0.5rem 1rem;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 0.88rem;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .tab-btn:hover { color: var(--text); background: var(--panel); }
+    .tab-btn.is-active {
+      color: var(--accent);
+      background: var(--panel);
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* Metrics Grid */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 1rem;
+    }
+
+    .metric-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1rem;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .metric-card__label {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .metric-card__val {
+      font-size: 1.6rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .metric-card__sub {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+    }
+
+    /* Tables */
+    .table-container {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.84rem;
+    }
+
+    th {
+      background: var(--panel-alt);
+      padding: 0.75rem 1rem;
+      font-weight: 700;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+    }
+
+    td {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--panel-alt); cursor: pointer; }
+
+    .badge-pass {
+      display: inline-block;
+      padding: 0.2rem 0.5rem;
+      background: var(--success-light);
+      color: var(--success);
+      font-weight: 700;
+      border-radius: var(--radius-full);
+      font-size: 0.72rem;
+    }
+
+    .badge-fail {
+      display: inline-block;
+      padding: 0.2rem 0.5rem;
+      background: var(--danger-light);
+      color: var(--danger);
+      font-weight: 700;
+      border-radius: var(--radius-full);
+      font-size: 0.72rem;
+    }
+
+    /* Sheet Viewer Modal / Canvas */
+    .viewer-panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .canvas-container {
+      width: 100%;
+      overflow: auto;
+      max-height: 700px;
+      background: #333;
+      border-radius: var(--radius-md);
+      display: grid;
+      place-items: center;
+      padding: 1rem;
+    }
+
+    canvas {
+      max-width: 100%;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+      background: #fff;
+    }
+
+    /* Diagnostics & Empty State */
+    .empty-state {
+      padding: 4rem 2rem;
+      text-align: center;
+      color: var(--text-muted);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .empty-state__icon {
+      font-size: 3rem;
+    }
+
+    .progress-bar {
+      height: 6px;
+      width: 100%;
+      background: var(--panel);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+      display: none;
+    }
+
+    .progress-bar-inner {
+      height: 100%;
+      background: var(--accent);
+      width: 0%;
+      transition: width 0.2s ease;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header Bar -->
+  <header class="app-header">
+    <div class="app-brand">
+      <div class="app-brand__logo" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+          <polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
+      </div>
+      <div>
+        <h1 class="app-brand__title">Checker <span>Studio</span></h1>
+        <span class="app-brand__badge">Client-Side OMR Grading &amp; Psychometrics</span>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <!-- Switch to Sheet Builder -->
+      <a href="index.html" class="btn btn--secondary" title="Open Visual Sheet Builder">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><circle cx="10" cy="13" r="1.5"/><circle cx="14" cy="13" r="1.5"/></svg>
+        <span>📐 Sheet Builder</span>
+      </a>
+
+      <!-- Quick 1-Click Sample Test -->
+      <button type="button" id="btn-sample-grade" class="btn btn--accent" title="Pre-load BIO 101 Midterm sample data and grade instantly">
+        <span>⚡ 1-Click Sample Test</span>
+      </button>
+
+      <!-- Grade Button -->
+      <button type="button" id="btn-grade-now" class="btn btn--primary" title="Execute computer-vision OMR grading on loaded scans">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        <span>Grade Scans</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Workspace -->
+  <div class="workspace">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <!-- Step 1: Scan Upload Area -->
+      <div class="section-card">
+        <h2 class="section-title"><span>📷</span> 1. Exam Scans</h2>
+        <div class="dropzone" id="dropzone-scans">
+          <div class="dropzone__icon">📂</div>
+          <div class="dropzone__text">Drag &amp; drop exam scans here</div>
+          <div class="dropzone__hint">Supports JPG, PNG (Single or Bulk Batch)</div>
+          <input type="file" id="input-scans" class="input-file-hidden" multiple accept="image/jpeg,image/png">
+        </div>
+        <div class="file-badge-list" id="scans-list">
+          <div style="color: var(--text-muted); font-size: 0.75rem; text-align: center; padding: 0.5rem;">No scans uploaded yet.</div>
+        </div>
+        <div class="progress-bar" id="grading-progress">
+          <div class="progress-bar-inner" id="grading-progress-inner"></div>
+        </div>
+      </div>
+
+      <!-- Step 2: Answer Key & Layout -->
+      <div class="section-card">
+        <h2 class="section-title"><span>⚙️</span> 2. Layout &amp; Answer Key</h2>
+        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+          <label style="font-size: 0.78rem; font-weight: 600;">Active Layout &amp; Key:</label>
+          <select id="preset-selector" style="padding: 0.4rem; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-size: 0.82rem;">
+            <option value="bio101">BIO 101 Midterm (50-Item Preset)</option>
+            <option value="custom">Upload Custom Files (.json)</option>
+          </select>
+        </div>
+
+        <div id="custom-files-box" style="display: none; flex-direction: column; gap: 0.5rem;">
+          <label style="font-size: 0.75rem; color: var(--text-muted);">Layout JSON (from Sheet Builder):</label>
+          <input type="file" id="input-layout" accept=".json" style="font-size: 0.75rem;">
+
+          <label style="font-size: 0.75rem; color: var(--text-muted);">Answer Key JSON:</label>
+          <input type="file" id="input-key" accept=".json" style="font-size: 0.75rem;">
+
+          <label style="font-size: 0.75rem; color: var(--text-muted);">Roster CSV (Optional):</label>
+          <input type="file" id="input-roster" accept=".csv" style="font-size: 0.75rem;">
+        </div>
+
+        <!-- Grade Parameters -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem;">
+          <label style="font-size: 0.78rem;">Passing Score (%):</label>
+          <div class="stepper">
+            <button type="button" class="btn-step" id="btn-thresh-dec">−</button>
+            <input type="number" id="input-threshold" value="60" min="0" max="100" step="5">
+            <button type="button" class="btn-step" id="btn-thresh-inc">+</button>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <label style="font-size: 0.78rem;">Bubble Mark Threshold:</label>
+          <div class="stepper">
+            <button type="button" class="btn-step" id="btn-bthresh-dec">−</button>
+            <input type="number" id="input-bubble-threshold" value="0.20" min="0.05" max="0.80" step="0.05">
+            <button type="button" class="btn-step" id="btn-bthresh-inc">+</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Export Actions -->
+      <div class="section-card">
+        <h2 class="section-title"><span>📥</span> 3. Export Reports</h2>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+          <button type="button" id="btn-export-csv" class="btn btn--secondary btn--sm" disabled>
+            <span>Export CSV</span>
+          </button>
+          <button type="button" id="btn-export-html" class="btn btn--secondary btn--sm" disabled>
+            <span>Item Analysis</span>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Tabs Navigation -->
+      <nav class="tabs-bar">
+        <button type="button" class="tab-btn is-active" data-tab="summary">
+          <span>📊 Cohort Summary</span>
+        </button>
+        <button type="button" class="tab-btn" data-tab="roster">
+          <span>📋 Student Roster &amp; Grades</span>
+        </button>
+        <button type="button" class="tab-btn" data-tab="viewer">
+          <span>🔍 Visual Sheet Inspector</span>
+        </button>
+        <button type="button" class="tab-btn" data-tab="items">
+          <span>📈 Item Psychometrics</span>
+        </button>
+      </nav>
+
+      <!-- Tab 1: Cohort Summary Dashboard -->
+      <div id="tab-summary" class="tab-pane">
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <span class="metric-card__label">Exams Graded</span>
+            <span class="metric-card__val" id="metric-count">0</span>
+            <span class="metric-card__sub" id="metric-count-sub">0 submitted</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-card__label">Class Mean Score</span>
+            <span class="metric-card__val" id="metric-mean">0.0</span>
+            <span class="metric-card__sub" id="metric-mean-sub">0.0%</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-card__label">Passing Rate</span>
+            <span class="metric-card__val" id="metric-passrate">0.0%</span>
+            <span class="metric-card__sub" id="metric-passrate-sub">0 passed / 0 failed</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-card__label">Cronbach's Alpha (α)</span>
+            <span class="metric-card__val" id="metric-alpha">—</span>
+            <span class="metric-card__sub">Internal Reliability</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-card__label">Score Std Dev</span>
+            <span class="metric-card__val" id="metric-stddev">0.0</span>
+            <span class="metric-card__sub" id="metric-median">Median: 0.0</span>
+          </div>
+        </div>
+
+        <div style="margin-top: 1.5rem;" class="table-container">
+          <table id="table-summary-preview">
+            <thead>
+              <tr>
+                <th>Student ID</th>
+                <th>Full Name</th>
+                <th>Score</th>
+                <th>Percentage</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-summary">
+              <tr>
+                <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                  No exam sheets graded yet. Click <strong>⚡ 1-Click Sample Test</strong> or upload your own scans.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Tab 2: Full Student Roster & Scores -->
+      <div id="tab-roster" class="tab-pane" style="display: none;">
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Exam ID</th>
+                <th>Student ID</th>
+                <th>Student Name</th>
+                <th>Raw Score</th>
+                <th>Max Score</th>
+                <th>Percentage</th>
+                <th>Pass / Fail</th>
+                <th>Inspect</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-roster">
+              <tr><td colspan="8" style="text-align: center; padding: 2rem; color: var(--text-muted);">No student grades available.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Tab 3: Visual Sheet Inspector -->
+      <div id="tab-viewer" class="tab-pane" style="display: none;">
+        <div class="viewer-panel">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+              <label style="font-weight: 700; font-size: 0.88rem;">Select Student:</label>
+              <select id="viewer-student-select" style="padding: 0.35rem 0.6rem; background: var(--panel-alt); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-weight: 600;">
+                <option value="">No sheets graded</option>
+              </select>
+            </div>
+            <div style="display: flex; gap: 0.75rem; align-items: center; font-size: 0.78rem;">
+              <span style="display: inline-flex; align-items: center; gap: 0.3rem;"><span style="width: 10px; height: 10px; border-radius: 50%; background: #10b981; display: inline-block;"></span> Correct</span>
+              <span style="display: inline-flex; align-items: center; gap: 0.3rem;"><span style="width: 10px; height: 10px; border-radius: 50%; background: #ef4444; display: inline-block;"></span> Incorrect</span>
+              <span style="display: inline-flex; align-items: center; gap: 0.3rem;"><span style="width: 10px; height: 10px; border-radius: 50%; background: #f59e0b; display: inline-block;"></span> Key Target</span>
+            </div>
+          </div>
+
+          <div class="canvas-container">
+            <canvas id="viewer-canvas" width="800" height="1131"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 4: Item Psychometrics -->
+      <div id="tab-items" class="tab-pane" style="display: none;">
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Item #</th>
+                <th>Correct Answer</th>
+                <th>Points</th>
+                <th>Difficulty (P)</th>
+                <th>Discrimination (r_pbis)</th>
+                <th>A</th>
+                <th>B</th>
+                <th>C</th>
+                <th>D</th>
+                <th>E</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-items">
+              <tr><td colspan="10" style="text-align: center; padding: 2rem; color: var(--text-muted);">Run grading to generate item discrimination and difficulty statistics.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Embedded Sample Data & Client-Side Engine -->
+  <script>
+    // ---- Sample Preset Data ----
+    const SAMPLE_KEY = {
+      title: "BIO 101 — Midterm Examination",
+      templateId: "bio101-midterm-50",
+      items: {
+        "1": { "kind": "mcq", "answer": "A", "points": 1.0 },
+        "2": { "kind": "mcq", "answer": "C", "points": 1.0 },
+        "3": { "kind": "mcq", "answer": "B", "points": 1.0 },
+        "4": { "kind": "mcq", "answer": "D", "points": 1.0 },
+        "5": { "kind": "mcq", "answer": "A", "points": 1.0 },
+        "6": { "kind": "mcq", "answer": "E", "points": 1.0 },
+        "7": { "kind": "mcq", "answer": "C", "points": 1.0 },
+        "8": { "kind": "mcq", "answer": "B", "points": 1.0 },
+        "9": { "kind": "mcq", "answer": "A", "points": 1.0 },
+        "10": { "kind": "mcq", "answer": "D", "points": 1.0 },
+        "11": { "kind": "mcq", "answer": "B", "points": 1.0 },
+        "12": { "kind": "mcq", "answer": "C", "points": 1.0 },
+        "13": { "kind": "mcq", "answer": "A", "points": 1.0 },
+        "14": { "kind": "mcq", "answer": "E", "points": 1.0 },
+        "15": { "kind": "mcq", "answer": "D", "points": 1.0 },
+        "16": { "kind": "mcq", "answer": "C", "points": 1.0 },
+        "17": { "kind": "mcq", "answer": "B", "points": 1.0 },
+        "18": { "kind": "mcq", "answer": "A", "points": 1.0 },
+        "19": { "kind": "mcq", "answer": "E", "points": 1.0 },
+        "20": { "kind": "mcq", "answer": "D", "points": 1.0 },
+        "21": { "kind": "mcq", "answer": "C", "points": 1.0 },
+        "22": { "kind": "mcq", "answer": "B", "points": 1.0 },
+        "23": { "kind": "mcq", "answer": "A", "points": 1.0 },
+        "24": { "kind": "mcq", "answer": "E", "points": 1.0 },
+        "25": { "kind": "mcq", "answer": "D", "points": 1.0 },
+        "26": { "kind": "mcq", "answer": "B", "points": 1.0 },
+        "27": { "kind": "mcq", "answer": "C", "points": 1.0 },
+        "28": { "kind": "mcq", "answer": "A", "points": 1.0 },
+        "29": { "kind": "mcq", "answer": "D", "points": 1.0 },
+        "30": { "kind": "mcq", "answer": "E", "points": 1.0 },
+        "31": { "kind": "mcq", "answer": "C", "points": 1.0 },
+        "32": { "kind": "mcq", "answer": "B", "points": 1.0 },
+        "33": { "kind": "mcq", "answer": "A", "points": 1.0 },
+        "34": { "kind": "mcq", "answer": "D", "points": 1.0 },
+        "35": { "kind": "mcq", "answer": "E", "points": 1.0 },
+        "36": { "kind": "mcq", "answer": "C", "points": 1.0 },
+        "37": { "kind": "mcq", "answer": "B", "points": 1.0 },
+        "38": { "kind": "mcq", "answer": "A", "points": 1.0 },
+        "39": { "kind": "mcq", "answer": "D", "points": 1.0 },
+        "40": { "kind": "mcq", "answer": "E", "points": 1.0 },
+        "41": { "kind": "mcq", "answer": "C", "points": 1.0 },
+        "42": { "kind": "mcq", "answer": "A", "points": 1.0 },
+        "43": { "kind": "mcq", "answer": "D", "points": 1.0 },
+        "44": { "kind": "mcq", "answer": "B", "points": 1.0 },
+        "45": { "kind": "mcq", "answer": "E", "points": 1.0 },
+        "46": { "kind": "mcq", "answer": "A", "points": 1.0 },
+        "47": { "kind": "mcq", "answer": "C", "points": 1.0 },
+        "48": { "kind": "mcq", "answer": "B", "points": 1.0 },
+        "49": { "kind": "mcq", "answer": "D", "points": 1.0 },
+        "50": { "kind": "mcq", "answer": "E", "points": 1.0 }
+      }
+    };
+
+    const SAMPLE_ROSTER = [
+      { id: "10482901", name: "Alice Adams" },
+      { id: "10482902", name: "Bob Baker" },
+      { id: "10482903", name: "Charlie Clark" },
+      { id: "10482904", name: "Diana Davis" },
+      { id: "10482905", name: "Evan Evans" },
+      { id: "10482906", name: "Fiona Foster" },
+      { id: "10482907", name: "George Green" },
+      { id: "10482908", name: "Hannah Hill" },
+      { id: "10482909", name: "Ian Irving" },
+      { id: "10482910", name: "Julia Jones" }
+    ];
+
+    // ---- Application State ----
+    const state = {
+      scans: [], // { file, img, name }
+      layout: null,
+      key: SAMPLE_KEY,
+      roster: SAMPLE_ROSTER,
+      results: null, // { grades, psychometrics }
+      selectedStudentIdx: 0,
+      activeTab: "summary"
+    };
+
+    // ---- DOM Elements ----
+    const $ = (id) => document.getElementById(id);
+    const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+
+    // Tab Switching
+    $$('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        $$('.tab-btn').forEach(b => b.classList.remove('is-active'));
+        $$('.tab-pane').forEach(p => p.style.display = 'none');
+        btn.classList.add('is-active');
+        const tabId = 'tab-' + btn.dataset.tab;
+        if ($(tabId)) $(tabId).style.display = 'block';
+        state.activeTab = btn.dataset.tab;
+        if (state.activeTab === 'viewer') renderViewerSheet();
+      });
+    });
+
+    // Steppers
+    $('btn-thresh-dec').onclick = () => { $('input-threshold').value = Math.max(0, parseInt($('input-threshold').value) - 5); };
+    $('btn-thresh-inc').onclick = () => { $('input-threshold').value = Math.min(100, parseInt($('input-threshold').value) + 5); };
+    $('btn-bthresh-dec').onclick = () => { $('input-bubble-threshold').value = Math.max(0.05, (parseFloat($('input-bubble-threshold').value) - 0.05).toFixed(2)); };
+    $('btn-bthresh-inc').onclick = () => { $('input-bubble-threshold').value = Math.min(0.80, (parseFloat($('input-bubble-threshold').value) + 0.05).toFixed(2)); };
+
+    // File Dropzone
+    const dropzone = $('dropzone-scans');
+    const inputScans = $('input-scans');
+    dropzone.onclick = () => inputScans.click();
+    dropzone.ondragover = (e) => { e.preventDefault(); dropzone.classList.add('is-dragover'); };
+    dropzone.ondragleave = () => dropzone.classList.remove('is-dragover');
+    dropzone.ondrop = (e) => {
+      e.preventDefault();
+      dropzone.classList.remove('is-dragover');
+      handleFiles(e.dataTransfer.files);
+    };
+    inputScans.onchange = (e) => handleFiles(e.target.files);
+
+    function handleFiles(files) {
+      Array.from(files).forEach(file => {
+        if (!file.type.startsWith('image/')) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            state.scans.push({ file, img, name: file.name });
+            renderScansList();
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function renderScansList() {
+      const container = $('scans-list');
+      if (state.scans.length === 0) {
+        container.innerHTML = `<div style="color: var(--text-muted); font-size: 0.75rem; text-align: center; padding: 0.5rem;">No scans uploaded yet.</div>`;
+        return;
+      }
+      container.innerHTML = state.scans.map((s, idx) => `
+        <div class="file-badge">
+          <span class="file-badge__name">📄 ${s.name}</span>
+          <button type="button" class="btn-step" style="width:20px;height:20px;font-size:10px;" onclick="removeScan(${idx})">✕</button>
+        </div>
+      `).join('');
+    }
+
+    window.removeScan = (idx) => {
+      state.scans.splice(idx, 1);
+      renderScansList();
+    };
+
+    // Preset / Custom Layout Switcher
+    $('preset-selector').onchange = (e) => {
+      $('custom-files-box').style.display = e.target.value === 'custom' ? 'flex' : 'none';
+    };
+
+    // ---- Homography & Canvas Vision OMR Engine ----
+
+    // Compute 3x3 homography matrix mapping src 4 points to dst 4 points
+    function computeHomography(src, dst) {
+      // Direct Linear Transformation (DLT) for 4 points
+      const A = [];
+      for (let i = 0; i < 4; i++) {
+        const x = src[i].x, y = src[i].y;
+        const u = dst[i].x, v = dst[i].y;
+        A.push([-x, -y, -1, 0, 0, 0, x * u, y * u, u]);
+        A.push([0, 0, 0, -x, -y, -1, x * v, y * v, v]);
+      }
+      // Solve via Gaussian elimination / SVD approximation
+      // For standard rect-to-rect or slight affine/perspective:
+      const h = solveDLT8(A);
+      return h;
+    }
+
+    function solveDLT8(A) {
+      // 8x8 system setting h[8] = 1
+      const M = A.map(row => row.slice(0, 8));
+      const b = A.map(row => -row[8]);
+      const h8 = gaussianElimination(M, b);
+      return [...h8, 1];
+    }
+
+    function gaussianElimination(A, b) {
+      const n = b.length;
+      const M = A.map((row, i) => [...row, b[i]]);
+      for (let i = 0; i < n; i++) {
+        let maxRow = i;
+        for (let k = i + 1; k < n; k++) {
+          if (Math.abs(M[k][i]) > Math.abs(M[maxRow][i])) maxRow = k;
+        }
+        [M[i], M[maxRow]] = [M[maxRow], M[i]];
+        if (Math.abs(M[i][i]) < 1e-10) continue;
+        for (let k = i + 1; k < n; k++) {
+          const c = M[k][i] / M[i][i];
+          for (let j = i; j <= n; j++) M[k][j] -= c * M[i][j];
+        }
+      }
+      const x = new Array(n).fill(0);
+      for (let i = n - 1; i >= 0; i--) {
+        let s = M[i][n];
+        for (let j = i + 1; j < n; j++) s -= M[i][j] * x[j];
+        x[i] = Math.abs(M[i][i]) > 1e-10 ? s / M[i][i] : 0;
+      }
+      return x;
+    }
+
+    // Apply homography to a 2D point (x, y)
+    function applyHomography(H, pt) {
+      const w = H[6] * pt.x + H[7] * pt.y + H[8];
+      if (Math.abs(w) < 1e-8) return { x: pt.x, y: pt.y };
+      return {
+        x: (H[0] * pt.x + H[1] * pt.y + H[2]) / w,
+        y: (H[3] * pt.x + H[4] * pt.y + H[5]) / w
+      };
+    }
+
+    // Detect 4 dark corner markers in the 4 quadrants of the scanned image
+    function detectCornerMarkers(ctx, w, h) {
+      const imgData = ctx.getImageData(0, 0, w, h);
+      const data = imgData.data;
+
+      // Define 4 quadrant search windows (top 25%, bottom 25%, left 25%, right 25%)
+      const quads = [
+        { name: "TL", x1: 0, y1: 0, x2: Math.floor(w * 0.28), y2: Math.floor(h * 0.22) },
+        { name: "TR", x1: Math.floor(w * 0.72), y1: 0, x2: w, y2: Math.floor(h * 0.22) },
+        { name: "BR", x1: Math.floor(w * 0.72), y1: Math.floor(h * 0.78), x2: w, y2: h },
+        { name: "BL", x1: 0, y1: Math.floor(h * 0.78), x2: Math.floor(w * 0.28), y2: h }
+      ];
+
+      const corners = [];
+
+      for (const q of quads) {
+        // Find minimum brightness / center of dark square in quadrant
+        let sumX = 0, sumY = 0, darkCount = 0;
+        let minLum = 255;
+
+        // Sample every 2 pixels for speed
+        for (let y = q.y1; y < q.y2; y += 2) {
+          for (let x = q.x1; x < q.x2; x += 2) {
+            const idx = (y * w + x) * 4;
+            const lum = 0.299 * data[idx] + 0.587 * data[idx + 1] + 0.114 * data[idx + 2];
+            if (lum < minLum) minLum = lum;
+            if (lum < 90) { // Dark marker threshold
+              sumX += x;
+              sumY += y;
+              darkCount += 1;
+            }
+          }
+        }
+
+        if (darkCount > 20) {
+          corners.push({ x: sumX / darkCount, y: sumY / darkCount });
+        } else {
+          // Fallback to geometric corners with typical inset
+          corners.push({
+            x: q.name.includes("L") ? w * 0.08 : w * 0.92,
+            y: q.name.includes("T") ? h * 0.06 : h * 0.94
+          });
+        }
+      }
+
+      return corners; // [TL, TR, BR, BL]
+    }
+
+    // Process a single scanned exam image
+    function processExamScan(scan, layout, key, bubbleThreshold) {
+      // Target canonical canvas resolution: 4.0 px/mm (A4 = 840 x 1188 px)
+      const pxPerMm = 4.0;
+      const targetW = Math.round(layout.page.width * pxPerMm);
+      const targetH = Math.round(layout.page.height * pxPerMm);
+
+      const offscreen = document.createElement('canvas');
+      offscreen.width = scan.img.width;
+      offscreen.height = scan.img.height;
+      const offCtx = offscreen.getContext('2d', { willReadFrequently: true });
+      offCtx.drawImage(scan.img, 0, 0);
+
+      // 1. Detect 4 corner markers in source image
+      const srcCorners = detectCornerMarkers(offCtx, scan.img.width, scan.img.height);
+
+      // 2. Target marker positions from layout (mm * pxPerMm)
+      // markers: 0: TL, 1: TR, 2: BR, 3: BL
+      const dstCorners = [
+        { x: layout.markers["0"].center[0] * pxPerMm, y: layout.markers["0"].center[1] * pxPerMm },
+        { x: layout.markers["1"].center[0] * pxPerMm, y: layout.markers["1"].center[1] * pxPerMm },
+        { x: layout.markers["2"].center[0] * pxPerMm, y: layout.markers["2"].center[1] * pxPerMm },
+        { x: layout.markers["3"].center[0] * pxPerMm, y: layout.markers["3"].center[1] * pxPerMm }
+      ];
+
+      // 3. Compute homography mapping canonical coords -> source scan coords
+      const H_canToSrc = computeHomography(dstCorners, srcCorners);
+
+      // 4. Sample each bubble in layout
+      const itemAnswers = {};
+      const bubbleDiagnostics = [];
+
+      for (const b of layout.bubbles) {
+        const canX = b.center[0] * pxPerMm;
+        const canY = b.center[1] * pxPerMm;
+        const rad = b.radius * pxPerMm;
+
+        // Map canonical center to source image pixels
+        const srcPt = applyHomography(H_canToSrc, { x: canX, y: canY });
+
+        // Sample bubble interior (radius * 0.75) vs background annulus (radius * 1.5 to 2.2)
+        const sampleR = Math.max(2, Math.round(rad * 0.7));
+        const bgR = Math.max(4, Math.round(rad * 1.8));
+
+        let bubbleLumSum = 0, bubbleCount = 0;
+        let bgLumSum = 0, bgCount = 0;
+
+        const sx = Math.round(srcPt.x);
+        const sy = Math.round(srcPt.y);
+
+        if (sx >= bgR && sx < scan.img.width - bgR && sy >= bgR && sy < scan.img.height - bgR) {
+          const block = offCtx.getImageData(sx - bgR, sy - bgR, bgR * 2 + 1, bgR * 2 + 1).data;
+          const bSize = bgR * 2 + 1;
+
+          for (let dy = -bgR; dy <= bgR; dy++) {
+            for (let dx = -bgR; dx <= bgR; dx++) {
+              const d2 = dx * dx + dy * dy;
+              const idx = ((dy + bgR) * bSize + (dx + bgR)) * 4;
+              const lum = 0.299 * block[idx] + 0.587 * block[idx + 1] + 0.114 * block[idx + 2];
+
+              if (d2 <= sampleR * sampleR) {
+                bubbleLumSum += lum;
+                bubbleCount++;
+              } else if (d2 > (rad * rad) && d2 <= (bgR * bgR)) {
+                bgLumSum += lum;
+                bgCount++;
+              }
+            }
+          }
+        }
+
+        const bubbleLum = bubbleCount > 0 ? (bubbleLumSum / bubbleCount) : 255;
+        const bgLum = bgCount > 0 ? (bgLumSum / bgCount) : 240;
+        const fillDensity = bgLum > 0 ? Math.max(0, (bgLum - bubbleLum) / bgLum) : 0;
+        const isMarked = fillDensity >= bubbleThreshold;
+
+        bubbleDiagnostics.push({
+          item: b.item,
+          choice: b.choice,
+          canX, canY, rad,
+          fillDensity,
+          isMarked
+        });
+
+        if (isMarked) {
+          if (!itemAnswers[b.item]) itemAnswers[b.item] = [];
+          itemAnswers[b.item].push(b.choice);
+        }
+      }
+
+      // 5. Score student answers against answer key
+      let rawScore = 0;
+      let maxScore = 0;
+      const gradedItems = {};
+
+      for (const [itemNumStr, keyItem] of Object.entries(key.items)) {
+        const itemNum = parseInt(itemNumStr);
+        const pts = keyItem.points || 1.0;
+        maxScore += pts;
+
+        const studentChoices = itemAnswers[itemNum] || [];
+        const isCorrect = (studentChoices.length === 1 && studentChoices[0] === keyItem.answer);
+
+        if (isCorrect) rawScore += pts;
+
+        gradedItems[itemNum] = {
+          expected: keyItem.answer,
+          actual: studentChoices.join(", ") || "BLANK",
+          isCorrect,
+          pointsAwarded: isCorrect ? pts : 0,
+          maxPoints: pts
+        };
+      }
+
+      // Extract Student ID from file name or sequential index
+      const matchedId = scan.name.match(/\d{6,10}/);
+      const studentId = matchedId ? matchedId[0] : `STU-${Math.floor(100000 + Math.random() * 900000)}`;
+      const rosterEntry = state.roster.find(r => r.id === studentId);
+      const studentName = rosterEntry ? rosterEntry.name : `Student ${studentId}`;
+
+      const percentage = maxScore > 0 ? (rawScore / maxScore) * 100 : 0;
+
+      return {
+        examId: scan.name,
+        studentId,
+        studentName,
+        rawScore,
+        maxScore,
+        percentage,
+        gradedItems,
+        bubbleDiagnostics,
+        H_canToSrc,
+        targetW,
+        targetH,
+        scanImg: scan.img
+      };
+    }
+
+    // Psychometric Analysis (Cronbach's Alpha, Item Difficulty P, Discrimination r_pbis)
+    function computePsychometrics(grades, key) {
+      const n = grades.length;
+      if (n === 0) return null;
+
+      const scores = grades.map(g => g.rawScore);
+      const totalPossible = grades[0].maxScore;
+      const meanScore = scores.reduce((a, b) => a + b, 0) / n;
+      const sorted = [...scores].sort((a, b) => a - b);
+      const median = n % 2 === 0 ? (sorted[n / 2 - 1] + sorted[n / 2]) / 2 : sorted[Math.floor(n / 2)];
+
+      // Variance of total scores
+      const totalVar = scores.reduce((sum, s) => sum + Math.pow(s - meanScore, 2), 0) / (n > 1 ? n - 1 : 1);
+      const stdDev = Math.sqrt(totalVar);
+
+      // Item statistics
+      const itemStats = {};
+      let sumItemVar = 0;
+      const itemKeys = Object.keys(key.items).map(Number).sort((a, b) => a - b);
+
+      for (const itemNum of itemKeys) {
+        const itemGrades = grades.map(g => g.gradedItems[itemNum] ? g.gradedItems[itemNum].pointsAwarded : 0);
+        const correctCount = grades.filter(g => g.gradedItems[itemNum] && g.gradedItems[itemNum].isCorrect).length;
+        const pValue = correctCount / n; // Difficulty index
+
+        // Distractor counts
+        const choices = { A: 0, B: 0, C: 0, D: 0, E: 0, Blank: 0 };
+        grades.forEach(g => {
+          const act = g.gradedItems[itemNum] ? g.gradedItems[itemNum].actual : "BLANK";
+          if (choices[act] !== undefined) choices[act]++;
+          else if (act === "BLANK") choices.Blank++;
+        });
+
+        // Item variance p * (1 - p)
+        const iVar = pValue * (1 - pValue);
+        sumItemVar += iVar;
+
+        // Point-Biserial correlation (r_pbis)
+        let rPbis = 0;
+        if (stdDev > 0 && correctCount > 0 && correctCount < n) {
+          const meanCorrect = grades.filter(g => g.gradedItems[itemNum].isCorrect).reduce((a, b) => a + b.rawScore, 0) / correctCount;
+          const meanWrong = grades.filter(g => !g.gradedItems[itemNum].isCorrect).reduce((a, b) => a + b.rawScore, 0) / (n - correctCount);
+          rPbis = ((meanCorrect - meanWrong) / stdDev) * Math.sqrt((correctCount * (n - correctCount)) / (n * n));
+        }
+
+        itemStats[itemNum] = {
+          correctAnswer: key.items[itemNum].answer,
+          points: key.items[itemNum].points || 1.0,
+          difficulty: pValue,
+          discrimination: rPbis,
+          distractors: choices
+        };
+      }
+
+      // Cronbach's Alpha
+      const k = itemKeys.length;
+      let alpha = 0;
+      if (k > 1 && totalVar > 0) {
+        alpha = (k / (k - 1)) * (1 - (sumItemVar / totalVar));
+        alpha = Math.max(0, Math.min(1.0, alpha));
+      }
+
+      return {
+        count: n,
+        totalPossible,
+        meanScore,
+        median,
+        stdDev,
+        cronbachAlpha: alpha,
+        itemStats
+      };
+    }
+
+    // Run Batch Grading
+    $('btn-grade-now').onclick = async () => {
+      if (state.scans.length === 0) {
+        alert("Please upload at least one exam scan or click '⚡ 1-Click Sample Test'.");
+        return;
+      }
+
+      // Load layout if not loaded
+      if (!state.layout) {
+        state.layout = await fetchLayout();
+      }
+
+      const passThreshold = parseFloat($('input-threshold').value) || 60;
+      const bubbleThreshold = parseFloat($('input-bubble-threshold').value) || 0.20;
+
+      $('grading-progress').style.display = 'block';
+      $('grading-progress-inner').style.width = '20%';
+
+      const grades = [];
+      for (let i = 0; i < state.scans.length; i++) {
+        const grade = processExamScan(state.scans[i], state.layout, state.key, bubbleThreshold);
+        grades.push(grade);
+        $('grading-progress-inner').style.width = `${Math.round(((i + 1) / state.scans.length) * 100)}%`;
+      }
+
+      const psychometrics = computePsychometrics(grades, state.key);
+      state.results = { grades, psychometrics, passThreshold };
+
+      setTimeout(() => {
+        $('grading-progress').style.display = 'none';
+        renderResults();
+      }, 200);
+    };
+
+    // 1-Click Sample Test
+    $('btn-sample-grade').onclick = async () => {
+      state.layout = await fetchLayout();
+      state.key = SAMPLE_KEY;
+      state.roster = SAMPLE_ROSTER;
+
+      // Synthesize 10 sample student answer sheets for demonstration
+      state.scans = [];
+      for (let i = 0; i < 10; i++) {
+        const sid = SAMPLE_ROSTER[i].id;
+        const name = SAMPLE_ROSTER[i].name;
+        // Generate simulated visual scan sheet
+        const simCanvas = document.createElement('canvas');
+        simCanvas.width = 840;
+        simCanvas.height = 1188;
+        const ctx = simCanvas.getContext('2d');
+        ctx.fillStyle = "#fff";
+        ctx.fillRect(0, 0, 840, 1188);
+
+        // Draw 4 corner markers (solid black squares)
+        ctx.fillStyle = "#000";
+        ctx.fillRect(40, 40, 50, 50);
+        ctx.fillRect(750, 40, 50, 50);
+        ctx.fillRect(750, 1100, 50, 50);
+        ctx.fillRect(40, 1100, 50, 50);
+
+        // Draw bubbles with 80-95% accuracy for sample
+        for (const b of state.layout.bubbles) {
+          const cx = b.center[0] * 4.0;
+          const cy = b.center[1] * 4.0;
+          const r = b.radius * 4.0;
+          ctx.beginPath();
+          ctx.arc(cx, cy, r, 0, Math.PI * 2);
+          ctx.strokeStyle = "#888";
+          ctx.lineWidth = 1;
+          ctx.stroke();
+
+          const correctAns = state.key.items[b.item] ? state.key.items[b.item].answer : "A";
+          const isTarget = (b.choice === correctAns);
+          // High-performing student simulation
+          const fillsThis = isTarget ? (Math.random() > 0.15) : (Math.random() < 0.05);
+
+          if (fillsThis) {
+            ctx.fillStyle = "#222";
+            ctx.beginPath();
+            ctx.arc(cx, cy, r * 0.8, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+
+        const img = new Image();
+        img.src = simCanvas.toDataURL("image/jpeg");
+        await new Promise(r => { img.onload = r; });
+        state.scans.push({ file: null, img, name: `scan_${String(i+1).padStart(2, '0')}_${sid}.jpg` });
+      }
+
+      renderScansList();
+      $('btn-grade-now').click();
+    };
+
+    async function fetchLayout() {
+      try {
+        const res = await fetch("dist/exam-50/layout.json");
+        if (res.ok) return await res.json();
+      } catch (e) {}
+      // Fallback: Minimal layout geometry structure for 50-item A4 exam
+      const bubbles = [];
+      const colStarts = [22, 68, 114, 160];
+      for (let item = 1; item <= 50; item++) {
+        const colIdx = Math.floor((item - 1) / 13);
+        const rowIdx = (item - 1) % 13;
+        const y = 85 + rowIdx * 14.5;
+        const xStart = colStarts[colIdx];
+        ["A", "B", "C", "D", "E"].forEach((ch, cIdx) => {
+          bubbles.push({
+            group: "sec_mcq",
+            item,
+            choice: ch,
+            center: [xStart + 7.5 + cIdx * 6.5, y],
+            radius: 2.1
+          });
+        });
+      }
+      return {
+        page: { width: 210, height: 297 },
+        markers: {
+          "0": { center: [18, 18], size: 12 },
+          "1": { center: [192, 18], size: 12 },
+          "2": { center: [192, 279], size: 12 },
+          "3": { center: [18, 279], size: 12 }
+        },
+        bubbles
+      };
+    }
+
+    // Render Graded Results
+    function renderResults() {
+      if (!state.results) return;
+      const { grades, psychometrics, passThreshold } = state.results;
+
+      // Summary Cards
+      $('metric-count').textContent = grades.length;
+      $('metric-count-sub').textContent = `${grades.length} / ${state.scans.length} valid`;
+      $('metric-mean').textContent = psychometrics.meanScore.toFixed(1);
+      $('metric-mean-sub').textContent = `${((psychometrics.meanScore / psychometrics.totalPossible) * 100).toFixed(1)}%`;
+
+      const passCount = grades.filter(g => g.percentage >= passThreshold).length;
+      const passRate = (passCount / grades.length) * 100;
+      $('metric-passrate').textContent = `${passRate.toFixed(1)}%`;
+      $('metric-passrate-sub').textContent = `${passCount} passed / ${grades.length - passCount} failed`;
+
+      $('metric-alpha').textContent = psychometrics.cronbachAlpha.toFixed(3);
+      $('metric-stddev').textContent = `±${psychometrics.stdDev.toFixed(2)}`;
+      $('metric-median').textContent = `Median: ${psychometrics.median.toFixed(1)}`;
+
+      // Summary Table Preview
+      $('tbody-summary').innerHTML = grades.map((g, idx) => `
+        <tr onclick="inspectStudent(${idx})">
+          <td><strong>${g.studentId}</strong></td>
+          <td>${g.studentName}</td>
+          <td>${g.rawScore.toFixed(1)} / ${g.maxScore.toFixed(1)}</td>
+          <td>${g.percentage.toFixed(1)}%</td>
+          <td><span class="${g.percentage >= passThreshold ? 'badge-pass' : 'badge-fail'}">${g.percentage >= passThreshold ? 'PASS' : 'FAIL'}</span></td>
+          <td><button type="button" class="btn btn--secondary btn--sm">Inspect Sheet</button></td>
+        </tr>
+      `).join('');
+
+      // Roster Table
+      $('tbody-roster').innerHTML = grades.map((g, idx) => `
+        <tr onclick="inspectStudent(${idx})">
+          <td><code>${g.examId}</code></td>
+          <td><strong>${g.studentId}</strong></td>
+          <td>${g.studentName}</td>
+          <td>${g.rawScore.toFixed(1)}</td>
+          <td>${g.maxScore.toFixed(1)}</td>
+          <td><strong>${g.percentage.toFixed(1)}%</strong></td>
+          <td><span class="${g.percentage >= passThreshold ? 'badge-pass' : 'badge-fail'}">${g.percentage >= passThreshold ? 'PASS' : 'FAIL'}</span></td>
+          <td><button type="button" class="btn btn--secondary btn--sm">🔍</button></td>
+        </tr>
+      `).join('');
+
+      // Student Selector in Viewer
+      const sel = $('viewer-student-select');
+      sel.innerHTML = grades.map((g, idx) => `
+        <option value="${idx}">${g.studentName} (${g.studentId}) — ${g.rawScore.toFixed(1)} pts (${g.percentage.toFixed(1)}%)</option>
+      `).join('');
+      sel.onchange = (e) => {
+        state.selectedStudentIdx = parseInt(e.target.value);
+        renderViewerSheet();
+      };
+
+      // Item Psychometrics Table
+      const itemKeys = Object.keys(psychometrics.itemStats).map(Number).sort((a, b) => a - b);
+      $('tbody-items').innerHTML = itemKeys.map(k => {
+        const item = psychometrics.itemStats[k];
+        return `
+          <tr>
+            <td><strong>#${k}</strong></td>
+            <td><code>${item.correctAnswer}</code></td>
+            <td>${item.points}</td>
+            <td>${(item.difficulty * 100).toFixed(1)}%</td>
+            <td style="color: ${item.discrimination >= 0.3 ? 'var(--success)' : (item.discrimination < 0.15 ? 'var(--danger)' : 'var(--text)')}; font-weight: 700;">
+              ${item.discrimination.toFixed(3)}
+            </td>
+            <td>${item.distractors.A || 0}</td>
+            <td>${item.distractors.B || 0}</td>
+            <td>${item.distractors.C || 0}</td>
+            <td>${item.distractors.D || 0}</td>
+            <td>${item.distractors.E || 0}</td>
+          </tr>
+        `;
+      }).join('');
+
+      // Enable Export Buttons
+      $('btn-export-csv').disabled = false;
+      $('btn-export-html').disabled = false;
+    }
+
+    window.inspectStudent = (idx) => {
+      state.selectedStudentIdx = idx;
+      $('viewer-student-select').value = idx;
+      $$('.tab-btn')[2].click(); // Switch to viewer tab
+    };
+
+    // Render Canvas with Overlay in Viewer
+    function renderViewerSheet() {
+      if (!state.results || !state.results.grades[state.selectedStudentIdx]) return;
+      const grade = state.results.grades[state.selectedStudentIdx];
+      const canvas = $('viewer-canvas');
+      const ctx = canvas.getContext('2d');
+
+      canvas.width = grade.targetW || 840;
+      canvas.height = grade.targetH || 1188;
+
+      // Draw rectified/warped scan image
+      ctx.drawImage(grade.scanImg, 0, 0, canvas.width, canvas.height);
+
+      // Semi-transparent overlay layer for markup
+      for (const b of grade.bubbleDiagnostics) {
+        const itemInfo = grade.gradedItems[b.item];
+        const isKeyTarget = (b.choice === itemInfo.expected);
+
+        if (b.isMarked && isKeyTarget) {
+          // Correct answer marked: Green circle with solid ring
+          ctx.beginPath();
+          ctx.arc(b.canX, b.canY, b.rad + 2, 0, Math.PI * 2);
+          ctx.lineWidth = 3;
+          ctx.strokeStyle = "#10b981";
+          ctx.fillStyle = "rgba(16, 185, 129, 0.25)";
+          ctx.fill();
+          ctx.stroke();
+        } else if (b.isMarked && !isKeyTarget) {
+          // Incorrect mark: Red circle
+          ctx.beginPath();
+          ctx.arc(b.canX, b.canY, b.rad + 2, 0, Math.PI * 2);
+          ctx.lineWidth = 3;
+          ctx.strokeStyle = "#ef4444";
+          ctx.fillStyle = "rgba(239, 68, 68, 0.35)";
+          ctx.fill();
+          ctx.stroke();
+        } else if (!b.isMarked && isKeyTarget) {
+          // Missed correct answer: Amber target outline
+          ctx.beginPath();
+          ctx.arc(b.canX, b.canY, b.rad + 1, 0, Math.PI * 2);
+          ctx.lineWidth = 2;
+          ctx.setLineDash([3, 3]);
+          ctx.strokeStyle = "#f59e0b";
+          ctx.stroke();
+          ctx.setLineDash([]);
+        }
+      }
+
+      // Draw header badge with score
+      ctx.fillStyle = "rgba(0, 0, 0, 0.75)";
+      ctx.roundRect ? ctx.roundRect(20, 20, 340, 54, 8) : ctx.fillRect(20, 20, 340, 54);
+      ctx.fill();
+      ctx.fillStyle = "#fff";
+      ctx.font = "bold 16px sans-serif";
+      ctx.fillText(`${grade.studentName} (${grade.studentId})`, 32, 44);
+      ctx.font = "14px sans-serif";
+      ctx.fillStyle = grade.percentage >= state.results.passThreshold ? "#34d399" : "#f87171";
+      ctx.fillText(`Score: ${grade.rawScore.toFixed(1)} / ${grade.maxScore.toFixed(1)} (${grade.percentage.toFixed(1)}%)`, 32, 64);
+    }
+
+    // Export CSV
+    $('btn-export-csv').onclick = () => {
+      if (!state.results) return;
+      const csv = [
+        ["Exam ID", "Student ID", "Student Name", "Raw Score", "Max Score", "Percentage", "Status"].join(",")
+      ];
+      state.results.grades.forEach(g => {
+        csv.push([
+          `"${g.examId}"`,
+          `"${g.studentId}"`,
+          `"${g.studentName}"`,
+          g.rawScore.toFixed(2),
+          g.maxScore.toFixed(2),
+          g.percentage.toFixed(2),
+          g.percentage >= state.results.passThreshold ? "PASS" : "FAIL"
+        ].join(","));
+      });
+      downloadFile("grades_summary.csv", csv.join("\n"), "text/csv");
+    };
+
+    // Export HTML Report
+    $('btn-export-html').onclick = () => {
+      if (!state.results) return;
+      const { psychometrics, grades } = state.results;
+      const html = `<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Item Analysis Report — ${state.key.title}</title>
+  <style>
+    body { font-family: sans-serif; padding: 2rem; max-width: 900px; margin: 0 auto; color: #222; }
+    h1 { margin-bottom: 0.25rem; }
+    .metrics { display: flex; gap: 1rem; margin: 1.5rem 0; }
+    .metric { background: #f4f6f8; padding: 1rem; border-radius: 8px; flex: 1; }
+    .metric b { display: block; font-size: 1.5rem; color: #1a5fd0; }
+    table { width: 100%; border-collapse: collapse; margin-top: 1rem; font-size: 14px; }
+    th, td { border: 1px solid #ddd; padding: 8px 12px; text-align: left; }
+    th { background: #f0f3f6; }
+  </style>
+</head>
+<body>
+  <h1>Item Analysis Report</h1>
+  <p>${state.key.title} &bull; Generated by Checker</p>
+  <div class="metrics">
+    <div class="metric"><span>Mean Score</span><b>${psychometrics.meanScore.toFixed(1)}</b></div>
+    <div class="metric"><span>Cronbach's Alpha (α)</span><b>${psychometrics.cronbachAlpha.toFixed(3)}</b></div>
+    <div class="metric"><span>Total Graded</span><b>${psychometrics.count}</b></div>
+  </div>
+  <h2>Item Statistics</h2>
+  <table>
+    <thead><tr><th>Item</th><th>Key</th><th>Difficulty (P)</th><th>Discrimination (r_pbis)</th></tr></thead>
+    <tbody>
+      ${Object.keys(psychometrics.itemStats).map(k => `
+        <tr>
+          <td>#${k}</td>
+          <td>${psychometrics.itemStats[k].correctAnswer}</td>
+          <td>${(psychometrics.itemStats[k].difficulty * 100).toFixed(1)}%</td>
+          <td>${psychometrics.itemStats[k].discrimination.toFixed(3)}</td>
+        </tr>
+      `).join('')}
+    </tbody>
+  </table>
+</body>
+</html>`;
+      downloadFile("item_analysis_report.html", html, "text/html");
+    };
+
+    function downloadFile(filename, content, mime) {
+      const blob = new Blob([content], { type: mime });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+  </script>
+</body>
+</html>

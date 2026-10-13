@@ -120,3 +120,71 @@ test('layout engine and renderers support text_short, text_essay, modified_tf, a
   assert.match(svg, /data-roi="info\.sid"/);
   assert.match(svg, /data-roi="mtf\.1\.correction"/);
 });
+
+test('layout engine supports side-by-side modules, 2-line student header, and points per item', () => {
+  const tpl = {
+    id: 'test-side-by-side',
+    title: 'Side-by-Side Test',
+    paper: 'A4',
+    zones: [
+      {
+        type: 'fields',
+        id: 'header_info',
+        fields: [
+          { id: 'name', label: 'Student Name', role: 'name', row: 0, w: 108 },
+          { id: 'sid', label: 'Student ID', role: 'student_id', digits: 8, row: 0, w: 75 },
+          { id: 'section', label: 'Offer No. & Class Sched', row: 1, w: 96 },
+          { id: 'date', label: 'Date', row: 1, w: 46 },
+          { id: 'score', label: 'Score', role: 'score', row: 1, w: 41 },
+        ],
+      },
+      {
+        type: 'truefalse',
+        id: 'col_left',
+        label: 'Left Module',
+        layout: 'half-left',
+        count: 10,
+        columns: 2,
+        pointsPerItem: 2,
+      },
+      {
+        type: 'modified_tf',
+        id: 'col_right',
+        label: 'Right Module',
+        layout: 'half-right',
+        count: 5,
+        columns: 1,
+        pointsPerItem: 3,
+      },
+    ],
+  };
+
+  const layout = buildLayout(tpl);
+  const zLeft = layout.zones.find((z) => z.id === 'col_left');
+  const zRight = layout.zones.find((z) => z.id === 'col_right');
+
+  // Both side-by-side zones share the same top Y coordinate
+  assert.equal(zLeft.bbox.y, zRight.bbox.y);
+  // Right zone begins after left zone plus gap
+  assert.ok(zRight.bbox.x > zLeft.bbox.x);
+  assert.equal(zLeft.bbox.w, zRight.bbox.w);
+
+  // Points per item verified on groups
+  assert.equal(zLeft.groups[0].points, 2);
+  assert.equal(zRight.groups[0].points, 3);
+
+  // Header 2-line fields verified
+  const hZone = layout.zones.find((z) => z.id === 'header_info');
+  assert.equal(hZone.rois.length, 5);
+  const nameRoi = hZone.rois.find((r) => r.key === 'name');
+  const sidRoi = hZone.rois.find((r) => r.key === 'sid');
+  const secRoi = hZone.rois.find((r) => r.key === 'section');
+  const scoreRoi = hZone.rois.find((r) => r.key === 'score');
+
+  // Name and SID on same Y line
+  assert.equal(nameRoi.y, sidRoi.y);
+  // Section and Score on lower line
+  assert.ok(secRoi.y > nameRoi.y);
+  assert.equal(secRoi.y, scoreRoi.y);
+  assert.equal(secRoi.label, 'Offer No. & Class Sched');
+});

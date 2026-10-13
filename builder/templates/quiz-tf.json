@@ -1,21 +1,59 @@
 {
   "id": "hist110-quiz-tf",
   "title": "HIST 110 — Quiz 3 (True / False & Short Answer)",
-  "paper": "A4",
+  "paper": "Folio",
   "zones": [
-    { "type": "student_id", "id": "sid", "label": "Student ID", "digits": 6 },
     {
       "type": "fields",
       "id": "info",
-      "inline": true,
+      "label": "",
+      "w": 191.9,
+      "fieldHeight": 7.5,
       "fields": [
-        { "id": "name", "label": "Name", "role": "name" },
-        { "id": "date", "label": "Date" }
+        { "id": "name", "label": "Student Name", "role": "name", "row": 0, "w": 112 },
+        { "id": "sid", "label": "Student ID", "role": "student_id", "digits": 6, "row": 0, "w": 77 },
+        { "id": "section", "label": "Offer No. & Class Sched", "row": 1, "w": 100 },
+        { "id": "date", "label": "Date", "row": 1, "w": 48 },
+        { "id": "score", "label": "Score", "role": "score", "row": 1, "w": 41 }
       ]
     },
-    { "type": "truefalse", "id": "tf", "label": "True / False (1–40)", "count": 40, "columns": 4, "w": 186 },
-    { "type": "text", "id": "s1", "label": "41. In what year did the Berlin Wall fall?", "w": 60, "boxHeight": 14, "points": 1, "charset": "digits" },
-    { "type": "text", "id": "s2", "inline": true, "label": "42. Who wrote the Communist Manifesto with Engels?", "w": 60, "boxHeight": 14, "points": 1, "charset": "alpha" },
-    { "type": "text", "id": "s3", "inline": true, "label": "43. Capital of the Byzantine Empire?", "w": 58, "boxHeight": 14, "points": 1, "charset": "alpha" }
+    {
+      "type": "truefalse",
+      "id": "tf",
+      "label": "Part I — Simple True / False (1–20)",
+      "layout": "half-left",
+      "count": 20,
+      "columns": 2,
+      "pointsPerItem": 1
+    },
+    {
+      "type": "modified_tf",
+      "id": "mod_tf",
+      "label": "Part II — Modified T/F (21–30)",
+      "layout": "half-right",
+      "count": 10,
+      "columns": 1,
+      "correctionWidth": 42,
+      "pointsPerItem": 2
+    },
+    {
+      "type": "text",
+      "id": "s1",
+      "label": "31.",
+      "w": 191.9,
+      "boxHeight": 12,
+      "points": 2,
+      "charset": "digits"
+    },
+    {
+      "type": "text",
+      "id": "s2",
+      "label": "32.",
+      "w": 191.9,
+      "boxHeight": 32,
+      "points": 5,
+      "charset": "any",
+      "multiline": true
+    }
   ]
 }

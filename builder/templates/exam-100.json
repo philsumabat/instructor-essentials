@@ -4,18 +4,34 @@
   "paper": "Letter",
   "bubble": { "diameter": 4.0, "pitchX": 5.4, "pitchY": 5.0, "groupEvery": 5, "groupGap": 1.4 },
   "zones": [
-    { "type": "student_id", "id": "sid", "label": "Student ID", "digits": 9 },
+    {
+      "type": "student_id",
+      "id": "sid",
+      "label": "Student ID",
+      "digits": 9,
+      "shading": true
+    },
     {
       "type": "fields",
       "id": "info",
       "inline": true,
-      "label": "Student Information",
+      "label": "",
       "fields": [
-        { "id": "name", "label": "Name", "role": "name" },
-        { "id": "section", "label": "Section" },
-        { "id": "signature", "label": "Signature", "ocr": false }
+        { "id": "name", "label": "Student Name", "role": "name", "row": 0, "w": 85 },
+        { "id": "score", "label": "Score", "role": "score", "row": 0, "w": 40 },
+        { "id": "section", "label": "Offer No. & Class Sched", "row": 1, "w": 75 },
+        { "id": "date", "label": "Date", "row": 1, "w": 50 }
       ]
     },
-    { "type": "mcq", "id": "items", "label": "Multiple Choice (1–100)", "count": 100, "choices": "ABCD", "columns": 5, "w": 191.9 }
+    {
+      "type": "mcq",
+      "id": "items",
+      "label": "Multiple Choice (1–100)",
+      "count": 100,
+      "choices": "ABCD",
+      "columns": 5,
+      "pointsPerItem": 1,
+      "w": 191.9
+    }
   ]
 }

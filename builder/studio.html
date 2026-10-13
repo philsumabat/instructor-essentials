@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Grader — Visual OMR Exam Sheet Studio</title>
+  <title>Sheet Builder — OMR Exam Designer & Layout Engine</title>
   <style>
 /* sheet.css */
 /*
@@ -289,9 +289,15 @@ body {
   line-height: 1.2;
 }
 
+.brand-title {
+  color: var(--text);
+  font-weight: 700;
+}
+
+.brand-title span,
 .app-brand__title span {
   color: var(--accent);
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .app-brand__badge {
@@ -1686,7 +1692,7 @@ dialog.modal-dialog::backdrop {
   <style id="page-rule">@page { size: A4; margin: 0; }</style>
   <script>
 
-// ---- Standalone Grader Studio Bundle ----
+// ---- Standalone Sheet Builder Bundle ----
 
 // Inlined Sheet CSS for zero-network/zero-CORS standalone execution
 window.__SHEET_CSS__ = "/*\n * Printable OMR sheet styles. Every dimension is in physical units (mm) so the\n * printed output matches the layout engine's coordinates. Shared by the\n * builder app and the standalone HTML export.\n */\n.omr-sheet {\n  position: relative;\n  box-sizing: border-box;\n  overflow: hidden;\n  background: #fff;\n  color: #000;\n  font-family: \"Helvetica Neue\", Helvetica, Arial, sans-serif;\n  font-size: var(--omr-font-body);\n  line-height: 1.3;\n  -webkit-print-color-adjust: exact;\n  print-color-adjust: exact;\n}\n\n.omr-sheet *,\n.omr-sheet *::before,\n.omr-sheet *::after {\n  box-sizing: border-box;\n  margin: 0;\n}\n\n/* Everything is absolutely positioned in sheet coordinates (mm). */\n.omr-sheet > * {\n  position: absolute;\n}\n\n.omr-fiducial {\n  display: block;\n  overflow: visible;\n}\n\n.omr-title {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  text-align: center;\n  font-size: var(--omr-font-title);\n  font-weight: 700;\n  line-height: 1.15;\n  overflow: hidden;\n}\n\n.omr-footer {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  text-align: center;\n  font-size: var(--omr-font-small);\n  color: #444;\n  overflow: hidden;\n}\n\n.omr-zone {\n  border: 0.3mm solid #000;\n  border-radius: 1.2mm;\n  padding: 2.5mm;\n}\n\n.omr-zone__title {\n  font-size: var(--omr-font-label);\n  font-weight: 700;\n  line-height: 4mm;\n  height: 5mm;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n}\n\n/* Bubble matrices: explicit mm tracks from the layout engine. */\n.omr-grid {\n  display: grid;\n  grid-auto-rows: 0;\n  grid-auto-columns: 0;\n}\n\n.omr-bubble {\n  display: grid;\n  place-items: center;\n  align-self: start;\n  justify-self: center;\n  width: var(--omr-d);\n  height: var(--omr-d);\n  border: var(--omr-stroke) solid #000;\n  border-radius: 50%;\n  font-size: var(--omr-font-bubble);\n  line-height: 1;\n  color: #8a8a8a;\n}\n\n.omr-num {\n  align-self: start;\n  height: var(--omr-pitch-y);\n  display: flex;\n  align-items: center;\n  justify-content: flex-end;\n  padding-right: 1.2mm;\n  font-size: var(--omr-font-number);\n  font-weight: 700;\n  font-variant-numeric: tabular-nums;\n}\n\n.omr-digit-box {\n  justify-self: center;\n  width: calc(100% - 0.8mm);\n  height: 100%;\n  border: 0.25mm solid #000;\n}\n\n.omr-field-label {\n  display: flex;\n  align-items: center;\n  font-size: var(--omr-font-label);\n  font-weight: 700;\n}\n\n.omr-write-box {\n  border: 0.3mm solid #000;\n}\n\n.omr-partitioned-digits {\n  display: grid;\n  border: 0.3mm solid #000;\n  background: #fff;\n}\n\n.omr-partitioned-digits .omr-digit-box {\n  width: 100%;\n  height: 100%;\n  border: none;\n  border-right: 0.25mm solid #000;\n}\n\n.omr-partitioned-digits .omr-digit-box:last-child {\n  border-right: none;\n}\n\n.omr-correction-box {\n  border: 0.25mm solid #000;\n  font-size: 1.8mm;\n  color: #888;\n  font-style: italic;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n.omr-prompt {\n  font-size: var(--omr-font-label);\n  overflow: hidden;\n}\n\n.omr-points {\n  color: #555;\n  white-space: nowrap;\n}\n\n.omr-instructions {\n  padding: 1mm;\n  color: #222;\n  overflow: hidden;\n  white-space: pre-line;\n}\n\n@media print {\n  .omr-sheet {\n    box-shadow: none !important;\n    break-after: page;\n    break-inside: avoid;\n  }\n}\n";
@@ -2020,13 +2026,15 @@ function layoutChoices(zone, ctx, x, y, availW) {
         grid.cells.push({ row: r, col: j + 1, kind: 'bubble', text: choice });
         return { value: choice, ...bubbleCenter(grid, r, j + 1, bubble.pitchY) };
       });
-      groups.push({ key: String(q), kind, label: String(q), options });
+      const points = Number(zone.pointsPerItem ?? zone.points ?? 1);
+      groups.push({ key: String(q), kind, label: String(q), options, points });
     }
     grids.push(grid);
   }
   ctx.nextQuestion = start + count;
   const h = 2 * PAD + titleH + sum(rowHeights);
-  return { bbox: { x, y, w, h }, grids, groups, rois: [], extra: { choices, start, count, columns } };
+  const pointsPerItem = Number(zone.pointsPerItem ?? zone.points ?? 1);
+  return { bbox: { x, y, w, h }, grids, groups, rois: [], extra: { choices, start, count, columns, pointsPerItem } };
 }
 
 function layoutModifiedTrueFalse(zone, ctx, x, y, availW) {
@@ -2069,7 +2077,8 @@ function layoutModifiedTrueFalse(zone, ctx, x, y, availW) {
         grid.cells.push({ row: r, col: j + 1, kind: 'bubble', text: choice });
         return { value: choice, ...bubbleCenter(grid, r, j + 1, rowH) };
       });
-      groups.push({ key: String(q), kind: 'tf', label: String(q), options });
+      const points = Number(zone.pointsPerItem ?? zone.points ?? 1);
+      groups.push({ key: String(q), kind: 'tf', label: String(q), options, points });
 
       const boxX = colX + bubbleBlockW + 1.5;
       const boxY = y + PAD + titleH + r * rowH + 0.6;
@@ -2096,7 +2105,8 @@ function layoutModifiedTrueFalse(zone, ctx, x, y, availW) {
 
   ctx.nextQuestion = start + count;
   const h = 2 * PAD + titleH + sum(rowHeights);
-  return { bbox: { x, y, w, h }, grids, groups, rois, extra: { start, count, columns, isModified: true } };
+  const pointsPerItem = Number(zone.pointsPerItem ?? zone.points ?? 1);
+  return { bbox: { x, y, w, h }, grids, groups, rois, extra: { start, count, columns, isModified: true, pointsPerItem } };
 }
 
 function layoutFields(zone, ctx, x, y, availW) {
@@ -2299,7 +2309,9 @@ function buildLayout(input) {
   const zones = [];
   const seenZoneIds = new Set();
   const seenKeys = new Map();
+  const halfW = r3((content.w - tpl.gap) / 2);
   let rowBottom = content.y;
+  let rowTop = content.y;
   let prev = null;
 
   for (const raw of tpl.zones) {
@@ -2310,10 +2322,29 @@ function buildLayout(input) {
     if (seenZoneIds.has(raw.id)) throw new TemplateError(`Duplicate zone id "${raw.id}"`);
     seenZoneIds.add(raw.id);
 
-    const inline = Boolean(raw.inline && prev);
-    const x = raw.x ?? (inline ? prev.bbox.x + prev.bbox.w + tpl.gap : content.x);
-    const y = raw.y ?? (inline ? prev.bbox.y : rowBottom + (prev ? tpl.gap : 0));
-    const availW = contentRight - x;
+    const isHalfLeft = raw.layout === 'half-left' || raw.side === 'left' || raw.placement === 'left';
+    const isHalfRight = raw.layout === 'half-right' || raw.side === 'right' || raw.placement === 'right';
+
+    let x, y, availW;
+    if (isHalfLeft) {
+      x = raw.x ?? content.x;
+      y = raw.y ?? (zones.length > 0 ? rowBottom + tpl.gap : content.y);
+      rowTop = y;
+      availW = halfW;
+      if (raw.w == null) raw.w = halfW;
+    } else if (isHalfRight) {
+      x = raw.x ?? r3(content.x + halfW + tpl.gap);
+      y = raw.y ?? rowTop;
+      availW = halfW;
+      if (raw.w == null) raw.w = halfW;
+    } else {
+      const inline = Boolean(raw.inline && prev);
+      x = raw.x ?? (inline ? prev.bbox.x + prev.bbox.w + tpl.gap : content.x);
+      y = raw.y ?? (inline ? prev.bbox.y : rowBottom + (prev ? tpl.gap : 0));
+      rowTop = y;
+      availW = contentRight - x;
+    }
+
     const res = layoutFn(raw, ctx, x, y, availW);
     const bbox = { x: r3(res.bbox.x), y: r3(res.bbox.y), w: r3(res.bbox.w), h: r3(res.bbox.h) };
 
@@ -2832,17 +2863,15 @@ const SAMPLE_TEMPLATES = {
       {
         type: 'fields',
         id: 'info',
-        inline: true,
         label: '',
         w: 186,
         fieldHeight: 7.5,
-        columns: 2,
         fields: [
-          { id: 'name', label: 'Name', role: 'name', w: 120 },
-          { id: 'score', label: 'Score', role: 'score', w: 60 },
-          { id: 'sid', label: 'Student ID', role: 'student_id', digits: 8, w: 90 },
-          { id: 'section', label: 'Section', w: 42 },
-          { id: 'date', label: 'Date', w: 48 },
+          { id: 'name', label: 'Student Name', role: 'name', row: 0, w: 108 },
+          { id: 'sid', label: 'Student ID', role: 'student_id', digits: 8, row: 0, w: 75 },
+          { id: 'section', label: 'Offer No. & Class Sched', row: 1, w: 96 },
+          { id: 'date', label: 'Date', row: 1, w: 46 },
+          { id: 'score', label: 'Score', role: 'score', row: 1, w: 41 },
         ],
       },
       {
@@ -2850,7 +2879,7 @@ const SAMPLE_TEMPLATES = {
         id: 'notes',
         w: 186,
         fontSize: 2.6,
-        text: 'Write your 8-digit Student ID clearly in the boxes above. Part I & II: fill each bubble completely with a dark pencil or pen.\nPart III: print your answer clearly inside the answer box corresponding to each question number.',
+        text: 'Write your 8-digit Student ID clearly in the boxes above. Part I & II: fill each bubble completely with a dark pencil or pen.\nPart III: print your answer clearly in block capital letters inside the answer box corresponding to each question number.',
       },
       {
         type: 'mcq',
@@ -2859,6 +2888,7 @@ const SAMPLE_TEMPLATES = {
         count: 50,
         choices: 'ABCDE',
         columns: 4,
+        pointsPerItem: 1,
         w: 186,
       },
       {
@@ -2867,14 +2897,15 @@ const SAMPLE_TEMPLATES = {
         label: 'Part II — True / False (51–60)',
         count: 10,
         columns: 5,
+        pointsPerItem: 1,
         w: 186,
       },
       {
         type: 'text',
         id: 'q61',
-        label: '61. What is the power house of the cell?',
+        label: '61.',
         w: 91,
-        boxHeight: 10,
+        boxHeight: 8,
         points: 2,
         charset: 'alpha',
       },
@@ -2882,9 +2913,9 @@ const SAMPLE_TEMPLATES = {
         type: 'text',
         id: 'q62',
         inline: true,
-        label: '62. Molecule carrying genetic code from DNA?',
+        label: '62.',
         w: 91,
-        boxHeight: 10,
+        boxHeight: 8,
         points: 2,
         charset: 'alpha',
       },
@@ -2898,20 +2929,22 @@ const SAMPLE_TEMPLATES = {
     bubble: { diameter: 4.0, pitchX: 5.4, pitchY: 5.0, groupEvery: 5, groupGap: 1.4 },
     zones: [
       {
+        type: 'student_id',
+        id: 'sid',
+        label: 'Student ID',
+        digits: 9,
+        shading: true,
+      },
+      {
         type: 'fields',
         id: 'info',
         inline: true,
         label: '',
-        w: 191.9,
-        fieldHeight: 7.5,
-        columns: 3,
         fields: [
-          { id: 'name', label: 'Name', role: 'name', w: 85 },
-          { id: 'sid', label: 'Student ID', role: 'student_id', digits: 9, w: 65 },
-          { id: 'score', label: 'Score', role: 'score', w: 35 },
-          { id: 'section', label: 'Section', w: 60 },
-          { id: 'date', label: 'Date', w: 65 },
-          { id: 'signature', label: 'Signature', ocr: false, w: 60 },
+          { id: 'name', label: 'Student Name', role: 'name', row: 0, w: 85 },
+          { id: 'score', label: 'Score', role: 'score', row: 0, w: 40 },
+          { id: 'section', label: 'Offer No. & Class Sched', row: 1, w: 75 },
+          { id: 'date', label: 'Date', row: 1, w: 50 },
         ],
       },
       {
@@ -2921,6 +2954,7 @@ const SAMPLE_TEMPLATES = {
         count: 100,
         choices: 'ABCD',
         columns: 5,
+        pointsPerItem: 1,
         w: 191.9,
       },
     ],
@@ -2934,38 +2968,40 @@ const SAMPLE_TEMPLATES = {
       {
         type: 'fields',
         id: 'info',
-        inline: true,
         label: '',
         w: 191.9,
         fieldHeight: 7.5,
-        columns: 3,
         fields: [
-          { id: 'name', label: 'Name', role: 'name', w: 85 },
-          { id: 'sid', label: 'Student ID', role: 'student_id', digits: 6, w: 65 },
-          { id: 'date', label: 'Date', w: 35 },
+          { id: 'name', label: 'Student Name', role: 'name', row: 0, w: 112 },
+          { id: 'sid', label: 'Student ID', role: 'student_id', digits: 6, row: 0, w: 77 },
+          { id: 'section', label: 'Offer No. & Class Sched', row: 1, w: 100 },
+          { id: 'date', label: 'Date', row: 1, w: 48 },
+          { id: 'score', label: 'Score', role: 'score', row: 1, w: 41 },
         ],
       },
       {
         type: 'truefalse',
         id: 'tf',
-        label: 'Simple True / False (1–20)',
+        label: 'Part I — Simple True / False (1–20)',
+        layout: 'half-left',
         count: 20,
-        columns: 4,
-        w: 191.9,
+        columns: 2,
+        pointsPerItem: 1,
       },
       {
         type: 'modified_tf',
         id: 'mod_tf',
-        label: 'Modified True / False (21–30: If False, write correction in box)',
+        label: 'Part II — Modified T/F (21–30)',
+        layout: 'half-right',
         count: 10,
-        columns: 2,
-        correctionWidth: 46,
-        w: 191.9,
+        columns: 1,
+        correctionWidth: 42,
+        pointsPerItem: 2,
       },
       {
         type: 'text',
         id: 's1',
-        label: '31. Short Answer: In what year did the Berlin Wall fall?',
+        label: '31.',
         w: 191.9,
         boxHeight: 12,
         points: 2,
@@ -2974,9 +3010,9 @@ const SAMPLE_TEMPLATES = {
       {
         type: 'text',
         id: 's2',
-        label: '32. Essay: Discuss the geopolitical factors contributing to the collapse of the Soviet Union.',
+        label: '32.',
         w: 191.9,
-        boxHeight: 48,
+        boxHeight: 32,
         points: 5,
         charset: 'any',
         multiline: true,
@@ -2997,20 +3033,21 @@ window.RenderDOM = RenderDOM;
 window.RenderSVG = RenderSVG;
 window.Templates = Templates;
 
-// 6. Studio Controller Application (IIFE Isolated)
+// 6. Sheet Builder Controller Application (IIFE Isolated)
 (function(LayoutEngine, RenderDOM, RenderSVG, Templates) {
   const { buildLayout, layoutStats, TemplateError, allGroups, PAPER_SIZES } = LayoutEngine;
   const { renderSheetDOM, renderStandaloneHTML, pageRule } = RenderDOM;
   const { renderSVG } = RenderSVG;
   const { SAMPLE_TEMPLATES } = Templates;
 /**
- * Grader — Visual OMR Exam Sheet Studio Controller.
+ * Sheet Builder — Visual OMR Exam Sheet Designer & Layout Engine Controller.
  *
  * Provides a fluid drag-and-drop builder, form-based property inspector,
  * interactive canvas with reorder handles and live drop indicators,
  * instant Answer Key generator, and millimeter-precise physical print export.
  */
-const STORAGE_KEY = 'grader-studio:template';
+const STORAGE_KEY = 'sheet-builder:template';
+const LEGACY_STORAGE_KEY = 'grader-studio:template';
 const PX_PER_MM = 96 / 25.4; // CSS reference pixel (3.7795 px/mm)
 
 const $ = (sel) => document.querySelector(sel);
@@ -3153,15 +3190,14 @@ function createDefaultZone(type) {
         type: 'fields',
         id: uid('info'),
         label: '',
-        columns: 3,
-        inline: true,
+        w: availW,
         fieldHeight: 7.5,
         fields: [
-          { id: 'name', label: 'Student Name', role: 'name', w: 70 },
-          { id: 'sid', label: 'Student ID', role: 'student_id', digits: 8, w: 60 },
-          { id: 'score', label: 'Score', role: 'score', w: 25 },
-          { id: 'section', label: 'Section', w: 45 },
-          { id: 'date', label: 'Date', w: 45 },
+          { id: 'name', label: 'Student Name', role: 'name', row: 0, w: 108 },
+          { id: 'sid', label: 'Student ID', role: 'student_id', digits: 8, row: 0, w: 75 },
+          { id: 'section', label: 'Offer No. & Class Sched', row: 1, w: 96 },
+          { id: 'date', label: 'Date', row: 1, w: 46 },
+          { id: 'score', label: 'Score', role: 'score', row: 1, w: 41 },
         ],
       };
 
@@ -3174,6 +3210,7 @@ function createDefaultZone(type) {
         start: nextQ,
         choices: 'ABCD',
         columns: 2,
+        pointsPerItem: 1,
         w: availW,
       };
 
@@ -3186,6 +3223,7 @@ function createDefaultZone(type) {
         start: nextQ,
         choices: ['T', 'F'],
         columns: 2,
+        pointsPerItem: 1,
         w: availW,
       };
 
@@ -3199,6 +3237,7 @@ function createDefaultZone(type) {
         choices: ['T', 'F'],
         corrWidth: 42,
         columns: 1,
+        pointsPerItem: 2,
         w: availW,
       };
 
@@ -3569,7 +3608,7 @@ function renderInspector() {
       <div class="empty-inspector">
         <div class="empty-inspector__icon">👆</div>
         <h3 class="empty-inspector__title">No Block Selected</h3>
-        <p class="empty-inspector__desc">Click on any section of the exam sheet or choose a block from the <strong>Outline</strong> tab to customize its properties.</p>
+        <p class="empty-inspector__desc">Click on any section of the exam sheet or choose a block from the <strong>Outline</strong> tab to customize its properties in the Sheet Builder inspector.</p>
       </div>
     `;
     return;
@@ -3584,7 +3623,7 @@ function renderInspector() {
     fields: '📝',
     mcq: '🔘',
     truefalse: '⚖️',
-    modified_tf: '✍️⚖️',
+    modified_tf: '📝',
     text: '✍️',
     text_short: '✏️',
     text_essay: '📄',
@@ -3649,6 +3688,15 @@ function renderInspector() {
             <button type="button" class="stepper-btn" id="insp-start-plus" aria-label="Increase start number">+</button>
           </div>
         </div>
+
+        <div class="form-group">
+          <label class="form-label" for="insp-points">Pts / Item</label>
+          <div class="stepper-control">
+            <button type="button" class="stepper-btn" id="insp-points-minus" aria-label="Decrease points">−</button>
+            <input type="number" id="insp-points" class="stepper-input" value="${zone.pointsPerItem ?? zone.points ?? 1}" min="1" max="50">
+            <button type="button" class="stepper-btn" id="insp-points-plus" aria-label="Increase points">+</button>
+          </div>
+        </div>
       </div>
 
       ${!isTf ? `
@@ -3673,7 +3721,7 @@ function renderInspector() {
       `}
 
       <div class="form-group">
-        <label class="form-label">Columns</label>
+        <label class="form-label">Columns within Module</label>
         <div class="pills-group" id="insp-cols-pills">
           <button type="button" class="pill-btn ${!zone.columns ? 'is-active' : ''}" data-cols="">Auto</button>
           <button type="button" class="pill-btn ${zone.columns === 1 ? 'is-active' : ''}" data-cols="1">1 Col</button>
@@ -3681,6 +3729,15 @@ function renderInspector() {
           <button type="button" class="pill-btn ${zone.columns === 3 ? 'is-active' : ''}" data-cols="3">3 Cols</button>
           <button type="button" class="pill-btn ${zone.columns === 4 ? 'is-active' : ''}" data-cols="4">4 Cols</button>
           <button type="button" class="pill-btn ${zone.columns === 5 ? 'is-active' : ''}" data-cols="5">5 Cols</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Module Page Placement</label>
+        <div class="pills-group" id="insp-placement-pills">
+          <button type="button" class="pill-btn ${(!zone.layout && !zone.side && !zone.inline) || zone.layout === 'full' ? 'is-active' : ''}" data-placement="full">Full Width</button>
+          <button type="button" class="pill-btn ${zone.layout === 'half-left' || zone.side === 'left' ? 'is-active' : ''}" data-placement="left">Side-by-Side (Left)</button>
+          <button type="button" class="pill-btn ${zone.layout === 'half-right' || zone.side === 'right' || zone.inline ? 'is-active' : ''}" data-placement="right">Side-by-Side (Right)</button>
         </div>
       </div>
     `;
@@ -3711,6 +3768,15 @@ function renderInspector() {
             <button type="button" class="stepper-btn" id="insp-start-plus" aria-label="Increase start number">+</button>
           </div>
         </div>
+
+        <div class="form-group">
+          <label class="form-label" for="insp-points">Pts / Item</label>
+          <div class="stepper-control">
+            <button type="button" class="stepper-btn" id="insp-points-minus" aria-label="Decrease points">−</button>
+            <input type="number" id="insp-points" class="stepper-input" value="${zone.pointsPerItem ?? zone.points ?? 2}" min="1" max="50">
+            <button type="button" class="stepper-btn" id="insp-points-plus" aria-label="Increase points">+</button>
+          </div>
+        </div>
       </div>
 
       <div class="form-group">
@@ -3723,11 +3789,20 @@ function renderInspector() {
       </div>
 
       <div class="form-group">
-        <label class="form-label">Columns</label>
+        <label class="form-label">Columns within Module</label>
         <div class="pills-group" id="insp-cols-pills">
           <button type="button" class="pill-btn ${(zone.columns || 1) === 1 ? 'is-active' : ''}" data-cols="1">1 Col</button>
           <button type="button" class="pill-btn ${(zone.columns || 1) === 2 ? 'is-active' : ''}" data-cols="2">2 Cols</button>
           <button type="button" class="pill-btn ${(zone.columns || 1) === 3 ? 'is-active' : ''}" data-cols="3">3 Cols</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Module Page Placement</label>
+        <div class="pills-group" id="insp-placement-pills">
+          <button type="button" class="pill-btn ${(!zone.layout && !zone.side && !zone.inline) || zone.layout === 'full' ? 'is-active' : ''}" data-placement="full">Full Width</button>
+          <button type="button" class="pill-btn ${zone.layout === 'half-left' || zone.side === 'left' ? 'is-active' : ''}" data-placement="left">Side-by-Side (Left)</button>
+          <button type="button" class="pill-btn ${zone.layout === 'half-right' || zone.side === 'right' || zone.inline ? 'is-active' : ''}" data-placement="right">Side-by-Side (Right)</button>
         </div>
       </div>
     `;
@@ -3806,7 +3881,7 @@ function renderInspector() {
           </label>
           <label class="field-checkbox-label">
             <input type="checkbox" id="field-section" ${hasField('section') ? 'checked' : ''}>
-            <span>Section</span>
+            <span>Offer No. &amp; Sched</span>
           </label>
           <label class="field-checkbox-label">
             <input type="checkbox" id="field-date" ${hasField('date') ? 'checked' : ''}>
@@ -3816,6 +3891,15 @@ function renderInspector() {
             <input type="checkbox" id="field-sig" ${hasField('signature') ? 'checked' : ''}>
             <span>Signature</span>
           </label>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Module Page Placement</label>
+        <div class="pills-group" id="insp-placement-pills">
+          <button type="button" class="pill-btn ${(!zone.layout && !zone.side && !zone.inline) || zone.layout === 'full' ? 'is-active' : ''}" data-placement="full">Full Width</button>
+          <button type="button" class="pill-btn ${zone.layout === 'half-left' || zone.side === 'left' ? 'is-active' : ''}" data-placement="left">Side-by-Side (Left)</button>
+          <button type="button" class="pill-btn ${zone.layout === 'half-right' || zone.side === 'right' || zone.inline ? 'is-active' : ''}" data-placement="right">Side-by-Side (Right)</button>
         </div>
       </div>
     `;
@@ -3855,6 +3939,15 @@ function renderInspector() {
           <button type="button" class="stepper-btn" id="insp-box-height-minus" aria-label="Decrease box height">−</button>
           <input type="number" id="insp-box-height" class="stepper-input" value="${zone.boxHeight ?? defaultH}" min="8" max="120">
           <button type="button" class="stepper-btn" id="insp-box-height-plus" aria-label="Increase box height">+</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Module Page Placement</label>
+        <div class="pills-group" id="insp-placement-pills">
+          <button type="button" class="pill-btn ${(!zone.layout && !zone.side && !zone.inline) || zone.layout === 'full' ? 'is-active' : ''}" data-placement="full">Full Width</button>
+          <button type="button" class="pill-btn ${zone.layout === 'half-left' || zone.side === 'left' ? 'is-active' : ''}" data-placement="left">Side-by-Side (Left)</button>
+          <button type="button" class="pill-btn ${zone.layout === 'half-right' || zone.side === 'right' || zone.inline ? 'is-active' : ''}" data-placement="right">Side-by-Side (Right)</button>
         </div>
       </div>
     `;
@@ -3918,10 +4011,47 @@ function bindInspectorEvents(zone) {
     });
   }
 
-  // Count & Start steppers (for mcq, truefalse, modified_tf)
+  // Count & Start & Points steppers (for mcq, truefalse, modified_tf)
   if (zone.type === 'mcq' || zone.type === 'truefalse' || zone.type === 'modified_tf') {
     bindStepper('insp-count', () => zone.count, (val) => { zone.count = val; update(); }, 1, 100);
     bindStepper('insp-start', () => zone.start, (val) => { zone.start = val; update(); }, 1, 999);
+    bindStepper(
+      'insp-points',
+      () => zone.pointsPerItem ?? zone.points ?? (zone.type === 'modified_tf' ? 2 : 1),
+      (val) => {
+        zone.pointsPerItem = val;
+        zone.points = val;
+        update();
+      },
+      1,
+      50,
+    );
+  }
+
+  // Placement pills (Module page placement)
+  const placementPills = $$('#insp-placement-pills .pill-btn');
+  for (const pill of placementPills) {
+    pill.addEventListener('click', () => {
+      const mode = pill.dataset.placement;
+      if (mode === 'left') {
+        zone.layout = 'half-left';
+        zone.side = 'left';
+        delete zone.inline;
+        delete zone.w;
+      } else if (mode === 'right') {
+        zone.layout = 'half-right';
+        zone.side = 'right';
+        zone.inline = true;
+        delete zone.w;
+      } else {
+        delete zone.layout;
+        delete zone.side;
+        delete zone.inline;
+        delete zone.w;
+      }
+      renderInspector();
+      update();
+    });
   }
 
   // Modified T/F correction box width
@@ -4033,13 +4163,15 @@ function bindInspectorEvents(zone) {
     const updateFields = () => {
       const digits = parseInt($('#insp-sid-digits')?.value, 10) || zone.sidDigits || 8;
       const fields = [];
-      if (nameCb?.checked) fields.push({ id: 'name', label: 'Student Name', role: 'name', w: 70 });
-      if (sidCb?.checked) fields.push({ id: 'sid', label: 'Student ID', role: 'student_id', digits, w: Math.max(50, digits * 6 + 15) });
-      if (scoreCb?.checked) fields.push({ id: 'score', label: 'Score', role: 'score', w: 25 });
-      if (sectionCb?.checked) fields.push({ id: 'section', label: 'Section', w: 45 });
-      if (dateCb?.checked) fields.push({ id: 'date', label: 'Date', w: 45 });
-      if (sigCb?.checked) fields.push({ id: 'signature', label: 'Signature', ocr: false, w: 55 });
-      if (fields.length === 0) fields.push({ id: 'name', label: 'Student Name', role: 'name', w: 70 });
+      // Row 0: Student Name & Student ID
+      if (nameCb?.checked) fields.push({ id: 'name', label: 'Student Name', role: 'name', row: 0, w: 108 });
+      if (sidCb?.checked) fields.push({ id: 'sid', label: 'Student ID', role: 'student_id', digits, row: 0, w: Math.max(65, digits * 6 + 15) });
+      // Row 1: Offer No. & Class Sched, Date, Score
+      if (sectionCb?.checked) fields.push({ id: 'section', label: 'Offer No. & Class Sched', row: 1, w: 96 });
+      if (dateCb?.checked) fields.push({ id: 'date', label: 'Date', row: 1, w: 46 });
+      if (scoreCb?.checked) fields.push({ id: 'score', label: 'Score', role: 'score', row: 1, w: 41 });
+      if (sigCb?.checked) fields.push({ id: 'signature', label: 'Signature', ocr: false, row: 1, w: 45 });
+      if (fields.length === 0) fields.push({ id: 'name', label: 'Student Name', role: 'name', row: 0, w: 108 });
       zone.fields = fields;
       update();
     };
@@ -4094,7 +4226,7 @@ function renderOutline() {
     fields: '📝',
     mcq: '🔘',
     truefalse: '⚖️',
-    modified_tf: '✍️⚖️',
+    modified_tf: '📝',
     text: '✍️',
     text_short: '✏️',
     text_essay: '📄',
@@ -4203,10 +4335,10 @@ function renderMeta(layout) {
   // Total points calculation
   let totalPts = 0;
   for (const g of allGroups(layout)) {
-    if (g.kind === 'mcq' || g.kind === 'tf') totalPts += 1;
+    if (g.kind === 'mcq' || g.kind === 'tf') totalPts += (g.points || 1);
   }
   for (const r of layout.zones.flatMap((z) => z.rois)) {
-    if (r.graded) totalPts += r.points || 1;
+    if (r.graded) totalPts += (r.points || 1);
   }
   els.statPoints.textContent = String(totalPts);
 
@@ -4280,12 +4412,13 @@ function downloadAnswerKey() {
   for (const g of allGroups(layout)) {
     if (g.kind === 'mcq' || g.kind === 'tf') {
       const defaultAnswer = g.options[0]?.value || (g.kind === 'tf' ? 'T' : 'A');
+      const pts = g.points || 1.0;
       items[g.key] = {
         answer: defaultAnswer,
-        points: 1.0,
+        points: pts,
         kind: g.kind,
       };
-      totalPoints += 1.0;
+      totalPoints += pts;
     }
   }
 
@@ -4341,11 +4474,12 @@ async function loadSample(urlOrKey) {
 }
 
 // ---- Saved Exam Builds Feature ----
-const SAVED_BUILDS_KEY = 'grader:saved_builds';
+const SAVED_BUILDS_KEY = 'sheet-builder:saved_builds';
+const LEGACY_SAVED_BUILDS_KEY = 'grader:saved_builds';
 
 function getSavedBuilds() {
   try {
-    const raw = localStorage.getItem(SAVED_BUILDS_KEY);
+    const raw = localStorage.getItem(SAVED_BUILDS_KEY) || localStorage.getItem(LEGACY_SAVED_BUILDS_KEY);
     return raw ? JSON.parse(raw) : [];
   } catch {
     return [];
@@ -4397,7 +4531,7 @@ function renderSavedBuildsList() {
           </div>
           <div class="saved-build-card__actions">
             <button type="button" class="btn btn--secondary btn-sm btn-load-build" data-build-id="${b.id}" title="Load this exam build into editor">Load</button>
-            <button type="button" class="btn btn--secondary btn-sm btn-export-build" data-build-id="${b.id}" title="Download build file">Export .grader.json</button>
+            <button type="button" class="btn btn--secondary btn-sm btn-export-build" data-build-id="${b.id}" title="Download build file">Export .sheet.json</button>
             <button type="button" class="btn btn--secondary btn-sm is-danger btn-delete-build" data-build-id="${b.id}" title="Delete this build">Delete</button>
           </div>
         </div>
@@ -4421,7 +4555,7 @@ function renderSavedBuildsList() {
       const id = btn.dataset.buildId;
       const b = getSavedBuilds().find((x) => x.id === id);
       if (b && b.template) {
-        download(`${b.id || 'exam'}.grader.json`, `${JSON.stringify(b.template, null, 2)}\n`, 'application/json');
+        download(`${b.id || 'exam'}.sheet.json`, `${JSON.stringify(b.template, null, 2)}\n`, 'application/json');
       }
     });
   });
@@ -4527,7 +4661,7 @@ function initEvents() {
   els.btnImportFileTrigger?.addEventListener('click', () => {
     const filePicker = document.createElement('input');
     filePicker.type = 'file';
-    filePicker.accept = '.json,.grader,application/json';
+    filePicker.accept = '.json,.grader,.sheet.json,application/json';
     filePicker.onchange = async () => {
       const file = filePicker.files?.[0];
       if (!file) return;
@@ -4706,7 +4840,7 @@ function initEvents() {
 async function init() {
   initEvents();
 
-  const saved = localStorage.getItem(STORAGE_KEY);
+  const saved = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY);
   if (saved) {
     try {
       const parsed = JSON.parse(saved);
@@ -4742,8 +4876,8 @@ init();
         </svg>
       </div>
       <div>
-        <h1 class="app-brand__title">Grader <span>Studio</span></h1>
-        <span class="app-brand__badge">Visual Exam Builder</span>
+        <h1 class="app-brand__title"><span class="brand-title">Sheet <span>Builder</span></span></h1>
+        <span class="app-brand__badge">OMR Exam Designer &amp; Layout Engine</span>
       </div>
     </div>
 
@@ -4799,6 +4933,12 @@ init();
         <span class="toggle-pill__text">CV Targets</span>
       </label>
 
+      <!-- Switch to Checker Studio -->
+      <a href="checker.html" class="btn btn--secondary" title="Open In-Browser Exam Checker">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        <span>🔍 Checker</span>
+      </a>
+
       <!-- Download Answer Key Button -->
       <button type="button" id="btn-dl-key" class="btn btn--accent" title="Download pre-filled answer key template (no JSON writing needed!)">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 3-9.5 9.5"/><path d="m15.5 7.5 3 3M18 5l2 2"/></svg>
@@ -4832,7 +4972,7 @@ init();
           </button>
           <button type="button" id="dl-template">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-            Export Build File (.grader.json)
+            Export Sheet Builder File (.sheet.json)
           </button>
         </div>
       </div>
@@ -4842,7 +4982,7 @@ init();
   <!-- Studio Main Layout -->
   <div class="app-layout">
     <!-- Left Sidebar: Builder Studio Controls -->
-    <aside class="panel studio-sidebar app-chrome" aria-label="Exam Builder Sidebar">
+    <aside class="panel studio-sidebar app-chrome" aria-label="Sheet Builder Sidebar">
       <!-- Exam Global Card: Title & Paper Size -->
       <div class="exam-global-card">
         <label for="exam-title-input" class="visually-hidden">Exam Title</label>
@@ -4916,7 +5056,7 @@ init();
 
           <!-- Modified True / False Card -->
           <div class="palette-card" draggable="true" data-type="modified_tf">
-            <div class="palette-card__icon">✍️⚖️</div>
+            <div class="palette-card__icon">📝</div>
             <div class="palette-card__body">
               <h3 class="palette-card__title">Modified True / False</h3>
               <p class="palette-card__desc">T / F bubbles + write-in box to correct if false</p>
@@ -4983,8 +5123,8 @@ init();
           <svg class="chevron-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg>
         </summary>
         <div class="advanced-drawer__body">
-          <label for="template-file-input">Open Build File (.json / .grader):</label>
-          <input type="file" id="template-file-input" accept="application/json,.json,.grader">
+          <label for="template-file-input">Open Sheet Builder File (.json / .sheet.json):</label>
+          <input type="file" id="template-file-input" accept="application/json,.json,.grader,.sheet.json">
 
           <label for="raw-json-textarea">Template JSON Payload:</label>
           <textarea id="raw-json-textarea" rows="10" spellcheck="false" autocomplete="off"></textarea>
@@ -5025,11 +5165,11 @@ init();
   <dialog class="modal-dialog app-chrome" id="modal-library">
     <div class="modal-card">
       <div class="modal-header">
-        <h2 class="modal-title">Saved Exam Builds Library</h2>
+        <h2 class="modal-title">Saved Sheet Builder Library</h2>
         <button type="button" class="btn-close-modal" id="btn-close-library" aria-label="Close">✕</button>
       </div>
       <div class="modal-body">
-        <p class="modal-desc">All exam builds saved in your browser. You can load, export, or delete them anytime.</p>
+        <p class="modal-desc">All exam templates saved in Sheet Builder. You can load, export, or delete them anytime.</p>
         <div class="saved-builds-list" id="saved-builds-list">
           <!-- Populated dynamically -->
         </div>
@@ -5037,7 +5177,7 @@ init();
       <div class="modal-footer">
         <button type="button" id="btn-import-file-trigger" class="btn btn--secondary">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-          Import Build File (.json)
+          Import Sheet Builder File (.json)
         </button>
         <button type="button" id="btn-modal-close" class="btn btn--primary">Done</button>
       </div>

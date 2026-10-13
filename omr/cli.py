@@ -14,8 +14,8 @@ from omr.roster import Roster
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
-        prog="omr",
-        description="Optical Mark Recognition (OMR) & Document Grading Pipeline",
+        prog="checker",
+        description="Checker — Optical Mark Recognition & Document Grading Pipeline",
     )
     parser.add_argument(
         "--layout",

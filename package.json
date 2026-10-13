@@ -2,7 +2,7 @@
   "name": "grader",
   "version": "1.0.0",
   "private": true,
-  "description": "Browser-based OMR exam sheet builder with an OpenCV grading pipeline",
+  "description": "Sheet Builder (browser OMR designer) & Checker (OpenCV grading pipeline)",
   "type": "module",
   "engines": {
     "node": ">=20"
@@ -12,6 +12,8 @@
     "export": "node scripts/export-layout.mjs",
     "export:all": "node scripts/export-layout.mjs builder/templates/exam-50.json && node scripts/export-layout.mjs builder/templates/exam-100.json && node scripts/export-layout.mjs builder/templates/quiz-tf.json",
     "build:studio": "node scripts/build-standalone-studio.mjs",
+    "build:sheet-builder": "node scripts/build-standalone-studio.mjs",
+    "checker:ui": "python3 spaces/exam-checker/app.py",
     "test": "node --test tests/js/*.test.mjs"
   },
   "devDependencies": {

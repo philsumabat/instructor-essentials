@@ -1,0 +1,8 @@
+#!/bin/sh
+root="$(cd "$(dirname "$0")" && pwd)"
+if [ -x "$root/.venv/bin/python" ]; then
+  PYTHON="$root/.venv/bin/python"
+else
+  PYTHON="python3"
+fi
+PYTHONPATH="$root" exec "$PYTHON" "$root/spaces/exam-checker/app.py" "$@"

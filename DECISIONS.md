@@ -8,74 +8,75 @@
 
 ## 1. Executive Summary & Purpose
 
-`grader` is an end-to-end, millimeter-accurate Optical Mark Recognition (OMR) and document processing pipeline operating on standard camera or flatbed scan image files (JPEG, PNG). 
+`grader` is an end-to-end, millimeter-accurate Optical Mark Recognition (OMR) and document processing pipeline operating on standard camera photos and flatbed scanner images (JPEG, PNG). 
 
-The system solves the traditional OMR problem where proprietary scanner hardware, pre-printed lithographic scannable sheets, and fragile pixel-coordinate assumptions create high operational friction. Instead, `grader` couples:
-1. A **browser-based layout engine** that generates mathematically exact vector (SVG) and printable (HTML/CSS Grid `@media print`) forms anchored by ArUco fiducials.
-2. An **OpenCV Computer Vision pipeline** that rectifies scans regardless of phone angle, rotation skew, or flatbed feeder distortion using homography.
-3. A **hybrid evaluation engine** combining inner-core bubble density sampling for Multiple Choice / True-False items with localized cell OCR for write-in student IDs and handwritten short answers.
-4. An **industrial psychometrics engine** computing classical test theory metrics (Item Facility, Kelly's Discrimination Index, Pearson Point-Biserial Correlation, Distractor Distribution, and Cronbach's Alpha).
+The system solves traditional OMR friction (proprietary scanner hardware, pre-printed lithographic sheets, and fragile pixel-coordinate assumptions) by dividing functionality into two robust pillars:
+1. **`sheet-builder`**: A browser-based visual exam sheet designer, layout engine, and zero-CORS standalone HTML editor generating mathematically exact vector (SVG) and printable (HTML/CSS Grid `@media print`) forms anchored by ArUco fiducials.
+2. **`checker`**: A computer vision OMR grading pipeline, OCR engine, psychometrics analyzer, CLI runner, and cloud web app (Hugging Face Spaces) that rectifies scans regardless of phone angle, rotation skew, or flatbed feeder distortion using homography.
+
+```mermaid
+flowchart TD
+    subgraph SB["Pillar 1: sheet-builder"]
+        direction TB
+        DESIGN["Visual Studio Designer<br/>(builder/studio.html)"] --> ENG["Isomorphic Layout Engine<br/>(builder/js/layout-engine.js)"]
+        ENG --> CONTRACT["Coordinate Contract<br/>(layout.json)"]
+        ENG --> PRINT_OUT["Printable Form Sheets<br/>(DOM / SVG)"]
+    end
+
+    PRINT_OUT --> PAPER["Printed Paper Exams<br/>(with ArUco markers)"]
+    PAPER --> CAPTURE["Captured Scans<br/>(JPEG / PNG)"]
+
+    subgraph CHK["Pillar 2: checker"]
+        direction TB
+        CAPTURE --> RECT["Perspective Rectification<br/>(omr/vision.py)"]
+        CONTRACT --> RECT
+        RECT --> BUBBLE["Bubble Density Scanning<br/>(Inner Core Sampling)"]
+        RECT --> OCR_ID["Partitioned Digit OCR<br/>(omr/ocr.py)"]
+        ROSTER_CSV["Roster CSV"] --> ROSTER_MATCH["Fault-Tolerant Matcher<br/>(omr/roster.py)"]
+        OCR_ID --> ROSTER_MATCH
+        ANSWER_KEY["Answer Key JSON"] --> EVAL["Grading Evaluator<br/>(omr/grading.py)"]
+        BUBBLE --> EVAL
+        ROSTER_MATCH --> EVAL
+        EVAL --> RESULTS["Deliverables: Overlays,<br/>Summary JSON & HTML Psychometrics"]
+    end
+```
 
 ---
 
 ## 2. Architecture & File Structure
 
-```text
-grader/
-├── builder/                      # Module 1: Browser-Based Sheet Builder (Zero-dependency JS)
-│   ├── css/
-│   │   ├── app.css               # Builder UI styles and control panel
-│   │   └── sheet.css             # Millimetric CSS Grid rules & @page print directives
-│   ├── index.html                # Interactive sheet previewer and JSON editor
-│   ├── js/
-│   │   ├── app.js                # UI controller, state sync, and file download actions
-│   │   ├── aruco.js              # Native OpenCV DICT_4X4_50 marker bit patterns (IDs 0–3)
-│   │   ├── layout-engine.js      # Isomorphic geometry engine (computes resolved mm coordinates)
-│   │   ├── render-dom.js         # DOM / CSS Grid renderer for physical printing
-│   │   └── render-svg.js         # True-scale Scalable Vector Graphic (SVG) generator
-│   └── templates/
-│       ├── exam-50.json          # 50 MCQ + 10 T/F + 2 handwritten text answers (A4)
-│       ├── exam-100.json         # 100 MCQ 4-choice items (US Letter)
-│       └── quiz-tf.json          # 40 T/F + 3 short-answer items (A4)
-├── data/
-│   ├── bio101_key.json           # Answer key with item types, points, and rubrics
-│   ├── bio101_roster.csv         # Enrolled class roster (Student ID, Full Name, Section)
-│   └── scans/                    # Scanned test JPEGs with rotation skew and sensor noise
-├── dist/                         # Headless exports generated from templates
-│   ├── exam-50/                  # layout.json, sheet.svg, sheet.html
-│   ├── exam-100/
-│   └── quiz-tf/
-├── omr/                          # Modules 2–5: Python Computer Vision & Grading Pipeline
-│   ├── __init__.py
-│   ├── __main__.py               # python -m omr entrypoint
-│   ├── annotator.py              # Superimposes visual grading feedback (OpenCV overlays)
-│   ├── cli.py                    # CLI command processor registered as `grader`
-│   ├── grading.py                # Evaluates responses against JSON key (MCQ, TF, fuzzy text)
-│   ├── layout.py                 # Typed loader and coordinate queries for layout.json
-│   ├── ocr.py                    # Preprocessing & PyTesseract OCR extraction
-│   ├── pipeline.py               # End-to-end batch processing pipeline orchestrator
-│   ├── report.py                 # Psychometrics calculator & Jinja2 HTML report generator
-│   ├── roster.py                 # CSV roster ingestion & fault-tolerant OMR ID matcher
-│   ├── simulator.py              # Test scanner generator synthesizing realistic scan JPEGs
-│   └── vision.py                 # ArUco detection, perspective warping, bubble density scanner
-├── output/                       # Output deliverables
-│   ├── annotated/                # Graded JPEG scans with correct/error annotations
-│   ├── grades_summary.json       # Structured grade outputs per student
-│   └── item_analysis_report.html # Standalone psychometric report
-├── scripts/
-│   ├── export-layout.mjs         # Headless template export CLI (Node.js)
-│   └── generate_sample_scans.py  # Synthetic test scan generator
-├── tests/
-│   ├── js/
-│   │   └── layout.test.mjs       # Node tests for layout engine & rendering
-│   ├── test_grading.py           # Evaluation tests
-│   ├── test_psychometrics.py     # Statistical formulas tests
-│   ├── test_roster.py            # Roster parsing & ID recovery tests
-│   └── test_vision.py            # Perspective warp & bubble density tests
-├── package.json                  # Node metadata and scripts (name: "grader")
-├── pyproject.toml                # Python package definition (name: "grader")
-└── requirements.txt              # Python runtime dependencies
-```
+### `sheet-builder` (Module 1: Browser-Based Sheet Designer)
+- `builder/css/app.css` — Builder UI styles, control panel, and floating toolbar styling.
+- `builder/css/sheet.css` — Millimetric CSS Grid rules and `@media print` directives.
+- `builder/index.html` — Interactive modular developer editor with live preview.
+- `builder/studio.html` — Zero-dependency, standalone single-file production studio (zero-CORS).
+- `builder/js/app.js` — UI controller, library state management, and file download actions.
+- `builder/js/aruco.js` — Native OpenCV `DICT_4X4_50` marker bit patterns (IDs 0–3).
+- `builder/js/layout-engine.js` — Isomorphic geometry engine (computes resolved mm coordinates).
+- `builder/js/render-dom.js` — DOM / CSS Grid renderer for physical printing.
+- `builder/js/render-svg.js` — True-scale Scalable Vector Graphic (SVG) generator.
+- `builder/templates/` — Canonical exam templates (`exam-50.json`, `exam-100.json`, `quiz-tf.json`).
+
+### `checker` (Modules 2–5: Computer Vision, OCR & Grading Pipeline)
+- `omr/__main__.py` — Entrypoint for `python -m omr` execution.
+- `omr/annotator.py` — Superimposes visual grading feedback (OpenCV derivative JPEGs).
+- `omr/cli.py` — CLI command processor registered as `grader`.
+- `omr/grading.py` — Evaluates responses against JSON key (MCQ, TF, fuzzy text).
+- `omr/layout.py` — Typed loader and coordinate queries for `layout.json`.
+- `omr/ocr.py` — Image preprocessing and PyTesseract partitioned OCR extraction.
+- `omr/pipeline.py` — End-to-end batch processing pipeline orchestrator.
+- `omr/report.py` — Psychometrics calculator and Jinja2 HTML report generator.
+- `omr/roster.py` — CSV roster ingestion and fault-tolerant student ID matcher.
+- `omr/simulator.py` — Test scanner generator synthesizing realistic scan JPEGs.
+- `omr/vision.py` — ArUco detection, perspective warping, and bubble density scanner.
+- `spaces/exam-checker/` — Turnkey Gradio 4.44.0 cloud web application for Hugging Face Spaces.
+
+### Data & Deliverables
+- `data/` — Reference answer key (`bio101_key.json`), roster (`bio101_roster.csv`), and scans (`scans/`).
+- `dist/` — Headless template exports (`exam-50/`, `exam-100/`, `quiz-tf/`).
+- `output/` — Grading deliverables (`annotated/`, `grades_summary.json`, `item_analysis_report.html`).
+- `scripts/` — Build and export utilities (`build-standalone-studio.mjs`, `export-layout.mjs`, `generate_sample_scans.py`).
+- `tests/` — Automated test suite (`tests/js/` for Node, `tests/test_*.py` for Python).
 
 ---
 
@@ -143,7 +144,7 @@ This section records critical decisions made in response to real-world grading r
   - Reduced `boxHeight` default and template settings to $7.5 - 8.0\,\text{mm}$, perfectly sized for single-line printed handwritten terms (e.g., "MITOCHONDRIA", "TRNA") while saving ~25mm of vertical space.
 
 ### Decision 5: Elimination of Question Sentences on Answer Sheets
-- **Initial Design**: Printed full question sentences (e.g., *"What organelle produces ATP through cellular respiration?"*) inside the zone headers.
+- **Initial Design**: Printed full question sentences inside the zone headers.
 - **User Feedback**: *"no need to add questions in the exam sheet"*
 - **Design Decision**:
   - Cleaned answer sheet templates to contain only question numbers (e.g. `61. [     ]`, `62. [     ]`).
@@ -151,7 +152,7 @@ This section records critical decisions made in response to real-world grading r
 
 ---
 
-## 5. Computer Vision & Recognition Algorithms
+## 5. Computer Vision & Recognition Algorithms (`checker`)
 
 ### 5.1 Sheet Rectification (`omr/vision.py` $\rightarrow$ `SheetWarper`)
 1. **Detection**: OpenCV `aruco.ArucoDetector` detects markers from `cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)`.
@@ -211,36 +212,34 @@ The batch processing pipeline computes standard psychometrics across the exam co
 
 ## 7. Multi-Agent Development Guide for Future AI Models
 
-If you are a future AI model or autonomous agent team continuing work on `grader`, you can parallelize tasks across specialized subagents using this division of responsibilities:
+When contributing to `grader`, tasks must be parallelized across specialized subagents using this division of responsibilities:
 
-```
-                               ┌─────────────────────────────────┐
-                               │       Orchestrator Agent        │
-                               │  (CLI, Pipeline, Configuration) │
-                               └────────────────┬────────────────┘
-                                                │
-         ┌───────────────────┬──────────────────┴─────────────────┬───────────────────┐
-         ▼                   ▼                                    ▼                   ▼
-┌──────────────────┐┌──────────────────┐                ┌──────────────────┐┌──────────────────┐
-│   Agent Alpha    ││    Agent Beta    │                │   Agent Gamma    ││    Agent Delta   │
-│ (Sheet Geometry  ││ (Computer Vision │                │  (OCR Engine &   ││ (Psychometrics & │
-│  & DOM/SVG UX)   ││  & Homography)   │                │   Handwriting)   ││ Report Template) │
-└──────────────────┘└──────────────────┘                └──────────────────┘└──────────────────┘
+```mermaid
+flowchart TD
+    ORCH["Orchestrator Agent<br/>(Task Breakdown & Pipeline Configuration)"]
+    ORCH --> A1["Agent Alpha<br/>(sheet-builder: Geometry & DOM/SVG UX)"]
+    ORCH --> A2["Agent Beta<br/>(checker: Computer Vision & Homography)"]
+    ORCH --> A3["Agent Gamma<br/>(checker: OCR Engine & Handwriting)"]
+    ORCH --> A4["Agent Delta<br/>(checker: Psychometrics & Deliverables)"]
+    ORCH --> A5["Agent Epsilon<br/>(Deployment: GitHub Pages & HF Spaces)"]
 ```
 
 ### Agent Roles:
-1. **Agent Alpha (Sheet Geometry & Layout Engine)**
+1. **Agent Alpha (Sheet Geometry & Layout Engine — `sheet-builder`)**
    - **Scope**: `builder/js/layout-engine.js`, `builder/js/render-dom.js`, `builder/js/render-svg.js`, `builder/css/sheet.css`.
    - **Key Invariants**: Maintain millimeter precision. Zero external runtime npm dependencies (vanilla modern ES modules). Never break `layout.json` schema compatibility.
-2. **Agent Beta (Computer Vision & Geometry Rectification)**
+2. **Agent Beta (Computer Vision & Geometry Rectification — `checker`)**
    - **Scope**: `omr/vision.py`, `omr/simulator.py`, `omr/layout.py`.
    - **Key Invariants**: Preserve ArUco `DICT_4X4_50` detection and RANSAC homography. Verify sampling radius math ($r_{\text{inner}} = 0.72 \times r_{\text{nominal}}$).
-3. **Agent Gamma (OCR & Handwriting Recognition)**
+3. **Agent Gamma (OCR & Handwriting Recognition — `checker`)**
    - **Scope**: `omr/ocr.py`, `omr/roster.py`, `omr/grading.py`.
    - **Key Invariants**: Maintain border margin suppression ($1.1\,\text{mm}$ inset), cell-by-cell digit segmentation, and difflib Levenshtein ratio tolerance ($\ge 0.85$) for written text.
-4. **Agent Delta (Psychometrics & Deliverables)**
+4. **Agent Delta (Psychometrics & Deliverables — `checker`)**
    - **Scope**: `omr/report.py`, `omr/annotator.py`, Jinja2 templates.
    - **Key Invariants**: Respect `layout.score_roi` for stamping scores directly into the form. Ensure all psychometric metrics ($P, D, r_{pbis}, \alpha$) compute valid values without division-by-zero on homogeneous cohorts.
+5. **Agent Epsilon (Deployment & Cloud Systems)**
+   - **Scope**: `.github/workflows/deploy-pages.yml`, `spaces/exam-checker/app.py`, deployment documentation.
+   - **Key Invariants**: Ensure GitHub Pages remains zero-server and Hugging Face Spaces Gradio app installs Debian OCR dependencies cleanly.
 
 ---
 
@@ -272,20 +271,20 @@ PYTHONPATH=. .venv/bin/python -m omr \
 
 ---
 
-## 9. Visual Drag-and-Drop Exam Sheet Studio (Builder 2.0)
+## 9. Visual Drag-and-Drop Exam Sheet Studio (`sheet-builder` 2.0)
 
 ### 9.1 Motivation & Teacher-Centric UX
-Non-technical educators, proctors, and test administrators should never be forced to edit raw JSON files or manually write nested coordinate blocks. Builder 2.0 transforms the client-side tool into a full WYSIWYG studio with zero runtime npm dependencies:
+Non-technical educators, proctors, and test administrators should never be forced to edit raw JSON files or manually write nested coordinate blocks. `sheet-builder` transforms the client-side tool into a full WYSIWYG studio with zero runtime npm dependencies:
 1. **Visual Component Palette**:
    - Draggable cards representing exam components: Student ID Matrix (`student_id`), Student Information (`fields`), Multiple Choice (`mcq`), True / False (`truefalse`), Written Answer (`text`), and Instructions (`instructions`).
    - Cards support native HTML5 drag-and-drop onto the sheet canvas as well as instant one-click `+ Add` placement.
 2. **Interactive Sheet Canvas**:
    - Live bounding-box hover indicators and blue selection rings (`#2563eb`).
-   - Floating quick-action toolbars directly on selected zones: Move Up (▲), Move Down (▼), Duplicate (⧉), and Delete (🗑).
+   - Floating quick-action toolbars directly on selected zones: Move Up, Move Down, Duplicate, and Delete.
    - Real-time drop indicator line with position calculation mapping cursor coordinates to nearest zone boundaries.
 3. **Reactive Form-Based Property Inspector**:
    - Immediate parameterization without raw JSON:
-     - Question count steppers & sliders ($1..100$).
+     - Question count steppers ($1..100$).
      - Choice options (A–D, A–E, A–C, T/F, custom).
      - Auto or explicit column layout ($1..5$ columns).
      - Student ID digits ($4..14$) with segmented toggle between Bubble Grid (OMR) and Handwritten Digits (OCR).
@@ -297,3 +296,35 @@ Non-technical educators, proctors, and test administrators should never be force
    - All interactive UI chrome (floating toolbars, drag grips, drop indicators, sidebar, canvas controls) use `.app-chrome` or `@media print { display: none !important; }`.
    - Physical printouts via `@media print` remain 100% millimeter-accurate, distortion-free, and anchored by ArUco fiducials.
 
+---
+
+## 10. Multi-Agent Development Mandate & Evolution (October 2026)
+
+### 10.1 Standing Agent Reminder
+> **CRITICAL ARCHITECTURAL DIRECTIVE**:
+> **Always use multiple agents whenever needed and possible for this project.**
+> Tasks should be partitioned into autonomous subagents handling:
+> 1. Frontend studio geometries, SVG/DOM renderers, CSS (`sheet-builder`).
+> 2. OpenCV computer vision, ArUco alignment, Tesseract OCR (`checker`).
+> 3. Cloud deployment integrations (GitHub Pages, Hugging Face Spaces).
+> 4. Test suites and psychometric analysis.
+
+### 10.2 Recent Evolutions Log:
+- **Decision 6: Side-by-Side Module Drag-and-Drop Capability**:
+  - In addition to column layout *inside* modules, added side-by-side placement for distinct modules on the sheet (`layout: 'half-left'` / `layout: 'half-right'`).
+  - Mathematical 50% split maintains exact millimeter bounds without CSS float/flex distortion.
+- **Decision 7: Points Per Item Stepper**:
+  - Added explicit stepper controls for `pointsPerItem` across MCQ, True/False, and Modified True/False modules.
+  - Tightly coupled with pre-filled `answer_key.json` export and live studio score counters.
+- **Decision 8: Consolidated 2-Line Header Block**:
+  - Upper Line: `Student Name` and `Student ID` (with cell-by-cell partitioned digits).
+  - Lower Line: Single consolidated `Offer No. & Class Sched` field, `Date`, and dedicated `Score` box.
+- **Decision 9: Cloud Deployments (GitHub Pages & Hugging Face Spaces)**:
+  - Automated GitHub Actions deployment via `.github/workflows/deploy-pages.yml` and 1-click `/docs` hosting for `sheet-builder`.
+  - Turnkey Hugging Face Space Gradio app in `spaces/exam-checker/` for cloud-hosted `checker` evaluation.
+- **Decision 10: Two-Pillar Architecture Branding (`sheet-builder` & `checker`)**:
+  - Formally partitioned the repository into two named pillars: `sheet-builder` for frontend document layout and zero-CORS editing; and `checker` for computer vision OMR grading, OCR, psychometrics, CLI, and Gradio cloud app.
+- **Decision 11: Strict Mermaid-Only Diagrams Standard**:
+  - Mandated that all architectural, sequence, deployment, and dataflow diagrams must use clean, valid Mermaid code blocks (```mermaid). All text-art, pseudo-graphic lines, arrows, and Unicode box-drawing characters are strictly forbidden to prevent font and layout rendering defects across platforms and markdown viewers.
+- **Decision 12: Multi-Agent Development Mandate Reiteration**:
+  - Reaffirmed the standing mandate to decompose complex engineering initiatives across specialized subagents with clear domain boundaries.

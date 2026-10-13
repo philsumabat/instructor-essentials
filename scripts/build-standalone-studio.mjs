@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Bundles the visual studio into a single zero-dependency standalone HTML file:
+ * Bundles Sheet Builder into a single zero-dependency standalone HTML file:
  * builder/studio.html
  *
  * This file can be opened directly by double-clicking in Finder/Windows Explorer
@@ -52,7 +52,7 @@ async function main() {
   // This guarantees that internal identifiers (e.g. `const $ = ...`, `const PAD = ...`,
   // `const r3 = ...`) NEVER collide between files.
   const bundledJs = `
-// ---- Standalone Grader Studio Bundle ----
+// ---- Standalone Sheet Builder Bundle ----
 
 // Inlined Sheet CSS for zero-network/zero-CORS standalone execution
 window.__SHEET_CSS__ = ${JSON.stringify(sheetCss)};
@@ -128,7 +128,7 @@ window.RenderDOM = RenderDOM;
 window.RenderSVG = RenderSVG;
 window.Templates = Templates;
 
-// 6. Studio Controller Application (IIFE Isolated)
+// 6. Sheet Builder Controller Application (IIFE Isolated)
 (function(LayoutEngine, RenderDOM, RenderSVG, Templates) {
   const { buildLayout, layoutStats, TemplateError, allGroups, PAPER_SIZES } = LayoutEngine;
   const { renderSheetDOM, renderStandaloneHTML, pageRule } = RenderDOM;
@@ -181,7 +181,18 @@ ${cleanApp}
 
   const outPath = join(builderDir, 'studio.html');
   await writeFile(outPath, standaloneHtml, 'utf8');
-  console.log(`✔ Generated standalone studio: ${outPath} (${(standaloneHtml.length / 1024).toFixed(1)} KB)`);
+  console.log(`✔ Generated standalone Sheet Builder: ${outPath} (${(standaloneHtml.length / 1024).toFixed(1)} KB)`);
+
+  const docsPath = join(root, 'docs', 'index.html');
+  await writeFile(docsPath, standaloneHtml, 'utf8');
+  console.log(`✔ Synchronized docs/index.html for GitHub Pages: ${docsPath}`);
+
+  // Synchronize standalone in-browser Checker for GitHub Pages
+  const checkerSrc = join(builderDir, 'checker.html');
+  const checkerDocs = join(root, 'docs', 'checker.html');
+  const checkerHtml = await readFile(checkerSrc, 'utf8');
+  await writeFile(checkerDocs, checkerHtml, 'utf8');
+  console.log(`✔ Synchronized docs/checker.html for GitHub Pages: ${checkerDocs}`);
 }
 
 main().catch((err) => {

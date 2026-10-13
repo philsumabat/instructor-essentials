@@ -1,0 +1,4450 @@
+{
+  "schema": "omr-layout/1",
+  "generator": "omr-sheet-builder/1.0.0",
+  "templateId": "bio101-midterm-50",
+  "title": "BIO 101 — Midterm Examination",
+  "units": "mm",
+  "page": {
+    "paper": "A4",
+    "width": 210,
+    "height": 297
+  },
+  "content": {
+    "x": 12,
+    "y": 20,
+    "w": 186,
+    "h": 257
+  },
+  "fiducial": {
+    "type": "aruco",
+    "dictionary": "DICT_4X4_50",
+    "size": 10,
+    "inset": 7,
+    "quietZone": 2
+  },
+  "fiducials": [
+    {
+      "id": 0,
+      "corner": "tl",
+      "x": 7,
+      "y": 7,
+      "size": 10,
+      "center": [
+        12,
+        12
+      ],
+      "corners": [
+        [
+          7,
+          7
+        ],
+        [
+          17,
+          7
+        ],
+        [
+          17,
+          17
+        ],
+        [
+          7,
+          17
+        ]
+      ]
+    },
+    {
+      "id": 1,
+      "corner": "tr",
+      "x": 193,
+      "y": 7,
+      "size": 10,
+      "center": [
+        198,
+        12
+      ],
+      "corners": [
+        [
+          193,
+          7
+        ],
+        [
+          203,
+          7
+        ],
+        [
+          203,
+          17
+        ],
+        [
+          193,
+          17
+        ]
+      ]
+    },
+    {
+      "id": 2,
+      "corner": "br",
+      "x": 193,
+      "y": 280,
+      "size": 10,
+      "center": [
+        198,
+        285
+      ],
+      "corners": [
+        [
+          193,
+          280
+        ],
+        [
+          203,
+          280
+        ],
+        [
+          203,
+          290
+        ],
+        [
+          193,
+          290
+        ]
+      ]
+    },
+    {
+      "id": 3,
+      "corner": "bl",
+      "x": 7,
+      "y": 280,
+      "size": 10,
+      "center": [
+        12,
+        285
+      ],
+      "corners": [
+        [
+          7,
+          280
+        ],
+        [
+          17,
+          280
+        ],
+        [
+          17,
+          290
+        ],
+        [
+          7,
+          290
+        ]
+      ]
+    }
+  ],
+  "bubble": {
+    "diameter": 4.2,
+    "pitchX": 5.6,
+    "pitchY": 5.4,
+    "groupEvery": 5,
+    "groupGap": 1.6,
+    "stroke": 0.25
+  },
+  "typography": {
+    "title": 4.2,
+    "label": 3,
+    "body": 2.8,
+    "bubble": 2.1,
+    "number": 2.6,
+    "small": 2.2
+  },
+  "header": {
+    "title": {
+      "x": 105,
+      "y": 12,
+      "maxWidth": 168
+    },
+    "footer": {
+      "text": "Use a dark pencil or black pen. Fill each bubble completely. Do not fold or staple this sheet. · bio101-midterm-50",
+      "x": 105,
+      "y": 285,
+      "maxWidth": 168
+    }
+  },
+  "zones": [
+    {
+      "id": "info",
+      "type": "fields",
+      "label": "",
+      "bbox": {
+        "x": 12,
+        "y": 20,
+        "w": 186,
+        "h": 22
+      },
+      "grids": [],
+      "groups": [],
+      "rois": [
+        {
+          "id": "info.name",
+          "key": "name",
+          "label": "Student Name",
+          "role": "name",
+          "x": 32.5,
+          "y": 22.5,
+          "w": 90,
+          "h": 7.5,
+          "charset": "any",
+          "multiline": false,
+          "ocr": true,
+          "graded": false,
+          "points": 0,
+          "digits": 0
+        },
+        {
+          "id": "info.sid",
+          "key": "sid",
+          "label": "Student ID",
+          "role": "student_id",
+          "x": 143.5,
+          "y": 22.5,
+          "w": 57,
+          "h": 7.5,
+          "charset": "digits",
+          "multiline": false,
+          "ocr": true,
+          "graded": false,
+          "points": 0,
+          "digits": 8
+        },
+        {
+          "id": "info.section",
+          "key": "section",
+          "label": "Offer No. & Class Sched",
+          "role": null,
+          "x": 32.5,
+          "y": 32,
+          "w": 78,
+          "h": 7.5,
+          "charset": "any",
+          "multiline": false,
+          "ocr": true,
+          "graded": false,
+          "points": 0,
+          "digits": 0
+        },
+        {
+          "id": "info.date",
+          "key": "date",
+          "label": "Date",
+          "role": null,
+          "x": 124.7,
+          "y": 32,
+          "w": 34.8,
+          "h": 7.5,
+          "charset": "any",
+          "multiline": false,
+          "ocr": true,
+          "graded": false,
+          "points": 0,
+          "digits": 0
+        },
+        {
+          "id": "info.score",
+          "key": "score",
+          "label": "Score",
+          "role": "score",
+          "x": 176.5,
+          "y": 32,
+          "w": 27,
+          "h": 7.5,
+          "charset": "any",
+          "multiline": false,
+          "ocr": false,
+          "graded": false,
+          "points": 0,
+          "digits": 0
+        }
+      ],
+      "rows": [
+        {
+          "label": "Student Name",
+          "x": 14.5,
+          "y": 22.5,
+          "labelW": 18,
+          "h": 7.5,
+          "digits": 0
+        },
+        {
+          "label": "Student ID",
+          "x": 125.5,
+          "y": 22.5,
+          "labelW": 18,
+          "h": 7.5,
+          "digits": 8
+        },
+        {
+          "label": "Offer No. & Class Sched",
+          "x": 14.5,
+          "y": 32,
+          "labelW": 18,
+          "h": 7.5,
+          "digits": 0
+        },
+        {
+          "label": "Date",
+          "x": 113.5,
+          "y": 32,
+          "labelW": 11.2,
+          "h": 7.5,
+          "digits": 0
+        },
+        {
+          "label": "Score",
+          "x": 162.5,
+          "y": 32,
+          "labelW": 14,
+          "h": 7.5,
+          "digits": 0
+        }
+      ],
+      "fieldH": 7.5
+    },
+    {
+      "id": "notes",
+      "type": "instructions",
+      "label": "",
+      "bbox": {
+        "x": 12,
+        "y": 46,
+        "w": 186,
+        "h": 8.76
+      },
+      "grids": [],
+      "groups": [],
+      "rois": [],
+      "text": "Write your 8-digit Student ID clearly in the boxes above. Part I & II: fill each bubble completely with a dark pencil or pen.\nPart III: print your answer clearly in block capital letters inside the answer box corresponding to each question number.",
+      "fontSize": 2.6,
+      "lines": 2
+    },
+    {
+      "id": "part1",
+      "type": "mcq",
+      "label": "Part I — Multiple Choice (1–50)",
+      "bbox": {
+        "x": 12,
+        "y": 58.76,
+        "w": 186,
+        "h": 83.4
+      },
+      "grids": [
+        {
+          "x": 14.5,
+          "y": 66.26,
+          "columns": [
+            7,
+            5.6,
+            5.6,
+            5.6,
+            5.6,
+            5.6
+          ],
+          "rows": [
+            5.4,
+            5.4,
+            5.4,
+            5.4,
+            7,
+            5.4,
+            5.4,
+            5.4,
+            5.4,
+            7,
+            5.4,
+            5.4,
+            5.4
+          ],
+          "cells": [
+            {
+              "row": 0,
+              "col": 0,
+              "kind": "num",
+              "text": "1"
+            },
+            {
+              "row": 0,
+              "col": 1,
+              "kind": "bubble",
+              "text": "A"
+            },
+            {
+              "row": 0,
+              "col": 2,
+              "kind": "bubble",
+              "text": "B"
+            },
+            {
+              "row": 0,
+              "col": 3,
+              "kind": "bubble",
+              "text": "C"
+            },
+            {
+              "row": 0,
+              "col": 4,
+              "kind": "bubble",
+              "text": "D"
+            },
+            {
+              "row": 0,
+              "col": 5,
+              "kind": "bubble",
+              "text": "E"
+            },
+            {
+              "row": 1,
+              "col": 0,
+              "kind": "num",
+              "text": "2"
+            },
+            {
+              "row": 1,
+              "col": 1,
+              "kind": "bubble",
+              "text": "A"
+            },
+            {
+              "row": 1,
+              "col": 2,
+              "kind": "bubble",
+              "text": "B"
+            },
+            {
+              "row": 1,
+              "col": 3,
+              "kind": "bubble",
+              "text": "C"
+            },
+            {
+              "row": 1,
+              "col": 4,
+              "kind": "bubble",
+              "text": "D"
+            },
+            {
+              "row": 1,
+              "col": 5,
+              "kind": "bubble",
+              "text": "E"
+            },
+            {
+              "row": 2,
+              "col": 0,
+              "kind": "num",
+              "text": "3"
+            },
+            {
+              "row": 2,
+              "col": 1,
+              "kind": "bubble",
+              "text": "A"
+            },
+            {
+              "row": 2,
+              "col": 2,
+              "kind": "bubble",
+              "text": "B"
+            },
+            {
+              "row": 2,
+              "col": 3,
+              "kind": "bubble",
+              "text": "C"
+            },
+            {
+              "row": 2,
+              "col": 4,
+              "kind": "bubble",
+              "text": "D"
+            },
+            {
+              "row": 2,
+              "col": 5,
+              "kind": "bubble",
+              "text": "E"
+            },
+            {
+              "row": 3,
+              "col": 0,
+              "kind": "num",
+              "text": "4"
+            },
+            {
+              "row": 3,
+              "col": 1,
+              "kind": "bubble",
+              "text": "A"
+            },
+            {
+              "row": 3,
+              "col": 2,
+              "kind": "bubble",
+              "text": "B"
+            },
+            {
+              "row": 3,
+              "col": 3,
+              "kind": "bubble",
+              "text": "C"
+            },
+            {
+              "row": 3,
+              "col": 4,
+              "kind": "bubble",
+              "text": "D"
+            },
+            {
+              "row": 3,
+              "col": 5,
+              "kind": "bubble",
+              "text": "E"
+            },
+            {
+              "row": 4,
+              "col": 0,
+              "kind": "num",
+              "text": "5"
+            },
+            {
+              "row": 4,
+              "col": 1,
+              "kind": "bubble",
+              "text": "A"
+            },
+            {
+              "row": 4,
+              "col": 2,
+              "kind": "bubble",
+              "text": "B"
+            },
+            {
+              "row": 4,
+              "col": 3,
+              "kind": "bubble",
+              "text": "C"
+            },
+            {
+              "row": 4,
+              "col": 4,
+              "kind": "bubble",
+              "text": "D"
+            },
+            {
+              "row": 4,
+              "col": 5,
+              "kind": "bubble",
+              "text": "E"
+            },
+            {
+              "row": 5,
+              "col": 0,
+              "kind": "num",
+              "text": "6"
+            },
+            {
+              "row": 5,
+              "col": 1,
+              "kind": "bubble",
+              "text": "A"
+            },
+            {
+              "row": 5,
+              "col": 2,
+              "kind": "bubble",
+              "text": "B"
+            },
+            {
+              "row": 5,
+              "col": 3,
+              "kind": "bubble",
+              "text": "C"
+            },
+            {
+              "row": 5,
+              "col": 4,
+              "kind": "bubble",
+              "text": "D"
+            },
+            {
+              "row": 5,
+              "col": 5,
+              "kind": "bubble",
+              "text": "E"
+            },
+            {
+              "row": 6,
+              "col": 0,
+              "kind": "num",
+              "text": "7"
+            },
+            {
+              "row": 6,
+              "col": 1,
+              "kind": "bubble",
+              "text": "A"
+            },
+            {
+              "row": 6,
+              "col": 2,
+              "kind": "bubble",
+              "text": "B"
+            },
+            {
+              "row": 6,
+              "col": 3,
+              "kind": "bubble",
+              "text": "C"
+            },
+            {
+              "row": 6,
+              "col": 4,
+              "kind": "bubble",
+              "text": "D"
+            },
+            {
+              "row": 6,
+              "col": 5,
+              "kind": "bubble",
+              "text": "E"
+            },
+            {
+              "row": 7,
+              "col": 0,
+              "kind": "num",
+              "text": "8"
+            },
+            {
+              "row": 7,
+              "col": 1,
+              "kind": "bubble",
+              "text": "A"
+            },
+            {
+              "row": 7,
+              "col": 2,
+              "kind": "bubble",
+              "text": "B"
+            },
+            {
+              "row": 7,
+              "col": 3,
+              "kind": "bubble",
+              "text": "C"
+            },
+            {
+              "row": 7,
+              "col": 4,
+              "kind": "bubble",
+              "text": "D"
+            },
+            {
+              "row": 7,
+              "col": 5,
+              "kind": "bubble",
+              "text": "E"
+            },
+            {
+              "row": 8,
+              "col": 0,
+              "kind": "num",
+              "text": "9"
+            },
+            {
+              "row": 8,
+              "col": 1,
+              "kind": "bubble",
+              "text": "A"
+            },
+            {
+              "row": 8,
+              "col": 2,
+              "kind": "bubble",
+              "text": "B"
+            },
+            {
+              "row": 8,
+              "col": 3,
+              "kind": "bubble",
+              "text": "C"
+            },
+            {
+              "row": 8,
+              "col": 4,
+              "kind": "bubble",
+              "text": "D"
+            },
+            {
+              "row": 8,
+              "col": 5,
+              "kind": "bubble",
+              "text": "E"
+            },
+            {
+              "row": 9,
+              "col": 0,
+              "kind": "num",
+              "text": "10"
+            },
+            {
+              "row": 9,
+              "col": 1,
+              "kind": "bubble",
+              "text": "A"
+            },
+            {
+              "row": 9,
+              "col": 2,
+              "kind": "bubble",
+              "text": "B"
+            },
+            {
+              "row": 9,
+              "col": 3,
+              "kind": "bubble",
+              "text": "C"
+            },
+            {
+              "row": 9,
+              "col": 4,
+              "kind": "bubble",
+              "text": "D"
+            },
+            {
+              "row": 9,
+              "col": 5,
+              "kind": "bubble",
+              "text": "E"
+            },
+            {
+              "row": 10,
+              "col": 0,
+              "kind": "num",
+              "text": "11"
+            },
+            {
+              "row": 10,
+              "col": 1,
+              "kind": "bubble",
+              "text": "A"
+            },
+            {
+              "row": 10,
+              "col": 2,
+              "kind": "bubble",
+              "text": "B"
+            },
+            {
+              "row": 10,
+              "col": 3,
+              "kind": "bubble",
+              "text": "C"
+            },
+            {
+              "row": 10,
+              "col": 4,
+              "kind": "bubble",
+              "text": "D"
+            },
+            {
+              "row": 10,
+              "col": 5,
+              "kind": "bubble",
+              "text": "E"
+            },
+            {
+              "row": 11,
+              "col": 0,
+              "kind": "num",
+              "text": "12"
+            },
+            {
+              "row": 11,
+              "col": 1,
+              "kind": "bubble",
+              "text": "A"
+            },
+            {
+              "row": 11,
+              "col": 2,
+              "kind": "bubble",
+              "text": "B"
+            },
+            {
+              "row": 11,
+              "col": 3,
+              "kind": "bubble",
+              "text": "C"
+            },
+            {
+              "row": 11,
+              "col": 4,
+              "kind": "bubble",
+              "text": "D"
+            },
+            {
+              "row": 11,
+              "col": 5,
+              "kind": "bubble",
+              "text": "E"
+            },
+            {
+              "row": 12,
+              "col": 0,
+              "kind": "num",
+              "text": "13"
+            },
+            {
+              "row": 12,
+              "col": 1,
+              "kind": "bubble",
+              "text": "A"
+            },
+            {
+              "row": 12,
+              "col": 2,
+              "kind": "bubble",
+              "text": "B"
+            },
+            {
+              "row": 12,
+              "col": 3,
+              "kind": "bubble",
+              "text": "C"
+            },
+            {
+              "row": 12,
+              "col": 4,
+              "kind": "bubble",
+              "text": "D"
+            },
+            {
+              "row": 12,
+              "col": 5,
+              "kind": "bubble",
+              "text": "E"
+            }
+          ]
+        },
+        {
+          "x": 63.167,
+          "y": 66.26,
+          "columns": [
+            7,
+            5.6,
+            5.6,
+            5.6,
+            5.6,
+            5.6
+          ],
+          "rows": [
+            5.4,
+            5.4,
+            5.4,
+            5.4,
+            7,
+            5.4,
+            5.4,
+            5.4,
+            5.4,
+            7,
+            5.4,
+            5.4,
+            5.4
+          ],
+          "cells": [
+            {
+              "row": 0,
+              "col": 0,
+              "kind": "num",
+              "text": "14"
+            },
+            {
+              "row": 0,
+              "col": 1,
+              "kind": "bubble",
+              "text": "A"
+            },
+            {
+              "row": 0,
+              "col": 2,
+              "kind": "bubble",
+              "text": "B"
+            },
+            {
+              "row": 0,
+              "col": 3,
+              "kind": "bubble",
+              "text": "C"
+            },
+            {
+              "row": 0,
+              "col": 4,
+              "kind": "bubble",
+              "text": "D"
+            },
+            {
+              "row": 0,
+              "col": 5,
+              "kind": "bubble",
+              "text": "E"
+            },
+            {
+              "row": 1,
+              "col": 0,
+              "kind": "num",
+              "text": "15"
+            },
+            {
+              "row": 1,
+              "col": 1,
+              "kind": "bubble",
+              "text": "A"
+            },
+            {
+              "row": 1,
+              "col": 2,
+              "kind": "bubble",
+              "text": "B"
+            },
+            {
+              "row": 1,
+              "col": 3,
+              "kind": "bubble",
+              "text": "C"
+            },
+            {
+              "row": 1,
+              "col": 4,
+              "kind": "bubble",
+              "text": "D"
+            },
+            {
+              "row": 1,
+              "col": 5,
+              "kind": "bubble",
+              "text": "E"
+            },
+            {
+              "row": 2,
+              "col": 0,
+              "kind": "num",
+              "text": "16"
+            },
+            {
+              "row": 2,
+              "col": 1,
+              "kind": "bubble",
+              "text": "A"
+            },
+            {
+              "row": 2,
+              "col": 2,
+              "kind": "bubble",
+              "text": "B"
+            },
+            {
+              "row": 2,
+              "col": 3,
+              "kind": "bubble",
+              "text": "C"
+            },
+            {
+              "row": 2,
+              "col": 4,
+              "kind": "bubble",
+              "text": "D"
+            },
+            {
+              "row": 2,
+              "col": 5,
+              "kind": "bubble",
+              "text": "E"
+            },
+            {
+              "row": 3,
+              "col": 0,
+              "kind": "num",
+              "text": "17"
+            },
+            {
+              "row": 3,
+              "col": 1,
+              "kind": "bubble",
+              "text": "A"
+            },
+            {
+              "row": 3,
+              "col": 2,
+              "kind": "bubble",
+              "text": "B"
+            },
+            {
+              "row": 3,
+              "col": 3,
+              "kind": "bubble",
+              "text": "C"
+            },
+            {
+              "row": 3,
+              "col": 4,
+              "kind": "bubble",
+              "text": "D"
+            },
+            {
+              "row": 3,
+              "col": 5,
+              "kind": "bubble",
+              "text": "E"
+            },
+            {
+              "row": 4,
+              "col": 0,
+              "kind": "num",
+              "text": "18"
+            },
+            {
+              "row": 4,
+              "col": 1,
+              "kind": "bubble",
+              "text": "A"
+            },
+            {
+              "row": 4,
+              "col": 2,
+              "kind": "bubble",
+              "text": "B"
+            },
+            {
+              "row": 4,
+              "col": 3,
+              "kind": "bubble",
+              "text": "C"
+            },
+            {
+              "row": 4,
+              "col": 4,
+              "kind": "bubble",
+              "text": "D"
+            },
+            {
+              "row": 4,
+              "col": 5,
+              "kind": "bubble",
+              "text": "E"
+            },
+            {
+              "row": 5,
+              "col": 0,
+              "kind": "num",
+              "text": "19"
+            },
+            {
+              "row": 5,
+              "col": 1,
+              "kind": "bubble",
+              "text": "A"
+            },
+            {
+              "row": 5,
+              "col": 2,
+              "kind": "bubble",
+              "text": "B"
+            },
+            {
+              "row": 5,
+              "col": 3,
+              "kind": "bubble",
+              "text": "C"
+            },
+            {
+              "row": 5,
+              "col": 4,
+              "kind": "bubble",
+              "text": "D"
+            },
+            {
+              "row": 5,
+              "col": 5,
+              "kind": "bubble",
+              "text": "E"
+            },
+            {
+              "row": 6,
+              "col": 0,
+              "kind": "num",
+              "text": "20"
+            },
+            {
+              "row": 6,
+              "col": 1,
+              "kind": "bubble",
+              "text": "A"
+            },
+            {
+              "row": 6,
+              "col": 2,
+              "kind": "bubble",
+              "text": "B"
+            },
+            {
+              "row": 6,
+              "col": 3,
+              "kind": "bubble",
+              "text": "C"
+            },
+            {
+              "row": 6,
+              "col": 4,
+              "kind": "bubble",
+              "text": "D"
+            },
+            {
+              "row": 6,
+              "col": 5,
+              "kind": "bubble",
+              "text": "E"
+            },
+            {
+              "row": 7,
+              "col": 0,
+              "kind": "num",
+              "text": "21"
+            },
+            {
+              "row": 7,
+              "col": 1,
+              "kind": "bubble",
+              "text": "A"
+            },
+            {
+              "row": 7,
+              "col": 2,
+              "kind": "bubble",
+              "text": "B"
+            },
+            {
+              "row": 7,
+              "col": 3,
+              "kind": "bubble",
+              "text": "C"
+            },
+            {
+              "row": 7,
+              "col": 4,
+              "kind": "bubble",
+              "text": "D"
+            },
+            {
+              "row": 7,
+              "col": 5,
+              "kind": "bubble",
+              "text": "E"
+            },
+            {
+              "row": 8,
+              "col": 0,
+              "kind": "num",
+              "text": "22"
+            },
+            {
+              "row": 8,
+              "col": 1,
+              "kind": "bubble",
+              "text": "A"
+            },
+            {
+              "row": 8,
+              "col": 2,
+              "kind": "bubble",
+              "text": "B"
+            },
+            {
+              "row": 8,
+              "col": 3,
+              "kind": "bubble",
+              "text": "C"
+            },
+            {
+              "row": 8,
+              "col": 4,
+              "kind": "bubble",
+              "text": "D"
+            },
+            {
+              "row": 8,
+              "col": 5,
+              "kind": "bubble",
+              "text": "E"
+            },
+            {
+              "row": 9,
+              "col": 0,
+              "kind": "num",
+              "text": "23"
+            },
+            {
+              "row": 9,
+              "col": 1,
+              "kind": "bubble",
+              "text": "A"
+            },
+            {
+              "row": 9,
+              "col": 2,
+              "kind": "bubble",
+              "text": "B"
+            },
+            {
+              "row": 9,
+              "col": 3,
+              "kind": "bubble",
+              "text": "C"
+            },
+            {
+              "row": 9,
+              "col": 4,
+              "kind": "bubble",
+              "text": "D"
+            },
+            {
+              "row": 9,
+              "col": 5,
+              "kind": "bubble",
+              "text": "E"
+            },
+            {
+              "row": 10,
+              "col": 0,
+              "kind": "num",
+              "text": "24"
+            },
+            {
+              "row": 10,
+              "col": 1,
+              "kind": "bubble",
+              "text": "A"
+            },
+            {
+              "row": 10,
+              "col": 2,
+              "kind": "bubble",
+              "text": "B"
+            },
+            {
+              "row": 10,
+              "col": 3,
+              "kind": "bubble",
+              "text": "C"
+            },
+            {
+              "row": 10,
+              "col": 4,
+              "kind": "bubble",
+              "text": "D"
+            },
+            {
+              "row": 10,
+              "col": 5,
+              "kind": "bubble",
+              "text": "E"
+            },
+            {
+              "row": 11,
+              "col": 0,
+              "kind": "num",
+              "text": "25"
+            },
+            {
+              "row": 11,
+              "col": 1,
+              "kind": "bubble",
+              "text": "A"
+            },
+            {
+              "row": 11,
+              "col": 2,
+              "kind": "bubble",
+              "text": "B"
+            },
+            {
+              "row": 11,
+              "col": 3,
+              "kind": "bubble",
+              "text": "C"
+            },
+            {
+              "row": 11,
+              "col": 4,
+              "kind": "bubble",
+              "text": "D"
+            },
+            {
+              "row": 11,
+              "col": 5,
+              "kind": "bubble",
+              "text": "E"
+            },
+            {
+              "row": 12,
+              "col": 0,
+              "kind": "num",
+              "text": "26"
+            },
+            {
+              "row": 12,
+              "col": 1,
+              "kind": "bubble",
+              "text": "A"
+            },
+            {
+              "row": 12,
+              "col": 2,
+              "kind": "bubble",
+              "text": "B"
+            },
+            {
+              "row": 12,
+              "col": 3,
+              "kind": "bubble",
+              "text": "C"
+            },
+            {
+              "row": 12,
+              "col": 4,
+              "kind": "bubble",
+              "text": "D"
+            },
+            {
+              "row": 12,
+              "col": 5,
+              "kind": "bubble",
+              "text": "E"
+            }
+          ]
+        },
+        {
+          "x": 111.833,
+          "y": 66.26,
+          "columns": [
+            7,
+            5.6,
+            5.6,
+            5.6,
+            5.6,
+            5.6
+          ],
+          "rows": [
+            5.4,
+            5.4,
+            5.4,
+            5.4,
+            7,
+            5.4,
+            5.4,
+            5.4,
+            5.4,
+            7,
+            5.4,
+            5.4,
+            5.4
+          ],
+          "cells": [
+            {
+              "row": 0,
+              "col": 0,
+              "kind": "num",
+              "text": "27"
+            },
+            {
+              "row": 0,
+              "col": 1,
+              "kind": "bubble",
+              "text": "A"
+            },
+            {
+              "row": 0,
+              "col": 2,
+              "kind": "bubble",
+              "text": "B"
+            },
+            {
+              "row": 0,
+              "col": 3,
+              "kind": "bubble",
+              "text": "C"
+            },
+            {
+              "row": 0,
+              "col": 4,
+              "kind": "bubble",
+              "text": "D"
+            },
+            {
+              "row": 0,
+              "col": 5,
+              "kind": "bubble",
+              "text": "E"
+            },
+            {
+              "row": 1,
+              "col": 0,
+              "kind": "num",
+              "text": "28"
+            },
+            {
+              "row": 1,
+              "col": 1,
+              "kind": "bubble",
+              "text": "A"
+            },
+            {
+              "row": 1,
+              "col": 2,
+              "kind": "bubble",
+              "text": "B"
+            },
+            {
+              "row": 1,
+              "col": 3,
+              "kind": "bubble",
+              "text": "C"
+            },
+            {
+              "row": 1,
+              "col": 4,
+              "kind": "bubble",
+              "text": "D"
+            },
+            {
+              "row": 1,
+              "col": 5,
+              "kind": "bubble",
+              "text": "E"
+            },
+            {
+              "row": 2,
+              "col": 0,
+              "kind": "num",
+              "text": "29"
+            },
+            {
+              "row": 2,
+              "col": 1,
+              "kind": "bubble",
+              "text": "A"
+            },
+            {
+              "row": 2,
+              "col": 2,
+              "kind": "bubble",
+              "text": "B"
+            },
+            {
+              "row": 2,
+              "col": 3,
+              "kind": "bubble",
+              "text": "C"
+            },
+            {
+              "row": 2,
+              "col": 4,
+              "kind": "bubble",
+              "text": "D"
+            },
+            {
+              "row": 2,
+              "col": 5,
+              "kind": "bubble",
+              "text": "E"
+            },
+            {
+              "row": 3,
+              "col": 0,
+              "kind": "num",
+              "text": "30"
+            },
+            {
+              "row": 3,
+              "col": 1,
+              "kind": "bubble",
+              "text": "A"
+            },
+            {
+              "row": 3,
+              "col": 2,
+              "kind": "bubble",
+              "text": "B"
+            },
+            {
+              "row": 3,
+              "col": 3,
+              "kind": "bubble",
+              "text": "C"
+            },
+            {
+              "row": 3,
+              "col": 4,
+              "kind": "bubble",
+              "text": "D"
+            },
+            {
+              "row": 3,
+              "col": 5,
+              "kind": "bubble",
+              "text": "E"
+            },
+            {
+              "row": 4,
+              "col": 0,
+              "kind": "num",
+              "text": "31"
+            },
+            {
+              "row": 4,
+              "col": 1,
+              "kind": "bubble",
+              "text": "A"
+            },
+            {
+              "row": 4,
+              "col": 2,
+              "kind": "bubble",
+              "text": "B"
+            },
+            {
+              "row": 4,
+              "col": 3,
+              "kind": "bubble",
+              "text": "C"
+            },
+            {
+              "row": 4,
+              "col": 4,
+              "kind": "bubble",
+              "text": "D"
+            },
+            {
+              "row": 4,
+              "col": 5,
+              "kind": "bubble",
+              "text": "E"
+            },
+            {
+              "row": 5,
+              "col": 0,
+              "kind": "num",
+              "text": "32"
+            },
+            {
+              "row": 5,
+              "col": 1,
+              "kind": "bubble",
+              "text": "A"
+            },
+            {
+              "row": 5,
+              "col": 2,
+              "kind": "bubble",
+              "text": "B"
+            },
+            {
+              "row": 5,
+              "col": 3,
+              "kind": "bubble",
+              "text": "C"
+            },
+            {
+              "row": 5,
+              "col": 4,
+              "kind": "bubble",
+              "text": "D"
+            },
+            {
+              "row": 5,
+              "col": 5,
+              "kind": "bubble",
+              "text": "E"
+            },
+            {
+              "row": 6,
+              "col": 0,
+              "kind": "num",
+              "text": "33"
+            },
+            {
+              "row": 6,
+              "col": 1,
+              "kind": "bubble",
+              "text": "A"
+            },
+            {
+              "row": 6,
+              "col": 2,
+              "kind": "bubble",
+              "text": "B"
+            },
+            {
+              "row": 6,
+              "col": 3,
+              "kind": "bubble",
+              "text": "C"
+            },
+            {
+              "row": 6,
+              "col": 4,
+              "kind": "bubble",
+              "text": "D"
+            },
+            {
+              "row": 6,
+              "col": 5,
+              "kind": "bubble",
+              "text": "E"
+            },
+            {
+              "row": 7,
+              "col": 0,
+              "kind": "num",
+              "text": "34"
+            },
+            {
+              "row": 7,
+              "col": 1,
+              "kind": "bubble",
+              "text": "A"
+            },
+            {
+              "row": 7,
+              "col": 2,
+              "kind": "bubble",
+              "text": "B"
+            },
+            {
+              "row": 7,
+              "col": 3,
+              "kind": "bubble",
+              "text": "C"
+            },
+            {
+              "row": 7,
+              "col": 4,
+              "kind": "bubble",
+              "text": "D"
+            },
+            {
+              "row": 7,
+              "col": 5,
+              "kind": "bubble",
+              "text": "E"
+            },
+            {
+              "row": 8,
+              "col": 0,
+              "kind": "num",
+              "text": "35"
+            },
+            {
+              "row": 8,
+              "col": 1,
+              "kind": "bubble",
+              "text": "A"
+            },
+            {
+              "row": 8,
+              "col": 2,
+              "kind": "bubble",
+              "text": "B"
+            },
+            {
+              "row": 8,
+              "col": 3,
+              "kind": "bubble",
+              "text": "C"
+            },
+            {
+              "row": 8,
+              "col": 4,
+              "kind": "bubble",
+              "text": "D"
+            },
+            {
+              "row": 8,
+              "col": 5,
+              "kind": "bubble",
+              "text": "E"
+            },
+            {
+              "row": 9,
+              "col": 0,
+              "kind": "num",
+              "text": "36"
+            },
+            {
+              "row": 9,
+              "col": 1,
+              "kind": "bubble",
+              "text": "A"
+            },
+            {
+              "row": 9,
+              "col": 2,
+              "kind": "bubble",
+              "text": "B"
+            },
+            {
+              "row": 9,
+              "col": 3,
+              "kind": "bubble",
+              "text": "C"
+            },
+            {
+              "row": 9,
+              "col": 4,
+              "kind": "bubble",
+              "text": "D"
+            },
+            {
+              "row": 9,
+              "col": 5,
+              "kind": "bubble",
+              "text": "E"
+            },
+            {
+              "row": 10,
+              "col": 0,
+              "kind": "num",
+              "text": "37"
+            },
+            {
+              "row": 10,
+              "col": 1,
+              "kind": "bubble",
+              "text": "A"
+            },
+            {
+              "row": 10,
+              "col": 2,
+              "kind": "bubble",
+              "text": "B"
+            },
+            {
+              "row": 10,
+              "col": 3,
+              "kind": "bubble",
+              "text": "C"
+            },
+            {
+              "row": 10,
+              "col": 4,
+              "kind": "bubble",
+              "text": "D"
+            },
+            {
+              "row": 10,
+              "col": 5,
+              "kind": "bubble",
+              "text": "E"
+            },
+            {
+              "row": 11,
+              "col": 0,
+              "kind": "num",
+              "text": "38"
+            },
+            {
+              "row": 11,
+              "col": 1,
+              "kind": "bubble",
+              "text": "A"
+            },
+            {
+              "row": 11,
+              "col": 2,
+              "kind": "bubble",
+              "text": "B"
+            },
+            {
+              "row": 11,
+              "col": 3,
+              "kind": "bubble",
+              "text": "C"
+            },
+            {
+              "row": 11,
+              "col": 4,
+              "kind": "bubble",
+              "text": "D"
+            },
+            {
+              "row": 11,
+              "col": 5,
+              "kind": "bubble",
+              "text": "E"
+            },
+            {
+              "row": 12,
+              "col": 0,
+              "kind": "num",
+              "text": "39"
+            },
+            {
+              "row": 12,
+              "col": 1,
+              "kind": "bubble",
+              "text": "A"
+            },
+            {
+              "row": 12,
+              "col": 2,
+              "kind": "bubble",
+              "text": "B"
+            },
+            {
+              "row": 12,
+              "col": 3,
+              "kind": "bubble",
+              "text": "C"
+            },
+            {
+              "row": 12,
+              "col": 4,
+              "kind": "bubble",
+              "text": "D"
+            },
+            {
+              "row": 12,
+              "col": 5,
+              "kind": "bubble",
+              "text": "E"
+            }
+          ]
+        },
+        {
+          "x": 160.5,
+          "y": 66.26,
+          "columns": [
+            7,
+            5.6,
+            5.6,
+            5.6,
+            5.6,
+            5.6
+          ],
+          "rows": [
+            5.4,
+            5.4,
+            5.4,
+            5.4,
+            7,
+            5.4,
+            5.4,
+            5.4,
+            5.4,
+            7,
+            5.4,
+            5.4,
+            5.4
+          ],
+          "cells": [
+            {
+              "row": 0,
+              "col": 0,
+              "kind": "num",
+              "text": "40"
+            },
+            {
+              "row": 0,
+              "col": 1,
+              "kind": "bubble",
+              "text": "A"
+            },
+            {
+              "row": 0,
+              "col": 2,
+              "kind": "bubble",
+              "text": "B"
+            },
+            {
+              "row": 0,
+              "col": 3,
+              "kind": "bubble",
+              "text": "C"
+            },
+            {
+              "row": 0,
+              "col": 4,
+              "kind": "bubble",
+              "text": "D"
+            },
+            {
+              "row": 0,
+              "col": 5,
+              "kind": "bubble",
+              "text": "E"
+            },
+            {
+              "row": 1,
+              "col": 0,
+              "kind": "num",
+              "text": "41"
+            },
+            {
+              "row": 1,
+              "col": 1,
+              "kind": "bubble",
+              "text": "A"
+            },
+            {
+              "row": 1,
+              "col": 2,
+              "kind": "bubble",
+              "text": "B"
+            },
+            {
+              "row": 1,
+              "col": 3,
+              "kind": "bubble",
+              "text": "C"
+            },
+            {
+              "row": 1,
+              "col": 4,
+              "kind": "bubble",
+              "text": "D"
+            },
+            {
+              "row": 1,
+              "col": 5,
+              "kind": "bubble",
+              "text": "E"
+            },
+            {
+              "row": 2,
+              "col": 0,
+              "kind": "num",
+              "text": "42"
+            },
+            {
+              "row": 2,
+              "col": 1,
+              "kind": "bubble",
+              "text": "A"
+            },
+            {
+              "row": 2,
+              "col": 2,
+              "kind": "bubble",
+              "text": "B"
+            },
+            {
+              "row": 2,
+              "col": 3,
+              "kind": "bubble",
+              "text": "C"
+            },
+            {
+              "row": 2,
+              "col": 4,
+              "kind": "bubble",
+              "text": "D"
+            },
+            {
+              "row": 2,
+              "col": 5,
+              "kind": "bubble",
+              "text": "E"
+            },
+            {
+              "row": 3,
+              "col": 0,
+              "kind": "num",
+              "text": "43"
+            },
+            {
+              "row": 3,
+              "col": 1,
+              "kind": "bubble",
+              "text": "A"
+            },
+            {
+              "row": 3,
+              "col": 2,
+              "kind": "bubble",
+              "text": "B"
+            },
+            {
+              "row": 3,
+              "col": 3,
+              "kind": "bubble",
+              "text": "C"
+            },
+            {
+              "row": 3,
+              "col": 4,
+              "kind": "bubble",
+              "text": "D"
+            },
+            {
+              "row": 3,
+              "col": 5,
+              "kind": "bubble",
+              "text": "E"
+            },
+            {
+              "row": 4,
+              "col": 0,
+              "kind": "num",
+              "text": "44"
+            },
+            {
+              "row": 4,
+              "col": 1,
+              "kind": "bubble",
+              "text": "A"
+            },
+            {
+              "row": 4,
+              "col": 2,
+              "kind": "bubble",
+              "text": "B"
+            },
+            {
+              "row": 4,
+              "col": 3,
+              "kind": "bubble",
+              "text": "C"
+            },
+            {
+              "row": 4,
+              "col": 4,
+              "kind": "bubble",
+              "text": "D"
+            },
+            {
+              "row": 4,
+              "col": 5,
+              "kind": "bubble",
+              "text": "E"
+            },
+            {
+              "row": 5,
+              "col": 0,
+              "kind": "num",
+              "text": "45"
+            },
+            {
+              "row": 5,
+              "col": 1,
+              "kind": "bubble",
+              "text": "A"
+            },
+            {
+              "row": 5,
+              "col": 2,
+              "kind": "bubble",
+              "text": "B"
+            },
+            {
+              "row": 5,
+              "col": 3,
+              "kind": "bubble",
+              "text": "C"
+            },
+            {
+              "row": 5,
+              "col": 4,
+              "kind": "bubble",
+              "text": "D"
+            },
+            {
+              "row": 5,
+              "col": 5,
+              "kind": "bubble",
+              "text": "E"
+            },
+            {
+              "row": 6,
+              "col": 0,
+              "kind": "num",
+              "text": "46"
+            },
+            {
+              "row": 6,
+              "col": 1,
+              "kind": "bubble",
+              "text": "A"
+            },
+            {
+              "row": 6,
+              "col": 2,
+              "kind": "bubble",
+              "text": "B"
+            },
+            {
+              "row": 6,
+              "col": 3,
+              "kind": "bubble",
+              "text": "C"
+            },
+            {
+              "row": 6,
+              "col": 4,
+              "kind": "bubble",
+              "text": "D"
+            },
+            {
+              "row": 6,
+              "col": 5,
+              "kind": "bubble",
+              "text": "E"
+            },
+            {
+              "row": 7,
+              "col": 0,
+              "kind": "num",
+              "text": "47"
+            },
+            {
+              "row": 7,
+              "col": 1,
+              "kind": "bubble",
+              "text": "A"
+            },
+            {
+              "row": 7,
+              "col": 2,
+              "kind": "bubble",
+              "text": "B"
+            },
+            {
+              "row": 7,
+              "col": 3,
+              "kind": "bubble",
+              "text": "C"
+            },
+            {
+              "row": 7,
+              "col": 4,
+              "kind": "bubble",
+              "text": "D"
+            },
+            {
+              "row": 7,
+              "col": 5,
+              "kind": "bubble",
+              "text": "E"
+            },
+            {
+              "row": 8,
+              "col": 0,
+              "kind": "num",
+              "text": "48"
+            },
+            {
+              "row": 8,
+              "col": 1,
+              "kind": "bubble",
+              "text": "A"
+            },
+            {
+              "row": 8,
+              "col": 2,
+              "kind": "bubble",
+              "text": "B"
+            },
+            {
+              "row": 8,
+              "col": 3,
+              "kind": "bubble",
+              "text": "C"
+            },
+            {
+              "row": 8,
+              "col": 4,
+              "kind": "bubble",
+              "text": "D"
+            },
+            {
+              "row": 8,
+              "col": 5,
+              "kind": "bubble",
+              "text": "E"
+            },
+            {
+              "row": 9,
+              "col": 0,
+              "kind": "num",
+              "text": "49"
+            },
+            {
+              "row": 9,
+              "col": 1,
+              "kind": "bubble",
+              "text": "A"
+            },
+            {
+              "row": 9,
+              "col": 2,
+              "kind": "bubble",
+              "text": "B"
+            },
+            {
+              "row": 9,
+              "col": 3,
+              "kind": "bubble",
+              "text": "C"
+            },
+            {
+              "row": 9,
+              "col": 4,
+              "kind": "bubble",
+              "text": "D"
+            },
+            {
+              "row": 9,
+              "col": 5,
+              "kind": "bubble",
+              "text": "E"
+            },
+            {
+              "row": 10,
+              "col": 0,
+              "kind": "num",
+              "text": "50"
+            },
+            {
+              "row": 10,
+              "col": 1,
+              "kind": "bubble",
+              "text": "A"
+            },
+            {
+              "row": 10,
+              "col": 2,
+              "kind": "bubble",
+              "text": "B"
+            },
+            {
+              "row": 10,
+              "col": 3,
+              "kind": "bubble",
+              "text": "C"
+            },
+            {
+              "row": 10,
+              "col": 4,
+              "kind": "bubble",
+              "text": "D"
+            },
+            {
+              "row": 10,
+              "col": 5,
+              "kind": "bubble",
+              "text": "E"
+            }
+          ]
+        }
+      ],
+      "groups": [
+        {
+          "key": "1",
+          "kind": "mcq",
+          "label": "1",
+          "options": [
+            {
+              "value": "A",
+              "cx": 24.3,
+              "cy": 68.96
+            },
+            {
+              "value": "B",
+              "cx": 29.9,
+              "cy": 68.96
+            },
+            {
+              "value": "C",
+              "cx": 35.5,
+              "cy": 68.96
+            },
+            {
+              "value": "D",
+              "cx": 41.1,
+              "cy": 68.96
+            },
+            {
+              "value": "E",
+              "cx": 46.7,
+              "cy": 68.96
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "2",
+          "kind": "mcq",
+          "label": "2",
+          "options": [
+            {
+              "value": "A",
+              "cx": 24.3,
+              "cy": 74.36
+            },
+            {
+              "value": "B",
+              "cx": 29.9,
+              "cy": 74.36
+            },
+            {
+              "value": "C",
+              "cx": 35.5,
+              "cy": 74.36
+            },
+            {
+              "value": "D",
+              "cx": 41.1,
+              "cy": 74.36
+            },
+            {
+              "value": "E",
+              "cx": 46.7,
+              "cy": 74.36
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "3",
+          "kind": "mcq",
+          "label": "3",
+          "options": [
+            {
+              "value": "A",
+              "cx": 24.3,
+              "cy": 79.76
+            },
+            {
+              "value": "B",
+              "cx": 29.9,
+              "cy": 79.76
+            },
+            {
+              "value": "C",
+              "cx": 35.5,
+              "cy": 79.76
+            },
+            {
+              "value": "D",
+              "cx": 41.1,
+              "cy": 79.76
+            },
+            {
+              "value": "E",
+              "cx": 46.7,
+              "cy": 79.76
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "4",
+          "kind": "mcq",
+          "label": "4",
+          "options": [
+            {
+              "value": "A",
+              "cx": 24.3,
+              "cy": 85.16
+            },
+            {
+              "value": "B",
+              "cx": 29.9,
+              "cy": 85.16
+            },
+            {
+              "value": "C",
+              "cx": 35.5,
+              "cy": 85.16
+            },
+            {
+              "value": "D",
+              "cx": 41.1,
+              "cy": 85.16
+            },
+            {
+              "value": "E",
+              "cx": 46.7,
+              "cy": 85.16
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "5",
+          "kind": "mcq",
+          "label": "5",
+          "options": [
+            {
+              "value": "A",
+              "cx": 24.3,
+              "cy": 90.56
+            },
+            {
+              "value": "B",
+              "cx": 29.9,
+              "cy": 90.56
+            },
+            {
+              "value": "C",
+              "cx": 35.5,
+              "cy": 90.56
+            },
+            {
+              "value": "D",
+              "cx": 41.1,
+              "cy": 90.56
+            },
+            {
+              "value": "E",
+              "cx": 46.7,
+              "cy": 90.56
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "6",
+          "kind": "mcq",
+          "label": "6",
+          "options": [
+            {
+              "value": "A",
+              "cx": 24.3,
+              "cy": 97.56
+            },
+            {
+              "value": "B",
+              "cx": 29.9,
+              "cy": 97.56
+            },
+            {
+              "value": "C",
+              "cx": 35.5,
+              "cy": 97.56
+            },
+            {
+              "value": "D",
+              "cx": 41.1,
+              "cy": 97.56
+            },
+            {
+              "value": "E",
+              "cx": 46.7,
+              "cy": 97.56
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "7",
+          "kind": "mcq",
+          "label": "7",
+          "options": [
+            {
+              "value": "A",
+              "cx": 24.3,
+              "cy": 102.96
+            },
+            {
+              "value": "B",
+              "cx": 29.9,
+              "cy": 102.96
+            },
+            {
+              "value": "C",
+              "cx": 35.5,
+              "cy": 102.96
+            },
+            {
+              "value": "D",
+              "cx": 41.1,
+              "cy": 102.96
+            },
+            {
+              "value": "E",
+              "cx": 46.7,
+              "cy": 102.96
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "8",
+          "kind": "mcq",
+          "label": "8",
+          "options": [
+            {
+              "value": "A",
+              "cx": 24.3,
+              "cy": 108.36
+            },
+            {
+              "value": "B",
+              "cx": 29.9,
+              "cy": 108.36
+            },
+            {
+              "value": "C",
+              "cx": 35.5,
+              "cy": 108.36
+            },
+            {
+              "value": "D",
+              "cx": 41.1,
+              "cy": 108.36
+            },
+            {
+              "value": "E",
+              "cx": 46.7,
+              "cy": 108.36
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "9",
+          "kind": "mcq",
+          "label": "9",
+          "options": [
+            {
+              "value": "A",
+              "cx": 24.3,
+              "cy": 113.76
+            },
+            {
+              "value": "B",
+              "cx": 29.9,
+              "cy": 113.76
+            },
+            {
+              "value": "C",
+              "cx": 35.5,
+              "cy": 113.76
+            },
+            {
+              "value": "D",
+              "cx": 41.1,
+              "cy": 113.76
+            },
+            {
+              "value": "E",
+              "cx": 46.7,
+              "cy": 113.76
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "10",
+          "kind": "mcq",
+          "label": "10",
+          "options": [
+            {
+              "value": "A",
+              "cx": 24.3,
+              "cy": 119.16
+            },
+            {
+              "value": "B",
+              "cx": 29.9,
+              "cy": 119.16
+            },
+            {
+              "value": "C",
+              "cx": 35.5,
+              "cy": 119.16
+            },
+            {
+              "value": "D",
+              "cx": 41.1,
+              "cy": 119.16
+            },
+            {
+              "value": "E",
+              "cx": 46.7,
+              "cy": 119.16
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "11",
+          "kind": "mcq",
+          "label": "11",
+          "options": [
+            {
+              "value": "A",
+              "cx": 24.3,
+              "cy": 126.16
+            },
+            {
+              "value": "B",
+              "cx": 29.9,
+              "cy": 126.16
+            },
+            {
+              "value": "C",
+              "cx": 35.5,
+              "cy": 126.16
+            },
+            {
+              "value": "D",
+              "cx": 41.1,
+              "cy": 126.16
+            },
+            {
+              "value": "E",
+              "cx": 46.7,
+              "cy": 126.16
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "12",
+          "kind": "mcq",
+          "label": "12",
+          "options": [
+            {
+              "value": "A",
+              "cx": 24.3,
+              "cy": 131.56
+            },
+            {
+              "value": "B",
+              "cx": 29.9,
+              "cy": 131.56
+            },
+            {
+              "value": "C",
+              "cx": 35.5,
+              "cy": 131.56
+            },
+            {
+              "value": "D",
+              "cx": 41.1,
+              "cy": 131.56
+            },
+            {
+              "value": "E",
+              "cx": 46.7,
+              "cy": 131.56
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "13",
+          "kind": "mcq",
+          "label": "13",
+          "options": [
+            {
+              "value": "A",
+              "cx": 24.3,
+              "cy": 136.96
+            },
+            {
+              "value": "B",
+              "cx": 29.9,
+              "cy": 136.96
+            },
+            {
+              "value": "C",
+              "cx": 35.5,
+              "cy": 136.96
+            },
+            {
+              "value": "D",
+              "cx": 41.1,
+              "cy": 136.96
+            },
+            {
+              "value": "E",
+              "cx": 46.7,
+              "cy": 136.96
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "14",
+          "kind": "mcq",
+          "label": "14",
+          "options": [
+            {
+              "value": "A",
+              "cx": 72.967,
+              "cy": 68.96
+            },
+            {
+              "value": "B",
+              "cx": 78.567,
+              "cy": 68.96
+            },
+            {
+              "value": "C",
+              "cx": 84.167,
+              "cy": 68.96
+            },
+            {
+              "value": "D",
+              "cx": 89.767,
+              "cy": 68.96
+            },
+            {
+              "value": "E",
+              "cx": 95.367,
+              "cy": 68.96
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "15",
+          "kind": "mcq",
+          "label": "15",
+          "options": [
+            {
+              "value": "A",
+              "cx": 72.967,
+              "cy": 74.36
+            },
+            {
+              "value": "B",
+              "cx": 78.567,
+              "cy": 74.36
+            },
+            {
+              "value": "C",
+              "cx": 84.167,
+              "cy": 74.36
+            },
+            {
+              "value": "D",
+              "cx": 89.767,
+              "cy": 74.36
+            },
+            {
+              "value": "E",
+              "cx": 95.367,
+              "cy": 74.36
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "16",
+          "kind": "mcq",
+          "label": "16",
+          "options": [
+            {
+              "value": "A",
+              "cx": 72.967,
+              "cy": 79.76
+            },
+            {
+              "value": "B",
+              "cx": 78.567,
+              "cy": 79.76
+            },
+            {
+              "value": "C",
+              "cx": 84.167,
+              "cy": 79.76
+            },
+            {
+              "value": "D",
+              "cx": 89.767,
+              "cy": 79.76
+            },
+            {
+              "value": "E",
+              "cx": 95.367,
+              "cy": 79.76
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "17",
+          "kind": "mcq",
+          "label": "17",
+          "options": [
+            {
+              "value": "A",
+              "cx": 72.967,
+              "cy": 85.16
+            },
+            {
+              "value": "B",
+              "cx": 78.567,
+              "cy": 85.16
+            },
+            {
+              "value": "C",
+              "cx": 84.167,
+              "cy": 85.16
+            },
+            {
+              "value": "D",
+              "cx": 89.767,
+              "cy": 85.16
+            },
+            {
+              "value": "E",
+              "cx": 95.367,
+              "cy": 85.16
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "18",
+          "kind": "mcq",
+          "label": "18",
+          "options": [
+            {
+              "value": "A",
+              "cx": 72.967,
+              "cy": 90.56
+            },
+            {
+              "value": "B",
+              "cx": 78.567,
+              "cy": 90.56
+            },
+            {
+              "value": "C",
+              "cx": 84.167,
+              "cy": 90.56
+            },
+            {
+              "value": "D",
+              "cx": 89.767,
+              "cy": 90.56
+            },
+            {
+              "value": "E",
+              "cx": 95.367,
+              "cy": 90.56
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "19",
+          "kind": "mcq",
+          "label": "19",
+          "options": [
+            {
+              "value": "A",
+              "cx": 72.967,
+              "cy": 97.56
+            },
+            {
+              "value": "B",
+              "cx": 78.567,
+              "cy": 97.56
+            },
+            {
+              "value": "C",
+              "cx": 84.167,
+              "cy": 97.56
+            },
+            {
+              "value": "D",
+              "cx": 89.767,
+              "cy": 97.56
+            },
+            {
+              "value": "E",
+              "cx": 95.367,
+              "cy": 97.56
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "20",
+          "kind": "mcq",
+          "label": "20",
+          "options": [
+            {
+              "value": "A",
+              "cx": 72.967,
+              "cy": 102.96
+            },
+            {
+              "value": "B",
+              "cx": 78.567,
+              "cy": 102.96
+            },
+            {
+              "value": "C",
+              "cx": 84.167,
+              "cy": 102.96
+            },
+            {
+              "value": "D",
+              "cx": 89.767,
+              "cy": 102.96
+            },
+            {
+              "value": "E",
+              "cx": 95.367,
+              "cy": 102.96
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "21",
+          "kind": "mcq",
+          "label": "21",
+          "options": [
+            {
+              "value": "A",
+              "cx": 72.967,
+              "cy": 108.36
+            },
+            {
+              "value": "B",
+              "cx": 78.567,
+              "cy": 108.36
+            },
+            {
+              "value": "C",
+              "cx": 84.167,
+              "cy": 108.36
+            },
+            {
+              "value": "D",
+              "cx": 89.767,
+              "cy": 108.36
+            },
+            {
+              "value": "E",
+              "cx": 95.367,
+              "cy": 108.36
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "22",
+          "kind": "mcq",
+          "label": "22",
+          "options": [
+            {
+              "value": "A",
+              "cx": 72.967,
+              "cy": 113.76
+            },
+            {
+              "value": "B",
+              "cx": 78.567,
+              "cy": 113.76
+            },
+            {
+              "value": "C",
+              "cx": 84.167,
+              "cy": 113.76
+            },
+            {
+              "value": "D",
+              "cx": 89.767,
+              "cy": 113.76
+            },
+            {
+              "value": "E",
+              "cx": 95.367,
+              "cy": 113.76
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "23",
+          "kind": "mcq",
+          "label": "23",
+          "options": [
+            {
+              "value": "A",
+              "cx": 72.967,
+              "cy": 119.16
+            },
+            {
+              "value": "B",
+              "cx": 78.567,
+              "cy": 119.16
+            },
+            {
+              "value": "C",
+              "cx": 84.167,
+              "cy": 119.16
+            },
+            {
+              "value": "D",
+              "cx": 89.767,
+              "cy": 119.16
+            },
+            {
+              "value": "E",
+              "cx": 95.367,
+              "cy": 119.16
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "24",
+          "kind": "mcq",
+          "label": "24",
+          "options": [
+            {
+              "value": "A",
+              "cx": 72.967,
+              "cy": 126.16
+            },
+            {
+              "value": "B",
+              "cx": 78.567,
+              "cy": 126.16
+            },
+            {
+              "value": "C",
+              "cx": 84.167,
+              "cy": 126.16
+            },
+            {
+              "value": "D",
+              "cx": 89.767,
+              "cy": 126.16
+            },
+            {
+              "value": "E",
+              "cx": 95.367,
+              "cy": 126.16
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "25",
+          "kind": "mcq",
+          "label": "25",
+          "options": [
+            {
+              "value": "A",
+              "cx": 72.967,
+              "cy": 131.56
+            },
+            {
+              "value": "B",
+              "cx": 78.567,
+              "cy": 131.56
+            },
+            {
+              "value": "C",
+              "cx": 84.167,
+              "cy": 131.56
+            },
+            {
+              "value": "D",
+              "cx": 89.767,
+              "cy": 131.56
+            },
+            {
+              "value": "E",
+              "cx": 95.367,
+              "cy": 131.56
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "26",
+          "kind": "mcq",
+          "label": "26",
+          "options": [
+            {
+              "value": "A",
+              "cx": 72.967,
+              "cy": 136.96
+            },
+            {
+              "value": "B",
+              "cx": 78.567,
+              "cy": 136.96
+            },
+            {
+              "value": "C",
+              "cx": 84.167,
+              "cy": 136.96
+            },
+            {
+              "value": "D",
+              "cx": 89.767,
+              "cy": 136.96
+            },
+            {
+              "value": "E",
+              "cx": 95.367,
+              "cy": 136.96
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "27",
+          "kind": "mcq",
+          "label": "27",
+          "options": [
+            {
+              "value": "A",
+              "cx": 121.633,
+              "cy": 68.96
+            },
+            {
+              "value": "B",
+              "cx": 127.233,
+              "cy": 68.96
+            },
+            {
+              "value": "C",
+              "cx": 132.833,
+              "cy": 68.96
+            },
+            {
+              "value": "D",
+              "cx": 138.433,
+              "cy": 68.96
+            },
+            {
+              "value": "E",
+              "cx": 144.033,
+              "cy": 68.96
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "28",
+          "kind": "mcq",
+          "label": "28",
+          "options": [
+            {
+              "value": "A",
+              "cx": 121.633,
+              "cy": 74.36
+            },
+            {
+              "value": "B",
+              "cx": 127.233,
+              "cy": 74.36
+            },
+            {
+              "value": "C",
+              "cx": 132.833,
+              "cy": 74.36
+            },
+            {
+              "value": "D",
+              "cx": 138.433,
+              "cy": 74.36
+            },
+            {
+              "value": "E",
+              "cx": 144.033,
+              "cy": 74.36
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "29",
+          "kind": "mcq",
+          "label": "29",
+          "options": [
+            {
+              "value": "A",
+              "cx": 121.633,
+              "cy": 79.76
+            },
+            {
+              "value": "B",
+              "cx": 127.233,
+              "cy": 79.76
+            },
+            {
+              "value": "C",
+              "cx": 132.833,
+              "cy": 79.76
+            },
+            {
+              "value": "D",
+              "cx": 138.433,
+              "cy": 79.76
+            },
+            {
+              "value": "E",
+              "cx": 144.033,
+              "cy": 79.76
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "30",
+          "kind": "mcq",
+          "label": "30",
+          "options": [
+            {
+              "value": "A",
+              "cx": 121.633,
+              "cy": 85.16
+            },
+            {
+              "value": "B",
+              "cx": 127.233,
+              "cy": 85.16
+            },
+            {
+              "value": "C",
+              "cx": 132.833,
+              "cy": 85.16
+            },
+            {
+              "value": "D",
+              "cx": 138.433,
+              "cy": 85.16
+            },
+            {
+              "value": "E",
+              "cx": 144.033,
+              "cy": 85.16
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "31",
+          "kind": "mcq",
+          "label": "31",
+          "options": [
+            {
+              "value": "A",
+              "cx": 121.633,
+              "cy": 90.56
+            },
+            {
+              "value": "B",
+              "cx": 127.233,
+              "cy": 90.56
+            },
+            {
+              "value": "C",
+              "cx": 132.833,
+              "cy": 90.56
+            },
+            {
+              "value": "D",
+              "cx": 138.433,
+              "cy": 90.56
+            },
+            {
+              "value": "E",
+              "cx": 144.033,
+              "cy": 90.56
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "32",
+          "kind": "mcq",
+          "label": "32",
+          "options": [
+            {
+              "value": "A",
+              "cx": 121.633,
+              "cy": 97.56
+            },
+            {
+              "value": "B",
+              "cx": 127.233,
+              "cy": 97.56
+            },
+            {
+              "value": "C",
+              "cx": 132.833,
+              "cy": 97.56
+            },
+            {
+              "value": "D",
+              "cx": 138.433,
+              "cy": 97.56
+            },
+            {
+              "value": "E",
+              "cx": 144.033,
+              "cy": 97.56
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "33",
+          "kind": "mcq",
+          "label": "33",
+          "options": [
+            {
+              "value": "A",
+              "cx": 121.633,
+              "cy": 102.96
+            },
+            {
+              "value": "B",
+              "cx": 127.233,
+              "cy": 102.96
+            },
+            {
+              "value": "C",
+              "cx": 132.833,
+              "cy": 102.96
+            },
+            {
+              "value": "D",
+              "cx": 138.433,
+              "cy": 102.96
+            },
+            {
+              "value": "E",
+              "cx": 144.033,
+              "cy": 102.96
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "34",
+          "kind": "mcq",
+          "label": "34",
+          "options": [
+            {
+              "value": "A",
+              "cx": 121.633,
+              "cy": 108.36
+            },
+            {
+              "value": "B",
+              "cx": 127.233,
+              "cy": 108.36
+            },
+            {
+              "value": "C",
+              "cx": 132.833,
+              "cy": 108.36
+            },
+            {
+              "value": "D",
+              "cx": 138.433,
+              "cy": 108.36
+            },
+            {
+              "value": "E",
+              "cx": 144.033,
+              "cy": 108.36
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "35",
+          "kind": "mcq",
+          "label": "35",
+          "options": [
+            {
+              "value": "A",
+              "cx": 121.633,
+              "cy": 113.76
+            },
+            {
+              "value": "B",
+              "cx": 127.233,
+              "cy": 113.76
+            },
+            {
+              "value": "C",
+              "cx": 132.833,
+              "cy": 113.76
+            },
+            {
+              "value": "D",
+              "cx": 138.433,
+              "cy": 113.76
+            },
+            {
+              "value": "E",
+              "cx": 144.033,
+              "cy": 113.76
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "36",
+          "kind": "mcq",
+          "label": "36",
+          "options": [
+            {
+              "value": "A",
+              "cx": 121.633,
+              "cy": 119.16
+            },
+            {
+              "value": "B",
+              "cx": 127.233,
+              "cy": 119.16
+            },
+            {
+              "value": "C",
+              "cx": 132.833,
+              "cy": 119.16
+            },
+            {
+              "value": "D",
+              "cx": 138.433,
+              "cy": 119.16
+            },
+            {
+              "value": "E",
+              "cx": 144.033,
+              "cy": 119.16
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "37",
+          "kind": "mcq",
+          "label": "37",
+          "options": [
+            {
+              "value": "A",
+              "cx": 121.633,
+              "cy": 126.16
+            },
+            {
+              "value": "B",
+              "cx": 127.233,
+              "cy": 126.16
+            },
+            {
+              "value": "C",
+              "cx": 132.833,
+              "cy": 126.16
+            },
+            {
+              "value": "D",
+              "cx": 138.433,
+              "cy": 126.16
+            },
+            {
+              "value": "E",
+              "cx": 144.033,
+              "cy": 126.16
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "38",
+          "kind": "mcq",
+          "label": "38",
+          "options": [
+            {
+              "value": "A",
+              "cx": 121.633,
+              "cy": 131.56
+            },
+            {
+              "value": "B",
+              "cx": 127.233,
+              "cy": 131.56
+            },
+            {
+              "value": "C",
+              "cx": 132.833,
+              "cy": 131.56
+            },
+            {
+              "value": "D",
+              "cx": 138.433,
+              "cy": 131.56
+            },
+            {
+              "value": "E",
+              "cx": 144.033,
+              "cy": 131.56
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "39",
+          "kind": "mcq",
+          "label": "39",
+          "options": [
+            {
+              "value": "A",
+              "cx": 121.633,
+              "cy": 136.96
+            },
+            {
+              "value": "B",
+              "cx": 127.233,
+              "cy": 136.96
+            },
+            {
+              "value": "C",
+              "cx": 132.833,
+              "cy": 136.96
+            },
+            {
+              "value": "D",
+              "cx": 138.433,
+              "cy": 136.96
+            },
+            {
+              "value": "E",
+              "cx": 144.033,
+              "cy": 136.96
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "40",
+          "kind": "mcq",
+          "label": "40",
+          "options": [
+            {
+              "value": "A",
+              "cx": 170.3,
+              "cy": 68.96
+            },
+            {
+              "value": "B",
+              "cx": 175.9,
+              "cy": 68.96
+            },
+            {
+              "value": "C",
+              "cx": 181.5,
+              "cy": 68.96
+            },
+            {
+              "value": "D",
+              "cx": 187.1,
+              "cy": 68.96
+            },
+            {
+              "value": "E",
+              "cx": 192.7,
+              "cy": 68.96
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "41",
+          "kind": "mcq",
+          "label": "41",
+          "options": [
+            {
+              "value": "A",
+              "cx": 170.3,
+              "cy": 74.36
+            },
+            {
+              "value": "B",
+              "cx": 175.9,
+              "cy": 74.36
+            },
+            {
+              "value": "C",
+              "cx": 181.5,
+              "cy": 74.36
+            },
+            {
+              "value": "D",
+              "cx": 187.1,
+              "cy": 74.36
+            },
+            {
+              "value": "E",
+              "cx": 192.7,
+              "cy": 74.36
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "42",
+          "kind": "mcq",
+          "label": "42",
+          "options": [
+            {
+              "value": "A",
+              "cx": 170.3,
+              "cy": 79.76
+            },
+            {
+              "value": "B",
+              "cx": 175.9,
+              "cy": 79.76
+            },
+            {
+              "value": "C",
+              "cx": 181.5,
+              "cy": 79.76
+            },
+            {
+              "value": "D",
+              "cx": 187.1,
+              "cy": 79.76
+            },
+            {
+              "value": "E",
+              "cx": 192.7,
+              "cy": 79.76
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "43",
+          "kind": "mcq",
+          "label": "43",
+          "options": [
+            {
+              "value": "A",
+              "cx": 170.3,
+              "cy": 85.16
+            },
+            {
+              "value": "B",
+              "cx": 175.9,
+              "cy": 85.16
+            },
+            {
+              "value": "C",
+              "cx": 181.5,
+              "cy": 85.16
+            },
+            {
+              "value": "D",
+              "cx": 187.1,
+              "cy": 85.16
+            },
+            {
+              "value": "E",
+              "cx": 192.7,
+              "cy": 85.16
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "44",
+          "kind": "mcq",
+          "label": "44",
+          "options": [
+            {
+              "value": "A",
+              "cx": 170.3,
+              "cy": 90.56
+            },
+            {
+              "value": "B",
+              "cx": 175.9,
+              "cy": 90.56
+            },
+            {
+              "value": "C",
+              "cx": 181.5,
+              "cy": 90.56
+            },
+            {
+              "value": "D",
+              "cx": 187.1,
+              "cy": 90.56
+            },
+            {
+              "value": "E",
+              "cx": 192.7,
+              "cy": 90.56
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "45",
+          "kind": "mcq",
+          "label": "45",
+          "options": [
+            {
+              "value": "A",
+              "cx": 170.3,
+              "cy": 97.56
+            },
+            {
+              "value": "B",
+              "cx": 175.9,
+              "cy": 97.56
+            },
+            {
+              "value": "C",
+              "cx": 181.5,
+              "cy": 97.56
+            },
+            {
+              "value": "D",
+              "cx": 187.1,
+              "cy": 97.56
+            },
+            {
+              "value": "E",
+              "cx": 192.7,
+              "cy": 97.56
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "46",
+          "kind": "mcq",
+          "label": "46",
+          "options": [
+            {
+              "value": "A",
+              "cx": 170.3,
+              "cy": 102.96
+            },
+            {
+              "value": "B",
+              "cx": 175.9,
+              "cy": 102.96
+            },
+            {
+              "value": "C",
+              "cx": 181.5,
+              "cy": 102.96
+            },
+            {
+              "value": "D",
+              "cx": 187.1,
+              "cy": 102.96
+            },
+            {
+              "value": "E",
+              "cx": 192.7,
+              "cy": 102.96
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "47",
+          "kind": "mcq",
+          "label": "47",
+          "options": [
+            {
+              "value": "A",
+              "cx": 170.3,
+              "cy": 108.36
+            },
+            {
+              "value": "B",
+              "cx": 175.9,
+              "cy": 108.36
+            },
+            {
+              "value": "C",
+              "cx": 181.5,
+              "cy": 108.36
+            },
+            {
+              "value": "D",
+              "cx": 187.1,
+              "cy": 108.36
+            },
+            {
+              "value": "E",
+              "cx": 192.7,
+              "cy": 108.36
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "48",
+          "kind": "mcq",
+          "label": "48",
+          "options": [
+            {
+              "value": "A",
+              "cx": 170.3,
+              "cy": 113.76
+            },
+            {
+              "value": "B",
+              "cx": 175.9,
+              "cy": 113.76
+            },
+            {
+              "value": "C",
+              "cx": 181.5,
+              "cy": 113.76
+            },
+            {
+              "value": "D",
+              "cx": 187.1,
+              "cy": 113.76
+            },
+            {
+              "value": "E",
+              "cx": 192.7,
+              "cy": 113.76
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "49",
+          "kind": "mcq",
+          "label": "49",
+          "options": [
+            {
+              "value": "A",
+              "cx": 170.3,
+              "cy": 119.16
+            },
+            {
+              "value": "B",
+              "cx": 175.9,
+              "cy": 119.16
+            },
+            {
+              "value": "C",
+              "cx": 181.5,
+              "cy": 119.16
+            },
+            {
+              "value": "D",
+              "cx": 187.1,
+              "cy": 119.16
+            },
+            {
+              "value": "E",
+              "cx": 192.7,
+              "cy": 119.16
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "50",
+          "kind": "mcq",
+          "label": "50",
+          "options": [
+            {
+              "value": "A",
+              "cx": 170.3,
+              "cy": 126.16
+            },
+            {
+              "value": "B",
+              "cx": 175.9,
+              "cy": 126.16
+            },
+            {
+              "value": "C",
+              "cx": 181.5,
+              "cy": 126.16
+            },
+            {
+              "value": "D",
+              "cx": 187.1,
+              "cy": 126.16
+            },
+            {
+              "value": "E",
+              "cx": 192.7,
+              "cy": 126.16
+            }
+          ],
+          "points": 1
+        }
+      ],
+      "rois": [],
+      "choices": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E"
+      ],
+      "start": 1,
+      "count": 50,
+      "columns": 4,
+      "pointsPerItem": 1
+    },
+    {
+      "id": "part2",
+      "type": "truefalse",
+      "label": "Part II — True / False (51–60)",
+      "bbox": {
+        "x": 12,
+        "y": 146.16,
+        "w": 186,
+        "h": 20.8
+      },
+      "grids": [
+        {
+          "x": 14.5,
+          "y": 153.66,
+          "columns": [
+            7,
+            5.6,
+            5.6
+          ],
+          "rows": [
+            5.4,
+            5.4
+          ],
+          "cells": [
+            {
+              "row": 0,
+              "col": 0,
+              "kind": "num",
+              "text": "51"
+            },
+            {
+              "row": 0,
+              "col": 1,
+              "kind": "bubble",
+              "text": "T"
+            },
+            {
+              "row": 0,
+              "col": 2,
+              "kind": "bubble",
+              "text": "F"
+            },
+            {
+              "row": 1,
+              "col": 0,
+              "kind": "num",
+              "text": "52"
+            },
+            {
+              "row": 1,
+              "col": 1,
+              "kind": "bubble",
+              "text": "T"
+            },
+            {
+              "row": 1,
+              "col": 2,
+              "kind": "bubble",
+              "text": "F"
+            }
+          ]
+        },
+        {
+          "x": 55.2,
+          "y": 153.66,
+          "columns": [
+            7,
+            5.6,
+            5.6
+          ],
+          "rows": [
+            5.4,
+            5.4
+          ],
+          "cells": [
+            {
+              "row": 0,
+              "col": 0,
+              "kind": "num",
+              "text": "53"
+            },
+            {
+              "row": 0,
+              "col": 1,
+              "kind": "bubble",
+              "text": "T"
+            },
+            {
+              "row": 0,
+              "col": 2,
+              "kind": "bubble",
+              "text": "F"
+            },
+            {
+              "row": 1,
+              "col": 0,
+              "kind": "num",
+              "text": "54"
+            },
+            {
+              "row": 1,
+              "col": 1,
+              "kind": "bubble",
+              "text": "T"
+            },
+            {
+              "row": 1,
+              "col": 2,
+              "kind": "bubble",
+              "text": "F"
+            }
+          ]
+        },
+        {
+          "x": 95.9,
+          "y": 153.66,
+          "columns": [
+            7,
+            5.6,
+            5.6
+          ],
+          "rows": [
+            5.4,
+            5.4
+          ],
+          "cells": [
+            {
+              "row": 0,
+              "col": 0,
+              "kind": "num",
+              "text": "55"
+            },
+            {
+              "row": 0,
+              "col": 1,
+              "kind": "bubble",
+              "text": "T"
+            },
+            {
+              "row": 0,
+              "col": 2,
+              "kind": "bubble",
+              "text": "F"
+            },
+            {
+              "row": 1,
+              "col": 0,
+              "kind": "num",
+              "text": "56"
+            },
+            {
+              "row": 1,
+              "col": 1,
+              "kind": "bubble",
+              "text": "T"
+            },
+            {
+              "row": 1,
+              "col": 2,
+              "kind": "bubble",
+              "text": "F"
+            }
+          ]
+        },
+        {
+          "x": 136.6,
+          "y": 153.66,
+          "columns": [
+            7,
+            5.6,
+            5.6
+          ],
+          "rows": [
+            5.4,
+            5.4
+          ],
+          "cells": [
+            {
+              "row": 0,
+              "col": 0,
+              "kind": "num",
+              "text": "57"
+            },
+            {
+              "row": 0,
+              "col": 1,
+              "kind": "bubble",
+              "text": "T"
+            },
+            {
+              "row": 0,
+              "col": 2,
+              "kind": "bubble",
+              "text": "F"
+            },
+            {
+              "row": 1,
+              "col": 0,
+              "kind": "num",
+              "text": "58"
+            },
+            {
+              "row": 1,
+              "col": 1,
+              "kind": "bubble",
+              "text": "T"
+            },
+            {
+              "row": 1,
+              "col": 2,
+              "kind": "bubble",
+              "text": "F"
+            }
+          ]
+        },
+        {
+          "x": 177.3,
+          "y": 153.66,
+          "columns": [
+            7,
+            5.6,
+            5.6
+          ],
+          "rows": [
+            5.4,
+            5.4
+          ],
+          "cells": [
+            {
+              "row": 0,
+              "col": 0,
+              "kind": "num",
+              "text": "59"
+            },
+            {
+              "row": 0,
+              "col": 1,
+              "kind": "bubble",
+              "text": "T"
+            },
+            {
+              "row": 0,
+              "col": 2,
+              "kind": "bubble",
+              "text": "F"
+            },
+            {
+              "row": 1,
+              "col": 0,
+              "kind": "num",
+              "text": "60"
+            },
+            {
+              "row": 1,
+              "col": 1,
+              "kind": "bubble",
+              "text": "T"
+            },
+            {
+              "row": 1,
+              "col": 2,
+              "kind": "bubble",
+              "text": "F"
+            }
+          ]
+        }
+      ],
+      "groups": [
+        {
+          "key": "51",
+          "kind": "tf",
+          "label": "51",
+          "options": [
+            {
+              "value": "T",
+              "cx": 24.3,
+              "cy": 156.36
+            },
+            {
+              "value": "F",
+              "cx": 29.9,
+              "cy": 156.36
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "52",
+          "kind": "tf",
+          "label": "52",
+          "options": [
+            {
+              "value": "T",
+              "cx": 24.3,
+              "cy": 161.76
+            },
+            {
+              "value": "F",
+              "cx": 29.9,
+              "cy": 161.76
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "53",
+          "kind": "tf",
+          "label": "53",
+          "options": [
+            {
+              "value": "T",
+              "cx": 65,
+              "cy": 156.36
+            },
+            {
+              "value": "F",
+              "cx": 70.6,
+              "cy": 156.36
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "54",
+          "kind": "tf",
+          "label": "54",
+          "options": [
+            {
+              "value": "T",
+              "cx": 65,
+              "cy": 161.76
+            },
+            {
+              "value": "F",
+              "cx": 70.6,
+              "cy": 161.76
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "55",
+          "kind": "tf",
+          "label": "55",
+          "options": [
+            {
+              "value": "T",
+              "cx": 105.7,
+              "cy": 156.36
+            },
+            {
+              "value": "F",
+              "cx": 111.3,
+              "cy": 156.36
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "56",
+          "kind": "tf",
+          "label": "56",
+          "options": [
+            {
+              "value": "T",
+              "cx": 105.7,
+              "cy": 161.76
+            },
+            {
+              "value": "F",
+              "cx": 111.3,
+              "cy": 161.76
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "57",
+          "kind": "tf",
+          "label": "57",
+          "options": [
+            {
+              "value": "T",
+              "cx": 146.4,
+              "cy": 156.36
+            },
+            {
+              "value": "F",
+              "cx": 152,
+              "cy": 156.36
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "58",
+          "kind": "tf",
+          "label": "58",
+          "options": [
+            {
+              "value": "T",
+              "cx": 146.4,
+              "cy": 161.76
+            },
+            {
+              "value": "F",
+              "cx": 152,
+              "cy": 161.76
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "59",
+          "kind": "tf",
+          "label": "59",
+          "options": [
+            {
+              "value": "T",
+              "cx": 187.1,
+              "cy": 156.36
+            },
+            {
+              "value": "F",
+              "cx": 192.7,
+              "cy": 156.36
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "60",
+          "kind": "tf",
+          "label": "60",
+          "options": [
+            {
+              "value": "T",
+              "cx": 187.1,
+              "cy": 161.76
+            },
+            {
+              "value": "F",
+              "cx": 192.7,
+              "cy": 161.76
+            }
+          ],
+          "points": 1
+        }
+      ],
+      "rois": [],
+      "choices": [
+        "T",
+        "F"
+      ],
+      "start": 51,
+      "count": 10,
+      "columns": 5,
+      "pointsPerItem": 1
+    },
+    {
+      "id": "q61",
+      "type": "text",
+      "label": "",
+      "bbox": {
+        "x": 12,
+        "y": 170.96,
+        "w": 91,
+        "h": 13
+      },
+      "grids": [],
+      "groups": [],
+      "rois": [
+        {
+          "id": "q61",
+          "key": "q61",
+          "label": "61.",
+          "role": null,
+          "x": 23.5,
+          "y": 173.46,
+          "w": 77,
+          "h": 8,
+          "charset": "alpha",
+          "multiline": false,
+          "ocr": true,
+          "graded": true,
+          "points": 2
+        }
+      ],
+      "prompt": "61.",
+      "points": 2,
+      "isInline": true,
+      "labelW": 9
+    },
+    {
+      "id": "q62",
+      "type": "text",
+      "label": "",
+      "bbox": {
+        "x": 107,
+        "y": 170.96,
+        "w": 91,
+        "h": 13
+      },
+      "grids": [],
+      "groups": [],
+      "rois": [
+        {
+          "id": "q62",
+          "key": "q62",
+          "label": "62.",
+          "role": null,
+          "x": 118.5,
+          "y": 173.46,
+          "w": 77,
+          "h": 8,
+          "charset": "alpha",
+          "multiline": false,
+          "ocr": true,
+          "graded": true,
+          "points": 2
+        }
+      ],
+      "prompt": "62.",
+      "points": 2,
+      "isInline": true,
+      "labelW": 9
+    }
+  ],
+  "warnings": []
+}

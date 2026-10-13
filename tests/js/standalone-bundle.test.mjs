@@ -45,3 +45,27 @@ test('standalone studio.html is 100% self-contained with valid IIFE closures and
   assert.match(scriptContent, /const\s+RenderSVG\s*=\s*\(function\(Aruco,\s*RenderDOM\)/);
   assert.match(scriptContent, /const\s+Templates\s*=\s*\(function\(\)/);
 });
+
+test('docs/index.html is synchronized for 1-click GitHub Pages deployment', async () => {
+  const studioHtml = await readFile(resolve(root, 'builder/studio.html'), 'utf8');
+  const docsHtml = await readFile(resolve(root, 'docs/index.html'), 'utf8');
+  assert.equal(docsHtml, studioHtml, 'docs/index.html must match builder/studio.html exactly');
+});
+
+test('docs/checker.html is 100% self-contained and synchronized for client-side GitHub Pages OMR', async () => {
+  const checkerSrc = await readFile(resolve(root, 'builder/checker.html'), 'utf8');
+  const checkerDocs = await readFile(resolve(root, 'docs/checker.html'), 'utf8');
+  assert.equal(checkerDocs, checkerSrc, 'docs/checker.html must match builder/checker.html exactly');
+
+  // Verify zero external requests
+  const extStyles = [...checkerDocs.matchAll(/<link\s+[^>]*rel=["']stylesheet["'][^>]*>/gi)];
+  assert.equal(extStyles.length, 0, 'No external stylesheet links in checker.html');
+  const extScripts = [...checkerDocs.matchAll(/<script\s+[^>]*src=[^>]*>/gi)];
+  assert.equal(extScripts.length, 0, 'No external script tags in checker.html');
+
+  // Verify embedded OMR engine and sample key
+  assert.ok(checkerDocs.includes('computeHomography'), 'Homography engine present');
+  assert.ok(checkerDocs.includes('SAMPLE_KEY'), 'Sample answer key present');
+  assert.ok(checkerDocs.includes('SAMPLE_ROSTER'), 'Sample roster present');
+});
+

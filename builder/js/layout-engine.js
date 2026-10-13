@@ -261,13 +261,15 @@ function layoutChoices(zone, ctx, x, y, availW) {
         grid.cells.push({ row: r, col: j + 1, kind: 'bubble', text: choice });
         return { value: choice, ...bubbleCenter(grid, r, j + 1, bubble.pitchY) };
       });
-      groups.push({ key: String(q), kind, label: String(q), options });
+      const points = Number(zone.pointsPerItem ?? zone.points ?? 1);
+      groups.push({ key: String(q), kind, label: String(q), options, points });
     }
     grids.push(grid);
   }
   ctx.nextQuestion = start + count;
   const h = 2 * PAD + titleH + sum(rowHeights);
-  return { bbox: { x, y, w, h }, grids, groups, rois: [], extra: { choices, start, count, columns } };
+  const pointsPerItem = Number(zone.pointsPerItem ?? zone.points ?? 1);
+  return { bbox: { x, y, w, h }, grids, groups, rois: [], extra: { choices, start, count, columns, pointsPerItem } };
 }
 
 function layoutModifiedTrueFalse(zone, ctx, x, y, availW) {
@@ -310,7 +312,8 @@ function layoutModifiedTrueFalse(zone, ctx, x, y, availW) {
         grid.cells.push({ row: r, col: j + 1, kind: 'bubble', text: choice });
         return { value: choice, ...bubbleCenter(grid, r, j + 1, rowH) };
       });
-      groups.push({ key: String(q), kind: 'tf', label: String(q), options });
+      const points = Number(zone.pointsPerItem ?? zone.points ?? 1);
+      groups.push({ key: String(q), kind: 'tf', label: String(q), options, points });
 
       const boxX = colX + bubbleBlockW + 1.5;
       const boxY = y + PAD + titleH + r * rowH + 0.6;
@@ -337,7 +340,8 @@ function layoutModifiedTrueFalse(zone, ctx, x, y, availW) {
 
   ctx.nextQuestion = start + count;
   const h = 2 * PAD + titleH + sum(rowHeights);
-  return { bbox: { x, y, w, h }, grids, groups, rois, extra: { start, count, columns, isModified: true } };
+  const pointsPerItem = Number(zone.pointsPerItem ?? zone.points ?? 1);
+  return { bbox: { x, y, w, h }, grids, groups, rois, extra: { start, count, columns, isModified: true, pointsPerItem } };
 }
 
 function layoutFields(zone, ctx, x, y, availW) {
@@ -540,7 +544,9 @@ export function buildLayout(input) {
   const zones = [];
   const seenZoneIds = new Set();
   const seenKeys = new Map();
+  const halfW = r3((content.w - tpl.gap) / 2);
   let rowBottom = content.y;
+  let rowTop = content.y;
   let prev = null;
 
   for (const raw of tpl.zones) {
@@ -551,10 +557,29 @@ export function buildLayout(input) {
     if (seenZoneIds.has(raw.id)) throw new TemplateError(`Duplicate zone id "${raw.id}"`);
     seenZoneIds.add(raw.id);
 
-    const inline = Boolean(raw.inline && prev);
-    const x = raw.x ?? (inline ? prev.bbox.x + prev.bbox.w + tpl.gap : content.x);
-    const y = raw.y ?? (inline ? prev.bbox.y : rowBottom + (prev ? tpl.gap : 0));
-    const availW = contentRight - x;
+    const isHalfLeft = raw.layout === 'half-left' || raw.side === 'left' || raw.placement === 'left';
+    const isHalfRight = raw.layout === 'half-right' || raw.side === 'right' || raw.placement === 'right';
+
+    let x, y, availW;
+    if (isHalfLeft) {
+      x = raw.x ?? content.x;
+      y = raw.y ?? (zones.length > 0 ? rowBottom + tpl.gap : content.y);
+      rowTop = y;
+      availW = halfW;
+      if (raw.w == null) raw.w = halfW;
+    } else if (isHalfRight) {
+      x = raw.x ?? r3(content.x + halfW + tpl.gap);
+      y = raw.y ?? rowTop;
+      availW = halfW;
+      if (raw.w == null) raw.w = halfW;
+    } else {
+      const inline = Boolean(raw.inline && prev);
+      x = raw.x ?? (inline ? prev.bbox.x + prev.bbox.w + tpl.gap : content.x);
+      y = raw.y ?? (inline ? prev.bbox.y : rowBottom + (prev ? tpl.gap : 0));
+      rowTop = y;
+      availW = contentRight - x;
+    }
+
     const res = layoutFn(raw, ctx, x, y, availW);
     const bbox = { x: r3(res.bbox.x), y: r3(res.bbox.y), w: r3(res.bbox.w), h: r3(res.bbox.h) };
 

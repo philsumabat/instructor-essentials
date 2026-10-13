@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Grader — Visual OMR Exam Sheet Studio</title>
+  <title>Sheet Builder — OMR Exam Designer & Layout Engine</title>
   <link rel="stylesheet" href="css/sheet.css">
   <link rel="stylesheet" href="css/app.css">
   <style id="page-rule">@page { size: A4; margin: 0; }</style>
@@ -24,8 +24,8 @@
         </svg>
       </div>
       <div>
-        <h1 class="app-brand__title">Grader <span>Studio</span></h1>
-        <span class="app-brand__badge">Visual Exam Builder</span>
+        <h1 class="app-brand__title"><span class="brand-title">Sheet <span>Builder</span></span></h1>
+        <span class="app-brand__badge">OMR Exam Designer &amp; Layout Engine</span>
       </div>
     </div>
 
@@ -81,6 +81,12 @@
         <span class="toggle-pill__text">CV Targets</span>
       </label>
 
+      <!-- Switch to Checker Studio -->
+      <a href="checker.html" class="btn btn--secondary" title="Open In-Browser Exam Checker">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        <span>🔍 Checker</span>
+      </a>
+
       <!-- Download Answer Key Button -->
       <button type="button" id="btn-dl-key" class="btn btn--accent" title="Download pre-filled answer key template (no JSON writing needed!)">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 3-9.5 9.5"/><path d="m15.5 7.5 3 3M18 5l2 2"/></svg>
@@ -114,7 +120,7 @@
           </button>
           <button type="button" id="dl-template">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-            Export Build File (.grader.json)
+            Export Sheet Builder File (.sheet.json)
           </button>
         </div>
       </div>
@@ -124,7 +130,7 @@
   <!-- Studio Main Layout -->
   <div class="app-layout">
     <!-- Left Sidebar: Builder Studio Controls -->
-    <aside class="panel studio-sidebar app-chrome" aria-label="Exam Builder Sidebar">
+    <aside class="panel studio-sidebar app-chrome" aria-label="Sheet Builder Sidebar">
       <!-- Exam Global Card: Title & Paper Size -->
       <div class="exam-global-card">
         <label for="exam-title-input" class="visually-hidden">Exam Title</label>
@@ -198,7 +204,7 @@
 
           <!-- Modified True / False Card -->
           <div class="palette-card" draggable="true" data-type="modified_tf">
-            <div class="palette-card__icon">✍️⚖️</div>
+            <div class="palette-card__icon">📝</div>
             <div class="palette-card__body">
               <h3 class="palette-card__title">Modified True / False</h3>
               <p class="palette-card__desc">T / F bubbles + write-in box to correct if false</p>
@@ -265,8 +271,8 @@
           <svg class="chevron-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg>
         </summary>
         <div class="advanced-drawer__body">
-          <label for="template-file-input">Open Build File (.json / .grader):</label>
-          <input type="file" id="template-file-input" accept="application/json,.json,.grader">
+          <label for="template-file-input">Open Sheet Builder File (.json / .sheet.json):</label>
+          <input type="file" id="template-file-input" accept="application/json,.json,.grader,.sheet.json">
 
           <label for="raw-json-textarea">Template JSON Payload:</label>
           <textarea id="raw-json-textarea" rows="10" spellcheck="false" autocomplete="off"></textarea>
@@ -307,11 +313,11 @@
   <dialog class="modal-dialog app-chrome" id="modal-library">
     <div class="modal-card">
       <div class="modal-header">
-        <h2 class="modal-title">Saved Exam Builds Library</h2>
+        <h2 class="modal-title">Saved Sheet Builder Library</h2>
         <button type="button" class="btn-close-modal" id="btn-close-library" aria-label="Close">✕</button>
       </div>
       <div class="modal-body">
-        <p class="modal-desc">All exam builds saved in your browser. You can load, export, or delete them anytime.</p>
+        <p class="modal-desc">All exam templates saved in Sheet Builder. You can load, export, or delete them anytime.</p>
         <div class="saved-builds-list" id="saved-builds-list">
           <!-- Populated dynamically -->
         </div>
@@ -319,7 +325,7 @@
       <div class="modal-footer">
         <button type="button" id="btn-import-file-trigger" class="btn btn--secondary">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-          Import Build File (.json)
+          Import Sheet Builder File (.json)
         </button>
         <button type="button" id="btn-modal-close" class="btn btn--primary">Done</button>
       </div>

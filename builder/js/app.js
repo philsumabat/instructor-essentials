@@ -1,5 +1,5 @@
 /**
- * Grader — Visual OMR Exam Sheet Studio Controller.
+ * Sheet Builder — Visual OMR Exam Sheet Designer & Layout Engine Controller.
  *
  * Provides a fluid drag-and-drop builder, form-based property inspector,
  * interactive canvas with reorder handles and live drop indicators,
@@ -10,7 +10,8 @@ import { renderSheetDOM, renderStandaloneHTML, pageRule } from './render-dom.js'
 import { renderSVG } from './render-svg.js';
 import { SAMPLE_TEMPLATES } from './templates.js';
 
-const STORAGE_KEY = 'grader-studio:template';
+const STORAGE_KEY = 'sheet-builder:template';
+const LEGACY_STORAGE_KEY = 'grader-studio:template';
 const PX_PER_MM = 96 / 25.4; // CSS reference pixel (3.7795 px/mm)
 
 const $ = (sel) => document.querySelector(sel);
@@ -153,15 +154,14 @@ function createDefaultZone(type) {
         type: 'fields',
         id: uid('info'),
         label: '',
-        columns: 3,
-        inline: true,
+        w: availW,
         fieldHeight: 7.5,
         fields: [
-          { id: 'name', label: 'Student Name', role: 'name', w: 70 },
-          { id: 'sid', label: 'Student ID', role: 'student_id', digits: 8, w: 60 },
-          { id: 'score', label: 'Score', role: 'score', w: 25 },
-          { id: 'section', label: 'Section', w: 45 },
-          { id: 'date', label: 'Date', w: 45 },
+          { id: 'name', label: 'Student Name', role: 'name', row: 0, w: 108 },
+          { id: 'sid', label: 'Student ID', role: 'student_id', digits: 8, row: 0, w: 75 },
+          { id: 'section', label: 'Offer No. & Class Sched', row: 1, w: 96 },
+          { id: 'date', label: 'Date', row: 1, w: 46 },
+          { id: 'score', label: 'Score', role: 'score', row: 1, w: 41 },
         ],
       };
 
@@ -174,6 +174,7 @@ function createDefaultZone(type) {
         start: nextQ,
         choices: 'ABCD',
         columns: 2,
+        pointsPerItem: 1,
         w: availW,
       };
 
@@ -186,6 +187,7 @@ function createDefaultZone(type) {
         start: nextQ,
         choices: ['T', 'F'],
         columns: 2,
+        pointsPerItem: 1,
         w: availW,
       };
 
@@ -199,6 +201,7 @@ function createDefaultZone(type) {
         choices: ['T', 'F'],
         corrWidth: 42,
         columns: 1,
+        pointsPerItem: 2,
         w: availW,
       };
 
@@ -569,7 +572,7 @@ function renderInspector() {
       <div class="empty-inspector">
         <div class="empty-inspector__icon">👆</div>
         <h3 class="empty-inspector__title">No Block Selected</h3>
-        <p class="empty-inspector__desc">Click on any section of the exam sheet or choose a block from the <strong>Outline</strong> tab to customize its properties.</p>
+        <p class="empty-inspector__desc">Click on any section of the exam sheet or choose a block from the <strong>Outline</strong> tab to customize its properties in the Sheet Builder inspector.</p>
       </div>
     `;
     return;
@@ -584,7 +587,7 @@ function renderInspector() {
     fields: '📝',
     mcq: '🔘',
     truefalse: '⚖️',
-    modified_tf: '✍️⚖️',
+    modified_tf: '📝',
     text: '✍️',
     text_short: '✏️',
     text_essay: '📄',
@@ -649,6 +652,15 @@ function renderInspector() {
             <button type="button" class="stepper-btn" id="insp-start-plus" aria-label="Increase start number">+</button>
           </div>
         </div>
+
+        <div class="form-group">
+          <label class="form-label" for="insp-points">Pts / Item</label>
+          <div class="stepper-control">
+            <button type="button" class="stepper-btn" id="insp-points-minus" aria-label="Decrease points">−</button>
+            <input type="number" id="insp-points" class="stepper-input" value="${zone.pointsPerItem ?? zone.points ?? 1}" min="1" max="50">
+            <button type="button" class="stepper-btn" id="insp-points-plus" aria-label="Increase points">+</button>
+          </div>
+        </div>
       </div>
 
       ${!isTf ? `
@@ -673,7 +685,7 @@ function renderInspector() {
       `}
 
       <div class="form-group">
-        <label class="form-label">Columns</label>
+        <label class="form-label">Columns within Module</label>
         <div class="pills-group" id="insp-cols-pills">
           <button type="button" class="pill-btn ${!zone.columns ? 'is-active' : ''}" data-cols="">Auto</button>
           <button type="button" class="pill-btn ${zone.columns === 1 ? 'is-active' : ''}" data-cols="1">1 Col</button>
@@ -681,6 +693,15 @@ function renderInspector() {
           <button type="button" class="pill-btn ${zone.columns === 3 ? 'is-active' : ''}" data-cols="3">3 Cols</button>
           <button type="button" class="pill-btn ${zone.columns === 4 ? 'is-active' : ''}" data-cols="4">4 Cols</button>
           <button type="button" class="pill-btn ${zone.columns === 5 ? 'is-active' : ''}" data-cols="5">5 Cols</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Module Page Placement</label>
+        <div class="pills-group" id="insp-placement-pills">
+          <button type="button" class="pill-btn ${(!zone.layout && !zone.side && !zone.inline) || zone.layout === 'full' ? 'is-active' : ''}" data-placement="full">Full Width</button>
+          <button type="button" class="pill-btn ${zone.layout === 'half-left' || zone.side === 'left' ? 'is-active' : ''}" data-placement="left">Side-by-Side (Left)</button>
+          <button type="button" class="pill-btn ${zone.layout === 'half-right' || zone.side === 'right' || zone.inline ? 'is-active' : ''}" data-placement="right">Side-by-Side (Right)</button>
         </div>
       </div>
     `;
@@ -711,6 +732,15 @@ function renderInspector() {
             <button type="button" class="stepper-btn" id="insp-start-plus" aria-label="Increase start number">+</button>
           </div>
         </div>
+
+        <div class="form-group">
+          <label class="form-label" for="insp-points">Pts / Item</label>
+          <div class="stepper-control">
+            <button type="button" class="stepper-btn" id="insp-points-minus" aria-label="Decrease points">−</button>
+            <input type="number" id="insp-points" class="stepper-input" value="${zone.pointsPerItem ?? zone.points ?? 2}" min="1" max="50">
+            <button type="button" class="stepper-btn" id="insp-points-plus" aria-label="Increase points">+</button>
+          </div>
+        </div>
       </div>
 
       <div class="form-group">
@@ -723,11 +753,20 @@ function renderInspector() {
       </div>
 
       <div class="form-group">
-        <label class="form-label">Columns</label>
+        <label class="form-label">Columns within Module</label>
         <div class="pills-group" id="insp-cols-pills">
           <button type="button" class="pill-btn ${(zone.columns || 1) === 1 ? 'is-active' : ''}" data-cols="1">1 Col</button>
           <button type="button" class="pill-btn ${(zone.columns || 1) === 2 ? 'is-active' : ''}" data-cols="2">2 Cols</button>
           <button type="button" class="pill-btn ${(zone.columns || 1) === 3 ? 'is-active' : ''}" data-cols="3">3 Cols</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Module Page Placement</label>
+        <div class="pills-group" id="insp-placement-pills">
+          <button type="button" class="pill-btn ${(!zone.layout && !zone.side && !zone.inline) || zone.layout === 'full' ? 'is-active' : ''}" data-placement="full">Full Width</button>
+          <button type="button" class="pill-btn ${zone.layout === 'half-left' || zone.side === 'left' ? 'is-active' : ''}" data-placement="left">Side-by-Side (Left)</button>
+          <button type="button" class="pill-btn ${zone.layout === 'half-right' || zone.side === 'right' || zone.inline ? 'is-active' : ''}" data-placement="right">Side-by-Side (Right)</button>
         </div>
       </div>
     `;
@@ -806,7 +845,7 @@ function renderInspector() {
           </label>
           <label class="field-checkbox-label">
             <input type="checkbox" id="field-section" ${hasField('section') ? 'checked' : ''}>
-            <span>Section</span>
+            <span>Offer No. &amp; Sched</span>
           </label>
           <label class="field-checkbox-label">
             <input type="checkbox" id="field-date" ${hasField('date') ? 'checked' : ''}>
@@ -816,6 +855,15 @@ function renderInspector() {
             <input type="checkbox" id="field-sig" ${hasField('signature') ? 'checked' : ''}>
             <span>Signature</span>
           </label>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Module Page Placement</label>
+        <div class="pills-group" id="insp-placement-pills">
+          <button type="button" class="pill-btn ${(!zone.layout && !zone.side && !zone.inline) || zone.layout === 'full' ? 'is-active' : ''}" data-placement="full">Full Width</button>
+          <button type="button" class="pill-btn ${zone.layout === 'half-left' || zone.side === 'left' ? 'is-active' : ''}" data-placement="left">Side-by-Side (Left)</button>
+          <button type="button" class="pill-btn ${zone.layout === 'half-right' || zone.side === 'right' || zone.inline ? 'is-active' : ''}" data-placement="right">Side-by-Side (Right)</button>
         </div>
       </div>
     `;
@@ -855,6 +903,15 @@ function renderInspector() {
           <button type="button" class="stepper-btn" id="insp-box-height-minus" aria-label="Decrease box height">−</button>
           <input type="number" id="insp-box-height" class="stepper-input" value="${zone.boxHeight ?? defaultH}" min="8" max="120">
           <button type="button" class="stepper-btn" id="insp-box-height-plus" aria-label="Increase box height">+</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Module Page Placement</label>
+        <div class="pills-group" id="insp-placement-pills">
+          <button type="button" class="pill-btn ${(!zone.layout && !zone.side && !zone.inline) || zone.layout === 'full' ? 'is-active' : ''}" data-placement="full">Full Width</button>
+          <button type="button" class="pill-btn ${zone.layout === 'half-left' || zone.side === 'left' ? 'is-active' : ''}" data-placement="left">Side-by-Side (Left)</button>
+          <button type="button" class="pill-btn ${zone.layout === 'half-right' || zone.side === 'right' || zone.inline ? 'is-active' : ''}" data-placement="right">Side-by-Side (Right)</button>
         </div>
       </div>
     `;
@@ -918,10 +975,47 @@ function bindInspectorEvents(zone) {
     });
   }
 
-  // Count & Start steppers (for mcq, truefalse, modified_tf)
+  // Count & Start & Points steppers (for mcq, truefalse, modified_tf)
   if (zone.type === 'mcq' || zone.type === 'truefalse' || zone.type === 'modified_tf') {
     bindStepper('insp-count', () => zone.count, (val) => { zone.count = val; update(); }, 1, 100);
     bindStepper('insp-start', () => zone.start, (val) => { zone.start = val; update(); }, 1, 999);
+    bindStepper(
+      'insp-points',
+      () => zone.pointsPerItem ?? zone.points ?? (zone.type === 'modified_tf' ? 2 : 1),
+      (val) => {
+        zone.pointsPerItem = val;
+        zone.points = val;
+        update();
+      },
+      1,
+      50,
+    );
+  }
+
+  // Placement pills (Module page placement)
+  const placementPills = $$('#insp-placement-pills .pill-btn');
+  for (const pill of placementPills) {
+    pill.addEventListener('click', () => {
+      const mode = pill.dataset.placement;
+      if (mode === 'left') {
+        zone.layout = 'half-left';
+        zone.side = 'left';
+        delete zone.inline;
+        delete zone.w;
+      } else if (mode === 'right') {
+        zone.layout = 'half-right';
+        zone.side = 'right';
+        zone.inline = true;
+        delete zone.w;
+      } else {
+        delete zone.layout;
+        delete zone.side;
+        delete zone.inline;
+        delete zone.w;
+      }
+      renderInspector();
+      update();
+    });
   }
 
   // Modified T/F correction box width
@@ -1033,13 +1127,15 @@ function bindInspectorEvents(zone) {
     const updateFields = () => {
       const digits = parseInt($('#insp-sid-digits')?.value, 10) || zone.sidDigits || 8;
       const fields = [];
-      if (nameCb?.checked) fields.push({ id: 'name', label: 'Student Name', role: 'name', w: 70 });
-      if (sidCb?.checked) fields.push({ id: 'sid', label: 'Student ID', role: 'student_id', digits, w: Math.max(50, digits * 6 + 15) });
-      if (scoreCb?.checked) fields.push({ id: 'score', label: 'Score', role: 'score', w: 25 });
-      if (sectionCb?.checked) fields.push({ id: 'section', label: 'Section', w: 45 });
-      if (dateCb?.checked) fields.push({ id: 'date', label: 'Date', w: 45 });
-      if (sigCb?.checked) fields.push({ id: 'signature', label: 'Signature', ocr: false, w: 55 });
-      if (fields.length === 0) fields.push({ id: 'name', label: 'Student Name', role: 'name', w: 70 });
+      // Row 0: Student Name & Student ID
+      if (nameCb?.checked) fields.push({ id: 'name', label: 'Student Name', role: 'name', row: 0, w: 108 });
+      if (sidCb?.checked) fields.push({ id: 'sid', label: 'Student ID', role: 'student_id', digits, row: 0, w: Math.max(65, digits * 6 + 15) });
+      // Row 1: Offer No. & Class Sched, Date, Score
+      if (sectionCb?.checked) fields.push({ id: 'section', label: 'Offer No. & Class Sched', row: 1, w: 96 });
+      if (dateCb?.checked) fields.push({ id: 'date', label: 'Date', row: 1, w: 46 });
+      if (scoreCb?.checked) fields.push({ id: 'score', label: 'Score', role: 'score', row: 1, w: 41 });
+      if (sigCb?.checked) fields.push({ id: 'signature', label: 'Signature', ocr: false, row: 1, w: 45 });
+      if (fields.length === 0) fields.push({ id: 'name', label: 'Student Name', role: 'name', row: 0, w: 108 });
       zone.fields = fields;
       update();
     };
@@ -1094,7 +1190,7 @@ function renderOutline() {
     fields: '📝',
     mcq: '🔘',
     truefalse: '⚖️',
-    modified_tf: '✍️⚖️',
+    modified_tf: '📝',
     text: '✍️',
     text_short: '✏️',
     text_essay: '📄',
@@ -1203,10 +1299,10 @@ function renderMeta(layout) {
   // Total points calculation
   let totalPts = 0;
   for (const g of allGroups(layout)) {
-    if (g.kind === 'mcq' || g.kind === 'tf') totalPts += 1;
+    if (g.kind === 'mcq' || g.kind === 'tf') totalPts += (g.points || 1);
   }
   for (const r of layout.zones.flatMap((z) => z.rois)) {
-    if (r.graded) totalPts += r.points || 1;
+    if (r.graded) totalPts += (r.points || 1);
   }
   els.statPoints.textContent = String(totalPts);
 
@@ -1280,12 +1376,13 @@ function downloadAnswerKey() {
   for (const g of allGroups(layout)) {
     if (g.kind === 'mcq' || g.kind === 'tf') {
       const defaultAnswer = g.options[0]?.value || (g.kind === 'tf' ? 'T' : 'A');
+      const pts = g.points || 1.0;
       items[g.key] = {
         answer: defaultAnswer,
-        points: 1.0,
+        points: pts,
         kind: g.kind,
       };
-      totalPoints += 1.0;
+      totalPoints += pts;
     }
   }
 
@@ -1341,11 +1438,12 @@ async function loadSample(urlOrKey) {
 }
 
 // ---- Saved Exam Builds Feature ----
-const SAVED_BUILDS_KEY = 'grader:saved_builds';
+const SAVED_BUILDS_KEY = 'sheet-builder:saved_builds';
+const LEGACY_SAVED_BUILDS_KEY = 'grader:saved_builds';
 
 function getSavedBuilds() {
   try {
-    const raw = localStorage.getItem(SAVED_BUILDS_KEY);
+    const raw = localStorage.getItem(SAVED_BUILDS_KEY) || localStorage.getItem(LEGACY_SAVED_BUILDS_KEY);
     return raw ? JSON.parse(raw) : [];
   } catch {
     return [];
@@ -1397,7 +1495,7 @@ function renderSavedBuildsList() {
           </div>
           <div class="saved-build-card__actions">
             <button type="button" class="btn btn--secondary btn-sm btn-load-build" data-build-id="${b.id}" title="Load this exam build into editor">Load</button>
-            <button type="button" class="btn btn--secondary btn-sm btn-export-build" data-build-id="${b.id}" title="Download build file">Export .grader.json</button>
+            <button type="button" class="btn btn--secondary btn-sm btn-export-build" data-build-id="${b.id}" title="Download build file">Export .sheet.json</button>
             <button type="button" class="btn btn--secondary btn-sm is-danger btn-delete-build" data-build-id="${b.id}" title="Delete this build">Delete</button>
           </div>
         </div>
@@ -1421,7 +1519,7 @@ function renderSavedBuildsList() {
       const id = btn.dataset.buildId;
       const b = getSavedBuilds().find((x) => x.id === id);
       if (b && b.template) {
-        download(`${b.id || 'exam'}.grader.json`, `${JSON.stringify(b.template, null, 2)}\n`, 'application/json');
+        download(`${b.id || 'exam'}.sheet.json`, `${JSON.stringify(b.template, null, 2)}\n`, 'application/json');
       }
     });
   });
@@ -1527,7 +1625,7 @@ function initEvents() {
   els.btnImportFileTrigger?.addEventListener('click', () => {
     const filePicker = document.createElement('input');
     filePicker.type = 'file';
-    filePicker.accept = '.json,.grader,application/json';
+    filePicker.accept = '.json,.grader,.sheet.json,application/json';
     filePicker.onchange = async () => {
       const file = filePicker.files?.[0];
       if (!file) return;
@@ -1706,7 +1804,7 @@ function initEvents() {
 async function init() {
   initEvents();
 
-  const saved = localStorage.getItem(STORAGE_KEY);
+  const saved = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY);
   if (saved) {
     try {
       const parsed = JSON.parse(saved);

@@ -1,5 +1,5 @@
 /**
- * Sheet Builder — Visual OMR Exam Sheet Designer & Layout Engine Controller.
+ * Sheet Builder Controller.
  *
  * Provides a fluid drag-and-drop builder, form-based property inspector,
  * interactive canvas with reorder handles and live drop indicators,

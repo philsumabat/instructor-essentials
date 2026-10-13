@@ -27,6 +27,7 @@ test('standalone studio.html is 100% self-contained with valid IIFE closures and
   // 4. Inlined styles present
   assert.ok(html.includes('.omr-sheet'), 'sheet.css must be inlined');
   assert.ok(html.includes('.app-header'), 'app.css must be inlined');
+  assert.ok(!html.includes('OMR Exam Designer & Layout Engine'), 'Legacy OMR Exam Designer badge removed from studio');
 
   // 5. Inlined script syntax validation
   const scriptMatch = html.match(/<script>([\s\S]*?)<\/script>/);
@@ -67,5 +68,11 @@ test('docs/checker.html is 100% self-contained and synchronized for client-side 
   assert.ok(checkerDocs.includes('computeHomography'), 'Homography engine present');
   assert.ok(checkerDocs.includes('SAMPLE_KEY'), 'Sample answer key present');
   assert.ok(checkerDocs.includes('SAMPLE_ROSTER'), 'Sample roster present');
+
+  // Verify JPEG and ZIP export features
+  assert.ok(checkerDocs.includes('btn-download-sheet-jpeg'), 'Download Graded Sheet (JPEG) button present');
+  assert.ok(checkerDocs.includes('btn-export-zip'), 'Download All Graded Sheets (ZIP) button present');
+  assert.ok(checkerDocs.includes('createZip'), 'Zero-dependency inlined ZIP generator present');
+  assert.ok(!checkerDocs.includes('OMR Exam Designer & Layout Engine'), 'Legacy OMR Exam Designer badge removed from checker');
 });
 

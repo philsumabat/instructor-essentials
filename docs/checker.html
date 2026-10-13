@@ -1278,6 +1278,20 @@
   <div class="workspace">
     <!-- Sidebar -->
     <aside class="sidebar">
+      <!-- Exam Layout Selection -->
+      <div class="section-card" id="card-layout-quick">
+        <h2 class="section-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18M9 21V9"/></svg><span>Exam Layout</span></h2>
+        <div id="layout-status-box" style="background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.5rem 0.65rem; font-size: 0.78rem; margin-bottom: 0.5rem;">
+          <div style="font-weight: 600; color: var(--accent); margin-bottom: 0.15rem;" id="layout-title-display">50 MCQ + T/F + Short Answer</div>
+          <div style="color: var(--text-muted); font-size: 0.72rem;" id="layout-stats-display">A4 • 50 Questions (270 Bubbles)</div>
+        </div>
+        <label class="btn btn--primary btn--sm" style="cursor: pointer; justify-content: center; gap: 0.45rem; width: 100%;" title="Upload layout.json or exam package (.zip) exported from Sheet Builder">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <span>Upload Sheet Builder Layout</span>
+          <input type="file" id="input-layout-direct" accept=".json,.zip" style="display: none;">
+        </label>
+      </div>
+
       <!-- Exam Scans Section -->
       <div class="section-card">
         <h2 class="section-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span>Exam Scans</span></h2>
@@ -1683,7 +1697,7 @@
           <div class="metric-card">
             <span class="metric-card__label">Reliability (Cronbach's α)</span>
             <span class="metric-card__value" id="analysis-stat-alpha">—</span>
-            <span class="metric-card__sub">Internal test consistency</span>
+            <span class="metric-card__sub" id="analysis-stat-alpha-sub">Internal test consistency</span>
           </div>
         </div>
 
@@ -1741,6 +1755,72 @@
           </div>
         </div>
 
+        <!-- Psychometric Reference & Actionable Insights Guide -->
+        <details class="section-card" id="card-psychometric-guide" style="margin-bottom: 1.25rem; background: var(--panel-alt); border: 1px solid var(--border);">
+          <summary style="cursor: pointer; font-weight: 700; font-size: 0.86rem; color: var(--text); display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+              <span>Psychometric Reference: How to Interpret These Indices &amp; Take Action</span>
+            </div>
+            <span style="font-size: 0.75rem; color: var(--accent); font-weight: 600;">View Guidelines &amp; Actions ▼</span>
+          </summary>
+          <div style="margin-top: 0.85rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 0.85rem; font-size: 0.78rem; line-height: 1.5; color: var(--text);">
+            <div style="background: var(--panel); border: 1px solid var(--border); padding: 0.75rem; border-radius: var(--radius-sm);">
+              <div style="font-weight: 700; color: #10b981; margin-bottom: 0.35rem; display: flex; align-items: center; gap: 0.35rem;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20v-6M6 20V10M18 20V4"/></svg>
+                <span>Difficulty Index (P)</span>
+              </div>
+              <div><strong>Definition:</strong> Proportion of students answering correctly (0% to 100%).</div>
+              <ul style="margin: 0.35rem 0 0 0; padding-left: 1.1rem; color: var(--text-muted);">
+                <li><strong style="color: #10b981;">50%–85% (Optimal Zone):</strong> Maximizes measurement accuracy and assessment spread.</li>
+                <li><strong style="color: #3b82f6;">&gt;85% (Easy):</strong> Prerequisite/confidence check; low differentiation.</li>
+                <li><strong style="color: #f59e0b;">20%–49% (Hard):</strong> High rigor; effectively separates top achievers.</li>
+                <li><strong style="color: #ef4444;">&lt;20% (Very Hard):</strong> Flagged. Check for confusing wording, unaddressed content, or wrong key.</li>
+              </ul>
+            </div>
+
+            <div style="background: var(--panel); border: 1px solid var(--border); padding: 0.75rem; border-radius: var(--radius-sm);">
+              <div style="font-weight: 700; color: #0284c7; margin-bottom: 0.35rem; display: flex; align-items: center; gap: 0.35rem;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 14.14 14.14"/></svg>
+                <span>Discrimination Index (r_pbis)</span>
+              </div>
+              <div><strong>Definition:</strong> Point-biserial correlation between item score and total score.</div>
+              <ul style="margin: 0.35rem 0 0 0; padding-left: 1.1rem; color: var(--text-muted);">
+                <li><strong style="color: #10b981;">≥0.30 (Strong):</strong> Excellent item. High-scorers get it right; low-scorers miss it.</li>
+                <li><strong style="color: #3b82f6;">0.20–0.29 (Acceptable):</strong> Standard discriminating power.</li>
+                <li><strong style="color: #f59e0b;">0.00–0.19 (Weak):</strong> Fails to clearly separate mastery levels.</li>
+                <li><strong style="color: #ef4444;">&lt;0.00 (Critical!):</strong> Negative discrimination. Low-scorers scored higher than high-scorers. <em>Check answer key first!</em></li>
+              </ul>
+            </div>
+
+            <div style="background: var(--panel); border: 1px solid var(--border); padding: 0.75rem; border-radius: var(--radius-sm);">
+              <div style="font-weight: 700; color: #8b5cf6; margin-bottom: 0.35rem; display: flex; align-items: center; gap: 0.35rem;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+                <span>Distractor Efficiency</span>
+              </div>
+              <div><strong>Definition:</strong> How students distribute across incorrect options.</div>
+              <ul style="margin: 0.35rem 0 0 0; padding-left: 1.1rem; color: var(--text-muted);">
+                <li><strong>Dead Distractor (0%):</strong> No student picked it. Replace with a plausible alternative in future exams.</li>
+                <li><strong>Functional Distractor:</strong> Attracts low-scorers while high-scorers avoid it.</li>
+                <li><strong>Attractive Misconception:</strong> If chosen heavily by top students, indicates a misleading stem or widespread misconception.</li>
+              </ul>
+            </div>
+
+            <div style="background: var(--panel); border: 1px solid var(--border); padding: 0.75rem; border-radius: var(--radius-sm);">
+              <div style="font-weight: 700; color: #ec4899; margin-bottom: 0.35rem; display: flex; align-items: center; gap: 0.35rem;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                <span>Cronbach's Alpha (α) / KR-20</span>
+              </div>
+              <div><strong>Definition:</strong> Internal consistency reliability of the exam (0.0 to 1.0).</div>
+              <ul style="margin: 0.35rem 0 0 0; padding-left: 1.1rem; color: var(--text-muted);">
+                <li><strong style="color: #10b981;">≥0.80 (High):</strong> Reliable for critical/summative decisions.</li>
+                <li><strong style="color: #3b82f6;">0.70–0.79 (Good):</strong> Standard benchmark for classroom unit exams.</li>
+                <li><strong style="color: #f59e0b;">&lt;0.70 (Moderate):</strong> Increase item count or remove negative-discrimination items.</li>
+              </ul>
+            </div>
+          </div>
+        </details>
+
         <!-- Filter bar for Item Table -->
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
           <h3 style="margin: 0; font-size: 0.92rem; font-weight: 700; color: var(--text);">Detailed Item Statistics &amp; Distractor Analysis</h3>
@@ -1767,11 +1847,12 @@
                 <th id="th-d3" style="min-width: 50px;">C</th>
                 <th id="th-d4" style="min-width: 50px;">D</th>
                 <th id="th-d5" style="min-width: 50px;">E</th>
-                <th style="min-width: 140px;">Diagnostic Status</th>
+                <th style="min-width: 130px;">Diagnostic Status</th>
+                <th style="min-width: 260px;">Insights &amp; Classroom Action</th>
               </tr>
             </thead>
             <tbody id="tbody-items">
-              <tr><td colspan="11" style="text-align: center; padding: 2rem; color: var(--text-muted);">Run grading to generate item discrimination and difficulty statistics.</td></tr>
+              <tr><td colspan="12" style="text-align: center; padding: 2rem; color: var(--text-muted);">Run grading to generate item discrimination and difficulty statistics.</td></tr>
             </tbody>
           </table>
         </div>
@@ -1968,6 +2049,11 @@
 
     function handleFiles(files) {
       Array.from(files).forEach(file => {
+        const fname = file.name.toLowerCase();
+        if (fname.endsWith('.layout.json') || (fname.endsWith('.json') && !fname.includes('key') && !fname.includes('roster')) || (fname.endsWith('.zip') && !fname.includes('graded'))) {
+          handleLayoutUpload(file);
+          return;
+        }
         if (!file.type.startsWith('image/')) return;
         const reader = new FileReader();
         reader.onload = (e) => {
@@ -2107,6 +2193,161 @@
         templateId: raw.templateId || "custom",
         items
       };
+    }
+
+    // Zero-dependency pure JavaScript uncompressed PKZIP 2.0 (Store mode) archive reader
+    function readZipFiles(arrayBuffer) {
+      const bytes = new Uint8Array(arrayBuffer);
+      const dv = new DataView(arrayBuffer);
+      const dec = new TextDecoder('utf-8');
+      const files = [];
+
+      let eocdOffset = -1;
+      for (let i = bytes.length - 22; i >= 0; i--) {
+        if (dv.getUint32(i, true) === 0x06054b50) {
+          eocdOffset = i;
+          break;
+        }
+      }
+
+      if (eocdOffset !== -1) {
+        const cdCount = dv.getUint16(eocdOffset + 10, true);
+        let cdOffset = dv.getUint32(eocdOffset + 16, true);
+
+        for (let i = 0; i < cdCount; i++) {
+          if (dv.getUint32(cdOffset, true) !== 0x02014b50) break;
+          const method = dv.getUint16(cdOffset + 10, true);
+          const compSize = dv.getUint32(cdOffset + 20, true);
+          const uncompSize = dv.getUint32(cdOffset + 24, true);
+          const nameLen = dv.getUint16(cdOffset + 28, true);
+          const extraLen = dv.getUint16(cdOffset + 30, true);
+          const commentLen = dv.getUint16(cdOffset + 32, true);
+          const localHdrOffset = dv.getUint32(cdOffset + 42, true);
+
+          const nameBytes = bytes.subarray(cdOffset + 46, cdOffset + 46 + nameLen);
+          const filename = dec.decode(nameBytes);
+
+          if (method === 0 && dv.getUint32(localHdrOffset, true) === 0x04034b50) {
+            const localNameLen = dv.getUint16(localHdrOffset + 26, true);
+            const localExtraLen = dv.getUint16(localHdrOffset + 28, true);
+            const dataOffset = localHdrOffset + 30 + localNameLen + localExtraLen;
+            const fileData = bytes.subarray(dataOffset, dataOffset + uncompSize);
+            files.push({ name: filename, data: fileData, text: () => dec.decode(fileData) });
+          }
+
+          cdOffset += 46 + nameLen + extraLen + commentLen;
+        }
+      }
+      return files;
+    }
+
+    function updateLayoutDisplay(name) {
+      if (!state.layout) return;
+      const titleEl = $('layout-title-display');
+      const statsEl = $('layout-stats-display');
+      const qSet = new Set((state.layout.bubbles || []).filter(b => b.item && !b.item.startsWith('sid[')).map(b => b.item));
+      if (titleEl) titleEl.textContent = name || state.layout.title || 'Exam Layout';
+      if (statsEl) {
+        statsEl.textContent = `${state.layout.paper || 'A4'} • ${qSet.size} Questions (${(state.layout.bubbles || []).length} Bubbles)`;
+      }
+    }
+
+    function applyLoadedLayout(rawJson, sourceName) {
+      try {
+        const parsed = parseLayout(rawJson);
+        if (!parsed || parsed.bubbles.length === 0) {
+          throw new Error("Could not find valid bubble coordinates in layout JSON.");
+        }
+        state.layout = parsed;
+
+        // Check if rawJson also included an answer key
+        const embeddedKey = rawJson.key || rawJson.answerKey || rawJson.template?.key || rawJson.template?.answerKey;
+        if (embeddedKey) {
+          state.key = parseAnswerKey(embeddedKey);
+        } else {
+          // Generate a starter key matching layout questions
+          const items = {};
+          for (const b of (state.layout.bubbles || [])) {
+            if (b.item && !b.item.startsWith('sid[')) {
+              if (!items[b.item]) {
+                const isTF = (b.choice === 'T' || b.choice === 'F');
+                items[b.item] = {
+                  answer: b.choice || (isTF ? 'T' : 'A'),
+                  points: 1,
+                  kind: isTF ? 'tf' : 'mcq'
+                };
+              }
+            }
+          }
+          if (Object.keys(items).length > 0) {
+            state.key = {
+              title: `${rawJson.title || 'Custom Exam'} Answer Key`,
+              templateId: rawJson.templateId || 'custom',
+              total_points: Object.keys(items).length,
+              pass_score: Math.round(Object.keys(items).length * 0.6),
+              items
+            };
+          }
+        }
+
+        $('preset-selector').value = 'custom';
+        $('custom-files-box').style.display = 'none';
+
+        updateLayoutDisplay(rawJson.title || sourceName);
+        updateKeyDisplay();
+        validatePreflightKeyLayout();
+
+        const qCount = new Set((state.layout.bubbles || []).filter(b => b.item && !b.item.startsWith('sid[')).map(b => b.item)).size;
+        alert(`Successfully loaded layout: "${rawJson.title || sourceName}"\n${state.layout.paper || 'A4'} • ${qCount} Questions • ${state.layout.bubbles.length} Bubbles`);
+
+        if (state.scans.length > 0) {
+          $('btn-grade-now').click();
+        }
+      } catch (err) {
+        alert("Error loading layout: " + err.message);
+      }
+    }
+
+    function handleLayoutUpload(file) {
+      if (!file) return;
+      const fname = file.name.toLowerCase();
+
+      if (fname.endsWith('.zip')) {
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          try {
+            const files = readZipFiles(evt.target.result);
+            if (files.length === 0) {
+              alert("No uncompressed files found in the ZIP archive. Please ensure this is an Exam Package exported from Sheet Builder.");
+              return;
+            }
+            let layoutFile = files.find(f => f.name === 'layout.json') ||
+                             files.find(f => f.name.endsWith('.layout.json')) ||
+                             files.find(f => f.name.endsWith('.json'));
+
+            if (!layoutFile) {
+              alert("Could not find layout.json inside the ZIP package.");
+              return;
+            }
+            const json = JSON.parse(layoutFile.text());
+            applyLoadedLayout(json, file.name);
+          } catch (err) {
+            alert("Error reading Exam Package ZIP: " + err.message);
+          }
+        };
+        reader.readAsArrayBuffer(file);
+      } else {
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          try {
+            const json = JSON.parse(evt.target.result);
+            applyLoadedLayout(json, file.name);
+          } catch (err) {
+            alert("Error parsing layout JSON: " + err.message);
+          }
+        };
+        reader.readAsText(file);
+      }
     }
 
     function parseRosterCSV(csvText) {
@@ -3140,26 +3381,18 @@
           state.key = PRESETS[val].key;
           state.roster = PRESETS[val].roster || SAMPLE_ROSTER;
           updateKeyDisplay();
+          updateLayoutDisplay(PRESETS[val].name);
         }
       }
     };
 
     // Custom File Upload Handlers
+    $('input-layout-direct')?.addEventListener('change', (e) => {
+      handleLayoutUpload(e.target.files[0]);
+    });
+
     $('input-layout').onchange = (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (evt) => {
-        try {
-          const json = JSON.parse(evt.target.result);
-          state.layout = parseLayout(json);
-          validatePreflightKeyLayout();
-          alert(`Loaded custom layout: ${state.layout.bubbles.length} bubbles parsed.`);
-        } catch (err) {
-          alert("Error parsing layout JSON: " + err.message);
-        }
-      };
-      reader.readAsText(file);
+      handleLayoutUpload(e.target.files[0]);
     };
 
     $('input-key').onchange = (e) => {
@@ -4082,6 +4315,27 @@
       if ($('analysis-stat-flagged')) $('analysis-stat-flagged').textContent = String(flaggedItems.length);
       if ($('analysis-stat-alpha')) $('analysis-stat-alpha').textContent = psychometrics.cronbachAlpha.toFixed(3);
 
+      const diffSubEl = document.querySelector('#tab-items .metric-card:nth-child(1) .metric-card__sub');
+      if (diffSubEl) {
+        if (avgDiff > 85) diffSubEl.textContent = 'Assessment skewed easy';
+        else if (avgDiff >= 50) diffSubEl.textContent = 'Ideal difficulty balance';
+        else diffSubEl.textContent = 'Challenging assessment';
+      }
+
+      const discSubEl = document.querySelector('#tab-items .metric-card:nth-child(2) .metric-card__sub');
+      if (discSubEl) {
+        if (avgDisc >= 0.30) discSubEl.textContent = 'Strong overall discrimination';
+        else if (avgDisc >= 0.20) discSubEl.textContent = 'Acceptable discrimination';
+        else discSubEl.textContent = 'Marginal differentiation';
+      }
+
+      if ($('analysis-stat-alpha-sub')) {
+        const alpha = psychometrics.cronbachAlpha;
+        if (alpha >= 0.80) $('analysis-stat-alpha-sub').textContent = 'High reliability (summative ready)';
+        else if (alpha >= 0.70) $('analysis-stat-alpha-sub').textContent = 'Good classroom reliability';
+        else $('analysis-stat-alpha-sub').textContent = 'Moderate internal consistency';
+      }
+
       // 2. Render Flagged Questions Callout Card
       const reviewBox = $('analysis-review-box');
       const reviewBadge = $('analysis-review-count-badge');
@@ -4128,6 +4382,61 @@
       renderItemAnalysisTable(psychometrics);
     }
 
+    // Generate actionable, pedagogical insights for an item based on difficulty, discrimination, and distractor patterns
+    function generateItemInsights(item, keyItem, totalStudents) {
+      const p = item.difficulty;
+      const r = item.discrimination;
+      const isItemTF = (keyItem.kind === 'tf' || keyItem.kind === 'modified_tf' || item.correctAnswer === 'T' || item.correctAnswer === 'F');
+      const options = isItemTF ? ['T', 'F'] : ['A', 'B', 'C', 'D', 'E'];
+
+      const deadDistractors = [];
+      let topDistractor = null;
+      let topDistractorCount = 0;
+
+      for (const opt of options) {
+        if (opt !== item.correctAnswer) {
+          const cnt = item.distractors[opt] || 0;
+          if (cnt === 0 && !isItemTF) {
+            deadDistractors.push(opt);
+          } else if (cnt > topDistractorCount) {
+            topDistractorCount = cnt;
+            topDistractor = opt;
+          }
+        }
+      }
+
+      const actions = [];
+
+      if (r < 0) {
+        actions.push(`<span style="color: var(--danger); font-weight: 700;">🚨 Miskey Alert:</span> High-scorers missed this more than low-scorers. Verify answer key.`);
+      } else if (r < 0.20) {
+        actions.push(`<span style="color: var(--warning); font-weight: 600;">⚠️ Weak Discrimination:</span> Fails to separate high and low mastery levels.`);
+      } else if (r >= 0.35) {
+        actions.push(`<span style="color: var(--success); font-weight: 600;">✓ Strong Separator:</span> Effectively differentiates mastery.`);
+      }
+
+      if (p < 0.25) {
+        actions.push(`<span style="color: var(--warning);">Reteach:</span> Difficult concept (${(p * 100).toFixed(0)}% correct); review topic in class.`);
+      } else if (p > 0.90) {
+        actions.push(`<span style="color: var(--accent);">Foundational:</span> High cohort mastery (${(p * 100).toFixed(0)}%); low differentiation.`);
+      }
+
+      if (deadDistractors.length > 0 && !isItemTF) {
+        actions.push(`<span style="color: #8b5cf6;">Dead Distractor${deadDistractors.length > 1 ? 's' : ''}:</span> Option${deadDistractors.length > 1 ? 's' : ''} ${deadDistractors.join(', ')} had 0 selections.`);
+      }
+
+      if (topDistractor && topDistractorCount >= Math.max(3, Math.round(totalStudents * 0.25))) {
+        const pct = totalStudents > 0 ? Math.round((topDistractorCount / totalStudents) * 100) : 0;
+        actions.push(`<span style="color: #ec4899;">Common Misconception:</span> ${pct}% selected ${topDistractor}.`);
+      }
+
+      if (actions.length === 0) {
+        actions.push(`<span style="color: var(--success);">Optimal Item:</span> Balanced difficulty and discriminating power.`);
+      }
+
+      return actions.join('<br>');
+    }
+
     // Render Filtered and Sorted Item Analysis Table
     function renderItemAnalysisTable(psychometrics) {
       if (!psychometrics || !psychometrics.itemStats) return;
@@ -4172,9 +4481,11 @@
       });
 
       if (keys.length === 0) {
-        $('tbody-items').innerHTML = `<tr><td colspan="11" style="text-align: center; padding: 2rem; color: var(--text-muted);">No questions match the selected filter.</td></tr>`;
+        $('tbody-items').innerHTML = `<tr><td colspan="12" style="text-align: center; padding: 2rem; color: var(--text-muted);">No questions match the selected filter.</td></tr>`;
         return;
       }
+
+      const totalStudents = state.results?.grades?.length || 0;
 
       $('tbody-items').innerHTML = keys.map(k => {
         const item = psychometrics.itemStats[k];
@@ -4207,6 +4518,8 @@
           diagBadge = '<span style="color: var(--primary); font-weight: 600; font-size: 0.76rem;">● Very Easy</span>';
         }
 
+        const insightHtml = generateItemInsights(item, keyItem, totalStudents);
+
         return `
           <tr>
             <td><strong>#${k}</strong></td>
@@ -4222,6 +4535,7 @@
             <td>${d4}</td>
             <td>${d5}</td>
             <td>${diagBadge}</td>
+            <td style="font-size: 0.76rem; line-height: 1.45;">${insightHtml}</td>
           </tr>
         `;
       }).join('');
@@ -4532,7 +4846,9 @@
 
       for (const file of files) {
         const nameBytes = enc.encode(file.name);
-        const dataBytes = file.data instanceof Uint8Array ? file.data : new Uint8Array(file.data);
+        const dataBytes = typeof file.data === 'string'
+          ? enc.encode(file.data)
+          : (file.data instanceof Uint8Array ? file.data : new Uint8Array(file.data));
         const crc = crc32(dataBytes);
         const size = dataBytes.length;
 
@@ -4776,13 +5092,49 @@
     </div>
   </div>
 
+  <div class="card" style="margin-bottom: 2rem;">
+    <h2 style="margin: 0 0 0.85rem 0; font-size: 1.05rem; font-weight: 700;">Psychometric Reference: How to Interpret These Indices &amp; Take Action</h2>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; font-size: 12px; line-height: 1.5;">
+      <div>
+        <strong style="color: #10b981;">Difficulty Index (P):</strong> Proportion correct (0%–100%).
+        <ul style="margin: 0.25rem 0 0 0; padding-left: 1.1rem; color: #64748b;">
+          <li><strong>50%–85%:</strong> Optimal measurement range.</li>
+          <li><strong>&gt;85%:</strong> Easy; prerequisite check.</li>
+          <li><strong>&lt;20%:</strong> Very hard; check wording or key.</li>
+        </ul>
+      </div>
+      <div>
+        <strong style="color: #0284c7;">Discrimination (r_pbis):</strong> Point-biserial correlation.
+        <ul style="margin: 0.25rem 0 0 0; padding-left: 1.1rem; color: #64748b;">
+          <li><strong>≥0.30:</strong> Strong discriminating power.</li>
+          <li><strong>0.20–0.29:</strong> Acceptable classroom item.</li>
+          <li><strong>&lt;0.00:</strong> Critical! Check for wrong answer key.</li>
+        </ul>
+      </div>
+      <div>
+        <strong style="color: #8b5cf6;">Distractor Efficiency:</strong> Option distribution.
+        <ul style="margin: 0.25rem 0 0 0; padding-left: 1.1rem; color: #64748b;">
+          <li><strong>Dead (0%):</strong> No student chose; revise option.</li>
+          <li><strong>Common Misconception:</strong> &gt;25% chosen by cohort.</li>
+        </ul>
+      </div>
+      <div>
+        <strong style="color: #ec4899;">Reliability (α / KR-20):</strong> Test consistency.
+        <ul style="margin: 0.25rem 0 0 0; padding-left: 1.1rem; color: #64748b;">
+          <li><strong>≥0.80:</strong> High reliability for grading.</li>
+          <li><strong>0.70–0.79:</strong> Standard classroom benchmark.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
   <div class="chart-card">
     <h2>Detailed Item Statistics &amp; Distractor Frequencies</h2>
     <table>
       <thead>
         <tr>
           <th>Item</th><th>Key</th><th>Pts</th><th>Difficulty (P)</th><th>Discrimination (r_pbis)</th>
-          <th>A / T</th><th>B / F</th><th>C</th><th>D</th><th>E</th>
+          <th>A / T</th><th>B / F</th><th>C</th><th>D</th><th>E</th><th>Status</th><th>Insights &amp; Classroom Action</th>
         </tr>
       </thead>
       <tbody>
@@ -4790,6 +5142,15 @@
           const item = psychometrics.itemStats[k];
           const keyItem = state.key.items[k] || {};
           const isItemTF = (keyItem.kind === 'tf' || keyItem.kind === 'modified_tf' || item.correctAnswer === 'T' || item.correctAnswer === 'F');
+
+          let diagBadgeText = '<span style="color: #10b981; font-weight: 600;">Optimal</span>';
+          if (item.discrimination < 0) diagBadgeText = '<span style="color: #ef4444; font-weight: 700;">⚠️ Negative Disc</span>';
+          else if (item.discrimination < 0.20) diagBadgeText = '<span style="color: #f59e0b; font-weight: 600;">⚠️ Low Disc</span>';
+          else if (item.difficulty < 0.20) diagBadgeText = '<span style="color: #ef4444; font-weight: 600;">Very Hard</span>';
+          else if (item.difficulty > 0.85) diagBadgeText = '<span style="color: #3b82f6; font-weight: 600;">Very Easy</span>';
+
+          const insightHtml = generateItemInsights(item, keyItem, grades.length);
+
           return `
             <tr>
               <td><strong>#${k}</strong></td>
@@ -4802,6 +5163,8 @@
               <td>${isItemTF ? '—' : (item.distractors.C || 0)}</td>
               <td>${isItemTF ? '—' : (item.distractors.D || 0)}</td>
               <td>${isItemTF ? '—' : (item.distractors.E || 0)}</td>
+              <td>${diagBadgeText}</td>
+              <td style="font-size: 11px; line-height: 1.4;">${insightHtml}</td>
             </tr>
           `;
         }).join('')}

@@ -2780,12 +2780,6 @@ dialog.modal-dialog--answer-key {
 
     <!-- Top Action Toolbar -->
     <div class="app-header__actions">
-      <!-- Quick Exam Generator -->
-      <button type="button" id="btn-generator" class="btn btn--accent" title="Quickly generate a custom exam sheet layout">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-        <span>Generator</span>
-      </button>
-
       <!-- Save & Load Exam Builds -->
       <button type="button" id="btn-save-build" class="btn btn--secondary" title="Save current exam build to browser library">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
@@ -2795,12 +2789,6 @@ dialog.modal-dialog--answer-key {
       <button type="button" id="btn-library" class="btn btn--secondary" title="Open saved exam builds library">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6 6h10M6 10h10"/></svg>
         <span>Saved Builds</span>
-      </button>
-
-      <!-- Answer Key Button -->
-      <button type="button" id="btn-dl-key" class="btn btn--secondary" title="Open visual Answer Key editor (no JSON writing needed!)">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 3-9.5 9.5"/><path d="m15.5 7.5 3 3M18 5l2 2"/></svg>
-        <span>Answer Key</span>
       </button>
 
       <!-- Print Sheet Primary Button -->
@@ -2816,6 +2804,10 @@ dialog.modal-dialog--answer-key {
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg>
         </button>
         <div class="dropdown-menu__content" id="export-dropdown-content">
+          <button type="button" id="dl-package" style="font-weight: 700; color: var(--accent);">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5M12 12v10"/></svg>
+            Export Exam Package (ZIP: Layout &amp; Sheet)
+          </button>
           <button type="button" id="dl-svg">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/></svg>
             Download SVG Vector
@@ -2888,20 +2880,6 @@ dialog.modal-dialog--answer-key {
 
       <!-- Tab Content 1: Component Palette (Draggable Cards) -->
       <div class="studio-tab-panel is-active" id="panel-palette">
-        <!-- Prominent Workspace Generator Callout -->
-        <div class="sidebar-generator-card">
-          <div class="sidebar-generator-card__content">
-            <div class="sidebar-generator-card__title">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-              <span>Exam Sheet Generator</span>
-            </div>
-            <p class="sidebar-generator-card__desc">Assemble a custom exam layout with MCQ, T/F, and written parts in seconds.</p>
-          </div>
-          <button type="button" id="btn-sidebar-generator" class="btn btn--primary btn--sm" style="width: 100%;">
-            ⚡ Open Generator
-          </button>
-        </div>
-
         <p class="panel-hint">Drag any card onto the exam sheet, or click <strong>+ Add</strong> to place it at the end.</p>
         <div class="palette-grid">
           <!-- Student Info Card (with integrated Student ID digit boxes) -->
@@ -4894,6 +4872,7 @@ function initElements() {
     btnExportToggle: $('#btn-export-toggle'),
     exportMenu: $('#export-dropdown-content'),
     buttons: {
+      package: $('#dl-package'),
       svg: $('#dl-svg'),
       html: $('#dl-html'),
       layout: $('#dl-layout'),
@@ -4973,6 +4952,114 @@ function download(filename, content, type) {
   a.click();
   a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 0);
+}
+
+// Zero-dependency pure JavaScript uncompressed ZIP (PKZIP 2.0 / Store format) generator
+const CRC_TABLE = new Uint32Array(256);
+for (let i = 0; i < 256; i++) {
+  let c = i;
+  for (let k = 0; k < 8; k++) {
+    c = (c & 1) ? (0xedb88320 ^ (c >>> 1)) : (c >>> 1);
+  }
+  CRC_TABLE[i] = c;
+}
+function crc32(bytes) {
+  let crc = 0xffffffff;
+  for (let i = 0; i < bytes.length; i++) {
+    crc = CRC_TABLE[(crc ^ bytes[i]) & 0xff] ^ (crc >>> 8);
+  }
+  return (crc ^ 0xffffffff) >>> 0;
+}
+
+function createZip(files) {
+  const parts = [];
+  const centralHeaders = [];
+  let offset = 0;
+  const enc = new TextEncoder();
+  const now = new Date();
+  const time = ((now.getHours() << 11) | (now.getMinutes() << 5) | (now.getSeconds() >> 1)) & 0xffff;
+  const date = (((now.getFullYear() - 1980) << 9) | ((now.getMonth() + 1) << 5) | now.getDate()) & 0xffff;
+
+  for (const file of files) {
+    const nameBytes = enc.encode(file.name);
+    const dataBytes = typeof file.data === 'string'
+      ? enc.encode(file.data)
+      : (file.data instanceof Uint8Array ? file.data : new Uint8Array(file.data));
+    const crc = crc32(dataBytes);
+    const size = dataBytes.length;
+
+    // Local file header (30 bytes + name length)
+    const lh = new Uint8Array(30 + nameBytes.length);
+    const dvL = new DataView(lh.buffer);
+    dvL.setUint32(0, 0x04034b50, true);
+    dvL.setUint16(4, 20, true);
+    dvL.setUint16(6, 0x0800, true); // bit 11: UTF-8 filename
+    dvL.setUint16(8, 0, true);      // compression method: 0 (store)
+    dvL.setUint16(10, time, true);
+    dvL.setUint16(12, date, true);
+    dvL.setUint32(14, crc, true);
+    dvL.setUint32(18, size, true);  // compressed size
+    dvL.setUint32(22, size, true);  // uncompressed size
+    dvL.setUint16(26, nameBytes.length, true);
+    dvL.setUint16(28, 0, true);     // extra field length
+    lh.set(nameBytes, 30);
+
+    // Central directory file header (46 bytes + name length)
+    const ch = new Uint8Array(46 + nameBytes.length);
+    const dvC = new DataView(ch.buffer);
+    dvC.setUint32(0, 0x02014b50, true);
+    dvC.setUint16(4, 20, true);
+    dvC.setUint16(6, 20, true);
+    dvC.setUint16(8, 0x0800, true); // UTF-8 filename
+    dvC.setUint16(10, 0, true);     // compression: 0 (store)
+    dvC.setUint16(12, time, true);
+    dvC.setUint16(14, date, true);
+    dvC.setUint32(16, crc, true);
+    dvC.setUint32(20, size, true);
+    dvC.setUint32(24, size, true);
+    dvC.setUint16(28, nameBytes.length, true);
+    dvC.setUint16(30, 0, true);     // extra field length
+    dvC.setUint16(32, 0, true);     // file comment length
+    dvC.setUint16(34, 0, true);     // disk number start
+    dvC.setUint16(36, 0, true);     // internal attrs
+    dvC.setUint32(38, 0, true);     // external attrs
+    dvC.setUint32(42, offset, true); // relative offset of local header
+    ch.set(nameBytes, 46);
+
+    parts.push(lh, dataBytes);
+    centralHeaders.push(ch);
+    offset += lh.length + dataBytes.length;
+  }
+
+  const cdOffset = offset;
+  let cdSize = 0;
+  for (const ch of centralHeaders) {
+    parts.push(ch);
+    cdSize += ch.length;
+  }
+
+  // End of central directory record (22 bytes)
+  const eocd = new Uint8Array(22);
+  const dvE = new DataView(eocd.buffer);
+  dvE.setUint32(0, 0x06054b50, true);
+  dvE.setUint16(4, 0, true);
+  dvE.setUint16(6, 0, true);
+  dvE.setUint16(8, files.length, true);
+  dvE.setUint16(10, files.length, true);
+  dvE.setUint32(12, cdSize, true);
+  dvE.setUint32(16, cdOffset, true);
+  dvE.setUint16(20, 0, true);
+  parts.push(eocd);
+
+  let totalLen = 0;
+  for (const p of parts) totalLen += p.length;
+  const result = new Uint8Array(totalLen);
+  let pOffset = 0;
+  for (const p of parts) {
+    result.set(p, pOffset);
+    pOffset += p.length;
+  }
+  return result;
 }
 
 async function getSheetCss() {
@@ -7758,6 +7845,43 @@ function initEvents() {
   });
 
   // Export actions
+  els.buttons.package?.addEventListener('click', async () => {
+    if (!state.layout) return;
+    const baseId = state.layout.templateId || 'exam';
+    const layoutJson = `${JSON.stringify(state.layout, null, 2)}\n`;
+    const svgStr = renderSVG(state.layout);
+    const htmlStr = renderStandaloneHTML(state.layout, await getSheetCss());
+    const templateJson = state.template ? `${JSON.stringify(state.template, null, 2)}\n` : layoutJson;
+    const readme = `EXAM PACKAGE: ${state.layout.title || baseId}
+Generated by Instructor Essentials — Sheet Builder
+
+CONTENTS:
+1. exam_sheet.html & exam_sheet.svg
+   - High-precision printable exam sheet.
+   - Print at 100% scale (Do NOT select "Fit to page" so ArUco fiducials remain millimeter-accurate).
+
+2. layout.json
+   - Exact fiducial marker coordinates and bubble positions.
+   - In Checker Studio (checker.html), simply upload this file or this entire ZIP package to load the layout instantly!
+
+3. template.json
+   - The editable Sheet Builder blueprint. Load this back into Sheet Builder to edit questions or layout anytime.
+`;
+
+    const enc = new TextEncoder();
+    const files = [
+      { name: 'layout.json', data: enc.encode(layoutJson) },
+      { name: 'exam_sheet.svg', data: enc.encode(svgStr) },
+      { name: 'exam_sheet.html', data: enc.encode(htmlStr) },
+      { name: 'template.json', data: enc.encode(templateJson) },
+      { name: 'README.txt', data: enc.encode(readme) },
+      { name: `${baseId}.layout.json`, data: enc.encode(layoutJson) },
+    ];
+
+    const zipBytes = createZip(files);
+    download(`${baseId}-exam-package.zip`, zipBytes, 'application/zip');
+  });
+
   els.buttons.svg?.addEventListener('click', () => {
     if (!state.layout) return;
     download(`${state.layout.templateId}.svg`, renderSVG(state.layout), 'image/svg+xml');

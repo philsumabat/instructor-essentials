@@ -23,7 +23,7 @@ test('standalone studio.html is 100% self-contained with valid IIFE closures and
   assert.ok(html.includes('bio101-midterm-50'), 'exam-50 template must be inlined');
   assert.ok(html.includes('chem201-final-100'), 'exam-100 template must be inlined');
   assert.ok(html.includes('hist110-quiz-tf'), 'quiz-tf template must be inlined');
-  assert.ok(html.includes('id="btn-generator"'), 'Generator button present in standalone studio');
+  assert.ok(html.includes('id="dl-package"'), 'Package export present in standalone studio');
 
   // 4. Inlined styles present
   assert.ok(html.includes('.omr-sheet'), 'sheet.css must be inlined');

@@ -31,10 +31,11 @@ test('1. Preset loading: blank, exam-50, exam-100, quiz-tf, quiz-bonus', async (
   const indexHtml = await readFile(resolve(root, 'builder/index.html'), 'utf8');
   const studioHtml = await readFile(resolve(root, 'builder/studio.html'), 'utf8');
 
-  // Verify preset selector was removed from header in favor of the exam generator
+  // Verify preset selector, generator button, and answer key button were streamlined
   assert.ok(!indexHtml.includes('id="sample-preset"'), 'Preset dropdown was removed from Sheet Builder header');
-  assert.ok(indexHtml.includes('id="btn-generator"'), 'Header generator button exists in index.html');
-  assert.ok(indexHtml.includes('id="btn-sidebar-generator"'), 'Sidebar generator button exists in index.html');
+  assert.ok(!indexHtml.includes('id="btn-generator"'), 'Header generator button removed as requested');
+  assert.ok(!indexHtml.includes('id="btn-dl-key"'), 'Header answer key button removed in favor of Checker Studio key editor');
+  assert.ok(indexHtml.includes('id="dl-package"'), 'Export Exam Package (ZIP) button added to export menu');
 
   // Verify all 5 sample templates build cleanly with zero errors
   const presetKeys = ['blank', 'exam-50', 'exam-100', 'quiz-tf', 'quiz-bonus'];

@@ -39,12 +39,6 @@
 
     <!-- Top Action Toolbar -->
     <div class="app-header__actions">
-      <!-- Quick Exam Generator -->
-      <button type="button" id="btn-generator" class="btn btn--accent" title="Quickly generate a custom exam sheet layout">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-        <span>Generator</span>
-      </button>
-
       <!-- Save & Load Exam Builds -->
       <button type="button" id="btn-save-build" class="btn btn--secondary" title="Save current exam build to browser library">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
@@ -54,12 +48,6 @@
       <button type="button" id="btn-library" class="btn btn--secondary" title="Open saved exam builds library">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6 6h10M6 10h10"/></svg>
         <span>Saved Builds</span>
-      </button>
-
-      <!-- Answer Key Button -->
-      <button type="button" id="btn-dl-key" class="btn btn--secondary" title="Open visual Answer Key editor (no JSON writing needed!)">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 3-9.5 9.5"/><path d="m15.5 7.5 3 3M18 5l2 2"/></svg>
-        <span>Answer Key</span>
       </button>
 
       <!-- Print Sheet Primary Button -->
@@ -75,6 +63,10 @@
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg>
         </button>
         <div class="dropdown-menu__content" id="export-dropdown-content">
+          <button type="button" id="dl-package" style="font-weight: 700; color: var(--accent);">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5M12 12v10"/></svg>
+            Export Exam Package (ZIP: Layout &amp; Sheet)
+          </button>
           <button type="button" id="dl-svg">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/></svg>
             Download SVG Vector
@@ -147,20 +139,6 @@
 
       <!-- Tab Content 1: Component Palette (Draggable Cards) -->
       <div class="studio-tab-panel is-active" id="panel-palette">
-        <!-- Prominent Workspace Generator Callout -->
-        <div class="sidebar-generator-card">
-          <div class="sidebar-generator-card__content">
-            <div class="sidebar-generator-card__title">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-              <span>Exam Sheet Generator</span>
-            </div>
-            <p class="sidebar-generator-card__desc">Assemble a custom exam layout with MCQ, T/F, and written parts in seconds.</p>
-          </div>
-          <button type="button" id="btn-sidebar-generator" class="btn btn--primary btn--sm" style="width: 100%;">
-            ⚡ Open Generator
-          </button>
-        </div>
-
         <p class="panel-hint">Drag any card onto the exam sheet, or click <strong>+ Add</strong> to place it at the end.</p>
         <div class="palette-grid">
           <!-- Student Info Card (with integrated Student ID digit boxes) -->

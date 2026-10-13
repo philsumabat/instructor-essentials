@@ -67,7 +67,7 @@ def test_bubble_scanner_shaded_sid():
     layout100 = Layout.load("dist/exam-100/layout.json")
     sim = ExamSimulator(layout100, px_per_mm=10.0)
     img = sim.generate_exam(
-        student_id="104829012",
+        student_id="10482901",
         student_name="Bob",
         answers={"1": "A"},
         text_answers={},
@@ -79,5 +79,5 @@ def test_bubble_scanner_shaded_sid():
     scanner = BubbleScanner(layout100, px_per_mm=10.0)
     binary = scanner.preprocess(warp_res.warped_gray)
     results, decoded_sid = scanner.scan_all(warp_res.warped_gray, binary)
-    assert decoded_sid == "104829012"
+    assert decoded_sid == "10482901"
     assert results["1"].resolved_value == "A"

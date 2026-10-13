@@ -141,7 +141,7 @@ export function normalizeTemplate(input) {
   tpl.paper = PAPER_ALIASES[String(tpl.paper).toLowerCase()] ?? tpl.paper;
   if (!PAPER_SIZES[tpl.paper]) throw new TemplateError(`Unsupported paper "${input.paper}" (use A4 or Letter)`);
   if (!tpl.id || typeof tpl.id !== 'string') throw new TemplateError('Template requires a string "id"');
-  if (!Array.isArray(tpl.zones) || tpl.zones.length === 0) throw new TemplateError('Template requires a non-empty "zones" array');
+  if (!Array.isArray(tpl.zones)) throw new TemplateError('Template requires a "zones" array');
   positiveNumber(tpl.margin, 'margin');
   positiveNumber(tpl.fiducial.size, 'fiducial.size');
   positiveNumber(tpl.fiducial.inset, 'fiducial.inset');
@@ -162,19 +162,20 @@ export function normalizeTemplate(input) {
 
 // ---------------------------------------------------------------------------
 
-function layoutStudentId(zone, ctx, x, y) {
+function layoutStudentId(zone, ctx, x, y, availW) {
   const { bubble } = ctx.tpl;
-  const digits = positiveInt(zone.digits ?? 8, `Zone "${zone.id}" digits`);
-  if (digits > 20) throw new TemplateError(`Zone "${zone.id}": at most 20 ID digits are supported`);
+  // Student ID digits are always standardized to 8
+  const digits = 8;
   const colW = Math.max(bubble.pitchX, 6);
   const titleH = zone.label === '' ? 0 : TITLE_H;
   const shading = zone.shading !== false && zone.mode !== 'ocr' && zone.mode !== 'digits';
+  // Student ID is always full width across printable area
+  const w = zone.w ?? availW ?? (2 * PAD + digits * colW);
 
   if (!shading) {
     // Pure digit write-in boxes (image number recognition, no 10-row shading matrix)
     const boxH = zone.boxHeight ?? SID_BOX_H;
     const gridW = digits * colW;
-    const w = Math.max(zone.w ?? 0, 2 * PAD + gridW);
     const boxX = x + (w - gridW) / 2;
     const boxY = y + PAD + titleH;
     const grid = makeGrid(boxX, boxY, Array(digits).fill(colW), [boxH]);
@@ -203,7 +204,6 @@ function layoutStudentId(zone, ctx, x, y) {
 
   // Shading bubble matrix mode
   const rows = [SID_BOX_H, SID_BOX_GAP, ...Array(10).fill(bubble.pitchY)];
-  const w = Math.max(zone.w ?? 0, 2 * PAD + digits * colW);
   const gridW = digits * colW;
   const grid = makeGrid(x + (w - gridW) / 2, y + PAD + titleH, Array(digits).fill(colW), rows);
   const groups = [];
@@ -348,7 +348,8 @@ function layoutFields(zone, ctx, x, y, availW) {
   const fields = zone.fields;
   if (!Array.isArray(fields) || fields.length === 0) throw new TemplateError(`Zone "${zone.id}": "fields" must be a non-empty array`);
   const titleH = zone.label ? TITLE_H : 0;
-  const w = zone.w ?? availW;
+  // Student details always span the full available content width
+  const w = availW ?? zone.w;
   const fieldH = zone.fieldHeight ?? 7.5;
   const gapY = zone.gapY ?? 2;
   const innerW = w - 2 * PAD;
@@ -389,17 +390,22 @@ function layoutFields(zone, ctx, x, y, availW) {
 
     const specifiedW = group.reduce((acc, f) => acc + (f.w ?? 0), 0);
     const unspecCount = group.filter((f) => !f.w).length;
+    const scale = (unspecCount === 0 && specifiedW > 0) ? (availRowW / specifiedW) : 1;
     const defaultW = unspecCount > 0 ? (availRowW - specifiedW) / unspecCount : 0;
 
     let curX = x + PAD;
     for (let cIdx = 0; cIdx < group.length; cIdx += 1) {
       const field = group[cIdx];
       if (!field.id) throw new TemplateError(`Zone "${zone.id}": every field needs an "id"`);
-      const fieldTotalW = field.w ?? defaultW;
-      const labelW = field.labelWidth ?? Math.min(18, Math.max(10, (field.label ?? field.id).length * 2.8));
+      // Last field in row absorbs sub-millimeter rounding so row is strictly full-width
+      const isLastInRow = cIdx === group.length - 1;
+      const fieldTotalW = isLastInRow
+        ? Math.max(10, r3((x + PAD + innerW) - curX))
+        : (field.w ? r3(field.w * scale) : defaultW);
+      const labelW = field.labelWidth ?? Math.min(22, Math.max(10, (field.label ?? field.id).length * 2.8));
       const boxW = Math.max(10, fieldTotalW - labelW);
       const isSid = field.id === 'sid' || field.role === 'student_id' || (field.digits != null && field.digits > 0);
-      const digits = field.digits ?? (isSid ? 8 : 0);
+      const digits = isSid ? 8 : (field.digits ?? 0);
 
       rows.push({
         label: field.label ?? field.id,
@@ -573,11 +579,12 @@ export function buildLayout(input) {
       availW = halfW;
       if (raw.w == null) raw.w = halfW;
     } else {
-      const inline = Boolean(raw.inline && prev);
+      const isFullWidthZone = raw.type === 'fields' || raw.type === 'student_id';
+      const inline = Boolean(!isFullWidthZone && raw.inline && prev);
       x = raw.x ?? (inline ? prev.bbox.x + prev.bbox.w + tpl.gap : content.x);
       y = raw.y ?? (inline ? prev.bbox.y : rowBottom + (prev ? tpl.gap : 0));
       rowTop = y;
-      availW = contentRight - x;
+      availW = isFullWidthZone ? content.w : (contentRight - x);
     }
 
     const res = layoutFn(raw, ctx, x, y, availW);

@@ -46,12 +46,15 @@ test('layout engine builds 100-item Letter exam', async () => {
 
   const stats = layoutStats(layout);
   assert.equal(stats.questions, 100);
-  assert.equal(stats.idDigits, 9);
+  assert.equal(stats.idDigits, 8);
 });
 
-test('template validation rejects invalid parameters', () => {
-  assert.throws(() => buildLayout({ id: 'bad', zones: [] }), TemplateError);
+test('template validation rejects invalid parameters and permits blank sheets', () => {
+  assert.throws(() => buildLayout({ id: 'bad' }), TemplateError);
+  assert.throws(() => buildLayout({ id: 'bad', zones: 'invalid' }), TemplateError);
   assert.throws(() => buildLayout({ id: 'bad', paper: 'A3', zones: [{ type: 'student_id', id: 's' }] }), TemplateError);
+  const blankLayout = buildLayout({ id: 'blank', zones: [] });
+  assert.equal(blankLayout.zones.length, 0);
 });
 
 test('layout engine and renderers support text_short, text_essay, modified_tf, and partitioned digits', () => {
@@ -133,7 +136,8 @@ test('layout engine supports side-by-side modules, 2-line student header, and po
         fields: [
           { id: 'name', label: 'Student Name', role: 'name', row: 0, w: 108 },
           { id: 'sid', label: 'Student ID', role: 'student_id', digits: 8, row: 0, w: 75 },
-          { id: 'section', label: 'Offer No. & Class Sched', row: 1, w: 96 },
+          { id: 'offer', label: 'Offer No.', row: 1, w: 48 },
+          { id: 'sched', label: 'Sched', row: 1, w: 48 },
           { id: 'date', label: 'Date', row: 1, w: 46 },
           { id: 'score', label: 'Score', role: 'score', row: 1, w: 41 },
         ],
@@ -173,18 +177,23 @@ test('layout engine supports side-by-side modules, 2-line student header, and po
   assert.equal(zLeft.groups[0].points, 2);
   assert.equal(zRight.groups[0].points, 3);
 
-  // Header 2-line fields verified
+  // Header 2-line fields verified (Offer No. and Sched separated, full width)
   const hZone = layout.zones.find((z) => z.id === 'header_info');
-  assert.equal(hZone.rois.length, 5);
+  assert.equal(hZone.rois.length, 6);
   const nameRoi = hZone.rois.find((r) => r.key === 'name');
   const sidRoi = hZone.rois.find((r) => r.key === 'sid');
-  const secRoi = hZone.rois.find((r) => r.key === 'section');
+  const offerRoi = hZone.rois.find((r) => r.key === 'offer');
+  const schedRoi = hZone.rois.find((r) => r.key === 'sched');
   const scoreRoi = hZone.rois.find((r) => r.key === 'score');
 
   // Name and SID on same Y line
   assert.equal(nameRoi.y, sidRoi.y);
-  // Section and Score on lower line
-  assert.ok(secRoi.y > nameRoi.y);
-  assert.equal(secRoi.y, scoreRoi.y);
-  assert.equal(secRoi.label, 'Offer No. & Class Sched');
+  // Offer No., Sched and Score on lower line
+  assert.ok(offerRoi.y > nameRoi.y);
+  assert.equal(offerRoi.y, schedRoi.y);
+  assert.equal(offerRoi.y, scoreRoi.y);
+  assert.equal(offerRoi.label, 'Offer No.');
+  assert.equal(schedRoi.label, 'Sched');
+  // Student details always spans the full available content width
+  assert.equal(hZone.bbox.w, layout.content.w);
 });

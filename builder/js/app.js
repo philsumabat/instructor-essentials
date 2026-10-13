@@ -68,27 +68,11 @@ function initElements() {
     btnCancelGenerator: $('#btn-cancel-generator'),
     btnGenerateExam: $('#btn-generate-exam'),
     genTitle: $('#gen-exam-title'),
-    genPaper: $('#gen-paper-size'),
+    genPaper: $('#gen-paper'),
     genSidMode: $('#gen-sid-mode'),
     genInstructions: $('#gen-instructions'),
-    genMcqEnabled: $('#gen-mcq-enabled'),
-    genMcqCount: $('#gen-mcq-count'),
-    genMcqChoices: $('#gen-mcq-choices'),
-    genMcqCols: $('#gen-mcq-cols'),
-    genMcqPts: $('#gen-mcq-pts'),
-    genTfEnabled: $('#gen-tf-enabled'),
-    genTfCount: $('#gen-tf-count'),
-    genTfCols: $('#gen-tf-cols'),
-    genTfPts: $('#gen-tf-pts'),
-    genModtfEnabled: $('#gen-modtf-enabled'),
-    genModtfCount: $('#gen-modtf-count'),
-    genModtfPts: $('#gen-modtf-pts'),
-    genSaEnabled: $('#gen-sa-enabled'),
-    genSaCount: $('#gen-sa-count'),
-    genSaPts: $('#gen-sa-pts'),
-    genEssayEnabled: $('#gen-essay-enabled'),
-    genEssayCount: $('#gen-essay-count'),
-    genEssayPts: $('#gen-essay-pts'),
+    genPartsList: $('#gen-parts-list'),
+    btnGenAddPart: $('#btn-gen-add-part'),
     // Tab navigation
     tabBtns: $$('.studio-tab-btn'),
     tabPanels: {
@@ -191,9 +175,10 @@ function createDefaultZone(type) {
         fields: [
           { id: 'name', label: 'Student Name', role: 'name', row: 0, w: 108 },
           { id: 'sid', label: 'Student ID', role: 'student_id', digits: 8, row: 0, w: 75 },
-          { id: 'section', label: 'Offer No. & Class Sched', row: 1, w: 96 },
-          { id: 'date', label: 'Date', row: 1, w: 46 },
-          { id: 'score', label: 'Score', role: 'score', row: 1, w: 41 },
+          { id: 'offer', label: 'Offer No.', row: 1, w: 48 },
+          { id: 'sched', label: 'Sched', row: 1, w: 52 },
+          { id: 'date', label: 'Date', row: 1, w: 43 },
+          { id: 'score', label: 'Score', role: 'score', row: 1, w: 40 },
         ],
       };
 
@@ -562,12 +547,10 @@ function insertNewZone(type, atIndex = null) {
 
 function deleteZone(index) {
   if (!state.template.zones[index]) return;
-  if (state.template.zones.length <= 1) {
-    alert('An exam sheet must contain at least one block.');
-    return;
-  }
   state.template.zones.splice(index, 1);
-  state.selectedZoneIndex = Math.max(0, Math.min(index, state.template.zones.length - 1));
+  state.selectedZoneIndex = state.template.zones.length > 0
+    ? Math.max(0, Math.min(index, state.template.zones.length - 1))
+    : -1;
   update();
 }
 
@@ -812,12 +795,8 @@ function renderInspector() {
       </div>
 
       <div class="form-group">
-        <label class="form-label" for="insp-sid-digits">ID Digits</label>
-        <div class="stepper-control">
-          <button type="button" class="stepper-btn" id="insp-sid-digits-minus" aria-label="Decrease digits">−</button>
-          <input type="number" id="insp-sid-digits" class="stepper-input" value="${zone.digits ?? 8}" min="4" max="14">
-          <button type="button" class="stepper-btn" id="insp-sid-digits-plus" aria-label="Increase digits">+</button>
-        </div>
+        <label class="form-label">ID Digits</label>
+        <div style="font-size: 0.82rem; font-weight: 600; color: var(--text-muted); padding: 0.35rem 0.5rem; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); display: inline-block;">8 Digits (Standardized)</div>
       </div>
 
       <div class="form-group">
@@ -832,8 +811,6 @@ function renderInspector() {
     const currentFields = zone.fields || [];
     const hasField = (id) => currentFields.some((f) => f.id === id);
     const hasSidField = currentFields.some((f) => f.id === 'sid' || f.role === 'student_id');
-    const sidField = currentFields.find((f) => f.id === 'sid' || f.role === 'student_id');
-    const sidDigitsVal = sidField?.digits ?? zone.sidDigits ?? 8;
 
     formHtml += `
       <div class="form-group">
@@ -852,12 +829,8 @@ function renderInspector() {
       </div>
 
       <div class="form-group">
-        <label class="form-label" for="insp-sid-digits">Student ID Digits</label>
-        <div class="stepper-control">
-          <button type="button" class="stepper-btn" id="insp-sid-digits-minus" aria-label="Decrease digits">−</button>
-          <input type="number" id="insp-sid-digits" class="stepper-input" value="${sidDigitsVal}" min="4" max="14">
-          <button type="button" class="stepper-btn" id="insp-sid-digits-plus" aria-label="Increase digits">+</button>
-        </div>
+        <label class="form-label">Student ID Digits</label>
+        <div style="font-size: 0.82rem; font-weight: 600; color: var(--text-muted); padding: 0.35rem 0.5rem; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); display: inline-block;">8 Digits (Standardized)</div>
       </div>
 
       <div class="form-group">
@@ -869,19 +842,23 @@ function renderInspector() {
           </label>
           <label class="field-checkbox-label">
             <input type="checkbox" id="field-sid" ${hasSidField ? 'checked' : ''}>
-            <span>Student ID</span>
+            <span>Student ID (8 Digits)</span>
           </label>
           <label class="field-checkbox-label">
-            <input type="checkbox" id="field-score" ${hasField('score') ? 'checked' : ''}>
-            <span>Score Box</span>
+            <input type="checkbox" id="field-offer" ${hasField('offer') || hasField('section') ? 'checked' : ''}>
+            <span>Offer No.</span>
           </label>
           <label class="field-checkbox-label">
-            <input type="checkbox" id="field-section" ${hasField('section') ? 'checked' : ''}>
-            <span>Offer No. &amp; Sched</span>
+            <input type="checkbox" id="field-sched" ${hasField('sched') || hasField('section') ? 'checked' : ''}>
+            <span>Sched</span>
           </label>
           <label class="field-checkbox-label">
             <input type="checkbox" id="field-date" ${hasField('date') ? 'checked' : ''}>
             <span>Date</span>
+          </label>
+          <label class="field-checkbox-label">
+            <input type="checkbox" id="field-score" ${hasField('score') ? 'checked' : ''}>
+            <span>Score Box</span>
           </label>
           <label class="field-checkbox-label">
             <input type="checkbox" id="field-sig" ${hasField('signature') ? 'checked' : ''}>
@@ -1118,13 +1095,8 @@ function bindInspectorEvents(zone) {
     });
   }
 
-  // Student ID Digits stepper (both for student_id zone and fields zone)
   if (zone.type === 'student_id') {
-    bindStepper('insp-sid-digits', () => zone.digits ?? 8, (val) => {
-      zone.digits = val;
-      update();
-    }, 4, 14);
-
+    zone.digits = 8;
     const sidModePills = $$('#insp-sid-mode .pill-btn');
     for (const pill of sidModePills) {
       pill.addEventListener('click', () => {
@@ -1136,43 +1108,32 @@ function bindInspectorEvents(zone) {
   }
 
   if (zone.type === 'fields') {
-    const sidField = (zone.fields || []).find((f) => f.id === 'sid' || f.role === 'student_id');
-    const curDigits = sidField?.digits ?? zone.sidDigits ?? 8;
-
-    bindStepper('insp-sid-digits', () => curDigits, (val) => {
-      zone.sidDigits = val;
-      if (sidField) {
-        sidField.digits = val;
-        sidField.w = Math.max(50, val * 6 + 15);
-      }
-      update();
-    }, 4, 14);
-
     // Fields checkboxes
     const nameCb = $('#field-name');
     const sidCb = $('#field-sid');
-    const scoreCb = $('#field-score');
-    const sectionCb = $('#field-section');
+    const offerCb = $('#field-offer');
+    const schedCb = $('#field-sched');
     const dateCb = $('#field-date');
+    const scoreCb = $('#field-score');
     const sigCb = $('#field-sig');
 
     const updateFields = () => {
-      const digits = parseInt($('#insp-sid-digits')?.value, 10) || zone.sidDigits || 8;
       const fields = [];
-      // Row 0: Student Name & Student ID
+      // Row 0: Student Name & Student ID (always standardized to 8 digits)
       if (nameCb?.checked) fields.push({ id: 'name', label: 'Student Name', role: 'name', row: 0, w: 108 });
-      if (sidCb?.checked) fields.push({ id: 'sid', label: 'Student ID', role: 'student_id', digits, row: 0, w: Math.max(65, digits * 6 + 15) });
-      // Row 1: Offer No. & Class Sched, Date, Score
-      if (sectionCb?.checked) fields.push({ id: 'section', label: 'Offer No. & Class Sched', row: 1, w: 96 });
-      if (dateCb?.checked) fields.push({ id: 'date', label: 'Date', row: 1, w: 46 });
-      if (scoreCb?.checked) fields.push({ id: 'score', label: 'Score', role: 'score', row: 1, w: 41 });
+      if (sidCb?.checked) fields.push({ id: 'sid', label: 'Student ID', role: 'student_id', digits: 8, row: 0, w: 75 });
+      // Row 1: Offer No., Sched, Date, Score
+      if (offerCb?.checked) fields.push({ id: 'offer', label: 'Offer No.', row: 1, w: 48 });
+      if (schedCb?.checked) fields.push({ id: 'sched', label: 'Sched', row: 1, w: 52 });
+      if (dateCb?.checked) fields.push({ id: 'date', label: 'Date', row: 1, w: 43 });
+      if (scoreCb?.checked) fields.push({ id: 'score', label: 'Score', role: 'score', row: 1, w: 40 });
       if (sigCb?.checked) fields.push({ id: 'signature', label: 'Signature', ocr: false, row: 1, w: 45 });
       if (fields.length === 0) fields.push({ id: 'name', label: 'Student Name', role: 'name', row: 0, w: 108 });
       zone.fields = fields;
       update();
     };
 
-    [nameCb, sidCb, scoreCb, sectionCb, dateCb, sigCb].forEach((cb) => cb?.addEventListener('change', updateFields));
+    [nameCb, sidCb, offerCb, schedCb, dateCb, scoreCb, sigCb].forEach((cb) => cb?.addEventListener('change', updateFields));
   }
 
   // Text / Written Answer properties (text, text_short, text_essay)
@@ -1566,6 +1527,223 @@ function renderSavedBuildsList() {
 }
 
 // ---- Exam Generator Logic ----
+// Dynamic Exam Generator Parts state
+let generatorParts = [
+  { type: 'mcq', count: 30, choices: 'ABCD', cols: 'auto', pts: 1 },
+  { type: 'truefalse', count: 10, cols: 'auto', pts: 1 },
+];
+
+function renderPartFields(part) {
+  if (part.type === 'mcq') {
+    return `
+      <div class="gen-field-inline">
+        <label>Items:</label>
+        <input type="number" class="gen-input gen-input--sm part-input-count" value="${part.count ?? 30}" min="1" max="100">
+      </div>
+      <div class="gen-field-inline">
+        <label>Choices:</label>
+        <select class="gen-select gen-select--sm part-select-choices">
+          <option value="ABCD" ${(part.choices ?? 'ABCD') === 'ABCD' ? 'selected' : ''}>A–D (4)</option>
+          <option value="ABCDE" ${(part.choices ?? 'ABCD') === 'ABCDE' ? 'selected' : ''}>A–E (5)</option>
+        </select>
+      </div>
+      <div class="gen-field-inline">
+        <label>Columns:</label>
+        <select class="gen-select gen-select--sm part-select-cols">
+          <option value="auto" ${(part.cols ?? 'auto') === 'auto' ? 'selected' : ''}>Auto</option>
+          <option value="1" ${part.cols === '1' ? 'selected' : ''}>1</option>
+          <option value="2" ${part.cols === '2' ? 'selected' : ''}>2</option>
+          <option value="3" ${part.cols === '3' ? 'selected' : ''}>3</option>
+          <option value="4" ${part.cols === '4' ? 'selected' : ''}>4</option>
+          <option value="5" ${part.cols === '5' ? 'selected' : ''}>5</option>
+        </select>
+      </div>
+      <div class="gen-field-inline">
+        <label>Pts/Item:</label>
+        <input type="number" class="gen-input gen-input--sm part-input-pts" value="${part.pts ?? 1}" min="1" max="10">
+      </div>
+    `;
+  }
+  if (part.type === 'truefalse') {
+    return `
+      <div class="gen-field-inline">
+        <label>Items:</label>
+        <input type="number" class="gen-input gen-input--sm part-input-count" value="${part.count ?? 10}" min="1" max="50">
+      </div>
+      <div class="gen-field-inline">
+        <label>Columns:</label>
+        <select class="gen-select gen-select--sm part-select-cols">
+          <option value="auto" ${(part.cols ?? 'auto') === 'auto' ? 'selected' : ''}>Auto</option>
+          <option value="1" ${part.cols === '1' ? 'selected' : ''}>1</option>
+          <option value="2" ${part.cols === '2' ? 'selected' : ''}>2</option>
+          <option value="3" ${part.cols === '3' ? 'selected' : ''}>3</option>
+          <option value="4" ${part.cols === '4' ? 'selected' : ''}>4</option>
+        </select>
+      </div>
+      <div class="gen-field-inline">
+        <label>Pts/Item:</label>
+        <input type="number" class="gen-input gen-input--sm part-input-pts" value="${part.pts ?? 1}" min="1" max="10">
+      </div>
+    `;
+  }
+  if (part.type === 'modified_tf') {
+    return `
+      <div class="gen-field-inline">
+        <label>Items:</label>
+        <input type="number" class="gen-input gen-input--sm part-input-count" value="${part.count ?? 5}" min="1" max="25">
+      </div>
+      <div class="gen-field-inline">
+        <label>Pts/Item:</label>
+        <input type="number" class="gen-input gen-input--sm part-input-pts" value="${part.pts ?? 2}" min="1" max="10">
+      </div>
+    `;
+  }
+  if (part.type === 'text_short') {
+    return `
+      <div class="gen-field-inline">
+        <label>Questions:</label>
+        <input type="number" class="gen-input gen-input--sm part-input-count" value="${part.count ?? 5}" min="1" max="20">
+      </div>
+      <div class="gen-field-inline">
+        <label>Box Height:</label>
+        <input type="number" class="gen-input gen-input--sm part-input-height" value="${part.boxHeight ?? 12}" min="6" max="25"> mm
+      </div>
+      <div class="gen-field-inline">
+        <label>Pts/Question:</label>
+        <input type="number" class="gen-input gen-input--sm part-input-pts" value="${part.pts ?? 2}" min="1" max="10">
+      </div>
+    `;
+  }
+  if (part.type === 'text_essay') {
+    return `
+      <div class="gen-field-inline">
+        <label>Questions:</label>
+        <input type="number" class="gen-input gen-input--sm part-input-count" value="${part.count ?? 1}" min="1" max="5">
+      </div>
+      <div class="gen-field-inline">
+        <label>Box Height:</label>
+        <input type="number" class="gen-input gen-input--sm part-input-height" value="${part.boxHeight ?? 36}" min="15" max="80"> mm
+      </div>
+      <div class="gen-field-inline">
+        <label>Pts/Question:</label>
+        <input type="number" class="gen-input gen-input--sm part-input-pts" value="${part.pts ?? 5}" min="1" max="50">
+      </div>
+    `;
+  }
+  return '';
+}
+
+function renderGeneratorParts() {
+  if (!els.genPartsList) return;
+  els.genPartsList.innerHTML = '';
+
+  const toRoman = (n) => ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'][n - 1] || String(n);
+
+  generatorParts.forEach((part, index) => {
+    const card = document.createElement('div');
+    card.className = 'gen-part-card';
+    card.dataset.index = index;
+
+    const roman = toRoman(index + 1);
+
+    card.innerHTML = `
+      <div class="gen-part-header">
+        <div class="gen-part-title-group">
+          <span class="gen-part-badge">Part ${roman}</span>
+          <select class="gen-part-select" data-action="change-type" aria-label="Exam Type for Part ${roman}">
+            <option value="mcq" ${part.type === 'mcq' ? 'selected' : ''}>Multiple Choice (MCQ)</option>
+            <option value="truefalse" ${part.type === 'truefalse' ? 'selected' : ''}>Simple True / False</option>
+            <option value="modified_tf" ${part.type === 'modified_tf' ? 'selected' : ''}>Modified True / False (T/F + Write-in)</option>
+            <option value="text_short" ${part.type === 'text_short' ? 'selected' : ''}>Short Answer / Identification</option>
+            <option value="text_essay" ${part.type === 'text_essay' ? 'selected' : ''}>Essay / Long Answer</option>
+          </select>
+        </div>
+        <div class="gen-part-actions">
+          <button type="button" class="btn-part-action" data-action="move-up" title="Move Up" ${index === 0 ? 'disabled' : ''}>▲</button>
+          <button type="button" class="btn-part-action" data-action="move-down" title="Move Down" ${index === generatorParts.length - 1 ? 'disabled' : ''}>▼</button>
+          <button type="button" class="btn-part-action is-delete" data-action="delete" title="Remove Part" ${generatorParts.length <= 1 ? 'disabled' : ''}>✕</button>
+        </div>
+      </div>
+      <div class="gen-part-body">
+        ${renderPartFields(part)}
+      </div>
+    `;
+
+    // Type change listener
+    card.querySelector('[data-action="change-type"]').addEventListener('change', (e) => {
+      part.type = e.target.value;
+      if (part.type === 'mcq') {
+        part.count = part.count || 30;
+        part.choices = part.choices || 'ABCD';
+        part.cols = part.cols || 'auto';
+        part.pts = part.pts || 1;
+      } else if (part.type === 'truefalse') {
+        part.count = part.count || 10;
+        part.cols = part.cols || 'auto';
+        part.pts = part.pts || 1;
+      } else if (part.type === 'modified_tf') {
+        part.count = part.count || 5;
+        part.pts = part.pts || 2;
+      } else if (part.type === 'text_short') {
+        part.count = part.count || 5;
+        part.boxHeight = part.boxHeight || 12;
+        part.pts = part.pts || 2;
+      } else if (part.type === 'text_essay') {
+        part.count = part.count || 1;
+        part.boxHeight = part.boxHeight || 36;
+        part.pts = part.pts || 5;
+      }
+      renderGeneratorParts();
+    });
+
+    // Reordering listeners
+    card.querySelector('[data-action="move-up"]').addEventListener('click', () => {
+      if (index > 0) {
+        const temp = generatorParts[index - 1];
+        generatorParts[index - 1] = generatorParts[index];
+        generatorParts[index] = temp;
+        renderGeneratorParts();
+      }
+    });
+
+    card.querySelector('[data-action="move-down"]').addEventListener('click', () => {
+      if (index < generatorParts.length - 1) {
+        const temp = generatorParts[index + 1];
+        generatorParts[index + 1] = generatorParts[index];
+        generatorParts[index] = temp;
+        renderGeneratorParts();
+      }
+    });
+
+    // Delete part listener
+    card.querySelector('[data-action="delete"]').addEventListener('click', () => {
+      if (generatorParts.length > 1) {
+        generatorParts.splice(index, 1);
+        renderGeneratorParts();
+      }
+    });
+
+    // Input listeners
+    const countInput = card.querySelector('.part-input-count');
+    if (countInput) countInput.addEventListener('input', () => { part.count = Math.max(1, parseInt(countInput.value, 10) || 1); });
+
+    const choicesSelect = card.querySelector('.part-select-choices');
+    if (choicesSelect) choicesSelect.addEventListener('change', () => { part.choices = choicesSelect.value; });
+
+    const colsSelect = card.querySelector('.part-select-cols');
+    if (colsSelect) colsSelect.addEventListener('change', () => { part.cols = colsSelect.value; });
+
+    const ptsInput = card.querySelector('.part-input-pts');
+    if (ptsInput) ptsInput.addEventListener('input', () => { part.pts = Math.max(1, parseFloat(ptsInput.value) || 1); });
+
+    const heightInput = card.querySelector('.part-input-height');
+    if (heightInput) heightInput.addEventListener('input', () => { part.boxHeight = Math.max(6, parseInt(heightInput.value, 10) || 12); });
+
+    els.genPartsList.appendChild(card);
+  });
+}
+
+// ---- Exam Generator Logic ----
 function generateExamFromGeneratorModal() {
   const title = (els.genTitle?.value || '').trim() || 'General Examination';
   const paper = els.genPaper?.value || 'A4';
@@ -1577,17 +1755,8 @@ function generateExamFromGeneratorModal() {
 
   const zones = [];
 
-  // 1. Student ID & Header
+  // 1. Student ID & Header (Always full-width, 8 digits, separated Offer No. and Sched)
   if (sidMode === 'grid') {
-    zones.push({
-      type: 'student_id',
-      id: uid('sid'),
-      label: 'Student ID',
-      digits: 8,
-      rows: 10,
-      startDigit: 0,
-      w: Math.min(availW, 64),
-    });
     zones.push({
       type: 'fields',
       id: uid('info'),
@@ -1595,11 +1764,20 @@ function generateExamFromGeneratorModal() {
       w: availW,
       fieldHeight: 7.5,
       fields: [
-        { id: 'name', label: 'Student Name', role: 'name', row: 0, w: Math.max(80, availW - 45) },
+        { id: 'name', label: 'Student Name', role: 'name', row: 0, w: 140 },
         { id: 'score', label: 'Score', role: 'score', row: 0, w: 40 },
-        { id: 'section', label: 'Section / Course', row: 1, w: Math.floor(availW * 0.6) },
-        { id: 'date', label: 'Date', row: 1, w: Math.max(30, availW - Math.floor(availW * 0.6) - 5) },
+        { id: 'offer', label: 'Offer No.', row: 1, w: 50 },
+        { id: 'sched', label: 'Sched', row: 1, w: 70 },
+        { id: 'date', label: 'Date', row: 1, w: 50 },
       ],
+    });
+    zones.push({
+      type: 'student_id',
+      id: uid('sid'),
+      label: 'Student ID',
+      digits: 8,
+      shading: true,
+      w: availW,
     });
   } else {
     zones.push({
@@ -1609,11 +1787,12 @@ function generateExamFromGeneratorModal() {
       w: availW,
       fieldHeight: 7.5,
       fields: [
-        { id: 'name', label: 'Student Name', role: 'name', row: 0, w: Math.floor(availW * 0.58) },
-        { id: 'sid', label: 'Student ID', role: 'student_id', digits: 8, row: 0, w: Math.max(60, availW - Math.floor(availW * 0.58) - 5) },
-        { id: 'section', label: 'Section / Course', row: 1, w: Math.floor(availW * 0.5) },
-        { id: 'date', label: 'Date', row: 1, w: Math.floor(availW * 0.25) },
-        { id: 'score', label: 'Score', role: 'score', row: 1, w: Math.max(30, availW - Math.floor(availW * 0.75) - 5) },
+        { id: 'name', label: 'Student Name', role: 'name', row: 0, w: 108 },
+        { id: 'sid', label: 'Student ID', role: 'student_id', digits: 8, row: 0, w: 75 },
+        { id: 'offer', label: 'Offer No.', row: 1, w: 48 },
+        { id: 'sched', label: 'Sched', row: 1, w: 52 },
+        { id: 'date', label: 'Date', row: 1, w: 43 },
+        { id: 'score', label: 'Score', role: 'score', row: 1, w: 40 },
       ],
     });
   }
@@ -1629,117 +1808,101 @@ function generateExamFromGeneratorModal() {
     });
   }
 
-  // 3. Exam Sections
-  let partNumber = 1;
+  // 3. Exam Sections in exact user-defined order
   const toRoman = (n) => ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'][n - 1] || String(n);
   let currentQ = 1;
 
-  // MCQ
-  if (els.genMcqEnabled?.checked) {
-    const count = Math.max(1, parseInt(els.genMcqCount?.value || '30', 10));
-    const choices = els.genMcqChoices?.value || 'ABCD';
-    const colsVal = els.genMcqCols?.value || 'auto';
-    const cols = colsVal === 'auto' ? (count <= 10 ? 1 : count <= 30 ? 2 : count <= 60 ? 3 : 4) : parseInt(colsVal, 10);
-    const pts = Math.max(1, parseFloat(els.genMcqPts?.value || '1'));
+  for (let pIdx = 0; pIdx < generatorParts.length; pIdx++) {
+    const part = generatorParts[pIdx];
+    const roman = toRoman(pIdx + 1);
 
-    zones.push({
-      type: 'mcq',
-      id: uid('mcq'),
-      label: `Part ${toRoman(partNumber++)} — Multiple Choice`,
-      count,
-      start: currentQ,
-      choices,
-      columns: cols,
-      pointsPerItem: pts,
-      w: availW,
-    });
-    currentQ += count;
-  }
+    if (part.type === 'mcq') {
+      const count = Math.max(1, part.count || 30);
+      const choices = part.choices || 'ABCD';
+      const cols = part.cols === 'auto' ? (count <= 10 ? 1 : count <= 30 ? 2 : count <= 60 ? 3 : 4) : parseInt(part.cols, 10);
+      const pts = Math.max(1, part.pts || 1);
 
-  // True / False
-  if (els.genTfEnabled?.checked) {
-    const count = Math.max(1, parseInt(els.genTfCount?.value || '10', 10));
-    const colsVal = els.genTfCols?.value || 'auto';
-    const cols = colsVal === 'auto' ? (count <= 10 ? 2 : count <= 25 ? 3 : 4) : parseInt(colsVal, 10);
-    const pts = Math.max(1, parseFloat(els.genTfPts?.value || '1'));
-
-    zones.push({
-      type: 'truefalse',
-      id: uid('tf'),
-      label: `Part ${toRoman(partNumber++)} — True or False`,
-      count,
-      start: currentQ,
-      choices: ['T', 'F'],
-      columns: cols,
-      pointsPerItem: pts,
-      w: availW,
-    });
-    currentQ += count;
-  }
-
-  // Modified True / False
-  if (els.genModtfEnabled?.checked) {
-    const count = Math.max(1, parseInt(els.genModtfCount?.value || '5', 10));
-    const pts = Math.max(1, parseFloat(els.genModtfPts?.value || '2'));
-
-    zones.push({
-      type: 'modified_tf',
-      id: uid('modtf'),
-      label: `Part ${toRoman(partNumber++)} — Modified True / False (Write correction if False)`,
-      count,
-      start: currentQ,
-      choices: ['T', 'F'],
-      corrWidth: Math.min(60, Math.floor(availW * 0.42)),
-      columns: 1,
-      pointsPerItem: pts,
-      w: availW,
-    });
-    currentQ += count;
-  }
-
-  // Short Answer / Identification
-  if (els.genSaEnabled?.checked) {
-    const count = Math.max(1, parseInt(els.genSaCount?.value || '3', 10));
-    const pts = Math.max(1, parseFloat(els.genSaPts?.value || '2'));
-    const roman = toRoman(partNumber++);
-
-    for (let i = 0; i < count; i++) {
       zones.push({
-        type: 'text_short',
-        id: uid('sa'),
-        label: `Part ${roman} — Q${currentQ}. Short Answer / Identification (${pts} pts)`,
+        type: 'mcq',
+        id: uid('mcq'),
+        label: `Part ${roman} — Multiple Choice (${currentQ}–${currentQ + count - 1})`,
+        count,
+        start: currentQ,
+        choices,
+        columns: cols,
+        pointsPerItem: pts,
         w: availW,
-        boxHeight: 14,
-        points: pts,
-        charset: 'any',
       });
-      currentQ++;
-    }
-  }
+      currentQ += count;
+    } else if (part.type === 'truefalse') {
+      const count = Math.max(1, part.count || 10);
+      const cols = part.cols === 'auto' ? (count <= 10 ? 2 : count <= 25 ? 3 : 4) : parseInt(part.cols, 10);
+      const pts = Math.max(1, part.pts || 1);
 
-  // Essay
-  if (els.genEssayEnabled?.checked) {
-    const count = Math.max(1, parseInt(els.genEssayCount?.value || '1', 10));
-    const pts = Math.max(1, parseFloat(els.genEssayPts?.value || '5'));
-    const roman = toRoman(partNumber++);
-
-    for (let i = 0; i < count; i++) {
       zones.push({
-        type: 'text_essay',
-        id: uid('essay'),
-        label: `Part ${roman} — Q${currentQ}. Essay / Discussion (${pts} pts)`,
+        type: 'truefalse',
+        id: uid('tf'),
+        label: `Part ${roman} — True or False (${currentQ}–${currentQ + count - 1})`,
+        count,
+        start: currentQ,
+        choices: ['T', 'F'],
+        columns: cols,
+        pointsPerItem: pts,
         w: availW,
-        boxHeight: 38,
-        points: pts,
-        charset: 'any',
       });
-      currentQ++;
-    }
-  }
+      currentQ += count;
+    } else if (part.type === 'modified_tf') {
+      const count = Math.max(1, part.count || 5);
+      const pts = Math.max(1, part.pts || 2);
 
-  if (zones.length <= (includeInstructions ? 2 : 1)) {
-    alert('Please enable at least one exam section (MCQ, True/False, Short Answer, or Essay).');
-    return;
+      zones.push({
+        type: 'modified_tf',
+        id: uid('modtf'),
+        label: `Part ${roman} — Modified True / False (${currentQ}–${currentQ + count - 1})`,
+        count,
+        start: currentQ,
+        choices: ['T', 'F'],
+        corrWidth: Math.min(60, Math.floor(availW * 0.42)),
+        columns: 1,
+        pointsPerItem: pts,
+        w: availW,
+      });
+      currentQ += count;
+    } else if (part.type === 'text_short') {
+      const count = Math.max(1, part.count || 5);
+      const pts = Math.max(1, part.pts || 2);
+      const h = part.boxHeight || 12;
+
+      for (let i = 0; i < count; i++) {
+        zones.push({
+          type: 'text_short',
+          id: uid('sa'),
+          label: `${currentQ}. Short Answer / Identification (${pts} pt${pts > 1 ? 's' : ''})`,
+          w: availW,
+          boxHeight: h,
+          points: pts,
+          charset: 'any',
+        });
+        currentQ++;
+      }
+    } else if (part.type === 'text_essay') {
+      const count = Math.max(1, part.count || 1);
+      const pts = Math.max(1, part.pts || 5);
+      const h = part.boxHeight || 36;
+
+      for (let i = 0; i < count; i++) {
+        zones.push({
+          type: 'text_essay',
+          id: uid('essay'),
+          label: `${currentQ}. Essay / Discussion (${pts} pts)`,
+          w: availW,
+          boxHeight: h,
+          points: pts,
+          charset: 'any',
+        });
+        currentQ++;
+      }
+    }
   }
 
   const generatedTemplate = {
@@ -1765,8 +1928,13 @@ function initEvents() {
   // Generator modal events
   els.btnGenerator?.addEventListener('click', () => {
     if (els.modalGenerator?.showModal) {
+      renderGeneratorParts();
       els.modalGenerator.showModal();
     }
+  });
+  els.btnGenAddPart?.addEventListener('click', () => {
+    generatorParts.push({ type: 'mcq', count: 10, choices: 'ABCD', cols: 'auto', pts: 1 });
+    renderGeneratorParts();
   });
   els.btnCloseGenerator?.addEventListener('click', () => els.modalGenerator?.close());
   els.btnCancelGenerator?.addEventListener('click', () => els.modalGenerator?.close());
@@ -1899,12 +2067,7 @@ function initEvents() {
         id: `exam-${Date.now().toString(36).slice(-4)}`,
         title: 'New Exam Sheet',
         paper: 'A4',
-        zones: [
-          createDefaultZone('student_id'),
-          createDefaultZone('fields'),
-          createDefaultZone('instructions'),
-          createDefaultZone('mcq'),
-        ],
+        zones: [],
       });
     } else if (val) {
       loadSample(val).catch((e) => alert(`Error loading sample: ${e.message}`));

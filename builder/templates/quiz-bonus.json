@@ -13,9 +13,10 @@
       "fields": [
         { "id": "name", "label": "Student Name", "role": "name", "row": 0, "w": 108 },
         { "id": "sid", "label": "Student ID", "role": "student_id", "digits": 8, "row": 0, "w": 75 },
-        { "id": "section", "label": "Offer No. & Class Sched", "row": 1, "w": 96 },
-        { "id": "date", "label": "Date", "row": 1, "w": 46 },
-        { "id": "score", "label": "Score", "role": "score", "row": 1, "w": 41 }
+        { "id": "offer", "label": "Offer No.", "row": 1, "w": 48 },
+        { "id": "sched", "label": "Sched", "row": 1, "w": 52 },
+        { "id": "date", "label": "Date", "row": 1, "w": 43 },
+        { "id": "score", "label": "Score", "role": "score", "row": 1, "w": 40 }
       ]
     },
     {

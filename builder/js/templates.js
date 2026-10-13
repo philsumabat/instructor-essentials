@@ -18,9 +18,10 @@ export const SAMPLE_TEMPLATES = {
         fields: [
           { id: 'name', label: 'Student Name', role: 'name', row: 0, w: 108 },
           { id: 'sid', label: 'Student ID', role: 'student_id', digits: 8, row: 0, w: 75 },
-          { id: 'section', label: 'Offer No. & Class Sched', row: 1, w: 96 },
-          { id: 'date', label: 'Date', row: 1, w: 46 },
-          { id: 'score', label: 'Score', role: 'score', row: 1, w: 41 },
+          { id: 'offer', label: 'Offer No.', row: 1, w: 48 },
+          { id: 'sched', label: 'Sched', row: 1, w: 52 },
+          { id: 'date', label: 'Date', row: 1, w: 43 },
+          { id: 'score', label: 'Score', role: 'score', row: 1, w: 40 },
         ],
       },
       {
@@ -78,23 +79,23 @@ export const SAMPLE_TEMPLATES = {
     bubble: { diameter: 4.0, pitchX: 5.4, pitchY: 5.0, groupEvery: 5, groupGap: 1.4 },
     zones: [
       {
+        type: 'fields',
+        id: 'info',
+        label: '',
+        fields: [
+          { id: 'name', label: 'Student Name', role: 'name', row: 0, w: 145 },
+          { id: 'score', label: 'Score', role: 'score', row: 0, w: 40 },
+          { id: 'offer', label: 'Offer No.', row: 1, w: 60 },
+          { id: 'sched', label: 'Sched', row: 1, w: 75 },
+          { id: 'date', label: 'Date', row: 1, w: 50 },
+        ],
+      },
+      {
         type: 'student_id',
         id: 'sid',
         label: 'Student ID',
-        digits: 9,
+        digits: 8,
         shading: true,
-      },
-      {
-        type: 'fields',
-        id: 'info',
-        inline: true,
-        label: '',
-        fields: [
-          { id: 'name', label: 'Student Name', role: 'name', row: 0, w: 85 },
-          { id: 'score', label: 'Score', role: 'score', row: 0, w: 40 },
-          { id: 'section', label: 'Offer No. & Class Sched', row: 1, w: 75 },
-          { id: 'date', label: 'Date', row: 1, w: 50 },
-        ],
       },
       {
         type: 'mcq',
@@ -122,10 +123,11 @@ export const SAMPLE_TEMPLATES = {
         fieldHeight: 7.5,
         fields: [
           { id: 'name', label: 'Student Name', role: 'name', row: 0, w: 112 },
-          { id: 'sid', label: 'Student ID', role: 'student_id', digits: 6, row: 0, w: 77 },
-          { id: 'section', label: 'Offer No. & Class Sched', row: 1, w: 100 },
-          { id: 'date', label: 'Date', row: 1, w: 48 },
-          { id: 'score', label: 'Score', role: 'score', row: 1, w: 41 },
+          { id: 'sid', label: 'Student ID', role: 'student_id', digits: 8, row: 0, w: 77 },
+          { id: 'offer', label: 'Offer No.', row: 1, w: 50 },
+          { id: 'sched', label: 'Sched', row: 1, w: 54 },
+          { id: 'date', label: 'Date', row: 1, w: 45 },
+          { id: 'score', label: 'Score', role: 'score', row: 1, w: 40 },
         ],
       },
       {
@@ -184,9 +186,10 @@ export const SAMPLE_TEMPLATES = {
         fields: [
           { id: 'name', label: 'Student Name', role: 'name', row: 0, w: 108 },
           { id: 'sid', label: 'Student ID', role: 'student_id', digits: 8, row: 0, w: 75 },
-          { id: 'section', label: 'Offer No. & Class Sched', row: 1, w: 96 },
-          { id: 'date', label: 'Date', row: 1, w: 46 },
-          { id: 'score', label: 'Score', role: 'score', row: 1, w: 41 },
+          { id: 'offer', label: 'Offer No.', row: 1, w: 48 },
+          { id: 'sched', label: 'Sched', row: 1, w: 52 },
+          { id: 'date', label: 'Date', row: 1, w: 43 },
+          { id: 'score', label: 'Score', role: 'score', row: 1, w: 40 },
         ],
       },
       {

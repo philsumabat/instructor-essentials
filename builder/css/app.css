@@ -1555,31 +1555,100 @@ dialog.modal-dialog::backdrop {
   user-select: none;
 }
 
+.gen-parts-list,
 .gen-sections-list {
   display: flex;
   flex-direction: column;
-  gap: 0.65rem;
+  gap: 0.75rem;
 }
 
+.gen-part-card,
 .gen-section-card {
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  padding: 0.65rem 0.85rem;
+  padding: 0.75rem 0.85rem;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  transition: border-color 0.15s ease;
+  gap: 0.6rem;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
+.gen-part-card:hover,
 .gen-section-card:hover {
   border-color: var(--border-focus);
 }
 
+.gen-part-header,
 .gen-section-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.gen-part-title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 220px;
+}
+
+.gen-part-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--radius-sm);
+  background: var(--accent-light);
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+.gen-part-select {
+  flex: 1;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--panel-header);
+  color: var(--text);
+}
+
+.gen-part-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.btn-part-action {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  border-radius: var(--radius-sm);
+  padding: 0.2rem 0.45rem;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-part-action:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-light);
+}
+
+.btn-part-action:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.btn-part-action.is-delete:hover:not(:disabled) {
+  border-color: var(--danger);
+  color: var(--danger);
+  background: rgba(225, 29, 72, 0.1);
 }
 
 .gen-badge {
@@ -1591,12 +1660,13 @@ dialog.modal-dialog::backdrop {
   color: var(--accent);
 }
 
+.gen-part-body,
 .gen-section-body {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 0.75rem 1.25rem;
-  padding-left: 1.5rem;
+  padding-left: 0.25rem;
 }
 
 .gen-field-inline {
@@ -1608,7 +1678,7 @@ dialog.modal-dialog::backdrop {
 }
 
 .gen-field-inline input[type="number"] {
-  width: 55px;
+  width: 58px;
 }
 
 /* ==========================================================================

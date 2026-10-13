@@ -1061,6 +1061,176 @@
       border: 1px solid currentColor;
       white-space: nowrap;
     }
+
+    /* Visual Answer Key Editor styles (Parity with Sheet Builder) */
+    .key-toolbar-strip {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      padding: 0.65rem 1.25rem;
+      background: var(--panel-alt);
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+    .key-metrics-pills {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .key-metric-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.25rem 0.6rem;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+    .key-metric-label {
+      color: var(--text-muted);
+    }
+    .key-passing-input {
+      width: 52px;
+      padding: 0.15rem 0.35rem;
+      font: inherit;
+      font-size: 0.78rem;
+      font-weight: 700;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xs);
+      background: var(--bg);
+      color: var(--text);
+      text-align: center;
+    }
+    .key-actions-row {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+    }
+    .btn-xs {
+      font-size: 0.72rem;
+      padding: 0.25rem 0.55rem;
+      border-radius: var(--radius-xs);
+    }
+    .key-body {
+      padding: 1.2rem 1.4rem;
+      overflow-y: auto;
+      max-height: 62vh;
+    }
+    .key-section-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 0.85rem 1rem;
+      margin-bottom: 1rem;
+    }
+    .key-section-title {
+      margin: 0 0 0.65rem;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .key-matrix-grid {
+      column-count: 3;
+      column-gap: 1.25rem;
+      column-rule: 1px solid var(--border);
+    }
+    @media (max-width: 900px) {
+      .key-matrix-grid { column-count: 2 !important; }
+    }
+    @media (max-width: 600px) {
+      .key-matrix-grid { column-count: 1 !important; }
+    }
+    .key-item-cell {
+      break-inside: avoid;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.35rem 0.55rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      gap: 0.4rem;
+      margin-bottom: 0.45rem;
+    }
+    .key-discrepancy-banner {
+      background: color-mix(in srgb, var(--warning) 12%, var(--panel));
+      border: 1px solid color-mix(in srgb, var(--warning) 40%, var(--border));
+      border-radius: var(--radius-sm);
+      padding: 0.65rem 0.9rem;
+      margin-bottom: 0.85rem;
+      font-size: 0.78rem;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+    .key-item-num {
+      font-size: 0.78rem;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      color: var(--text-muted);
+      min-width: 26px;
+    }
+    .key-bubbles-row {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+    .key-bubble-btn {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 1.5px solid var(--border-focus);
+      background: var(--panel);
+      color: var(--text);
+      font-size: 0.75rem;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      user-select: none;
+      transition: all 120ms ease;
+      padding: 0;
+    }
+    .key-bubble-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    .key-bubble-btn.is-active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+      box-shadow: 0 2px 6px -1px rgba(37, 99, 235, 0.4);
+    }
+    .key-pts-input {
+      width: 38px;
+      padding: 0.15rem 0.25rem;
+      font: inherit;
+      font-size: 0.72rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xs);
+      background: var(--panel);
+      color: var(--text);
+      text-align: center;
+    }
+    .key-text-input {
+      flex: 1;
+      padding: 0.25rem 0.45rem;
+      font: inherit;
+      font-size: 0.76rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xs);
+      background: var(--panel);
+      color: var(--text);
+    }
   </style>
 </head>
 <body>
@@ -1361,7 +1531,7 @@
         <div class="distribution-card" id="distribution-card" style="margin-top: 1.25rem;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.65rem; flex-wrap: wrap; gap: 0.5rem;">
             <div style="display: flex; align-items: center; gap: 0.5rem;">
-              <span style="font-weight: 700; font-size: 0.88rem; color: var(--text);">Pass / Fail Distribution &amp; Score Bell Curve</span>
+              <span style="font-weight: 700; font-size: 0.88rem; color: var(--text);">Scores Distribution</span>
               <span id="dist-label-threshold" style="font-size: 0.75rem; color: var(--text-muted); background: var(--panel-alt); padding: 0.15rem 0.5rem; border-radius: var(--radius-full); border: 1px solid var(--border);">Threshold: 60%</span>
             </div>
             <div style="display: flex; gap: 1rem; font-size: 0.78rem;">
@@ -1493,24 +1663,115 @@
 
       <!-- Tab 3: Item Analysis -->
       <div id="tab-items" class="tab-pane" style="display: none;">
+        <!-- Top Metrics Grid -->
+        <div class="metrics-grid" style="grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); margin-bottom: 1.25rem;">
+          <div class="metric-card">
+            <span class="metric-card__label">Average Difficulty (P̄)</span>
+            <span class="metric-card__value" id="analysis-stat-diff">—</span>
+            <span class="metric-card__sub" id="analysis-stat-diff-sub">Optimal target: 50%–85%</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-card__label">Average Discrimination (r̄_pbis)</span>
+            <span class="metric-card__value" id="analysis-stat-disc">—</span>
+            <span class="metric-card__sub" id="analysis-stat-disc-sub">Target: ≥ 0.20</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-card__label">Items Needing Review</span>
+            <span class="metric-card__value" id="analysis-stat-flagged" style="color: var(--warning);">0</span>
+            <span class="metric-card__sub" id="analysis-stat-flagged-sub">Low discrimination or extreme difficulty</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-card__label">Reliability (Cronbach's α)</span>
+            <span class="metric-card__value" id="analysis-stat-alpha">—</span>
+            <span class="metric-card__sub">Internal test consistency</span>
+          </div>
+        </div>
+
+        <!-- Flagged Questions Callout Card -->
+        <div id="analysis-review-box" class="section-card" style="margin-bottom: 1.25rem; display: none; background: color-mix(in srgb, var(--warning) 8%, var(--panel)); border: 1px solid color-mix(in srgb, var(--warning) 30%, var(--border));">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.65rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem; font-weight: 700; color: var(--warning);">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              <span>Questions Flagged for Instructor Review</span>
+            </div>
+            <span id="analysis-review-count-badge" class="badge-review">0 Flagged</span>
+          </div>
+          <div id="analysis-review-items-list" style="display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.8rem;">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+
+        <!-- Graphs Row: Difficulty Chart & Discrimination Chart -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 1.25rem; margin-bottom: 1.25rem;">
+          <!-- Graph 1: Item Difficulty Bar Chart (SVG) -->
+          <div class="distribution-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
+              <div style="font-weight: 700; font-size: 0.88rem; color: var(--text); display: flex; align-items: center; gap: 0.4rem;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v-6M6 20V10M18 20V4"/></svg>
+                <span>Item Difficulty Index (P)</span>
+              </div>
+              <div style="display: flex; gap: 0.65rem; font-size: 0.72rem;">
+                <span style="display: inline-flex; align-items: center; gap: 0.25rem;"><span style="width: 8px; height: 8px; border-radius: 2px; background: #10b981;"></span> Ideal (50–85%)</span>
+                <span style="display: inline-flex; align-items: center; gap: 0.25rem;"><span style="width: 8px; height: 8px; border-radius: 2px; background: #3b82f6;"></span> Easy (&gt;85%)</span>
+                <span style="display: inline-flex; align-items: center; gap: 0.25rem;"><span style="width: 8px; height: 8px; border-radius: 2px; background: #f59e0b;"></span> Hard (20–49%)</span>
+                <span style="display: inline-flex; align-items: center; gap: 0.25rem;"><span style="width: 8px; height: 8px; border-radius: 2px; background: #ef4444;"></span> Very Hard (&lt;20%)</span>
+              </div>
+            </div>
+            <div id="chart-item-difficulty-container" style="width: 100%; min-height: 220px; overflow-x: auto;">
+              <!-- Rendered SVG Difficulty Chart -->
+            </div>
+          </div>
+
+          <!-- Graph 2: Item Discrimination Point-Biserial Chart (SVG) -->
+          <div class="distribution-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
+              <div style="font-weight: 700; font-size: 0.88rem; color: var(--text); display: flex; align-items: center; gap: 0.4rem;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 14.14 14.14"/></svg>
+                <span>Item Discrimination (r_pbis)</span>
+              </div>
+              <div style="display: flex; gap: 0.65rem; font-size: 0.72rem;">
+                <span style="display: inline-flex; align-items: center; gap: 0.25rem;"><span style="width: 8px; height: 8px; border-radius: 2px; background: #10b981;"></span> Strong (≥0.30)</span>
+                <span style="display: inline-flex; align-items: center; gap: 0.25rem;"><span style="width: 8px; height: 8px; border-radius: 2px; background: #3b82f6;"></span> Acceptable (0.20–0.29)</span>
+                <span style="display: inline-flex; align-items: center; gap: 0.25rem;"><span style="width: 8px; height: 8px; border-radius: 2px; background: #ef4444;"></span> Review (&lt;0.20)</span>
+              </div>
+            </div>
+            <div id="chart-item-discrimination-container" style="width: 100%; min-height: 220px; overflow-x: auto;">
+              <!-- Rendered SVG Discrimination Chart -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter bar for Item Table -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
+          <h3 style="margin: 0; font-size: 0.92rem; font-weight: 700; color: var(--text);">Detailed Item Statistics &amp; Distractor Analysis</h3>
+          <div style="display: flex; gap: 0.4rem;" id="item-analysis-filters">
+            <button type="button" class="btn btn--secondary btn-xs is-active" data-filter="all">All Items</button>
+            <button type="button" class="btn btn--secondary btn-xs" data-filter="review">Flagged Only</button>
+            <button type="button" class="btn btn--secondary btn-xs" data-filter="hard">Hardest (P &lt; 50%)</button>
+            <button type="button" class="btn btn--secondary btn-xs" data-filter="disc">Low Disc (r &lt; 0.20)</button>
+          </div>
+        </div>
+
+        <!-- Comprehensive Item Table -->
         <div class="table-container">
           <table>
             <thead>
               <tr>
-                <th>Item #</th>
-                <th>Correct Answer</th>
-                <th>Points</th>
-                <th>Difficulty (P)</th>
-                <th>Discrimination (r_pbis)</th>
-                <th id="th-d1">A</th>
-                <th id="th-d2">B</th>
-                <th id="th-d3">C</th>
-                <th id="th-d4">D</th>
-                <th id="th-d5">E</th>
+                <th class="sortable" data-sort="item" style="width: 70px;">Item #</th>
+                <th style="width: 80px;">Key</th>
+                <th class="sortable" data-sort="pts" style="width: 60px;">Pts</th>
+                <th class="sortable" data-sort="difficulty" style="min-width: 130px;">Difficulty (P)</th>
+                <th class="sortable" data-sort="discrimination" style="min-width: 140px;">Discrimination (r_pbis)</th>
+                <th id="th-d1" style="min-width: 50px;">A</th>
+                <th id="th-d2" style="min-width: 50px;">B</th>
+                <th id="th-d3" style="min-width: 50px;">C</th>
+                <th id="th-d4" style="min-width: 50px;">D</th>
+                <th id="th-d5" style="min-width: 50px;">E</th>
+                <th style="min-width: 140px;">Diagnostic Status</th>
               </tr>
             </thead>
             <tbody id="tbody-items">
-              <tr><td colspan="10" style="text-align: center; padding: 2rem; color: var(--text-muted);">Run grading to generate item discrimination and difficulty statistics.</td></tr>
+              <tr><td colspan="11" style="text-align: center; padding: 2rem; color: var(--text-muted);">Run grading to generate item discrimination and difficulty statistics.</td></tr>
             </tbody>
           </table>
         </div>
@@ -1556,40 +1817,73 @@
     </div>
   </dialog>
 
-  <!-- Modal: Answer Key Editor -->
-  <dialog id="modal-key-editor" style="border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 0; background: var(--panel); color: var(--text); max-width: 90vw; max-height: 85vh; width: 660px; box-shadow: var(--shadow-xl); overflow: hidden;">
-    <div style="display: flex; flex-direction: column; height: 100%; max-height: 85vh;">
+  <!-- Modal: Answer Key Editor (Full Interactive Visual Matrix matching Sheet Builder) -->
+  <dialog id="modal-key-editor" style="border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 0; background: var(--panel); color: var(--text); max-width: 95vw; max-height: 88vh; width: 880px; box-shadow: var(--shadow-xl); overflow: hidden;">
+    <div style="display: flex; flex-direction: column; height: 100%; max-height: 88vh;">
+      <!-- Modal Header -->
       <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.85rem 1.25rem; border-bottom: 1px solid var(--border); background: var(--panel-header);">
-        <h3 style="margin: 0; font-size: 1rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 3-9.5 9.5"/><path d="m15.5 7.5 3 3M18 5l2 2"/></svg><span>Answer Key Editor</span></h3>
-        <button type="button" id="btn-close-key-editor" class="btn-step" style="width: 28px; height: 28px; border-radius: var(--radius-sm); font-size: 1rem;">✕</button>
+        <div>
+          <h2 style="margin: 0; font-size: 1.05rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 3-9.5 9.5"/><path d="m15.5 7.5 3 3M18 5l2 2"/></svg>
+            <span>Answer Key Editor</span>
+          </h2>
+          <p style="margin: 0.2rem 0 0 0; font-size: 0.78rem; color: var(--text-muted);">
+            Click bubbles to set correct answers and point values for each question.
+          </p>
+        </div>
+        <button type="button" id="btn-close-key-editor" class="btn-step" style="width: 28px; height: 28px; border-radius: var(--radius-sm); font-size: 1rem;" aria-label="Close">✕</button>
       </div>
 
-      <div style="padding: 1rem 1.25rem; overflow-y: auto; flex: 1;">
-        <p style="margin: 0 0 0.75rem 0; font-size: 0.8rem; color: var(--text-muted);">
-          Edit correct answer options and points for each item. Changes apply immediately upon saving.
-        </p>
-        <div class="table-container" style="max-height: 400px; overflow-y: auto;">
-          <table>
-            <thead>
-              <tr>
-                <th style="width: 70px;">Item</th>
-                <th style="width: 110px;">Type</th>
-                <th>Correct Answer</th>
-                <th style="width: 90px;">Points</th>
-              </tr>
-            </thead>
-            <tbody id="key-editor-tbody">
-              <!-- Populated dynamically -->
-            </tbody>
-          </table>
+      <!-- Quick Action Toolbar Strip & Key Metrics -->
+      <div class="key-toolbar-strip">
+        <div class="key-metrics-pills">
+          <div class="key-metric-pill">
+            <span class="key-metric-label">Items</span>
+            <strong id="key-metric-count">0</strong>
+          </div>
+          <div class="key-metric-pill">
+            <span class="key-metric-label">Total Points</span>
+            <strong id="key-metric-points">0</strong>
+          </div>
+          <div class="key-metric-pill">
+            <span class="key-metric-label">Passing Score</span>
+            <input type="number" id="key-passing-input" class="key-passing-input" value="0" min="0" title="Passing score required to pass">
+          </div>
+        </div>
+
+        <div class="key-actions-row">
+          <button type="button" id="btn-key-fill-a" class="btn btn--secondary btn-xs" title="Set all multiple-choice answers to A">All A</button>
+          <button type="button" id="btn-key-fill-t" class="btn btn--secondary btn-xs" title="Set all True/False answers to True">All T</button>
+          <button type="button" id="btn-key-random" class="btn btn--secondary btn-xs" title="Quickly generate a sample key for testing">Sample Key</button>
+          <button type="button" id="btn-key-clear" class="btn btn--secondary btn-xs" style="color: var(--danger);" title="Clear all answers">Clear</button>
+          <label class="btn btn--secondary btn-xs" style="cursor: pointer;" title="Import answer key JSON file">
+            <span>Import Key</span>
+            <input type="file" id="key-file-import" accept=".json" style="display: none;">
+          </label>
+          <button type="button" id="btn-key-modal-scan" class="btn btn--secondary btn-xs" title="Scan a filled answer key sheet">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:2px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="m9 15 2 2 4-4"/></svg>
+            <span>Scan Sheet</span>
+          </button>
         </div>
       </div>
 
-      <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 1.25rem; border-top: 1px solid var(--border); background: var(--panel-alt);">
-        <span id="key-editor-status" style="font-size: 0.78rem; color: var(--text-muted);"></span>
+      <!-- Scrollable Matrix / Question List -->
+      <div class="modal-body key-body" id="key-items-container" style="flex: 1; overflow-y: auto; padding: 1.2rem 1.4rem;">
+        <!-- Rendered items matrix -->
+      </div>
+
+      <!-- Modal Footer -->
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 1.25rem; border-top: 1px solid var(--border); background: var(--panel-header);">
+        <button type="button" id="btn-key-download" class="btn btn--secondary btn--sm" title="Download answer key JSON">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <span>Download Key (.json)</span>
+        </button>
         <div style="display: flex; gap: 0.5rem;">
           <button type="button" id="btn-cancel-key-editor" class="btn btn--secondary btn--sm">Cancel</button>
-          <button type="button" id="btn-save-key-editor" class="btn btn--primary btn--sm">Save Key</button>
+          <button type="button" id="btn-save-key-editor" class="btn btn--primary btn--sm">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m5 12 5 5L20 7"/></svg>
+            <span>Save &amp; Apply</span>
+          </button>
         </div>
       </div>
     </div>
@@ -1614,7 +1908,9 @@
       selectedStudentIdx: 0,
       activeTab: "summary",
       rosterSort: { col: null, dir: 'asc' },
-      summarySort: { col: null, dir: 'asc' }
+      summarySort: { col: null, dir: 'asc' },
+      itemAnalysisFilter: 'all',
+      itemAnalysisSort: { col: 'item', dir: 'asc' }
     };
 
     // ---- DOM Elements ----
@@ -1968,27 +2264,16 @@
       }
     }
 
-    // Render SVG Bell Curve with Histogram & Annotations
-    function renderBellCurve(grades, passThreshold) {
-      const container = $('dist-bell-curve-container');
-      const narrative = $('dist-bell-curve-narrative');
-      if (!container) return;
-
+    // Generate SVG Bell Curve with Histogram & Normal Curve
+    function generateBellCurveSVG(grades, passThreshold) {
       if (!grades || grades.length === 0) {
-        container.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 1.5rem; font-size: 0.8rem;">No grade data available.</div>';
-        if (narrative) narrative.innerHTML = '';
-        return;
+        return '<svg width="100%" height="80"><text x="50%" y="50%" text-anchor="middle" fill="#888">No grade data available</text></svg>';
       }
-
       const scores = grades.map(g => g.percentage);
       const n = scores.length;
       const mean = scores.reduce((a, b) => a + b, 0) / n;
       const variance = scores.reduce((s, x) => s + Math.pow(x - mean, 2), 0) / (n > 1 ? n - 1 : 1);
       const stdDev = Math.sqrt(variance);
-      const min = Math.min(...scores);
-      const max = Math.max(...scores);
-      const passCount = grades.filter(g => g.percentage >= passThreshold).length;
-      const passRate = (passCount / n) * 100;
 
       // Group into 10 score bins: 0-10%, 10-20%, ..., 90-100%
       const bins = new Array(10).fill(0);
@@ -2015,7 +2300,6 @@
       const barW = Math.max(4, (plotW / 10) - 3);
       for (let i = 0; i < 10; i++) {
         const binStart = i * 10;
-        const binEnd = (i + 1) * 10;
         const binCenter = binStart + 5;
         const count = bins[i];
         const bx = xCoord(binStart) + 1.5;
@@ -2027,7 +2311,7 @@
 
         barsSvg += `<rect x="${bx.toFixed(1)}" y="${by.toFixed(1)}" width="${barW.toFixed(1)}" height="${bh.toFixed(1)}" fill="${fill}" stroke="${stroke}" stroke-width="1" rx="2" />`;
         if (count > 0) {
-          barsSvg += `<text x="${(bx + barW / 2).toFixed(1)}" y="${(by - 4).toFixed(1)}" text-anchor="middle" font-size="10" font-weight="600" fill="var(--text-muted)">${count}</text>`;
+          barsSvg += `<text x="${(bx + barW / 2).toFixed(1)}" y="${(by - 4).toFixed(1)}" text-anchor="middle" font-size="10" font-weight="600" fill="#888">${count}</text>`;
         }
       }
 
@@ -2072,47 +2356,57 @@
       let ticksSvg = '';
       for (let t = 0; t <= 100; t += 20) {
         const tx = xCoord(t);
-        ticksSvg += `<line x1="${tx.toFixed(1)}" y1="${padT}" x2="${tx.toFixed(1)}" y2="${baseY}" stroke="var(--border)" stroke-width="0.75" stroke-dasharray="2 3" />`;
-        ticksSvg += `<text x="${tx.toFixed(1)}" y="${baseY + 16}" text-anchor="middle" font-size="10" fill="var(--text-muted)">${t}%</text>`;
+        ticksSvg += `<line x1="${tx.toFixed(1)}" y1="${padT}" x2="${tx.toFixed(1)}" y2="${baseY}" stroke="#333842" stroke-width="0.75" stroke-dasharray="2 3" />`;
+        ticksSvg += `<text x="${tx.toFixed(1)}" y="${baseY + 16}" text-anchor="middle" font-size="10" fill="#888">${t}%</text>`;
       }
 
-      container.innerHTML = `
+      return `
         <svg viewBox="0 0 ${svgW} ${svgH}" style="width: 100%; height: auto; max-height: 240px; display: block;" role="img" aria-label="Score Distribution Bell Curve">
-          <!-- Grid Lines & Ticks -->
           ${ticksSvg}
-
-          <!-- Base X-Axis -->
-          <line x1="${padL}" y1="${baseY}" x2="${(padL + plotW).toFixed(1)}" y2="${baseY}" stroke="var(--border)" stroke-width="1.5" />
-
-          <!-- Histogram Bars -->
+          <line x1="${padL}" y1="${baseY}" x2="${(padL + plotW).toFixed(1)}" y2="${baseY}" stroke="#555" stroke-width="1.5" />
           ${barsSvg}
-
-          <!-- Shaded Regions under Bell Curve -->
           <path d="${failPath}" fill="rgba(244, 63, 94, 0.16)" />
           <path d="${passPath}" fill="rgba(16, 185, 129, 0.16)" />
-
-          <!-- Bell Curve Stroke -->
-          <path d="${curvePath}" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" />
-
-          <!-- Standard Deviation +/- 1 Sigma Indicator -->
-          <line x1="${sigLeftX.toFixed(1)}" y1="${sigY}" x2="${sigRightX.toFixed(1)}" y2="${sigY}" stroke="var(--text-muted)" stroke-width="1.2" stroke-dasharray="2 2" />
-          <line x1="${sigLeftX.toFixed(1)}" y1="${sigY - 4}" x2="${sigLeftX.toFixed(1)}" y2="${sigY + 4}" stroke="var(--text-muted)" stroke-width="1.2" />
-          <line x1="${sigRightX.toFixed(1)}" y1="${sigY - 4}" x2="${sigRightX.toFixed(1)}" y2="${sigY + 4}" stroke="var(--text-muted)" stroke-width="1.2" />
-          <text x="${((sigLeftX + sigRightX) / 2).toFixed(1)}" y="${sigY - 3}" text-anchor="middle" font-size="9" font-weight="600" fill="var(--text-muted)">±1σ (${stdDev.toFixed(1)}%)</text>
-
-          <!-- Mean Line & Label -->
-          <line x1="${meanX.toFixed(1)}" y1="${padT}" x2="${meanX.toFixed(1)}" y2="${baseY}" stroke="var(--accent)" stroke-width="2" stroke-dasharray="4 3" />
-          <rect x="${(meanX - 34).toFixed(1)}" y="${meanLabelY - 11}" width="68" height="15" rx="3" fill="var(--panel)" stroke="var(--accent)" stroke-width="1" />
-          <text x="${meanX.toFixed(1)}" y="${meanLabelY}" text-anchor="middle" font-size="9.5" font-weight="700" fill="var(--accent)">Mean: ${mean.toFixed(1)}%</text>
-
-          <!-- Cutoff Line & Label -->
-          <line x1="${cutoffX.toFixed(1)}" y1="${padT}" x2="${cutoffX.toFixed(1)}" y2="${baseY}" stroke="var(--danger)" stroke-width="2" />
-          <rect x="${(cutoffX - 34).toFixed(1)}" y="${cutoffLabelY - 11}" width="68" height="15" rx="3" fill="var(--panel)" stroke="var(--danger)" stroke-width="1" />
-          <text x="${cutoffX.toFixed(1)}" y="${cutoffLabelY}" text-anchor="middle" font-size="9.5" font-weight="700" fill="var(--danger)">Cutoff: ${passThreshold}%</text>
+          <path d="${curvePath}" fill="none" stroke="#0284c7" stroke-width="2.5" stroke-linecap="round" />
+          <line x1="${sigLeftX.toFixed(1)}" y1="${sigY}" x2="${sigRightX.toFixed(1)}" y2="${sigY}" stroke="#888" stroke-width="1.2" stroke-dasharray="2 2" />
+          <line x1="${sigLeftX.toFixed(1)}" y1="${sigY - 4}" x2="${sigLeftX.toFixed(1)}" y2="${sigY + 4}" stroke="#888" stroke-width="1.2" />
+          <line x1="${sigRightX.toFixed(1)}" y1="${sigY - 4}" x2="${sigRightX.toFixed(1)}" y2="${sigY + 4}" stroke="#888" stroke-width="1.2" />
+          <text x="${((sigLeftX + sigRightX) / 2).toFixed(1)}" y="${sigY - 3}" text-anchor="middle" font-size="9" font-weight="600" fill="#888">±1σ (${stdDev.toFixed(1)}%)</text>
+          <line x1="${meanX.toFixed(1)}" y1="${padT}" x2="${meanX.toFixed(1)}" y2="${baseY}" stroke="#0284c7" stroke-width="2" stroke-dasharray="4 3" />
+          <rect x="${(meanX - 34).toFixed(1)}" y="${meanLabelY - 11}" width="68" height="15" rx="3" fill="#1e293b" stroke="#0284c7" stroke-width="1" />
+          <text x="${meanX.toFixed(1)}" y="${meanLabelY}" text-anchor="middle" font-size="9.5" font-weight="700" fill="#38bdf8">Mean: ${mean.toFixed(1)}%</text>
+          <line x1="${cutoffX.toFixed(1)}" y1="${padT}" x2="${cutoffX.toFixed(1)}" y2="${baseY}" stroke="#ef4444" stroke-width="2" />
+          <rect x="${(cutoffX - 34).toFixed(1)}" y="${cutoffLabelY - 11}" width="68" height="15" rx="3" fill="#1e293b" stroke="#ef4444" stroke-width="1" />
+          <text x="${cutoffX.toFixed(1)}" y="${cutoffLabelY}" text-anchor="middle" font-size="9.5" font-weight="700" fill="#f87171">Cutoff: ${passThreshold}%</text>
         </svg>
       `;
+    }
+
+    // Render SVG Bell Curve with Histogram & Annotations
+    function renderBellCurve(grades, passThreshold) {
+      const container = $('dist-bell-curve-container');
+      const narrative = $('dist-bell-curve-narrative');
+      if (!container) return;
+
+      if (!grades || grades.length === 0) {
+        container.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 1.5rem; font-size: 0.8rem;">No grade data available.</div>';
+        if (narrative) narrative.innerHTML = '';
+        return;
+      }
+
+      container.innerHTML = generateBellCurveSVG(grades, passThreshold);
 
       if (narrative) {
+        const scores = grades.map(g => g.percentage);
+        const n = scores.length;
+        const mean = scores.reduce((a, b) => a + b, 0) / n;
+        const variance = scores.reduce((s, x) => s + Math.pow(x - mean, 2), 0) / (n > 1 ? n - 1 : 1);
+        const stdDev = Math.sqrt(variance);
+        const min = Math.min(...scores);
+        const max = Math.max(...scores);
+        const passCount = grades.filter(g => g.percentage >= passThreshold).length;
+        const passRate = (passCount / n) * 100;
+
         let spreadComment = 'Scores reflect a normal, healthy Gaussian distribution across the cohort.';
         if (stdDev < 8) {
           spreadComment = 'Scores are tightly clustered around the class average with low variance.';
@@ -2128,6 +2422,149 @@
           </div>
         `;
       }
+    }
+
+    // Generate SVG Item Difficulty Bar Chart (Vector graphics for DOM & HTML export)
+    function getItemDifficultyChartSVG(itemStats) {
+      if (!itemStats) return '<svg width="100%" height="80"><text x="50%" y="50%" text-anchor="middle" fill="#888">No item statistics</text></svg>';
+      const itemKeys = Object.keys(itemStats).sort((a, b) => {
+        const na = Number(a), nb = Number(b);
+        if (!isNaN(na) && !isNaN(nb)) return na - nb;
+        return a.localeCompare(b);
+      });
+      const n = itemKeys.length;
+      if (n === 0) return '<svg width="100%" height="80"><text x="50%" y="50%" text-anchor="middle" fill="#888">No items</text></svg>';
+
+      const barStep = 24;
+      const padL = 40;
+      const padR = 25;
+      const padT = 25;
+      const padB = 35;
+      const plotW = Math.max(500, n * barStep);
+      const svgW = padL + plotW + padR;
+      const svgH = 220;
+      const plotH = svgH - padT - padB; // 160
+      const baseY = padT + plotH; // 185
+
+      let guideSvg = '';
+      // Optimal band (50% to 85%)
+      const y85 = baseY - (0.85 * plotH);
+      const y50 = baseY - (0.50 * plotH);
+      guideSvg += `<rect x="${padL}" y="${y85.toFixed(1)}" width="${plotW}" height="${(y50 - y85).toFixed(1)}" fill="rgba(16, 185, 129, 0.08)" />`;
+      guideSvg += `<text x="${padL + plotW - 6}" y="${(y85 + 12).toFixed(1)}" text-anchor="end" font-size="9" fill="#10b981" font-weight="600">Optimal Band (50%–85%)</text>`;
+
+      [0, 0.25, 0.50, 0.75, 0.85, 1.0].forEach(level => {
+        const y = baseY - (level * plotH);
+        guideSvg += `<line x1="${padL}" y1="${y.toFixed(1)}" x2="${(padL + plotW).toFixed(1)}" y2="${y.toFixed(1)}" stroke="#333842" stroke-width="0.7" stroke-dasharray="2 3" />`;
+        guideSvg += `<text x="${padL - 6}" y="${(y + 3).toFixed(1)}" text-anchor="end" font-size="9" fill="#888">${Math.round(level * 100)}%</text>`;
+      });
+
+      guideSvg += `<line x1="${padL}" y1="${baseY}" x2="${(padL + plotW).toFixed(1)}" y2="${baseY}" stroke="#555" stroke-width="1.2" />`;
+
+      const barW = 16;
+      let barsSvg = '';
+      itemKeys.forEach((k, idx) => {
+        const item = itemStats[k];
+        const p = Math.max(0, Math.min(1, item.difficulty));
+        const bh = p * plotH;
+        const bx = padL + idx * barStep + 4;
+        const by = baseY - bh;
+
+        let fill = '#10b981';
+        if (p < 0.20) fill = '#ef4444';
+        else if (p < 0.50) fill = '#f59e0b';
+        else if (p > 0.85) fill = '#3b82f6';
+
+        barsSvg += `
+          <g class="chart-bar-group" data-item="${k}">
+            <title>Item #${k} (Key: ${item.correctAnswer}): Difficulty P = ${(p * 100).toFixed(1)}%</title>
+            <rect x="${bx.toFixed(1)}" y="${by.toFixed(1)}" width="${barW}" height="${bh.toFixed(1)}" fill="${fill}" rx="2" />
+            <text x="${(bx + barW / 2).toFixed(1)}" y="${baseY + 14}" text-anchor="middle" font-size="9" fill="#888">${k}</text>
+            <text x="${(bx + barW / 2).toFixed(1)}" y="${(by - 3).toFixed(1)}" text-anchor="middle" font-size="8" fill="#aaa" font-weight="600">${Math.round(p * 100)}%</text>
+          </g>
+        `;
+      });
+
+      return `
+        <svg viewBox="0 0 ${svgW} ${svgH}" width="${svgW}" height="${svgH}" style="min-width: 100%; height: auto; display: block;" role="img" aria-label="Item Difficulty Bar Chart">
+          ${guideSvg}
+          ${barsSvg}
+        </svg>
+      `;
+    }
+
+    // Generate SVG Item Discrimination Chart (Point-Biserial r_pbis with Thresholds)
+    function getItemDiscriminationChartSVG(itemStats) {
+      if (!itemStats) return '<svg width="100%" height="80"><text x="50%" y="50%" text-anchor="middle" fill="#888">No item statistics</text></svg>';
+      const itemKeys = Object.keys(itemStats).sort((a, b) => {
+        const na = Number(a), nb = Number(b);
+        if (!isNaN(na) && !isNaN(nb)) return na - nb;
+        return a.localeCompare(b);
+      });
+      const n = itemKeys.length;
+      if (n === 0) return '<svg width="100%" height="80"><text x="50%" y="50%" text-anchor="middle" fill="#888">No items</text></svg>';
+
+      const barStep = 24;
+      const padL = 40;
+      const padR = 25;
+      const padT = 25;
+      const padB = 35;
+      const plotW = Math.max(500, n * barStep);
+      const svgW = padL + plotW + padR;
+      const svgH = 220;
+      const plotH = svgH - padT - padB; // 160
+
+      const minY = -0.2;
+      const maxY = 1.0;
+      const ySpan = maxY - minY; // 1.2
+      const getY = (val) => padT + (1 - (val - minY) / ySpan) * plotH;
+      const yZero = getY(0.0);
+      const yCutoff = getY(0.20);
+      const yGood = getY(0.30);
+
+      let guideSvg = '';
+      [-0.2, 0.0, 0.2, 0.4, 0.6, 0.8, 1.0].forEach(val => {
+        const y = getY(val);
+        guideSvg += `<line x1="${padL}" y1="${y.toFixed(1)}" x2="${(padL + plotW).toFixed(1)}" y2="${y.toFixed(1)}" stroke="#333842" stroke-width="0.7" stroke-dasharray="2 3" />`;
+        guideSvg += `<text x="${padL - 6}" y="${(y + 3).toFixed(1)}" text-anchor="end" font-size="9" fill="#888">${val.toFixed(1)}</text>`;
+      });
+
+      guideSvg += `<line x1="${padL}" y1="${yZero.toFixed(1)}" x2="${(padL + plotW).toFixed(1)}" y2="${yZero.toFixed(1)}" stroke="#666" stroke-width="1.2" />`;
+      guideSvg += `<line x1="${padL}" y1="${yCutoff.toFixed(1)}" x2="${(padL + plotW).toFixed(1)}" y2="${yCutoff.toFixed(1)}" stroke="#f59e0b" stroke-width="1.2" stroke-dasharray="3 3" />`;
+      guideSvg += `<text x="${padL + plotW - 6}" y="${(yCutoff - 4).toFixed(1)}" text-anchor="end" font-size="9" fill="#f59e0b" font-weight="600">Cutoff: 0.20</text>`;
+      guideSvg += `<line x1="${padL}" y1="${yGood.toFixed(1)}" x2="${(padL + plotW).toFixed(1)}" y2="${yGood.toFixed(1)}" stroke="#10b981" stroke-width="1" stroke-dasharray="3 3" />`;
+      guideSvg += `<text x="${padL + plotW - 6}" y="${(yGood - 4).toFixed(1)}" text-anchor="end" font-size="9" fill="#10b981" font-weight="600">Good: 0.30</text>`;
+
+      const barW = 16;
+      let barsSvg = '';
+      itemKeys.forEach((k, idx) => {
+        const item = itemStats[k];
+        const r = Math.max(-0.2, Math.min(1.0, item.discrimination));
+        const bx = padL + idx * barStep + 4;
+        const yVal = getY(r);
+        const bh = Math.abs(yVal - yZero);
+        const by = r >= 0 ? yVal : yZero;
+
+        let fill = '#10b981';
+        if (r < 0.20) fill = '#ef4444';
+        else if (r < 0.30) fill = '#3b82f6';
+
+        barsSvg += `
+          <g class="chart-bar-group" data-item="${k}">
+            <title>Item #${k} (Key: ${item.correctAnswer}): Discrimination r_pbis = ${r.toFixed(3)}</title>
+            <rect x="${bx.toFixed(1)}" y="${by.toFixed(1)}" width="${barW}" height="${Math.max(2, bh).toFixed(1)}" fill="${fill}" rx="2" />
+            <text x="${(bx + barW / 2).toFixed(1)}" y="${padT + plotH + 14}" text-anchor="middle" font-size="9" fill="#888">${k}</text>
+            <text x="${(bx + barW / 2).toFixed(1)}" y="${(r >= 0 ? by - 3 : by + bh + 9).toFixed(1)}" text-anchor="middle" font-size="8" fill="#aaa" font-weight="600">${r.toFixed(2)}</text>
+          </g>
+        `;
+      });
+
+      return `
+        <svg viewBox="0 0 ${svgW} ${svgH}" width="${svgW}" height="${svgH}" style="min-width: 100%; height: auto; display: block;" role="img" aria-label="Item Discrimination Chart">
+          ${guideSvg}
+          ${barsSvg}
+        </svg>
+      `;
     }
 
     // Draw Blank Printable Exam Sheet onto Canvas
@@ -2233,65 +2670,462 @@
       downloadFile(filename, JSON.stringify(tpl, null, 2), 'application/json');
     };
 
-    // View / Edit Answer Key Modal
-    $('btn-edit-key').onclick = () => {
+    // ---- Interactive Visual Answer Key Editor (Parity with Sheet Builder) ----
+    const currentModalKey = { items: {}, passScore: 0 };
+
+    function openAnswerKeyModal() {
       ensureActiveLayout();
-      if (!state.key || !state.key.items) {
-        alert('Please select a preset layout or upload an answer key first.');
+      if (!state.layout) {
+        alert('Please select a preset layout or upload a custom layout first.');
         return;
       }
-      const tbody = $('key-editor-tbody');
-      const itemKeys = Object.keys(state.key.items).sort((a, b) => {
-        const na = Number(a), nb = Number(b);
-        if (!isNaN(na) && !isNaN(nb)) return na - nb;
-        return a.localeCompare(b);
+
+      currentModalKey.items = {};
+      const existingItems = (state.key && state.key.items) ? state.key.items : {};
+
+      // 1. If layout has zones with groups/rois (from Sheet Builder)
+      if (Array.isArray(state.layout.zones) && state.layout.zones.length > 0) {
+        for (const zone of state.layout.zones) {
+          for (const g of (zone.groups || []).filter(g => g.kind === 'mcq' || g.kind === 'tf')) {
+            const k = String(g.key);
+            const existing = existingItems[k];
+            const defaultAns = (g.options && g.options[0]?.value) || (g.kind === 'tf' ? 'T' : 'A');
+            const existingAns = typeof existing === 'object' && existing !== null && existing.answer !== undefined
+              ? existing.answer
+              : (typeof existing === 'string' || typeof existing === 'number' ? String(existing) : null);
+            const existingPts = typeof existing === 'object' && existing !== null && existing.points !== undefined
+              ? Number(existing.points)
+              : null;
+
+            currentModalKey.items[k] = {
+              answer: existingAns ?? defaultAns,
+              points: existingPts ?? Number(g.points || 1),
+              kind: g.kind,
+              options: (g.options || []).map(o => typeof o === 'object' ? (o.value || 'A') : o),
+              label: g.label || k,
+              zoneLabel: zone.label || zone.type?.toUpperCase() || 'Questions',
+              zoneCols: zone.columns ? Math.min(4, Math.max(1, zone.columns)) : 3
+            };
+          }
+          for (const r of (zone.rois || []).filter(r => r.graded)) {
+            const k = String(r.key);
+            const existing = existingItems[k];
+            const defaultAns = r.role === 'correction' ? 'Correction' : 'Sample Answer';
+            const existingAns = typeof existing === 'object' && existing !== null && existing.answer !== undefined
+              ? existing.answer
+              : (typeof existing === 'string' || typeof existing === 'number' ? String(existing) : null);
+            const existingPts = typeof existing === 'object' && existing !== null && existing.points !== undefined
+              ? Number(existing.points)
+              : null;
+
+            currentModalKey.items[k] = {
+              answer: existingAns ?? defaultAns,
+              points: existingPts ?? Number(r.points || 1),
+              kind: 'text',
+              label: r.label || k,
+              zoneLabel: zone.label || zone.type?.toUpperCase() || 'Handwriting / Short Answer',
+              zoneCols: 1
+            };
+          }
+        }
+      }
+
+      // 2. If layout has bubbles or legacy bubbles (e.g. presets or uploaded layout without raw zones)
+      if (Object.keys(currentModalKey.items).length === 0) {
+        const itemChoicesMap = {};
+        for (const b of (state.layout.bubbles || [])) {
+          if (b.item && !b.item.startsWith('sid[')) {
+            const k = String(b.item);
+            if (!itemChoicesMap[k]) itemChoicesMap[k] = [];
+            if (b.choice && !itemChoicesMap[k].includes(b.choice)) {
+              itemChoicesMap[k].push(b.choice);
+            }
+          }
+        }
+        for (const k of Object.keys(existingItems)) {
+          if (!itemChoicesMap[k]) itemChoicesMap[k] = ['A', 'B', 'C', 'D'];
+        }
+
+        const sortedKeys = Object.keys(itemChoicesMap).sort((a, b) => {
+          const na = Number(a), nb = Number(b);
+          if (!isNaN(na) && !isNaN(nb)) return na - nb;
+          return a.localeCompare(b);
+        });
+
+        // Group into sections of 25 items for neat organization
+        for (let i = 0; i < sortedKeys.length; i++) {
+          const k = sortedKeys[i];
+          const existing = existingItems[k];
+          const rawChoices = itemChoicesMap[k] && itemChoicesMap[k].length > 0 ? itemChoicesMap[k] : ['A', 'B', 'C', 'D'];
+          const isTF = (existing && (existing.kind === 'tf' || existing.answer === 'T' || existing.answer === 'F')) ||
+                       (rawChoices.includes('T') && rawChoices.includes('F') && rawChoices.length <= 2);
+          const opts = isTF ? ['T', 'F'] : (rawChoices.length > 0 ? rawChoices : ['A', 'B', 'C', 'D']);
+          const defaultAns = isTF ? 'T' : opts[0];
+          const existingAns = typeof existing === 'object' && existing !== null && existing.answer !== undefined
+            ? existing.answer
+            : (typeof existing === 'string' || typeof existing === 'number' ? String(existing) : null);
+          const existingPts = typeof existing === 'object' && existing !== null && existing.points !== undefined
+            ? Number(existing.points)
+            : 1;
+
+          const sectionNum = Math.floor(i / 25) + 1;
+          const sectionStart = (sectionNum - 1) * 25 + 1;
+          const sectionEnd = Math.min(sortedKeys.length, sectionNum * 25);
+          const zoneLabel = sortedKeys.length > 25 ? `Questions ${sectionStart}–${sectionEnd}` : 'Multiple Choice & True/False Questions';
+
+          currentModalKey.items[k] = {
+            answer: existingAns ?? defaultAns,
+            points: existingPts ?? 1,
+            kind: isTF ? 'tf' : 'mcq',
+            options: opts,
+            label: k,
+            zoneLabel,
+            zoneCols: 3
+          };
+        }
+      }
+
+      // Calculate total points and passScore
+      let totalPts = 0;
+      for (const it of Object.values(currentModalKey.items)) {
+        totalPts += Number(it.points || 1);
+      }
+      currentModalKey.passScore = state.key?.pass_score ?? Math.round(totalPts * 0.6);
+
+      renderAnswerKeyModalContent();
+      $('modal-key-editor').showModal();
+    }
+
+    function renderAnswerKeyModalContent() {
+      const container = $('key-items-container');
+      if (!container) return;
+
+      const totalItems = Object.keys(currentModalKey.items).length;
+      let totalPoints = 0;
+      for (const it of Object.values(currentModalKey.items)) {
+        totalPoints += Number(it.points || 1);
+      }
+
+      if ($('key-metric-count')) $('key-metric-count').textContent = String(totalItems);
+      if ($('key-metric-points')) $('key-metric-points').textContent = String(totalPoints);
+      if ($('key-passing-input')) $('key-passing-input').value = currentModalKey.passScore;
+
+      if (totalItems === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; color: var(--text-muted); padding: 2rem;">
+            <p>No questions found on the active layout.</p>
+            <p style="font-size: 0.8rem;">Select a preset or upload a layout to configure answers.</p>
+          </div>
+        `;
+        return;
+      }
+
+      // Preflight discrepancy check
+      const layoutItemKeys = new Set();
+      if (Array.isArray(state.layout.zones) && state.layout.zones.length > 0) {
+        for (const z of state.layout.zones) {
+          for (const g of (z.groups || []).filter(g => g.kind === 'mcq' || g.kind === 'tf')) {
+            layoutItemKeys.add(String(g.key));
+          }
+          for (const r of (z.rois || []).filter(r => r.graded)) {
+            layoutItemKeys.add(String(r.key));
+          }
+        }
+      } else {
+        for (const b of (state.layout.bubbles || [])) {
+          if (b.item && !b.item.startsWith('sid[')) layoutItemKeys.add(String(b.item));
+        }
+      }
+
+      const missingInKey = [];
+      for (const k of layoutItemKeys) {
+        if (!currentModalKey.items[k] || !currentModalKey.items[k].answer) {
+          missingInKey.push(k);
+        }
+      }
+      const extraInKey = [];
+      for (const k of Object.keys(currentModalKey.items)) {
+        if (layoutItemKeys.size > 0 && !layoutItemKeys.has(k)) {
+          extraInKey.push(k);
+        }
+      }
+
+      let discrepancyHtml = '';
+      if (missingInKey.length > 0 || extraInKey.length > 0) {
+        let msg = '';
+        if (missingInKey.length > 0) {
+          msg += `<strong>${missingInKey.length} questions</strong> on sheet have no answer set (${missingInKey.slice(0, 4).join(', ')}${missingInKey.length > 4 ? '...' : ''}). `;
+        }
+        if (extraInKey.length > 0) {
+          msg += `Key contains ${extraInKey.length} extra items (${extraInKey.slice(0, 3).join(', ')}) not on current layout. `;
+        }
+        discrepancyHtml = `
+          <div class="key-discrepancy-banner">
+            <div>
+              <span style="font-weight: 700;">⚠️ Layout &amp; Key Discrepancy:</span>
+              <span>${msg}</span>
+            </div>
+            <button type="button" class="btn btn--secondary btn-xs" id="btn-sync-key-sheet" title="Auto-fill default answers for all sheet questions and remove orphaned items">
+              Auto-Sync with Sheet
+            </button>
+          </div>
+        `;
+      }
+
+      // Group items by zoneLabel
+      const sectionsMap = new Map();
+      for (const [k, item] of Object.entries(currentModalKey.items)) {
+        const sec = item.zoneLabel || 'Questions';
+        if (!sectionsMap.has(sec)) sectionsMap.set(sec, { cols: item.zoneCols || 3, items: [] });
+        sectionsMap.get(sec).items.push({ k, ...item });
+      }
+
+      let html = discrepancyHtml;
+      for (const [secTitle, secData] of sectionsMap.entries()) {
+        html += `
+          <div class="key-section-card">
+            <h4 class="key-section-title">${secTitle}</h4>
+            <div class="key-matrix-grid" style="column-count: ${secData.cols};">
+        `;
+
+        for (const item of secData.items) {
+          const k = item.k;
+          const currentAns = String(item.answer || '');
+          const pts = item.points ?? 1;
+
+          if (item.kind === 'text') {
+            html += `
+              <div class="key-item-cell" data-key="${k}" style="grid-column: 1 / -1; display: flex; gap: 0.5rem;">
+                <span class="key-item-num">${item.label || k}:</span>
+                <input type="text" class="key-text-input" data-key="${k}" value="${currentAns}" placeholder="Accepted answer">
+                <input type="number" class="key-pts-input" data-key="${k}" value="${pts}" min="0.5" max="50" step="0.5" title="Points">
+              </div>
+            `;
+          } else {
+            const opts = item.options || ['A', 'B', 'C', 'D'];
+            html += `
+              <div class="key-item-cell" data-key="${k}">
+                <span class="key-item-num">${k}.</span>
+                <div class="key-bubbles-row">
+                  ${opts.map(opt => `
+                    <button type="button" class="key-bubble-btn ${currentAns === opt ? 'is-active' : ''}" data-key="${k}" data-val="${opt}">${opt}</button>
+                  `).join('')}
+                </div>
+                <input type="number" class="key-pts-input" data-key="${k}" value="${pts}" min="0.5" max="50" step="0.5" title="Points">
+              </div>
+            `;
+          }
+        }
+
+        html += `
+            </div>
+          </div>
+        `;
+      }
+
+      container.innerHTML = html;
+
+      // Event listener: bubble buttons
+      container.querySelectorAll('.key-bubble-btn').forEach(btn => {
+        btn.onclick = () => {
+          const k = btn.dataset.key;
+          const val = btn.dataset.val;
+          if (currentModalKey.items[k]) {
+            currentModalKey.items[k].answer = val;
+            const cell = btn.closest('.key-item-cell');
+            if (cell) {
+              cell.querySelectorAll('.key-bubble-btn').forEach(b => b.classList.remove('is-active'));
+              btn.classList.add('is-active');
+            }
+          }
+        };
       });
 
-      tbody.innerHTML = itemKeys.map(k => {
-        const it = state.key.items[k];
-        const kind = it.kind || 'mcq';
-        const ans = it.answer ?? '';
-        const pts = it.points ?? 1;
-        return `
-          <tr data-item="${k}">
-            <td><strong>#${k}</strong></td>
-            <td><span style="font-size:0.75rem; text-transform:uppercase; color:var(--text-muted);">${kind}</span></td>
-            <td>
-              <input type="text" class="key-edit-ans" value="${ans}" maxlength="10" style="width: 100%; max-width: 120px; padding: 0.25rem 0.5rem; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--panel); color: var(--text); font-weight: 700; text-transform: uppercase;">
-            </td>
-            <td>
-              <input type="number" class="key-edit-pts" value="${pts}" min="0" max="50" step="0.5" style="width: 70px; padding: 0.25rem 0.5rem; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--panel); color: var(--text);">
-            </td>
-          </tr>
-        `;
-      }).join('');
+      // Event listener: points inputs
+      container.querySelectorAll('.key-pts-input').forEach(input => {
+        input.oninput = () => {
+          const k = input.dataset.key;
+          const pts = Math.max(0.5, parseFloat(input.value) || 1);
+          if (currentModalKey.items[k]) {
+            currentModalKey.items[k].points = pts;
+            let newTotal = 0;
+            for (const it of Object.values(currentModalKey.items)) newTotal += Number(it.points || 1);
+            if ($('key-metric-points')) $('key-metric-points').textContent = String(newTotal);
+            if (!$('key-passing-input')?.dataset.userEdited) {
+              currentModalKey.passScore = Math.round(newTotal * 0.6);
+              if ($('key-passing-input')) $('key-passing-input').value = currentModalKey.passScore;
+            }
+          }
+        };
+      });
 
-      $('key-editor-status').textContent = `Total: ${itemKeys.length} items`;
-      $('modal-key-editor').showModal();
-    };
+      // Event listener: text inputs
+      container.querySelectorAll('.key-text-input').forEach(input => {
+        input.oninput = () => {
+          const k = input.dataset.key;
+          if (currentModalKey.items[k]) {
+            currentModalKey.items[k].answer = input.value.trim();
+          }
+        };
+      });
 
+      // Event listener: Auto-Sync button
+      container.querySelector('#btn-sync-key-sheet')?.addEventListener('click', () => {
+        layoutItemKeys.forEach(k => {
+          if (!currentModalKey.items[k] || !currentModalKey.items[k].answer) {
+            currentModalKey.items[k] = {
+              answer: 'A',
+              points: 1,
+              kind: 'mcq',
+              options: ['A', 'B', 'C', 'D'],
+              label: k,
+              zoneLabel: 'Questions',
+              zoneCols: 3
+            };
+          }
+        });
+        for (const k of Object.keys(currentModalKey.items)) {
+          if (layoutItemKeys.size > 0 && !layoutItemKeys.has(k)) {
+            delete currentModalKey.items[k];
+          }
+        }
+        renderAnswerKeyModalContent();
+      });
+    }
+
+    // Modal Action Toolbar Handlers
+    $('btn-key-fill-a')?.addEventListener('click', () => {
+      for (const it of Object.values(currentModalKey.items)) {
+        if (it.options?.includes('A')) it.answer = 'A';
+      }
+      renderAnswerKeyModalContent();
+    });
+
+    $('btn-key-fill-t')?.addEventListener('click', () => {
+      for (const it of Object.values(currentModalKey.items)) {
+        if (it.options?.includes('T')) it.answer = 'T';
+      }
+      renderAnswerKeyModalContent();
+    });
+
+    $('btn-key-random')?.addEventListener('click', () => {
+      for (const it of Object.values(currentModalKey.items)) {
+        if (it.options && it.options.length > 0) {
+          it.answer = it.options[Math.floor(Math.random() * it.options.length)];
+        }
+      }
+      renderAnswerKeyModalContent();
+    });
+
+    $('btn-key-clear')?.addEventListener('click', () => {
+      for (const it of Object.values(currentModalKey.items)) {
+        it.answer = '';
+      }
+      renderAnswerKeyModalContent();
+    });
+
+    $('key-file-import')?.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        try {
+          const json = JSON.parse(evt.target.result);
+          const parsed = parseAnswerKey(json);
+          if (parsed && parsed.items) {
+            for (const [k, v] of Object.entries(parsed.items)) {
+              if (currentModalKey.items[k]) {
+                currentModalKey.items[k].answer = v.answer;
+                if (v.points !== undefined) currentModalKey.items[k].points = v.points;
+              } else {
+                currentModalKey.items[k] = {
+                  answer: v.answer,
+                  points: v.points ?? 1,
+                  kind: v.kind || 'mcq',
+                  options: ['A', 'B', 'C', 'D'],
+                  label: k,
+                  zoneLabel: 'Questions',
+                  zoneCols: 3
+                };
+              }
+            }
+            if (json.pass_score !== undefined) {
+              currentModalKey.passScore = Number(json.pass_score);
+            }
+            renderAnswerKeyModalContent();
+          }
+        } catch (err) {
+          alert("Error parsing answer key JSON: " + err.message);
+        }
+      };
+      reader.readAsText(file);
+    });
+
+    $('btn-key-modal-scan')?.addEventListener('click', () => {
+      $('input-key-scan').click();
+    });
+
+    $('key-passing-input')?.addEventListener('input', (e) => {
+      e.target.dataset.userEdited = 'true';
+      currentModalKey.passScore = Math.max(0, parseInt(e.target.value) || 0);
+    });
+
+    $('btn-key-download')?.addEventListener('click', () => {
+      let totalPts = 0;
+      const itemsPayload = {};
+      for (const [k, it] of Object.entries(currentModalKey.items)) {
+        totalPts += Number(it.points || 1);
+        itemsPayload[k] = {
+          kind: it.kind,
+          answer: it.answer,
+          points: Number(it.points || 1)
+        };
+      }
+      const payload = {
+        title: `${state.layout?.title || 'Exam'} Answer Key`,
+        templateId: state.layout?.id || 'exam-key',
+        total_points: totalPts,
+        pass_score: currentModalKey.passScore,
+        items: itemsPayload
+      };
+      const filename = `${(state.layout?.title || 'exam_key').toLowerCase().replace(/[^a-z0-9_-]+/g, '_')}.json`;
+      downloadFile(filename, JSON.stringify(payload, null, 2), 'application/json');
+    });
+
+    $('btn-save-key-editor')?.addEventListener('click', () => {
+      let totalPts = 0;
+      const itemsPayload = {};
+      for (const [k, it] of Object.entries(currentModalKey.items)) {
+        totalPts += Number(it.points || 1);
+        itemsPayload[k] = {
+          kind: it.kind,
+          answer: it.answer,
+          points: Number(it.points || 1)
+        };
+      }
+
+      state.key = {
+        title: `${state.layout?.title || 'Exam'} Answer Key`,
+        templateId: state.layout?.id || 'exam-key',
+        total_points: totalPts,
+        pass_score: currentModalKey.passScore,
+        items: itemsPayload
+      };
+
+      updateKeyDisplay();
+      validatePreflightKeyLayout();
+      $('modal-key-editor').close();
+
+      if (state.scans.length > 0) {
+        $('btn-grade-now').click();
+      }
+    });
+
+    $('btn-edit-key').onclick = openAnswerKeyModal;
     $('btn-close-key-editor').onclick = () => $('modal-key-editor').close();
     $('btn-cancel-key-editor').onclick = () => $('modal-key-editor').close();
     $('modal-key-editor').onclick = (e) => {
       if (e.target === $('modal-key-editor')) $('modal-key-editor').close();
-    };
-
-    $('btn-save-key-editor').onclick = () => {
-      const rows = $$('#key-editor-tbody tr');
-      for (const row of rows) {
-        const k = row.dataset.item;
-        const ansInput = row.querySelector('.key-edit-ans');
-        const ptsInput = row.querySelector('.key-edit-pts');
-        if (state.key.items[k]) {
-          state.key.items[k].answer = ansInput.value.trim().toUpperCase();
-          state.key.items[k].points = parseFloat(ptsInput.value) || 1;
-        }
-      }
-      updateKeyDisplay();
-      $('modal-key-editor').close();
-      if (state.scans.length > 0) {
-        $('btn-grade-now').click();
-      }
     };
 
     // Preset / Custom Layout Switcher
@@ -3160,6 +3994,237 @@
           renderRosterTable();
         };
       });
+
+      // Item Analysis Table Sorting
+      $$('#tab-items th.sortable').forEach(th => {
+        th.onclick = () => {
+          if (!state.results || !state.results.psychometrics) return;
+          const col = th.dataset.sort;
+          let dir = 'asc';
+          if (state.itemAnalysisSort.col === col) {
+            dir = state.itemAnalysisSort.dir === 'asc' ? 'desc' : 'asc';
+          } else if (col === 'difficulty' || col === 'discrimination' || col === 'pts') {
+            dir = 'desc';
+          }
+          state.itemAnalysisSort = { col, dir };
+          updateSortHeaders('#tab-items', col, dir);
+          renderItemAnalysisTable(state.results.psychometrics);
+        };
+      });
+
+      // Item Analysis Category Filters
+      $$('#item-analysis-filters button').forEach(btn => {
+        btn.onclick = () => {
+          $$('#item-analysis-filters button').forEach(b => b.classList.remove('is-active'));
+          btn.classList.add('is-active');
+          state.itemAnalysisFilter = btn.dataset.filter;
+          if (state.results && state.results.psychometrics) {
+            renderItemAnalysisTable(state.results.psychometrics);
+          }
+        };
+      });
+    }
+
+    // Render Comprehensive Item Analysis Dashboard (Metrics, Flagged Questions, SVG Charts)
+    function renderItemAnalysisDashboard(psychometrics) {
+      if (!psychometrics || !psychometrics.itemStats) return;
+
+      const itemStats = psychometrics.itemStats;
+      const itemKeys = Object.keys(itemStats).sort((a, b) => {
+        const na = Number(a), nb = Number(b);
+        if (!isNaN(na) && !isNaN(nb)) return na - nb;
+        return a.localeCompare(b);
+      });
+
+      const nItems = itemKeys.length;
+      if (nItems === 0) return;
+
+      // 1. Calculate Summary Metrics & Identify Flagged Items
+      let sumDiff = 0;
+      let sumDisc = 0;
+      const flaggedItems = [];
+
+      itemKeys.forEach(k => {
+        const it = itemStats[k];
+        sumDiff += it.difficulty;
+        sumDisc += it.discrimination;
+
+        const p = it.difficulty;
+        const r = it.discrimination;
+        const reasons = [];
+
+        if (r < 0) {
+          reasons.push(`Negative discrimination (r = ${r.toFixed(2)}) — higher-scoring students missed this question more often than low scorers. Likely miskeyed or ambiguous question.`);
+        } else if (r < 0.20) {
+          reasons.push(`Low discrimination (r = ${r.toFixed(2)}) — does not effectively distinguish high vs low mastery.`);
+        }
+
+        if (p < 0.20) {
+          reasons.push(`Extreme difficulty (${(p * 100).toFixed(1)}% correct) — over 80% of students missed this question.`);
+        } else if (p > 0.90 && r < 0.20) {
+          reasons.push(`Very easy (${(p * 100).toFixed(1)}% correct) with minimal discrimination.`);
+        }
+
+        if (reasons.length > 0) {
+          flaggedItems.push({
+            key: k,
+            item: it,
+            reasons
+          });
+        }
+      });
+
+      const avgDiff = (sumDiff / nItems) * 100;
+      const avgDisc = sumDisc / nItems;
+
+      if ($('analysis-stat-diff')) $('analysis-stat-diff').textContent = `${avgDiff.toFixed(1)}%`;
+      if ($('analysis-stat-disc')) $('analysis-stat-disc').textContent = avgDisc.toFixed(3);
+      if ($('analysis-stat-flagged')) $('analysis-stat-flagged').textContent = String(flaggedItems.length);
+      if ($('analysis-stat-alpha')) $('analysis-stat-alpha').textContent = psychometrics.cronbachAlpha.toFixed(3);
+
+      // 2. Render Flagged Questions Callout Card
+      const reviewBox = $('analysis-review-box');
+      const reviewBadge = $('analysis-review-count-badge');
+      const reviewList = $('analysis-review-items-list');
+
+      if (reviewBox && reviewList) {
+        if (flaggedItems.length > 0) {
+          reviewBox.style.display = 'block';
+          if (reviewBadge) reviewBadge.textContent = `${flaggedItems.length} Flagged`;
+          reviewList.innerHTML = flaggedItems.map(f => `
+            <div style="background: var(--panel); border: 1px solid var(--border); padding: 0.6rem 0.85rem; border-radius: var(--radius-sm); display: flex; align-items: flex-start; justify-content: space-between; gap: 0.75rem;">
+              <div>
+                <span style="font-weight: 700; color: var(--warning); margin-right: 0.5rem;">Question #${f.key} (Key: ${f.item.correctAnswer})</span>
+                <span style="color: var(--text-muted); font-size: 0.75rem; margin-right: 0.5rem;">[P = ${(f.item.difficulty * 100).toFixed(1)}%, r = ${f.item.discrimination.toFixed(2)}]</span>
+                <div style="margin-top: 0.25rem; color: var(--text); font-size: 0.78rem; line-height: 1.4;">${f.reasons.join(' • ')}</div>
+              </div>
+              <button type="button" class="btn btn--secondary btn-xs" onclick="openAnswerKeyModal();" style="white-space: nowrap; flex-shrink: 0;">Check Key</button>
+            </div>
+          `).join('');
+        } else {
+          reviewBox.style.display = 'none';
+        }
+      }
+
+      // 3. Render SVG Charts
+      if ($('chart-item-difficulty-container')) {
+        $('chart-item-difficulty-container').innerHTML = getItemDifficultyChartSVG(itemStats);
+      }
+      if ($('chart-item-discrimination-container')) {
+        $('chart-item-discrimination-container').innerHTML = getItemDiscriminationChartSVG(itemStats);
+      }
+
+      // 4. Update Header Labels for Pure TF vs MCQ
+      const allTF = Object.values(state.key.items).every(it => it.kind === 'tf' || it.kind === 'modified_tf' || it.answer === 'T' || it.answer === 'F');
+      const hasTF = Object.values(state.key.items).some(it => it.kind === 'tf' || it.kind === 'modified_tf' || it.answer === 'T' || it.answer === 'F');
+
+      if ($('th-d1')) $('th-d1').textContent = allTF ? 'T' : (hasTF ? 'A (T)' : 'A');
+      if ($('th-d2')) $('th-d2').textContent = allTF ? 'F' : (hasTF ? 'B (F)' : 'B');
+      if ($('th-d3')) $('th-d3').textContent = allTF ? '—' : 'C';
+      if ($('th-d4')) $('th-d4').textContent = allTF ? '—' : 'D';
+      if ($('th-d5')) $('th-d5').textContent = allTF ? '—' : 'E';
+
+      state._flaggedItems = flaggedItems;
+      renderItemAnalysisTable(psychometrics);
+    }
+
+    // Render Filtered and Sorted Item Analysis Table
+    function renderItemAnalysisTable(psychometrics) {
+      if (!psychometrics || !psychometrics.itemStats) return;
+      const flaggedSet = new Set((state._flaggedItems || []).map(f => f.key));
+      const filter = state.itemAnalysisFilter || 'all';
+      const sort = state.itemAnalysisSort || { col: 'item', dir: 'asc' };
+
+      let keys = Object.keys(psychometrics.itemStats);
+
+      // Filtering
+      if (filter === 'review') {
+        keys = keys.filter(k => flaggedSet.has(k));
+      } else if (filter === 'hard') {
+        keys = keys.filter(k => psychometrics.itemStats[k].difficulty < 0.50);
+      } else if (filter === 'disc') {
+        keys = keys.filter(k => psychometrics.itemStats[k].discrimination < 0.20);
+      }
+
+      // Sorting
+      keys.sort((a, b) => {
+        let valA, valB;
+        if (sort.col === 'pts') {
+          valA = psychometrics.itemStats[a].points;
+          valB = psychometrics.itemStats[b].points;
+        } else if (sort.col === 'difficulty') {
+          valA = psychometrics.itemStats[a].difficulty;
+          valB = psychometrics.itemStats[b].difficulty;
+        } else if (sort.col === 'discrimination') {
+          valA = psychometrics.itemStats[a].discrimination;
+          valB = psychometrics.itemStats[b].discrimination;
+        } else {
+          // item #
+          valA = Number(a);
+          valB = Number(b);
+          if (isNaN(valA) || isNaN(valB)) {
+            valA = a;
+            valB = b;
+            return sort.dir === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+          }
+        }
+        return sort.dir === 'asc' ? (valA - valB) : (valB - valA);
+      });
+
+      if (keys.length === 0) {
+        $('tbody-items').innerHTML = `<tr><td colspan="11" style="text-align: center; padding: 2rem; color: var(--text-muted);">No questions match the selected filter.</td></tr>`;
+        return;
+      }
+
+      $('tbody-items').innerHTML = keys.map(k => {
+        const item = psychometrics.itemStats[k];
+        const keyItem = state.key.items[k] || {};
+        const isItemTF = (keyItem.kind === 'tf' || keyItem.kind === 'modified_tf' || item.correctAnswer === 'T' || item.correctAnswer === 'F');
+
+        let d1, d2, d3, d4, d5;
+        if (isItemTF) {
+          d1 = item.distractors.T || 0;
+          d2 = item.distractors.F || 0;
+          d3 = '—';
+          d4 = '—';
+          d5 = '—';
+        } else {
+          d1 = item.distractors.A || 0;
+          d2 = item.distractors.B || 0;
+          d3 = item.distractors.C || 0;
+          d4 = item.distractors.D || 0;
+          d5 = item.distractors.E || 0;
+        }
+
+        let diagBadge = '<span style="color: var(--success); font-weight: 600; font-size: 0.76rem;">● Optimal</span>';
+        if (item.discrimination < 0) {
+          diagBadge = '<span style="color: var(--danger); font-weight: 700; font-size: 0.76rem;">⚠️ Negative Disc</span>';
+        } else if (item.discrimination < 0.20) {
+          diagBadge = '<span style="color: var(--warning); font-weight: 600; font-size: 0.76rem;">⚠️ Low Disc</span>';
+        } else if (item.difficulty < 0.20) {
+          diagBadge = '<span style="color: var(--danger); font-weight: 600; font-size: 0.76rem;">● Very Hard</span>';
+        } else if (item.difficulty > 0.85) {
+          diagBadge = '<span style="color: var(--primary); font-weight: 600; font-size: 0.76rem;">● Very Easy</span>';
+        }
+
+        return `
+          <tr>
+            <td><strong>#${k}</strong></td>
+            <td><code>${item.correctAnswer}</code></td>
+            <td>${item.points}</td>
+            <td>${(item.difficulty * 100).toFixed(1)}%</td>
+            <td style="color: ${item.discrimination >= 0.3 ? 'var(--success)' : (item.discrimination < 0.15 ? 'var(--danger)' : 'var(--text)')}; font-weight: 700;">
+              ${item.discrimination.toFixed(3)}
+            </td>
+            <td>${d1}</td>
+            <td>${d2}</td>
+            <td>${d3}</td>
+            <td>${d4}</td>
+            <td>${d5}</td>
+            <td>${diagBadge}</td>
+          </tr>
+        `;
+      }).join('');
     }
 
     // Render Graded Results
@@ -3213,59 +4278,8 @@
         inspectStudent(state.selectedStudentIdx);
       };
 
-      // Item Psychometrics Table: dynamically adjust columns for MCQ vs True/False
-      const allTF = Object.values(state.key.items).every(it => it.kind === 'tf' || it.kind === 'modified_tf' || it.answer === 'T' || it.answer === 'F');
-      const hasTF = Object.values(state.key.items).some(it => it.kind === 'tf' || it.kind === 'modified_tf' || it.answer === 'T' || it.answer === 'F');
-
-      if ($('th-d1')) $('th-d1').textContent = allTF ? 'T' : (hasTF ? 'A (T)' : 'A');
-      if ($('th-d2')) $('th-d2').textContent = allTF ? 'F' : (hasTF ? 'B (F)' : 'B');
-      if ($('th-d3')) $('th-d3').textContent = allTF ? '—' : 'C';
-      if ($('th-d4')) $('th-d4').textContent = allTF ? '—' : 'D';
-      if ($('th-d5')) $('th-d5').textContent = allTF ? '—' : 'E';
-
-      const itemKeys = Object.keys(psychometrics.itemStats).sort((a, b) => {
-        const na = Number(a), nb = Number(b);
-        if (!isNaN(na) && !isNaN(nb)) return na - nb;
-        return a.localeCompare(b);
-      });
-
-      $('tbody-items').innerHTML = itemKeys.map(k => {
-        const item = psychometrics.itemStats[k];
-        const keyItem = state.key.items[k] || {};
-        const isItemTF = (keyItem.kind === 'tf' || keyItem.kind === 'modified_tf' || item.correctAnswer === 'T' || item.correctAnswer === 'F');
-
-        let d1, d2, d3, d4, d5;
-        if (isItemTF) {
-          d1 = item.distractors.T || 0;
-          d2 = item.distractors.F || 0;
-          d3 = '—';
-          d4 = '—';
-          d5 = '—';
-        } else {
-          d1 = item.distractors.A || 0;
-          d2 = item.distractors.B || 0;
-          d3 = item.distractors.C || 0;
-          d4 = item.distractors.D || 0;
-          d5 = item.distractors.E || 0;
-        }
-
-        return `
-          <tr>
-            <td><strong>#${k}</strong></td>
-            <td><code>${item.correctAnswer}</code></td>
-            <td>${item.points}</td>
-            <td>${(item.difficulty * 100).toFixed(1)}%</td>
-            <td style="color: ${item.discrimination >= 0.3 ? 'var(--success)' : (item.discrimination < 0.15 ? 'var(--danger)' : 'var(--text)')}; font-weight: 700;">
-              ${item.discrimination.toFixed(3)}
-            </td>
-            <td>${d1}</td>
-            <td>${d2}</td>
-            <td>${d3}</td>
-            <td>${d4}</td>
-            <td>${d5}</td>
-          </tr>
-        `;
-      }).join('');
+      // Item Psychometrics Table & Visual Dashboard
+      renderItemAnalysisDashboard(psychometrics);
 
       // Enable Export Buttons
       $('btn-export-csv').disabled = false;
@@ -3636,13 +4650,15 @@
       }
     };
 
-    // Export CSV
+    // Export CSV with Review Status and Reasons
     $('btn-export-csv').onclick = () => {
       if (!state.results) return;
       const csv = [
-        ["Exam ID", "Student ID", "Student Name", "Raw Score", "Max Score", "Percentage", "Status"].join(",")
+        ["Exam ID", "Student ID", "Student Name", "Raw Score", "Max Score", "Percentage", "Status", "Review Status", "Review Reasons"].join(",")
       ];
       state.results.grades.forEach(g => {
+        const needsReview = g.reviewFlags && g.reviewFlags.needsReview;
+        const reasons = needsReview ? (g.reviewFlags.reasons || []).join(" | ") : "";
         csv.push([
           `"${g.examId}"`,
           `"${g.studentId}"`,
@@ -3650,57 +4666,151 @@
           g.rawScore.toFixed(2),
           g.maxScore.toFixed(2),
           g.percentage.toFixed(2),
-          g.percentage >= state.results.passThreshold ? "PASS" : "FAIL"
+          g.percentage >= state.results.passThreshold ? "PASS" : "FAIL",
+          needsReview ? "NEEDS_REVIEW" : "VERIFIED",
+          `"${reasons}"`
         ].join(","));
       });
       downloadFile("grades_summary.csv", csv.join("\n"), "text/csv");
     };
 
-    // Export HTML Report
+    // Export Comprehensive HTML Report with Embedded Vector SVG Graphs
     $('btn-export-html').onclick = () => {
       if (!state.results) return;
-      const { psychometrics, grades } = state.results;
+      const { psychometrics, grades, passThreshold } = state.results;
+      const bellCurveSvg = generateBellCurveSVG(grades, passThreshold);
+      const difficultySvg = getItemDifficultyChartSVG(psychometrics.itemStats);
+      const discriminationSvg = getItemDiscriminationChartSVG(psychometrics.itemStats);
+
+      const passCount = grades.filter(g => g.percentage >= passThreshold).length;
+      const failCount = grades.length - passCount;
+      const passRate = grades.length > 0 ? ((passCount / grades.length) * 100).toFixed(1) : 0;
+
+      const itemKeys = Object.keys(psychometrics.itemStats).sort((a, b) => {
+        const na = Number(a), nb = Number(b);
+        if (!isNaN(na) && !isNaN(nb)) return na - nb;
+        return a.localeCompare(b);
+      });
+
+      const flaggedItems = [];
+      itemKeys.forEach(k => {
+        const it = psychometrics.itemStats[k];
+        const reasons = [];
+        if (it.discrimination < 0) reasons.push(`Negative discrimination (r = ${it.discrimination.toFixed(2)}) — higher scorers missed more frequently`);
+        else if (it.discrimination < 0.20) reasons.push(`Low discrimination (r = ${it.discrimination.toFixed(2)})`);
+        if (it.difficulty < 0.20) reasons.push(`Extremely hard (P = ${(it.difficulty * 100).toFixed(1)}%)`);
+        else if (it.difficulty > 0.90 && it.discrimination < 0.20) reasons.push(`Very easy (P = ${(it.difficulty * 100).toFixed(1)}%) with minimal discrimination`);
+        if (reasons.length > 0) flaggedItems.push({ key: k, item: it, reasons });
+      });
+
       const html = `<!doctype html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Item Analysis Report — ${state.key.title}</title>
+  <title>Assessment & Psychometrics Report — ${state.key.title}</title>
   <style>
-    body { font-family: sans-serif; padding: 2rem; max-width: 900px; margin: 0 auto; color: #222; }
-    h1 { margin-bottom: 0.25rem; }
-    .metrics { display: flex; gap: 1rem; margin: 1.5rem 0; }
-    .metric { background: #f4f6f8; padding: 1rem; border-radius: 8px; flex: 1; }
-    .metric b { display: block; font-size: 1.5rem; color: #1a5fd0; }
-    table { width: 100%; border-collapse: collapse; margin-top: 1rem; font-size: 14px; }
-    th, td { border: 1px solid #ddd; padding: 8px 12px; text-align: left; }
-    th { background: #f0f3f6; }
+    :root { color-scheme: light dark; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 2.5rem; max-width: 1040px; margin: 0 auto; color: #1e293b; background: #fff; line-height: 1.5; }
+    @media (prefers-color-scheme: dark) {
+      body { background: #0f172a; color: #f1f5f9; }
+      .metric, .card, .chart-card { background: #1e293b !important; border-color: #334155 !important; }
+      th { background: #1e293b !important; color: #cbd5e1 !important; border-color: #334155 !important; }
+      td { border-color: #334155 !important; }
+      .alert-box { background: rgba(245, 158, 11, 0.12) !important; border-color: rgba(245, 158, 11, 0.3) !important; color: #fbbf24 !important; }
+    }
+    h1 { margin: 0 0 0.35rem 0; font-size: 1.75rem; font-weight: 800; letter-spacing: -0.02em; }
+    .subtitle { color: #64748b; font-size: 0.9rem; margin-bottom: 2rem; }
+    .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+    .metric { background: #f8fafc; border: 1px solid #e2e8f0; padding: 1.1rem; border-radius: 10px; }
+    .metric span { display: block; font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: #64748b; margin-bottom: 0.35rem; }
+    .metric b { display: block; font-size: 1.7rem; font-weight: 800; color: #0284c7; }
+    .metric small { display: block; font-size: 0.75rem; color: #94a3b8; margin-top: 0.25rem; }
+    .card, .chart-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 1.25rem; margin-bottom: 2rem; }
+    .chart-card h2 { margin: 0 0 0.85rem 0; font-size: 1.05rem; font-weight: 700; }
+    .charts-grid { display: grid; grid-template-columns: 1fr; gap: 1.5rem; margin-bottom: 2rem; }
+    .alert-box { background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 2rem; color: #b45309; }
+    table { width: 100%; border-collapse: collapse; margin-top: 1rem; font-size: 13px; }
+    th, td { border: 1px solid #e2e8f0; padding: 8px 10px; text-align: left; }
+    th { background: #f1f5f9; font-weight: 700; color: #475569; }
+    code { font-family: monospace; font-weight: 700; }
+    @media print {
+      body { padding: 0.5cm; max-width: 100%; }
+      .chart-card { break-inside: avoid; }
+    }
   </style>
 </head>
 <body>
-  <h1>Item Analysis Report</h1>
-  <p>${state.key.title} &bull; Generated by Instructor Essentials — Checker Studio</p>
+  <h1>Assessment & Psychometrics Report</h1>
+  <div class="subtitle">${state.key.title} &bull; Generated by Instructor Essentials &bull; ${new Date().toLocaleDateString(undefined, { dateStyle: 'long' })}</div>
+
   <div class="metrics">
-    <div class="metric"><span>Mean Score</span><b>${psychometrics.meanScore.toFixed(1)}</b></div>
-    <div class="metric"><span>Cronbach's Alpha (α)</span><b>${psychometrics.cronbachAlpha.toFixed(3)}</b></div>
-    <div class="metric"><span>Total Graded</span><b>${psychometrics.count}</b></div>
+    <div class="metric"><span>Total Graded</span><b>${grades.length}</b><small>Completed student scans</small></div>
+    <div class="metric"><span>Average Score</span><b>${psychometrics.meanScore.toFixed(1)} / ${psychometrics.totalPossible.toFixed(1)}</b><small>${((psychometrics.meanScore / psychometrics.totalPossible) * 100).toFixed(1)}% class average</small></div>
+    <div class="metric"><span>Pass Rate</span><b>${passRate}%</b><small>${passCount} passed / ${failCount} failed (cutoff: ${passThreshold}%)</small></div>
+    <div class="metric"><span>Reliability (α)</span><b>${psychometrics.cronbachAlpha.toFixed(3)}</b><small>Cronbach's Alpha consistency</small></div>
   </div>
-  <h2>Item Statistics</h2>
-  <table>
-    <thead><tr><th>Item</th><th>Key</th><th>Difficulty (P)</th><th>Discrimination (r_pbis)</th></tr></thead>
-    <tbody>
-      ${Object.keys(psychometrics.itemStats).map(k => `
-        <tr>
-          <td>#${k}</td>
-          <td>${psychometrics.itemStats[k].correctAnswer}</td>
-          <td>${(psychometrics.itemStats[k].difficulty * 100).toFixed(1)}%</td>
-          <td>${psychometrics.itemStats[k].discrimination.toFixed(3)}</td>
-        </tr>
+
+  <div class="chart-card">
+    <h2>Scores Distribution &amp; Bell Curve</h2>
+    <div style="overflow-x: auto;">${bellCurveSvg}</div>
+  </div>
+
+  ${flaggedItems.length > 0 ? `
+  <div class="alert-box">
+    <h3 style="margin: 0 0 0.5rem 0; font-size: 0.95rem; font-weight: 700;">⚠️ Questions Flagged for Review (${flaggedItems.length})</h3>
+    <ul style="margin: 0; padding-left: 1.25rem; font-size: 0.85rem; line-height: 1.5;">
+      ${flaggedItems.map(f => `
+        <li><strong>Item #${f.key}</strong> (Answer: <code>${f.item.correctAnswer}</code>): ${f.reasons.join('; ')}</li>
       `).join('')}
-    </tbody>
-  </table>
+    </ul>
+  </div>` : ''}
+
+  <div class="charts-grid">
+    <div class="chart-card">
+      <h2>Item Difficulty Index (P)</h2>
+      <div style="overflow-x: auto;">${difficultySvg}</div>
+    </div>
+    <div class="chart-card">
+      <h2>Item Discrimination (r_pbis)</h2>
+      <div style="overflow-x: auto;">${discriminationSvg}</div>
+    </div>
+  </div>
+
+  <div class="chart-card">
+    <h2>Detailed Item Statistics &amp; Distractor Frequencies</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Item</th><th>Key</th><th>Pts</th><th>Difficulty (P)</th><th>Discrimination (r_pbis)</th>
+          <th>A / T</th><th>B / F</th><th>C</th><th>D</th><th>E</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${itemKeys.map(k => {
+          const item = psychometrics.itemStats[k];
+          const keyItem = state.key.items[k] || {};
+          const isItemTF = (keyItem.kind === 'tf' || keyItem.kind === 'modified_tf' || item.correctAnswer === 'T' || item.correctAnswer === 'F');
+          return `
+            <tr>
+              <td><strong>#${k}</strong></td>
+              <td><code>${item.correctAnswer}</code></td>
+              <td>${item.points}</td>
+              <td>${(item.difficulty * 100).toFixed(1)}%</td>
+              <td style="font-weight: 700; color: ${item.discrimination >= 0.3 ? '#10b981' : (item.discrimination < 0.20 ? '#ef4444' : 'inherit')};">${item.discrimination.toFixed(3)}</td>
+              <td>${isItemTF ? (item.distractors.T || 0) : (item.distractors.A || 0)}</td>
+              <td>${isItemTF ? (item.distractors.F || 0) : (item.distractors.B || 0)}</td>
+              <td>${isItemTF ? '—' : (item.distractors.C || 0)}</td>
+              <td>${isItemTF ? '—' : (item.distractors.D || 0)}</td>
+              <td>${isItemTF ? '—' : (item.distractors.E || 0)}</td>
+            </tr>
+          `;
+        }).join('')}
+      </tbody>
+    </table>
+  </div>
 </body>
 </html>`;
-      downloadFile("item_analysis_report.html", html, "text/html");
+      downloadFile("assessment_psychometrics_report.html", html, "text/html");
     };
 
     function downloadFile(filename, content, mime) {

@@ -2515,6 +2515,46 @@ dialog.modal-dialog--answer-key {
   }
 }
 
+/* ==========================================================================
+   Antigravity Motion & Spatial Engineering Tokens
+   ========================================================================== */
+:root {
+  --shadow-weightless: 0 16px 36px -10px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.07);
+  --shadow-floating: 0 8px 24px -6px rgba(0, 0, 0, 0.28), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  --ease-antigravity: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-dialog[open] .modal-card {
+  box-shadow: var(--shadow-weightless);
+  animation: modal-float-in 0.28s var(--ease-antigravity);
+}
+
+@keyframes modal-float-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.canvas-bottom-bar,
+.zone-floating-toolbar {
+  box-shadow: var(--shadow-floating);
+  transition: transform 0.2s var(--ease-antigravity), box-shadow 0.2s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 </style>
   <style id="page-rule">@page { size: A4; margin: 0; }</style>
 </head>
@@ -2866,8 +2906,11 @@ dialog.modal-dialog--answer-key {
     <div class="modal-card modal-card--generator">
       <div class="modal-header">
         <div>
-          <h2 class="modal-title">✨ Exam Sheet Generator</h2>
-          <p class="modal-desc">Configure sections to assemble a millimeter-accurate OMR exam sheet instantly.</p>
+          <h2 class="modal-title" style="display: flex; align-items: center; gap: 0.5rem;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            <span>Exam Sheet Generator</span>
+          </h2>
+          <p class="modal-desc">Set up exam sections to generate an answer sheet for printing.</p>
         </div>
         <button type="button" class="btn-close-modal" id="btn-close-generator" aria-label="Close">✕</button>
       </div>
@@ -2963,8 +3006,11 @@ dialog.modal-dialog--answer-key {
     <div class="modal-card modal-card--answer-key">
       <div class="modal-header">
         <div>
-          <h2 class="modal-title">🔑 Answer Key Editor</h2>
-          <p class="modal-desc">Configure correct answer options and item points visually. No JSON editing required.</p>
+          <h2 class="modal-title" style="display: flex; align-items: center; gap: 0.5rem;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 3-9.5 9.5"/><path d="m15.5 7.5 3 3M18 5l2 2"/></svg>
+            <span>Answer Key Editor</span>
+          </h2>
+          <p class="modal-desc">Click bubbles to set the correct answers and point values for each question.</p>
         </div>
         <button type="button" class="btn-close-modal" id="btn-close-answer-key" aria-label="Close">✕</button>
       </div>

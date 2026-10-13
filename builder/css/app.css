@@ -2328,3 +2328,43 @@ dialog.modal-dialog--answer-key {
     cursor: default !important;
   }
 }
+
+/* ==========================================================================
+   Antigravity Motion & Spatial Engineering Tokens
+   ========================================================================== */
+:root {
+  --shadow-weightless: 0 16px 36px -10px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.07);
+  --shadow-floating: 0 8px 24px -6px rgba(0, 0, 0, 0.28), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  --ease-antigravity: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-dialog[open] .modal-card {
+  box-shadow: var(--shadow-weightless);
+  animation: modal-float-in 0.28s var(--ease-antigravity);
+}
+
+@keyframes modal-float-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.canvas-bottom-bar,
+.zone-floating-toolbar {
+  box-shadow: var(--shadow-floating);
+  transition: transform 0.2s var(--ease-antigravity), box-shadow 0.2s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

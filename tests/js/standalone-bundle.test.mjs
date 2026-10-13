@@ -74,5 +74,6 @@ test('docs/checker.html is 100% self-contained and synchronized for client-side 
   assert.ok(checkerDocs.includes('btn-export-zip'), 'Download All Graded Sheets (ZIP) button present');
   assert.ok(checkerDocs.includes('createZip'), 'Zero-dependency inlined ZIP generator present');
   assert.ok(!checkerDocs.includes('OMR Exam Designer & Layout Engine'), 'Legacy OMR Exam Designer badge removed from checker');
+  assert.ok(!checkerDocs.includes('Client-Side OMR Grading &amp; Psychometrics'), 'Client-Side OMR Grading badge removed from checker header');
 });
 

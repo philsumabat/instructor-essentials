@@ -1806,65 +1806,109 @@ dialog.modal-dialog::backdrop {
   width: 58px;
 }
 
-/* View & Display Dropdown */
-.view-dropdown-content {
-  min-width: 210px;
-  padding: 0.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-}
-
-.view-dropdown-item {
-  display: flex;
+/* Canvas Bottom Status Bar (Show CV Targets + Page Fill) */
+.canvas-bottom-bar {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 0.35rem 0.5rem;
-  font-size: 0.8rem;
-  color: var(--text);
-  border-radius: var(--radius-sm);
-}
-
-.view-dropdown-item.toggle-item {
-  cursor: pointer;
+  gap: 10px;
+  background: rgba(18, 20, 26, 0.84);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  padding: 4px 14px;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  z-index: 40;
+  pointer-events: auto;
   user-select: none;
-  display: flex;
+}
+
+.canvas-cv-toggle {
+  display: inline-flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 6px;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-weight: 500;
+  transition: color 0.15s ease;
+}
+
+.canvas-cv-toggle:hover {
+  color: var(--text);
+}
+
+.canvas-cv-toggle input[type="checkbox"] {
+  cursor: pointer;
+  accent-color: var(--accent);
+  width: 13px;
+  height: 13px;
+  margin: 0;
+}
+
+.canvas-bottom-sep {
+  color: var(--border-strong);
+  font-weight: 700;
+  user-select: none;
+}
+
+.canvas-page-fill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-weight: 500;
 }
 
-.view-dropdown-item.toggle-item input[type="checkbox"] {
-  accent-color: var(--accent);
-  width: 15px;
-  height: 15px;
-  cursor: pointer;
-}
-
-.dropdown-divider {
-  height: 1px;
-  background: var(--border);
-  margin: 0.25rem 0;
-}
-
-.view-stat-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-}
-
-.view-stat-label {
-  font-size: 0.76rem;
-  font-weight: 600;
+.canvas-page-fill .fill-label {
   color: var(--text-muted);
 }
 
-.view-stat-val {
-  font-size: 0.82rem;
-  font-weight: 700;
+.canvas-page-fill .stat-fill-bar {
+  width: 50px;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+  display: inline-block;
+}
+
+.canvas-page-fill .stat-fill-bar__inner {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 3px;
+  transition: width 0.2s ease, background 0.2s ease;
+}
+
+.canvas-page-fill strong {
   color: var(--text);
   font-variant-numeric: tabular-nums;
+  font-size: 0.72rem;
+}
+
+/* SVG Interactive Editing Styles */
+.preview__scaler > svg {
+  display: block;
+  user-select: none;
+}
+
+.preview__scaler > svg g.omr-zone {
+  cursor: pointer;
+  pointer-events: all;
+}
+
+.preview__scaler > svg g.omr-zone:hover > rect:first-of-type {
+  stroke: var(--accent) !important;
+  stroke-width: 0.5 !important;
+}
+
+.preview__scaler > svg g.omr-zone.is-selected > rect:first-of-type {
+  stroke: var(--accent) !important;
+  stroke-width: 0.7 !important;
 }
 
 /* Dialog Visibility & Standard Overlay Guards */

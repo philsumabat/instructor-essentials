@@ -290,11 +290,15 @@ flowchart LR
 - **Decision**: Elevated studio navigation into capsule segmented controls and upgraded dialog windows with glassmorphic depth (`backdrop-filter: blur(12px)`).
 
 ### Decision 25: Streamlined Topbar Metrics, Visual Answer Key Editor & Clean Question Numbering
-- **Decision**: Streamlined visible topbar stat pills to strictly "Questions" and "Points". Relocated "Show CV Targets", "ID Digits: 8", and "Page Fill %" into a dedicated, clean "View" dropdown menu to prevent toolbar clutter.
-- **Decision**: Integrated a fully visual, interactive Answer Key Editor (`#modal-answer-key`) into Sheet Builder. Instructors can configure correct keys by clicking bubble buttons directly, set passing scores, adjust point weights, use quick-fill shortcuts (`All A`, `All T`, `Sample Key`, `Clear`), and export JSON keys with zero manual code or JSON editing.
-- **Decision**: Enhanced the Exam Sheet Generator modal (`#modal-generator`) with a real-time live preview panel featuring dynamic metrics calculation (Questions, Points, Page Fill %) and a live miniature wireframe representing header blocks, section modules, and bubble rows as instructors adjust parts.
+- **Decision**: Streamlined visible topbar stat pills to strictly "Questions" and "Points". Integrated a fully visual, interactive Answer Key Editor (`#modal-answer-key`) into Sheet Builder.
+- **Decision**: Enhanced the Exam Sheet Generator modal (`#modal-generator`) with a real-time live preview panel featuring dynamic metrics calculation (Questions, Points, Page Fill %) and a live miniature wireframe.
 - **Decision**: Standardized all question rendering across DOM, SVG, and generator modules to output strictly the clean question number (e.g., `1.`, `2.`), completely removing test-type labels or question prompts from printed exam sheets.
 - **Decision**: Standardized initial application boot and preset default to "Blank Sheet" (`zones: []`), giving instructors an immediate, clean canvas to design custom exams or generate structures from scratch.
+
+### Decision 26: Bottom Canvas Status Strip, Preset 100 Modernization & Full SVG Editing Parity
+- **Decision**: Removed ID digits display from the UI entirely (standardized internally to 8 digits). Removed the topbar "View" dropdown and relocated "Show CV Targets" together with a subtle "Page Fill: XX%" indicator into a compact, elegant floating status bar (`.canvas-bottom-bar`) at the bottom of the canvas pane.
+- **Decision**: Modernized the 100 MCQ preset (`chem201-final-100`) across `exam-100.json`, `templates.js`, and `checker.html` to eliminate the obsolete, space-consuming 10-row student ID bubble matrix. Replaced it with the standard 2-line header containing an 8-digit partitioned OCR box, saving ~35mm of vertical space and aligning it with all other presets.
+- **Decision**: Achieved full interactive editing parity between DOM and SVG render modes. In SVG mode, zones can now be clicked directly on the canvas to select them, showing a crisp selection bounding box and floating action toolbar (`Move Up`, `Move Down`, `Duplicate`, `Delete`). Zone property updates in the Inspector and drag-and-drop insertions now update the vector canvas in real time.
 
 ---
 

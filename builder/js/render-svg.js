@@ -67,11 +67,13 @@ function gridSVG(grid, layout) {
   return out.join('');
 }
 
-function zoneSVG(zone, layout) {
+function zoneSVG(zone, layout, zoneIndex) {
   const { typography } = layout;
   const b = zone.bbox;
-  const out = [`<g class="omr-zone omr-zone--${zone.type}" data-zone="${esc(zone.id)}">`];
+  const idxAttr = typeof zoneIndex === 'number' ? ` data-zone-index="${zoneIndex}"` : '';
+  const out = [`<g class="omr-zone omr-zone--${zone.type}" data-zone="${esc(zone.id)}"${idxAttr}>`];
   if (zone.type === 'instructions') {
+    out.push(`<rect x="${f(b.x + 0.15)}" y="${f(b.y + 0.15)}" width="${f(b.w - 0.3)}" height="${f(b.h - 0.3)}" rx="1.2" fill="none" stroke="none"/>`);
     const lines = wrap(zone.text, zone.fontSize, b.w - 2);
     lines.forEach((line, i) => out.push(text(b.x + 1, b.y + 1 + (i + 0.5) * zone.fontSize * 1.3, line, { size: zone.fontSize, fill: '#222' })));
     out.push('</g>');
@@ -126,7 +128,7 @@ export function renderSVG(layout) {
   }
   parts.push(text(header.title.x, fiducial.inset + fiducial.size / 2, layout.title, { size: typography.title, anchor: 'middle', weight: 700 }));
   parts.push(text(header.footer.x, header.footer.y, header.footer.text, { size: typography.small, anchor: 'middle', fill: '#444' }));
-  for (const zone of layout.zones) parts.push(zoneSVG(zone, layout));
+  layout.zones.forEach((zone, zoneIndex) => parts.push(zoneSVG(zone, layout, zoneIndex)));
   parts.push('</svg>');
   return parts.join('\n');
 }

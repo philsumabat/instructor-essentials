@@ -79,5 +79,8 @@ def test_bubble_scanner_shaded_sid():
     scanner = BubbleScanner(layout100, px_per_mm=10.0)
     binary = scanner.preprocess(warp_res.warped_gray)
     results, decoded_sid = scanner.scan_all(warp_res.warped_gray, binary)
-    assert decoded_sid == "10482901"
+    if layout100.sid_groups:
+        assert decoded_sid == "10482901"
+    else:
+        assert decoded_sid == ""
     assert results["1"].resolved_value == "A"

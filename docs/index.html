@@ -1992,65 +1992,109 @@ dialog.modal-dialog::backdrop {
   width: 58px;
 }
 
-/* View & Display Dropdown */
-.view-dropdown-content {
-  min-width: 210px;
-  padding: 0.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-}
-
-.view-dropdown-item {
-  display: flex;
+/* Canvas Bottom Status Bar (Show CV Targets + Page Fill) */
+.canvas-bottom-bar {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 0.35rem 0.5rem;
-  font-size: 0.8rem;
-  color: var(--text);
-  border-radius: var(--radius-sm);
-}
-
-.view-dropdown-item.toggle-item {
-  cursor: pointer;
+  gap: 10px;
+  background: rgba(18, 20, 26, 0.84);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  padding: 4px 14px;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  z-index: 40;
+  pointer-events: auto;
   user-select: none;
-  display: flex;
+}
+
+.canvas-cv-toggle {
+  display: inline-flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 6px;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-weight: 500;
+  transition: color 0.15s ease;
+}
+
+.canvas-cv-toggle:hover {
+  color: var(--text);
+}
+
+.canvas-cv-toggle input[type="checkbox"] {
+  cursor: pointer;
+  accent-color: var(--accent);
+  width: 13px;
+  height: 13px;
+  margin: 0;
+}
+
+.canvas-bottom-sep {
+  color: var(--border-strong);
+  font-weight: 700;
+  user-select: none;
+}
+
+.canvas-page-fill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-weight: 500;
 }
 
-.view-dropdown-item.toggle-item input[type="checkbox"] {
-  accent-color: var(--accent);
-  width: 15px;
-  height: 15px;
-  cursor: pointer;
-}
-
-.dropdown-divider {
-  height: 1px;
-  background: var(--border);
-  margin: 0.25rem 0;
-}
-
-.view-stat-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-}
-
-.view-stat-label {
-  font-size: 0.76rem;
-  font-weight: 600;
+.canvas-page-fill .fill-label {
   color: var(--text-muted);
 }
 
-.view-stat-val {
-  font-size: 0.82rem;
-  font-weight: 700;
+.canvas-page-fill .stat-fill-bar {
+  width: 50px;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+  display: inline-block;
+}
+
+.canvas-page-fill .stat-fill-bar__inner {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 3px;
+  transition: width 0.2s ease, background 0.2s ease;
+}
+
+.canvas-page-fill strong {
   color: var(--text);
   font-variant-numeric: tabular-nums;
+  font-size: 0.72rem;
+}
+
+/* SVG Interactive Editing Styles */
+.preview__scaler > svg {
+  display: block;
+  user-select: none;
+}
+
+.preview__scaler > svg g.omr-zone {
+  cursor: pointer;
+  pointer-events: all;
+}
+
+.preview__scaler > svg g.omr-zone:hover > rect:first-of-type {
+  stroke: var(--accent) !important;
+  stroke-width: 0.5 !important;
+}
+
+.preview__scaler > svg g.omr-zone.is-selected > rect:first-of-type {
+  stroke: var(--accent) !important;
+  stroke-width: 0.7 !important;
 }
 
 /* Dialog Visibility & Standard Overlay Guards */
@@ -2535,30 +2579,6 @@ dialog.modal-dialog--answer-key {
         <span>Saved Builds</span>
       </button>
 
-      <!-- View & Display Options Dropdown -->
-      <div class="dropdown-menu">
-        <button type="button" id="btn-view-toggle" class="btn btn--secondary" aria-haspopup="true" aria-expanded="false" title="View & inspection options">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-          <span>View</span>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg>
-        </button>
-        <div class="dropdown-menu__content view-dropdown-content" id="view-dropdown-content">
-          <label class="view-dropdown-item toggle-item" title="Show CV bubble sampling centroids and OCR regions of interest">
-            <input type="checkbox" id="overlay" name="overlay">
-            <span>Show CV Targets</span>
-          </label>
-          <div class="dropdown-divider"></div>
-          <div class="view-dropdown-item view-stat-item" title="Standardized Student ID digits">
-            <span class="view-stat-label">ID Digits</span>
-            <strong id="stat-id-digits" class="view-stat-val">8</strong>
-          </div>
-          <div class="view-dropdown-item view-stat-item" id="stat-fill-pill" title="Vertical sheet space utilized">
-            <span class="view-stat-label">Page Fill</span>
-            <div class="stat-fill-bar" style="width: 70px;"><div id="stat-fill-bar-inner" class="stat-fill-bar__inner"></div></div>
-            <strong id="stat-fill" class="view-stat-val">0%</strong>
-          </div>
-        </div>
-      </div>
 
       <!-- Switch to Checker Studio -->
       <a href="checker.html" class="btn btn--secondary" title="Open In-Browser Exam Checker">
@@ -2800,6 +2820,20 @@ dialog.modal-dialog--answer-key {
       <!-- Sheet Scaler Frame -->
       <div class="preview__frame" id="frame">
         <!-- Rendered sheet will be placed here -->
+      </div>
+
+      <!-- Canvas Bottom Status Strip (Show CV Targets + Page Fill) -->
+      <div class="canvas-bottom-bar" id="canvas-bottom-bar" role="status" aria-label="Sheet Status & Targets">
+        <label class="canvas-cv-toggle" title="Toggle computer vision bubble sampling centroids and OCR regions of interest">
+          <input type="checkbox" id="overlay" name="overlay">
+          <span>Show CV Targets</span>
+        </label>
+        <span class="canvas-bottom-sep" aria-hidden="true">·</span>
+        <div class="canvas-page-fill" id="stat-fill-pill" title="Vertical sheet space utilized">
+          <span class="fill-label">Page Fill:</span>
+          <span class="stat-fill-bar"><span id="stat-fill-bar-inner" class="stat-fill-bar__inner"></span></span>
+          <strong id="stat-fill">0%</strong>
+        </div>
       </div>
     </main>
   </div>
@@ -4076,11 +4110,13 @@ function gridSVG(grid, layout) {
   return out.join('');
 }
 
-function zoneSVG(zone, layout) {
+function zoneSVG(zone, layout, zoneIndex) {
   const { typography } = layout;
   const b = zone.bbox;
-  const out = [`<g class="omr-zone omr-zone--${zone.type}" data-zone="${esc(zone.id)}">`];
+  const idxAttr = typeof zoneIndex === 'number' ? ` data-zone-index="${zoneIndex}"` : '';
+  const out = [`<g class="omr-zone omr-zone--${zone.type}" data-zone="${esc(zone.id)}"${idxAttr}>`];
   if (zone.type === 'instructions') {
+    out.push(`<rect x="${f(b.x + 0.15)}" y="${f(b.y + 0.15)}" width="${f(b.w - 0.3)}" height="${f(b.h - 0.3)}" rx="1.2" fill="none" stroke="none"/>`);
     const lines = wrap(zone.text, zone.fontSize, b.w - 2);
     lines.forEach((line, i) => out.push(text(b.x + 1, b.y + 1 + (i + 0.5) * zone.fontSize * 1.3, line, { size: zone.fontSize, fill: '#222' })));
     out.push('</g>');
@@ -4135,7 +4171,7 @@ function renderSVG(layout) {
   }
   parts.push(text(header.title.x, fiducial.inset + fiducial.size / 2, layout.title, { size: typography.title, anchor: 'middle', weight: 700 }));
   parts.push(text(header.footer.x, header.footer.y, header.footer.text, { size: typography.small, anchor: 'middle', fill: '#444' }));
-  for (const zone of layout.zones) parts.push(zoneSVG(zone, layout));
+  layout.zones.forEach((zone, zoneIndex) => parts.push(zoneSVG(zone, layout, zoneIndex)));
   parts.push('</svg>');
   return parts.join('\n');
 }
@@ -4231,20 +4267,16 @@ const SAMPLE_TEMPLATES = {
         type: 'fields',
         id: 'info',
         label: '',
+        w: 191.9,
+        fieldHeight: 7.5,
         fields: [
-          { id: 'name', label: 'Student Name', role: 'name', row: 0, w: 145 },
-          { id: 'score', label: 'Score', role: 'score', row: 0, w: 40 },
-          { id: 'offer', label: 'Offer No.', row: 1, w: 60 },
-          { id: 'sched', label: 'Sched', row: 1, w: 75 },
-          { id: 'date', label: 'Date', row: 1, w: 50 },
+          { id: 'name', label: 'Student Name', role: 'name', row: 0, w: 112 },
+          { id: 'sid', label: 'Student ID', role: 'student_id', digits: 8, row: 0, w: 79.9 },
+          { id: 'offer', label: 'Offer No.', row: 1, w: 50 },
+          { id: 'sched', label: 'Sched', row: 1, w: 54 },
+          { id: 'date', label: 'Date', row: 1, w: 45 },
+          { id: 'score', label: 'Score', role: 'score', row: 1, w: 42.9 },
         ],
-      },
-      {
-        type: 'student_id',
-        id: 'sid',
-        label: 'Student ID',
-        digits: 8,
-        shading: true,
       },
       {
         type: 'mcq',
@@ -4444,8 +4476,6 @@ function initElements() {
     btnModalClose: $('#btn-modal-close'),
     savedBuildsList: $('#saved-builds-list'),
     btnImportFileTrigger: $('#btn-import-file-trigger'),
-    btnViewToggle: $('#btn-view-toggle'),
-    viewDropdownContent: $('#view-dropdown-content'),
     overlay: $('#overlay'),
     btnDlKey: $('#btn-dl-key'),
     btnPrint: $('#btn-print'),
@@ -4502,7 +4532,6 @@ function initElements() {
     // Stats
     statQuestions: $('#stat-questions'),
     statPoints: $('#stat-points'),
-    statIdDigits: $('#stat-id-digits'),
     statFill: $('#stat-fill'),
     statFillBar: $('#stat-fill-bar-inner'),
     paperBadge: $('#paper-badge'),
@@ -4779,7 +4808,9 @@ function renderPreview() {
 
   if (state.renderMode === 'svg') {
     const doc = new DOMParser().parseFromString(renderSVG(layout), 'image/svg+xml');
-    scaler.append(document.importNode(doc.documentElement, true));
+    const svgEl = document.importNode(doc.documentElement, true);
+    scaler.append(svgEl);
+    attachSvgZoneInteractions(scaler, svgEl, layout);
   } else {
     const sheetEl = renderSheetDOM(layout);
     scaler.append(sheetEl);
@@ -4795,7 +4826,7 @@ function renderPreview() {
   applyZoom();
 }
 
-// ---- Canvas Zone Interactive Overlays & Click Handling ----
+// ---- Canvas Zone Interactive Overlays & Click Handling (DOM Mode) ----
 function attachCanvasZoneInteractions(sheetEl) {
   // Find all rendered zones
   const zoneEls = sheetEl.querySelectorAll('[data-zone-index]');
@@ -4849,6 +4880,101 @@ function attachCanvasZoneInteractions(sheetEl) {
       selectZone(idx);
     });
   }
+
+  // Deselect on sheet background click
+  sheetEl.addEventListener('click', (e) => {
+    if (e.target.closest('[data-zone-index]')) return;
+    state.selectedZoneIndex = -1;
+    renderInspector();
+    renderOutline();
+    renderPreview();
+  });
+}
+
+// ---- Canvas Zone Interactive Overlays & Click Handling (SVG Mode) ----
+function attachSvgZoneInteractions(scaler, svgEl, layout) {
+  const zoneEls = svgEl.querySelectorAll('g.omr-zone[data-zone-index]');
+  for (const zEl of zoneEls) {
+    const idx = parseInt(zEl.getAttribute('data-zone-index'), 10);
+    if (Number.isNaN(idx)) continue;
+
+    zEl.style.cursor = 'pointer';
+
+    if (idx === state.selectedZoneIndex) {
+      zEl.classList.add('is-selected');
+
+      const zone = layout.zones[idx];
+      if (zone && zone.bbox) {
+        // Draw crisp SVG dashed selection outline box
+        const NS = 'http://www.w3.org/2000/svg';
+        const selRect = document.createElementNS(NS, 'rect');
+        selRect.setAttribute('x', String(zone.bbox.x - 0.5));
+        selRect.setAttribute('y', String(zone.bbox.y - 0.5));
+        selRect.setAttribute('width', String(zone.bbox.w + 1.0));
+        selRect.setAttribute('height', String(zone.bbox.h + 1.0));
+        selRect.setAttribute('rx', '1.5');
+        selRect.setAttribute('fill', 'rgba(26, 95, 208, 0.08)');
+        selRect.setAttribute('stroke', '#1a5fd0');
+        selRect.setAttribute('stroke-width', '0.6');
+        selRect.setAttribute('stroke-dasharray', '2 1');
+        selRect.style.pointerEvents = 'none';
+        svgEl.append(selRect);
+
+        // Floating action toolbar positioned directly above selected zone in scaler
+        const toolbar = document.createElement('div');
+        toolbar.className = 'zone-floating-toolbar app-chrome';
+        toolbar.style.position = 'absolute';
+        toolbar.style.top = `${Math.max(0, zone.bbox.y - 7.5)}mm`;
+        toolbar.style.left = `${zone.bbox.x}mm`;
+        toolbar.innerHTML = `
+          <span class="zone-drag-grip" title="Drag to reorder" draggable="true" data-zone-index="${idx}">⠿</span>
+          <button type="button" class="btn-zone-up" title="Move Up" ${idx === 0 ? 'disabled' : ''}>▲</button>
+          <button type="button" class="btn-zone-down" title="Move Down" ${idx === state.template.zones.length - 1 ? 'disabled' : ''}>▼</button>
+          <button type="button" class="btn-zone-dup" title="Duplicate">⧉</button>
+          <button type="button" class="btn-zone-del is-delete" title="Delete">🗑</button>
+        `;
+
+        toolbar.querySelector('.btn-zone-up')?.addEventListener('click', (e) => {
+          e.stopPropagation();
+          moveZone(idx, idx - 1);
+        });
+        toolbar.querySelector('.btn-zone-down')?.addEventListener('click', (e) => {
+          e.stopPropagation();
+          moveZone(idx, idx + 1);
+        });
+        toolbar.querySelector('.btn-zone-dup')?.addEventListener('click', (e) => {
+          e.stopPropagation();
+          duplicateZone(idx);
+        });
+        toolbar.querySelector('.btn-zone-del')?.addEventListener('click', (e) => {
+          e.stopPropagation();
+          deleteZone(idx);
+        });
+
+        const grip = toolbar.querySelector('.zone-drag-grip');
+        grip?.addEventListener('dragstart', (e) => {
+          e.dataTransfer.setData('application/x-omr-reorder', String(idx));
+          e.dataTransfer.effectAllowed = 'move';
+        });
+
+        scaler.append(toolbar);
+      }
+    }
+
+    zEl.addEventListener('click', (e) => {
+      e.stopPropagation();
+      selectZone(idx);
+    });
+  }
+
+  // Click on background svg deselects
+  svgEl.addEventListener('click', (e) => {
+    if (e.target.closest('g.omr-zone')) return;
+    state.selectedZoneIndex = -1;
+    renderInspector();
+    renderOutline();
+    renderPreview();
+  });
 }
 
 // ---- Canvas Drag-and-Drop Controller ----
@@ -4902,8 +5028,7 @@ function setupCanvasDragDrop() {
     indicator.style.top = `${targetYMm}mm`;
     indicator.dataset.targetIndex = String(targetIndex);
     if (!indicator.parentElement) {
-      const sheet = scaler.querySelector('.omr-sheet');
-      if (sheet) sheet.append(indicator);
+      scaler.append(indicator);
     }
   });
 
@@ -5674,7 +5799,6 @@ function renderOutline() {
 function renderMeta(layout) {
   const stats = layoutStats(layout);
   els.statQuestions.textContent = String(stats.questions);
-  els.statIdDigits.textContent = `${stats.idDigits} Digits`;
 
   // Total points calculation
   let totalPts = 0;
@@ -6854,13 +6978,6 @@ function initEvents() {
   // CV overlay toggle
   els.overlay?.addEventListener('change', () => state.layout && renderPreview());
 
-  // View options dropdown
-  els.btnViewToggle?.addEventListener('click', (e) => {
-    e.stopPropagation();
-    const parent = els.btnViewToggle.closest('.dropdown-menu');
-    const isOpen = parent.classList.toggle('is-open');
-    els.btnViewToggle.setAttribute('aria-expanded', String(isOpen));
-  });
 
   // Answer Key modal opening & controls
   els.btnDlKey?.addEventListener('click', openAnswerKeyModal);
@@ -6949,7 +7066,6 @@ function initEvents() {
     if (!e.target.closest('.dropdown-menu')) {
       $$('.dropdown-menu').forEach((d) => d.classList.remove('is-open'));
       els.btnExportToggle?.setAttribute('aria-expanded', 'false');
-      els.btnViewToggle?.setAttribute('aria-expanded', 'false');
     }
   });
 

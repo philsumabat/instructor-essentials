@@ -50,8 +50,6 @@ function initElements() {
     btnModalClose: $('#btn-modal-close'),
     savedBuildsList: $('#saved-builds-list'),
     btnImportFileTrigger: $('#btn-import-file-trigger'),
-    btnViewToggle: $('#btn-view-toggle'),
-    viewDropdownContent: $('#view-dropdown-content'),
     overlay: $('#overlay'),
     btnDlKey: $('#btn-dl-key'),
     btnPrint: $('#btn-print'),
@@ -108,7 +106,6 @@ function initElements() {
     // Stats
     statQuestions: $('#stat-questions'),
     statPoints: $('#stat-points'),
-    statIdDigits: $('#stat-id-digits'),
     statFill: $('#stat-fill'),
     statFillBar: $('#stat-fill-bar-inner'),
     paperBadge: $('#paper-badge'),
@@ -385,7 +382,9 @@ function renderPreview() {
 
   if (state.renderMode === 'svg') {
     const doc = new DOMParser().parseFromString(renderSVG(layout), 'image/svg+xml');
-    scaler.append(document.importNode(doc.documentElement, true));
+    const svgEl = document.importNode(doc.documentElement, true);
+    scaler.append(svgEl);
+    attachSvgZoneInteractions(scaler, svgEl, layout);
   } else {
     const sheetEl = renderSheetDOM(layout);
     scaler.append(sheetEl);
@@ -401,7 +400,7 @@ function renderPreview() {
   applyZoom();
 }
 
-// ---- Canvas Zone Interactive Overlays & Click Handling ----
+// ---- Canvas Zone Interactive Overlays & Click Handling (DOM Mode) ----
 function attachCanvasZoneInteractions(sheetEl) {
   // Find all rendered zones
   const zoneEls = sheetEl.querySelectorAll('[data-zone-index]');
@@ -455,6 +454,101 @@ function attachCanvasZoneInteractions(sheetEl) {
       selectZone(idx);
     });
   }
+
+  // Deselect on sheet background click
+  sheetEl.addEventListener('click', (e) => {
+    if (e.target.closest('[data-zone-index]')) return;
+    state.selectedZoneIndex = -1;
+    renderInspector();
+    renderOutline();
+    renderPreview();
+  });
+}
+
+// ---- Canvas Zone Interactive Overlays & Click Handling (SVG Mode) ----
+function attachSvgZoneInteractions(scaler, svgEl, layout) {
+  const zoneEls = svgEl.querySelectorAll('g.omr-zone[data-zone-index]');
+  for (const zEl of zoneEls) {
+    const idx = parseInt(zEl.getAttribute('data-zone-index'), 10);
+    if (Number.isNaN(idx)) continue;
+
+    zEl.style.cursor = 'pointer';
+
+    if (idx === state.selectedZoneIndex) {
+      zEl.classList.add('is-selected');
+
+      const zone = layout.zones[idx];
+      if (zone && zone.bbox) {
+        // Draw crisp SVG dashed selection outline box
+        const NS = 'http://www.w3.org/2000/svg';
+        const selRect = document.createElementNS(NS, 'rect');
+        selRect.setAttribute('x', String(zone.bbox.x - 0.5));
+        selRect.setAttribute('y', String(zone.bbox.y - 0.5));
+        selRect.setAttribute('width', String(zone.bbox.w + 1.0));
+        selRect.setAttribute('height', String(zone.bbox.h + 1.0));
+        selRect.setAttribute('rx', '1.5');
+        selRect.setAttribute('fill', 'rgba(26, 95, 208, 0.08)');
+        selRect.setAttribute('stroke', '#1a5fd0');
+        selRect.setAttribute('stroke-width', '0.6');
+        selRect.setAttribute('stroke-dasharray', '2 1');
+        selRect.style.pointerEvents = 'none';
+        svgEl.append(selRect);
+
+        // Floating action toolbar positioned directly above selected zone in scaler
+        const toolbar = document.createElement('div');
+        toolbar.className = 'zone-floating-toolbar app-chrome';
+        toolbar.style.position = 'absolute';
+        toolbar.style.top = `${Math.max(0, zone.bbox.y - 7.5)}mm`;
+        toolbar.style.left = `${zone.bbox.x}mm`;
+        toolbar.innerHTML = `
+          <span class="zone-drag-grip" title="Drag to reorder" draggable="true" data-zone-index="${idx}">⠿</span>
+          <button type="button" class="btn-zone-up" title="Move Up" ${idx === 0 ? 'disabled' : ''}>▲</button>
+          <button type="button" class="btn-zone-down" title="Move Down" ${idx === state.template.zones.length - 1 ? 'disabled' : ''}>▼</button>
+          <button type="button" class="btn-zone-dup" title="Duplicate">⧉</button>
+          <button type="button" class="btn-zone-del is-delete" title="Delete">🗑</button>
+        `;
+
+        toolbar.querySelector('.btn-zone-up')?.addEventListener('click', (e) => {
+          e.stopPropagation();
+          moveZone(idx, idx - 1);
+        });
+        toolbar.querySelector('.btn-zone-down')?.addEventListener('click', (e) => {
+          e.stopPropagation();
+          moveZone(idx, idx + 1);
+        });
+        toolbar.querySelector('.btn-zone-dup')?.addEventListener('click', (e) => {
+          e.stopPropagation();
+          duplicateZone(idx);
+        });
+        toolbar.querySelector('.btn-zone-del')?.addEventListener('click', (e) => {
+          e.stopPropagation();
+          deleteZone(idx);
+        });
+
+        const grip = toolbar.querySelector('.zone-drag-grip');
+        grip?.addEventListener('dragstart', (e) => {
+          e.dataTransfer.setData('application/x-omr-reorder', String(idx));
+          e.dataTransfer.effectAllowed = 'move';
+        });
+
+        scaler.append(toolbar);
+      }
+    }
+
+    zEl.addEventListener('click', (e) => {
+      e.stopPropagation();
+      selectZone(idx);
+    });
+  }
+
+  // Click on background svg deselects
+  svgEl.addEventListener('click', (e) => {
+    if (e.target.closest('g.omr-zone')) return;
+    state.selectedZoneIndex = -1;
+    renderInspector();
+    renderOutline();
+    renderPreview();
+  });
 }
 
 // ---- Canvas Drag-and-Drop Controller ----
@@ -508,8 +602,7 @@ function setupCanvasDragDrop() {
     indicator.style.top = `${targetYMm}mm`;
     indicator.dataset.targetIndex = String(targetIndex);
     if (!indicator.parentElement) {
-      const sheet = scaler.querySelector('.omr-sheet');
-      if (sheet) sheet.append(indicator);
+      scaler.append(indicator);
     }
   });
 
@@ -1280,7 +1373,6 @@ function renderOutline() {
 function renderMeta(layout) {
   const stats = layoutStats(layout);
   els.statQuestions.textContent = String(stats.questions);
-  els.statIdDigits.textContent = `${stats.idDigits} Digits`;
 
   // Total points calculation
   let totalPts = 0;
@@ -2460,13 +2552,6 @@ function initEvents() {
   // CV overlay toggle
   els.overlay?.addEventListener('change', () => state.layout && renderPreview());
 
-  // View options dropdown
-  els.btnViewToggle?.addEventListener('click', (e) => {
-    e.stopPropagation();
-    const parent = els.btnViewToggle.closest('.dropdown-menu');
-    const isOpen = parent.classList.toggle('is-open');
-    els.btnViewToggle.setAttribute('aria-expanded', String(isOpen));
-  });
 
   // Answer Key modal opening & controls
   els.btnDlKey?.addEventListener('click', openAnswerKeyModal);
@@ -2555,7 +2640,6 @@ function initEvents() {
     if (!e.target.closest('.dropdown-menu')) {
       $$('.dropdown-menu').forEach((d) => d.classList.remove('is-open'));
       els.btnExportToggle?.setAttribute('aria-expanded', 'false');
-      els.btnViewToggle?.setAttribute('aria-expanded', 'false');
     }
   });
 

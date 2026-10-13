@@ -67,7 +67,7 @@ test('checker.html has inlined PRESETS and zero fetch() calls for presets', asyn
   const p100 = PRESETS['exam-100'];
   assert.equal(p100.layout.page.paper, 'Letter');
   assert.equal(Object.keys(p100.layout.markers).length, 4);
-  assert.equal(p100.layout.bubbles.length, 480); // 80 SID + 400 MCQ
+  assert.equal(p100.layout.bubbles.length, 400); // 100 MCQ items * 4 options
   assert.equal(Object.keys(p100.key.items).length, 100);
 
   // Verify quiz-tf: 20 items (10 T/F + 10 Modified T/F)

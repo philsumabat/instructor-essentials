@@ -69,30 +69,6 @@
         <span>Saved Builds</span>
       </button>
 
-      <!-- View & Display Options Dropdown -->
-      <div class="dropdown-menu">
-        <button type="button" id="btn-view-toggle" class="btn btn--secondary" aria-haspopup="true" aria-expanded="false" title="View & inspection options">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-          <span>View</span>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg>
-        </button>
-        <div class="dropdown-menu__content view-dropdown-content" id="view-dropdown-content">
-          <label class="view-dropdown-item toggle-item" title="Show CV bubble sampling centroids and OCR regions of interest">
-            <input type="checkbox" id="overlay" name="overlay">
-            <span>Show CV Targets</span>
-          </label>
-          <div class="dropdown-divider"></div>
-          <div class="view-dropdown-item view-stat-item" title="Standardized Student ID digits">
-            <span class="view-stat-label">ID Digits</span>
-            <strong id="stat-id-digits" class="view-stat-val">8</strong>
-          </div>
-          <div class="view-dropdown-item view-stat-item" id="stat-fill-pill" title="Vertical sheet space utilized">
-            <span class="view-stat-label">Page Fill</span>
-            <div class="stat-fill-bar" style="width: 70px;"><div id="stat-fill-bar-inner" class="stat-fill-bar__inner"></div></div>
-            <strong id="stat-fill" class="view-stat-val">0%</strong>
-          </div>
-        </div>
-      </div>
 
       <!-- Switch to Checker Studio -->
       <a href="checker.html" class="btn btn--secondary" title="Open In-Browser Exam Checker">
@@ -334,6 +310,20 @@
       <!-- Sheet Scaler Frame -->
       <div class="preview__frame" id="frame">
         <!-- Rendered sheet will be placed here -->
+      </div>
+
+      <!-- Canvas Bottom Status Strip (Show CV Targets + Page Fill) -->
+      <div class="canvas-bottom-bar" id="canvas-bottom-bar" role="status" aria-label="Sheet Status & Targets">
+        <label class="canvas-cv-toggle" title="Toggle computer vision bubble sampling centroids and OCR regions of interest">
+          <input type="checkbox" id="overlay" name="overlay">
+          <span>Show CV Targets</span>
+        </label>
+        <span class="canvas-bottom-sep" aria-hidden="true">·</span>
+        <div class="canvas-page-fill" id="stat-fill-pill" title="Vertical sheet space utilized">
+          <span class="fill-label">Page Fill:</span>
+          <span class="stat-fill-bar"><span id="stat-fill-bar-inner" class="stat-fill-bar__inner"></span></span>
+          <strong id="stat-fill">0%</strong>
+        </div>
       </div>
     </main>
   </div>

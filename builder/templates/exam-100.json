@@ -8,20 +8,16 @@
       "type": "fields",
       "id": "info",
       "label": "",
+      "w": 191.9,
+      "fieldHeight": 7.5,
       "fields": [
-        { "id": "name", "label": "Student Name", "role": "name", "row": 0, "w": 145 },
-        { "id": "score", "label": "Score", "role": "score", "row": 0, "w": 40 },
-        { "id": "offer", "label": "Offer No.", "row": 1, "w": 60 },
-        { "id": "sched", "label": "Sched", "row": 1, "w": 75 },
-        { "id": "date", "label": "Date", "row": 1, "w": 50 }
+        { "id": "name", "label": "Student Name", "role": "name", "row": 0, "w": 112 },
+        { "id": "sid", "label": "Student ID", "role": "student_id", "digits": 8, "row": 0, "w": 79.9 },
+        { "id": "offer", "label": "Offer No.", "row": 1, "w": 50 },
+        { "id": "sched", "label": "Sched", "row": 1, "w": 54 },
+        { "id": "date", "label": "Date", "row": 1, "w": 45 },
+        { "id": "score", "label": "Score", "role": "score", "row": 1, "w": 42.9 }
       ]
-    },
-    {
-      "type": "student_id",
-      "id": "sid",
-      "label": "Student ID",
-      "digits": 8,
-      "shading": true
     },
     {
       "type": "mcq",

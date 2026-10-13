@@ -190,7 +190,7 @@
           "role": "name",
           "x": 36.5,
           "y": 22.5,
-          "w": 122.138,
+          "w": 85.331,
           "h": 7.5,
           "charset": "any",
           "multiline": false,
@@ -200,20 +200,20 @@
           "digits": 0
         },
         {
-          "id": "info.score",
-          "key": "score",
-          "label": "Score",
-          "role": "score",
-          "x": 175.638,
+          "id": "info.sid",
+          "key": "sid",
+          "label": "Student ID",
+          "role": "student_id",
+          "x": 146.831,
           "y": 22.5,
-          "w": 25.762,
+          "w": 54.569,
           "h": 7.5,
-          "charset": "any",
+          "charset": "digits",
           "multiline": false,
-          "ocr": false,
+          "ocr": true,
           "graded": false,
           "points": 0,
-          "digits": 0
+          "digits": 8
         },
         {
           "id": "info.offer",
@@ -222,7 +222,7 @@
           "role": null,
           "x": 36.5,
           "y": 32,
-          "w": 36.67,
+          "w": 24.352,
           "h": 7.5,
           "charset": "any",
           "multiline": false,
@@ -236,9 +236,9 @@
           "key": "sched",
           "label": "Sched",
           "role": null,
-          "x": 90.17,
+          "x": 77.852,
           "y": 32,
-          "w": 59.338,
+          "w": 36.06,
           "h": 7.5,
           "charset": "any",
           "multiline": false,
@@ -252,13 +252,29 @@
           "key": "date",
           "label": "Date",
           "role": null,
-          "x": 163.708,
+          "x": 128.112,
           "y": 32,
-          "w": 37.692,
+          "w": 30.517,
           "h": 7.5,
           "charset": "any",
           "multiline": false,
           "ocr": true,
+          "graded": false,
+          "points": 0,
+          "digits": 0
+        },
+        {
+          "id": "info.score",
+          "key": "score",
+          "label": "Score",
+          "role": "score",
+          "x": 175.629,
+          "y": 32,
+          "w": 25.771,
+          "h": 7.5,
+          "charset": "any",
+          "multiline": false,
+          "ocr": false,
           "graded": false,
           "points": 0,
           "digits": 0
@@ -274,12 +290,12 @@
           "digits": 0
         },
         {
-          "label": "Score",
-          "x": 161.638,
+          "label": "Student ID",
+          "x": 124.831,
           "y": 22.5,
-          "labelW": 14,
+          "labelW": 22,
           "h": 7.5,
-          "digits": 0
+          "digits": 8
         },
         {
           "label": "Offer No.",
@@ -291,7 +307,7 @@
         },
         {
           "label": "Sched",
-          "x": 76.17,
+          "x": 63.852,
           "y": 32,
           "labelW": 14,
           "h": 7.5,
@@ -299,9 +315,17 @@
         },
         {
           "label": "Date",
-          "x": 152.508,
+          "x": 116.912,
           "y": 32,
           "labelW": 11.2,
+          "h": 7.5,
+          "digits": 0
+        },
+        {
+          "label": "Score",
+          "x": 161.629,
+          "y": 32,
+          "labelW": 14,
           "h": 7.5,
           "digits": 0
         }
@@ -309,1051 +333,19 @@
       "fieldH": 7.5
     },
     {
-      "id": "sid",
-      "type": "student_id",
-      "label": "Student ID",
-      "bbox": {
-        "x": 12,
-        "y": 46,
-        "w": 191.9,
-        "h": 68
-      },
-      "grids": [
-        {
-          "x": 83.95,
-          "y": 53.5,
-          "columns": [
-            6,
-            6,
-            6,
-            6,
-            6,
-            6,
-            6,
-            6
-          ],
-          "rows": [
-            6.5,
-            1.5,
-            5,
-            5,
-            5,
-            5,
-            5,
-            5,
-            5,
-            5,
-            5,
-            5
-          ],
-          "cells": [
-            {
-              "row": 0,
-              "col": 0,
-              "kind": "box"
-            },
-            {
-              "row": 2,
-              "col": 0,
-              "kind": "bubble",
-              "text": "0"
-            },
-            {
-              "row": 3,
-              "col": 0,
-              "kind": "bubble",
-              "text": "1"
-            },
-            {
-              "row": 4,
-              "col": 0,
-              "kind": "bubble",
-              "text": "2"
-            },
-            {
-              "row": 5,
-              "col": 0,
-              "kind": "bubble",
-              "text": "3"
-            },
-            {
-              "row": 6,
-              "col": 0,
-              "kind": "bubble",
-              "text": "4"
-            },
-            {
-              "row": 7,
-              "col": 0,
-              "kind": "bubble",
-              "text": "5"
-            },
-            {
-              "row": 8,
-              "col": 0,
-              "kind": "bubble",
-              "text": "6"
-            },
-            {
-              "row": 9,
-              "col": 0,
-              "kind": "bubble",
-              "text": "7"
-            },
-            {
-              "row": 10,
-              "col": 0,
-              "kind": "bubble",
-              "text": "8"
-            },
-            {
-              "row": 11,
-              "col": 0,
-              "kind": "bubble",
-              "text": "9"
-            },
-            {
-              "row": 0,
-              "col": 1,
-              "kind": "box"
-            },
-            {
-              "row": 2,
-              "col": 1,
-              "kind": "bubble",
-              "text": "0"
-            },
-            {
-              "row": 3,
-              "col": 1,
-              "kind": "bubble",
-              "text": "1"
-            },
-            {
-              "row": 4,
-              "col": 1,
-              "kind": "bubble",
-              "text": "2"
-            },
-            {
-              "row": 5,
-              "col": 1,
-              "kind": "bubble",
-              "text": "3"
-            },
-            {
-              "row": 6,
-              "col": 1,
-              "kind": "bubble",
-              "text": "4"
-            },
-            {
-              "row": 7,
-              "col": 1,
-              "kind": "bubble",
-              "text": "5"
-            },
-            {
-              "row": 8,
-              "col": 1,
-              "kind": "bubble",
-              "text": "6"
-            },
-            {
-              "row": 9,
-              "col": 1,
-              "kind": "bubble",
-              "text": "7"
-            },
-            {
-              "row": 10,
-              "col": 1,
-              "kind": "bubble",
-              "text": "8"
-            },
-            {
-              "row": 11,
-              "col": 1,
-              "kind": "bubble",
-              "text": "9"
-            },
-            {
-              "row": 0,
-              "col": 2,
-              "kind": "box"
-            },
-            {
-              "row": 2,
-              "col": 2,
-              "kind": "bubble",
-              "text": "0"
-            },
-            {
-              "row": 3,
-              "col": 2,
-              "kind": "bubble",
-              "text": "1"
-            },
-            {
-              "row": 4,
-              "col": 2,
-              "kind": "bubble",
-              "text": "2"
-            },
-            {
-              "row": 5,
-              "col": 2,
-              "kind": "bubble",
-              "text": "3"
-            },
-            {
-              "row": 6,
-              "col": 2,
-              "kind": "bubble",
-              "text": "4"
-            },
-            {
-              "row": 7,
-              "col": 2,
-              "kind": "bubble",
-              "text": "5"
-            },
-            {
-              "row": 8,
-              "col": 2,
-              "kind": "bubble",
-              "text": "6"
-            },
-            {
-              "row": 9,
-              "col": 2,
-              "kind": "bubble",
-              "text": "7"
-            },
-            {
-              "row": 10,
-              "col": 2,
-              "kind": "bubble",
-              "text": "8"
-            },
-            {
-              "row": 11,
-              "col": 2,
-              "kind": "bubble",
-              "text": "9"
-            },
-            {
-              "row": 0,
-              "col": 3,
-              "kind": "box"
-            },
-            {
-              "row": 2,
-              "col": 3,
-              "kind": "bubble",
-              "text": "0"
-            },
-            {
-              "row": 3,
-              "col": 3,
-              "kind": "bubble",
-              "text": "1"
-            },
-            {
-              "row": 4,
-              "col": 3,
-              "kind": "bubble",
-              "text": "2"
-            },
-            {
-              "row": 5,
-              "col": 3,
-              "kind": "bubble",
-              "text": "3"
-            },
-            {
-              "row": 6,
-              "col": 3,
-              "kind": "bubble",
-              "text": "4"
-            },
-            {
-              "row": 7,
-              "col": 3,
-              "kind": "bubble",
-              "text": "5"
-            },
-            {
-              "row": 8,
-              "col": 3,
-              "kind": "bubble",
-              "text": "6"
-            },
-            {
-              "row": 9,
-              "col": 3,
-              "kind": "bubble",
-              "text": "7"
-            },
-            {
-              "row": 10,
-              "col": 3,
-              "kind": "bubble",
-              "text": "8"
-            },
-            {
-              "row": 11,
-              "col": 3,
-              "kind": "bubble",
-              "text": "9"
-            },
-            {
-              "row": 0,
-              "col": 4,
-              "kind": "box"
-            },
-            {
-              "row": 2,
-              "col": 4,
-              "kind": "bubble",
-              "text": "0"
-            },
-            {
-              "row": 3,
-              "col": 4,
-              "kind": "bubble",
-              "text": "1"
-            },
-            {
-              "row": 4,
-              "col": 4,
-              "kind": "bubble",
-              "text": "2"
-            },
-            {
-              "row": 5,
-              "col": 4,
-              "kind": "bubble",
-              "text": "3"
-            },
-            {
-              "row": 6,
-              "col": 4,
-              "kind": "bubble",
-              "text": "4"
-            },
-            {
-              "row": 7,
-              "col": 4,
-              "kind": "bubble",
-              "text": "5"
-            },
-            {
-              "row": 8,
-              "col": 4,
-              "kind": "bubble",
-              "text": "6"
-            },
-            {
-              "row": 9,
-              "col": 4,
-              "kind": "bubble",
-              "text": "7"
-            },
-            {
-              "row": 10,
-              "col": 4,
-              "kind": "bubble",
-              "text": "8"
-            },
-            {
-              "row": 11,
-              "col": 4,
-              "kind": "bubble",
-              "text": "9"
-            },
-            {
-              "row": 0,
-              "col": 5,
-              "kind": "box"
-            },
-            {
-              "row": 2,
-              "col": 5,
-              "kind": "bubble",
-              "text": "0"
-            },
-            {
-              "row": 3,
-              "col": 5,
-              "kind": "bubble",
-              "text": "1"
-            },
-            {
-              "row": 4,
-              "col": 5,
-              "kind": "bubble",
-              "text": "2"
-            },
-            {
-              "row": 5,
-              "col": 5,
-              "kind": "bubble",
-              "text": "3"
-            },
-            {
-              "row": 6,
-              "col": 5,
-              "kind": "bubble",
-              "text": "4"
-            },
-            {
-              "row": 7,
-              "col": 5,
-              "kind": "bubble",
-              "text": "5"
-            },
-            {
-              "row": 8,
-              "col": 5,
-              "kind": "bubble",
-              "text": "6"
-            },
-            {
-              "row": 9,
-              "col": 5,
-              "kind": "bubble",
-              "text": "7"
-            },
-            {
-              "row": 10,
-              "col": 5,
-              "kind": "bubble",
-              "text": "8"
-            },
-            {
-              "row": 11,
-              "col": 5,
-              "kind": "bubble",
-              "text": "9"
-            },
-            {
-              "row": 0,
-              "col": 6,
-              "kind": "box"
-            },
-            {
-              "row": 2,
-              "col": 6,
-              "kind": "bubble",
-              "text": "0"
-            },
-            {
-              "row": 3,
-              "col": 6,
-              "kind": "bubble",
-              "text": "1"
-            },
-            {
-              "row": 4,
-              "col": 6,
-              "kind": "bubble",
-              "text": "2"
-            },
-            {
-              "row": 5,
-              "col": 6,
-              "kind": "bubble",
-              "text": "3"
-            },
-            {
-              "row": 6,
-              "col": 6,
-              "kind": "bubble",
-              "text": "4"
-            },
-            {
-              "row": 7,
-              "col": 6,
-              "kind": "bubble",
-              "text": "5"
-            },
-            {
-              "row": 8,
-              "col": 6,
-              "kind": "bubble",
-              "text": "6"
-            },
-            {
-              "row": 9,
-              "col": 6,
-              "kind": "bubble",
-              "text": "7"
-            },
-            {
-              "row": 10,
-              "col": 6,
-              "kind": "bubble",
-              "text": "8"
-            },
-            {
-              "row": 11,
-              "col": 6,
-              "kind": "bubble",
-              "text": "9"
-            },
-            {
-              "row": 0,
-              "col": 7,
-              "kind": "box"
-            },
-            {
-              "row": 2,
-              "col": 7,
-              "kind": "bubble",
-              "text": "0"
-            },
-            {
-              "row": 3,
-              "col": 7,
-              "kind": "bubble",
-              "text": "1"
-            },
-            {
-              "row": 4,
-              "col": 7,
-              "kind": "bubble",
-              "text": "2"
-            },
-            {
-              "row": 5,
-              "col": 7,
-              "kind": "bubble",
-              "text": "3"
-            },
-            {
-              "row": 6,
-              "col": 7,
-              "kind": "bubble",
-              "text": "4"
-            },
-            {
-              "row": 7,
-              "col": 7,
-              "kind": "bubble",
-              "text": "5"
-            },
-            {
-              "row": 8,
-              "col": 7,
-              "kind": "bubble",
-              "text": "6"
-            },
-            {
-              "row": 9,
-              "col": 7,
-              "kind": "bubble",
-              "text": "7"
-            },
-            {
-              "row": 10,
-              "col": 7,
-              "kind": "bubble",
-              "text": "8"
-            },
-            {
-              "row": 11,
-              "col": 7,
-              "kind": "bubble",
-              "text": "9"
-            }
-          ]
-        }
-      ],
-      "groups": [
-        {
-          "key": "sid[0]",
-          "kind": "sid",
-          "label": "ID digit 1",
-          "index": 0,
-          "options": [
-            {
-              "value": "0",
-              "cx": 86.95,
-              "cy": 64
-            },
-            {
-              "value": "1",
-              "cx": 86.95,
-              "cy": 69
-            },
-            {
-              "value": "2",
-              "cx": 86.95,
-              "cy": 74
-            },
-            {
-              "value": "3",
-              "cx": 86.95,
-              "cy": 79
-            },
-            {
-              "value": "4",
-              "cx": 86.95,
-              "cy": 84
-            },
-            {
-              "value": "5",
-              "cx": 86.95,
-              "cy": 89
-            },
-            {
-              "value": "6",
-              "cx": 86.95,
-              "cy": 94
-            },
-            {
-              "value": "7",
-              "cx": 86.95,
-              "cy": 99
-            },
-            {
-              "value": "8",
-              "cx": 86.95,
-              "cy": 104
-            },
-            {
-              "value": "9",
-              "cx": 86.95,
-              "cy": 109
-            }
-          ]
-        },
-        {
-          "key": "sid[1]",
-          "kind": "sid",
-          "label": "ID digit 2",
-          "index": 1,
-          "options": [
-            {
-              "value": "0",
-              "cx": 92.95,
-              "cy": 64
-            },
-            {
-              "value": "1",
-              "cx": 92.95,
-              "cy": 69
-            },
-            {
-              "value": "2",
-              "cx": 92.95,
-              "cy": 74
-            },
-            {
-              "value": "3",
-              "cx": 92.95,
-              "cy": 79
-            },
-            {
-              "value": "4",
-              "cx": 92.95,
-              "cy": 84
-            },
-            {
-              "value": "5",
-              "cx": 92.95,
-              "cy": 89
-            },
-            {
-              "value": "6",
-              "cx": 92.95,
-              "cy": 94
-            },
-            {
-              "value": "7",
-              "cx": 92.95,
-              "cy": 99
-            },
-            {
-              "value": "8",
-              "cx": 92.95,
-              "cy": 104
-            },
-            {
-              "value": "9",
-              "cx": 92.95,
-              "cy": 109
-            }
-          ]
-        },
-        {
-          "key": "sid[2]",
-          "kind": "sid",
-          "label": "ID digit 3",
-          "index": 2,
-          "options": [
-            {
-              "value": "0",
-              "cx": 98.95,
-              "cy": 64
-            },
-            {
-              "value": "1",
-              "cx": 98.95,
-              "cy": 69
-            },
-            {
-              "value": "2",
-              "cx": 98.95,
-              "cy": 74
-            },
-            {
-              "value": "3",
-              "cx": 98.95,
-              "cy": 79
-            },
-            {
-              "value": "4",
-              "cx": 98.95,
-              "cy": 84
-            },
-            {
-              "value": "5",
-              "cx": 98.95,
-              "cy": 89
-            },
-            {
-              "value": "6",
-              "cx": 98.95,
-              "cy": 94
-            },
-            {
-              "value": "7",
-              "cx": 98.95,
-              "cy": 99
-            },
-            {
-              "value": "8",
-              "cx": 98.95,
-              "cy": 104
-            },
-            {
-              "value": "9",
-              "cx": 98.95,
-              "cy": 109
-            }
-          ]
-        },
-        {
-          "key": "sid[3]",
-          "kind": "sid",
-          "label": "ID digit 4",
-          "index": 3,
-          "options": [
-            {
-              "value": "0",
-              "cx": 104.95,
-              "cy": 64
-            },
-            {
-              "value": "1",
-              "cx": 104.95,
-              "cy": 69
-            },
-            {
-              "value": "2",
-              "cx": 104.95,
-              "cy": 74
-            },
-            {
-              "value": "3",
-              "cx": 104.95,
-              "cy": 79
-            },
-            {
-              "value": "4",
-              "cx": 104.95,
-              "cy": 84
-            },
-            {
-              "value": "5",
-              "cx": 104.95,
-              "cy": 89
-            },
-            {
-              "value": "6",
-              "cx": 104.95,
-              "cy": 94
-            },
-            {
-              "value": "7",
-              "cx": 104.95,
-              "cy": 99
-            },
-            {
-              "value": "8",
-              "cx": 104.95,
-              "cy": 104
-            },
-            {
-              "value": "9",
-              "cx": 104.95,
-              "cy": 109
-            }
-          ]
-        },
-        {
-          "key": "sid[4]",
-          "kind": "sid",
-          "label": "ID digit 5",
-          "index": 4,
-          "options": [
-            {
-              "value": "0",
-              "cx": 110.95,
-              "cy": 64
-            },
-            {
-              "value": "1",
-              "cx": 110.95,
-              "cy": 69
-            },
-            {
-              "value": "2",
-              "cx": 110.95,
-              "cy": 74
-            },
-            {
-              "value": "3",
-              "cx": 110.95,
-              "cy": 79
-            },
-            {
-              "value": "4",
-              "cx": 110.95,
-              "cy": 84
-            },
-            {
-              "value": "5",
-              "cx": 110.95,
-              "cy": 89
-            },
-            {
-              "value": "6",
-              "cx": 110.95,
-              "cy": 94
-            },
-            {
-              "value": "7",
-              "cx": 110.95,
-              "cy": 99
-            },
-            {
-              "value": "8",
-              "cx": 110.95,
-              "cy": 104
-            },
-            {
-              "value": "9",
-              "cx": 110.95,
-              "cy": 109
-            }
-          ]
-        },
-        {
-          "key": "sid[5]",
-          "kind": "sid",
-          "label": "ID digit 6",
-          "index": 5,
-          "options": [
-            {
-              "value": "0",
-              "cx": 116.95,
-              "cy": 64
-            },
-            {
-              "value": "1",
-              "cx": 116.95,
-              "cy": 69
-            },
-            {
-              "value": "2",
-              "cx": 116.95,
-              "cy": 74
-            },
-            {
-              "value": "3",
-              "cx": 116.95,
-              "cy": 79
-            },
-            {
-              "value": "4",
-              "cx": 116.95,
-              "cy": 84
-            },
-            {
-              "value": "5",
-              "cx": 116.95,
-              "cy": 89
-            },
-            {
-              "value": "6",
-              "cx": 116.95,
-              "cy": 94
-            },
-            {
-              "value": "7",
-              "cx": 116.95,
-              "cy": 99
-            },
-            {
-              "value": "8",
-              "cx": 116.95,
-              "cy": 104
-            },
-            {
-              "value": "9",
-              "cx": 116.95,
-              "cy": 109
-            }
-          ]
-        },
-        {
-          "key": "sid[6]",
-          "kind": "sid",
-          "label": "ID digit 7",
-          "index": 6,
-          "options": [
-            {
-              "value": "0",
-              "cx": 122.95,
-              "cy": 64
-            },
-            {
-              "value": "1",
-              "cx": 122.95,
-              "cy": 69
-            },
-            {
-              "value": "2",
-              "cx": 122.95,
-              "cy": 74
-            },
-            {
-              "value": "3",
-              "cx": 122.95,
-              "cy": 79
-            },
-            {
-              "value": "4",
-              "cx": 122.95,
-              "cy": 84
-            },
-            {
-              "value": "5",
-              "cx": 122.95,
-              "cy": 89
-            },
-            {
-              "value": "6",
-              "cx": 122.95,
-              "cy": 94
-            },
-            {
-              "value": "7",
-              "cx": 122.95,
-              "cy": 99
-            },
-            {
-              "value": "8",
-              "cx": 122.95,
-              "cy": 104
-            },
-            {
-              "value": "9",
-              "cx": 122.95,
-              "cy": 109
-            }
-          ]
-        },
-        {
-          "key": "sid[7]",
-          "kind": "sid",
-          "label": "ID digit 8",
-          "index": 7,
-          "options": [
-            {
-              "value": "0",
-              "cx": 128.95,
-              "cy": 64
-            },
-            {
-              "value": "1",
-              "cx": 128.95,
-              "cy": 69
-            },
-            {
-              "value": "2",
-              "cx": 128.95,
-              "cy": 74
-            },
-            {
-              "value": "3",
-              "cx": 128.95,
-              "cy": 79
-            },
-            {
-              "value": "4",
-              "cx": 128.95,
-              "cy": 84
-            },
-            {
-              "value": "5",
-              "cx": 128.95,
-              "cy": 89
-            },
-            {
-              "value": "6",
-              "cx": 128.95,
-              "cy": 94
-            },
-            {
-              "value": "7",
-              "cx": 128.95,
-              "cy": 99
-            },
-            {
-              "value": "8",
-              "cx": 128.95,
-              "cy": 104
-            },
-            {
-              "value": "9",
-              "cx": 128.95,
-              "cy": 109
-            }
-          ]
-        }
-      ],
-      "rois": [],
-      "digits": 8,
-      "shading": true
-    },
-    {
       "id": "items",
       "type": "mcq",
       "label": "Multiple Choice (1–100)",
       "bbox": {
         "x": 12,
-        "y": 118,
+        "y": 46,
         "w": 191.9,
         "h": 114.2
       },
       "grids": [
         {
           "x": 14.5,
-          "y": 125.5,
+          "y": 53.5,
           "columns": [
             7,
             5.4,
@@ -1988,7 +980,7 @@
         },
         {
           "x": 54.075,
-          "y": 125.5,
+          "y": 53.5,
           "columns": [
             7,
             5.4,
@@ -2623,7 +1615,7 @@
         },
         {
           "x": 93.65,
-          "y": 125.5,
+          "y": 53.5,
           "columns": [
             7,
             5.4,
@@ -3258,7 +2250,7 @@
         },
         {
           "x": 133.225,
-          "y": 125.5,
+          "y": 53.5,
           "columns": [
             7,
             5.4,
@@ -3893,7 +2885,7 @@
         },
         {
           "x": 172.8,
-          "y": 125.5,
+          "y": 53.5,
           "columns": [
             7,
             5.4,
@@ -4536,22 +3528,22 @@
             {
               "value": "A",
               "cx": 24.2,
-              "cy": 128
+              "cy": 56
             },
             {
               "value": "B",
               "cx": 29.6,
-              "cy": 128
+              "cy": 56
             },
             {
               "value": "C",
               "cx": 35,
-              "cy": 128
+              "cy": 56
             },
             {
               "value": "D",
               "cx": 40.4,
-              "cy": 128
+              "cy": 56
             }
           ],
           "points": 1
@@ -4564,22 +3556,22 @@
             {
               "value": "A",
               "cx": 24.2,
-              "cy": 133
+              "cy": 61
             },
             {
               "value": "B",
               "cx": 29.6,
-              "cy": 133
+              "cy": 61
             },
             {
               "value": "C",
               "cx": 35,
-              "cy": 133
+              "cy": 61
             },
             {
               "value": "D",
               "cx": 40.4,
-              "cy": 133
+              "cy": 61
             }
           ],
           "points": 1
@@ -4592,22 +3584,22 @@
             {
               "value": "A",
               "cx": 24.2,
-              "cy": 138
+              "cy": 66
             },
             {
               "value": "B",
               "cx": 29.6,
-              "cy": 138
+              "cy": 66
             },
             {
               "value": "C",
               "cx": 35,
-              "cy": 138
+              "cy": 66
             },
             {
               "value": "D",
               "cx": 40.4,
-              "cy": 138
+              "cy": 66
             }
           ],
           "points": 1
@@ -4620,22 +3612,22 @@
             {
               "value": "A",
               "cx": 24.2,
-              "cy": 143
+              "cy": 71
             },
             {
               "value": "B",
               "cx": 29.6,
-              "cy": 143
+              "cy": 71
             },
             {
               "value": "C",
               "cx": 35,
-              "cy": 143
+              "cy": 71
             },
             {
               "value": "D",
               "cx": 40.4,
-              "cy": 143
+              "cy": 71
             }
           ],
           "points": 1
@@ -4648,22 +3640,22 @@
             {
               "value": "A",
               "cx": 24.2,
-              "cy": 148
+              "cy": 76
             },
             {
               "value": "B",
               "cx": 29.6,
-              "cy": 148
+              "cy": 76
             },
             {
               "value": "C",
               "cx": 35,
-              "cy": 148
+              "cy": 76
             },
             {
               "value": "D",
               "cx": 40.4,
-              "cy": 148
+              "cy": 76
             }
           ],
           "points": 1
@@ -4676,22 +3668,22 @@
             {
               "value": "A",
               "cx": 24.2,
-              "cy": 154.4
+              "cy": 82.4
             },
             {
               "value": "B",
               "cx": 29.6,
-              "cy": 154.4
+              "cy": 82.4
             },
             {
               "value": "C",
               "cx": 35,
-              "cy": 154.4
+              "cy": 82.4
             },
             {
               "value": "D",
               "cx": 40.4,
-              "cy": 154.4
+              "cy": 82.4
             }
           ],
           "points": 1
@@ -4704,22 +3696,22 @@
             {
               "value": "A",
               "cx": 24.2,
-              "cy": 159.4
+              "cy": 87.4
             },
             {
               "value": "B",
               "cx": 29.6,
-              "cy": 159.4
+              "cy": 87.4
             },
             {
               "value": "C",
               "cx": 35,
-              "cy": 159.4
+              "cy": 87.4
             },
             {
               "value": "D",
               "cx": 40.4,
-              "cy": 159.4
+              "cy": 87.4
             }
           ],
           "points": 1
@@ -4732,22 +3724,22 @@
             {
               "value": "A",
               "cx": 24.2,
-              "cy": 164.4
+              "cy": 92.4
             },
             {
               "value": "B",
               "cx": 29.6,
-              "cy": 164.4
+              "cy": 92.4
             },
             {
               "value": "C",
               "cx": 35,
-              "cy": 164.4
+              "cy": 92.4
             },
             {
               "value": "D",
               "cx": 40.4,
-              "cy": 164.4
+              "cy": 92.4
             }
           ],
           "points": 1
@@ -4760,22 +3752,22 @@
             {
               "value": "A",
               "cx": 24.2,
-              "cy": 169.4
+              "cy": 97.4
             },
             {
               "value": "B",
               "cx": 29.6,
-              "cy": 169.4
+              "cy": 97.4
             },
             {
               "value": "C",
               "cx": 35,
-              "cy": 169.4
+              "cy": 97.4
             },
             {
               "value": "D",
               "cx": 40.4,
-              "cy": 169.4
+              "cy": 97.4
             }
           ],
           "points": 1
@@ -4788,22 +3780,22 @@
             {
               "value": "A",
               "cx": 24.2,
-              "cy": 174.4
+              "cy": 102.4
             },
             {
               "value": "B",
               "cx": 29.6,
-              "cy": 174.4
+              "cy": 102.4
             },
             {
               "value": "C",
               "cx": 35,
-              "cy": 174.4
+              "cy": 102.4
             },
             {
               "value": "D",
               "cx": 40.4,
-              "cy": 174.4
+              "cy": 102.4
             }
           ],
           "points": 1
@@ -4816,22 +3808,22 @@
             {
               "value": "A",
               "cx": 24.2,
-              "cy": 180.8
+              "cy": 108.8
             },
             {
               "value": "B",
               "cx": 29.6,
-              "cy": 180.8
+              "cy": 108.8
             },
             {
               "value": "C",
               "cx": 35,
-              "cy": 180.8
+              "cy": 108.8
             },
             {
               "value": "D",
               "cx": 40.4,
-              "cy": 180.8
+              "cy": 108.8
             }
           ],
           "points": 1
@@ -4844,22 +3836,22 @@
             {
               "value": "A",
               "cx": 24.2,
-              "cy": 185.8
+              "cy": 113.8
             },
             {
               "value": "B",
               "cx": 29.6,
-              "cy": 185.8
+              "cy": 113.8
             },
             {
               "value": "C",
               "cx": 35,
-              "cy": 185.8
+              "cy": 113.8
             },
             {
               "value": "D",
               "cx": 40.4,
-              "cy": 185.8
+              "cy": 113.8
             }
           ],
           "points": 1
@@ -4872,22 +3864,22 @@
             {
               "value": "A",
               "cx": 24.2,
-              "cy": 190.8
+              "cy": 118.8
             },
             {
               "value": "B",
               "cx": 29.6,
-              "cy": 190.8
+              "cy": 118.8
             },
             {
               "value": "C",
               "cx": 35,
-              "cy": 190.8
+              "cy": 118.8
             },
             {
               "value": "D",
               "cx": 40.4,
-              "cy": 190.8
+              "cy": 118.8
             }
           ],
           "points": 1
@@ -4900,22 +3892,22 @@
             {
               "value": "A",
               "cx": 24.2,
-              "cy": 195.8
+              "cy": 123.8
             },
             {
               "value": "B",
               "cx": 29.6,
-              "cy": 195.8
+              "cy": 123.8
             },
             {
               "value": "C",
               "cx": 35,
-              "cy": 195.8
+              "cy": 123.8
             },
             {
               "value": "D",
               "cx": 40.4,
-              "cy": 195.8
+              "cy": 123.8
             }
           ],
           "points": 1
@@ -4928,22 +3920,22 @@
             {
               "value": "A",
               "cx": 24.2,
-              "cy": 200.8
+              "cy": 128.8
             },
             {
               "value": "B",
               "cx": 29.6,
-              "cy": 200.8
+              "cy": 128.8
             },
             {
               "value": "C",
               "cx": 35,
-              "cy": 200.8
+              "cy": 128.8
             },
             {
               "value": "D",
               "cx": 40.4,
-              "cy": 200.8
+              "cy": 128.8
             }
           ],
           "points": 1
@@ -4956,22 +3948,22 @@
             {
               "value": "A",
               "cx": 24.2,
-              "cy": 207.2
+              "cy": 135.2
             },
             {
               "value": "B",
               "cx": 29.6,
-              "cy": 207.2
+              "cy": 135.2
             },
             {
               "value": "C",
               "cx": 35,
-              "cy": 207.2
+              "cy": 135.2
             },
             {
               "value": "D",
               "cx": 40.4,
-              "cy": 207.2
+              "cy": 135.2
             }
           ],
           "points": 1
@@ -4984,22 +3976,22 @@
             {
               "value": "A",
               "cx": 24.2,
-              "cy": 212.2
+              "cy": 140.2
             },
             {
               "value": "B",
               "cx": 29.6,
-              "cy": 212.2
+              "cy": 140.2
             },
             {
               "value": "C",
               "cx": 35,
-              "cy": 212.2
+              "cy": 140.2
             },
             {
               "value": "D",
               "cx": 40.4,
-              "cy": 212.2
+              "cy": 140.2
             }
           ],
           "points": 1
@@ -5012,22 +4004,22 @@
             {
               "value": "A",
               "cx": 24.2,
-              "cy": 217.2
+              "cy": 145.2
             },
             {
               "value": "B",
               "cx": 29.6,
-              "cy": 217.2
+              "cy": 145.2
             },
             {
               "value": "C",
               "cx": 35,
-              "cy": 217.2
+              "cy": 145.2
             },
             {
               "value": "D",
               "cx": 40.4,
-              "cy": 217.2
+              "cy": 145.2
             }
           ],
           "points": 1
@@ -5040,22 +4032,22 @@
             {
               "value": "A",
               "cx": 24.2,
-              "cy": 222.2
+              "cy": 150.2
             },
             {
               "value": "B",
               "cx": 29.6,
-              "cy": 222.2
+              "cy": 150.2
             },
             {
               "value": "C",
               "cx": 35,
-              "cy": 222.2
+              "cy": 150.2
             },
             {
               "value": "D",
               "cx": 40.4,
-              "cy": 222.2
+              "cy": 150.2
             }
           ],
           "points": 1
@@ -5068,22 +4060,22 @@
             {
               "value": "A",
               "cx": 24.2,
-              "cy": 227.2
+              "cy": 155.2
             },
             {
               "value": "B",
               "cx": 29.6,
-              "cy": 227.2
+              "cy": 155.2
             },
             {
               "value": "C",
               "cx": 35,
-              "cy": 227.2
+              "cy": 155.2
             },
             {
               "value": "D",
               "cx": 40.4,
-              "cy": 227.2
+              "cy": 155.2
             }
           ],
           "points": 1
@@ -5096,22 +4088,22 @@
             {
               "value": "A",
               "cx": 63.775,
-              "cy": 128
+              "cy": 56
             },
             {
               "value": "B",
               "cx": 69.175,
-              "cy": 128
+              "cy": 56
             },
             {
               "value": "C",
               "cx": 74.575,
-              "cy": 128
+              "cy": 56
             },
             {
               "value": "D",
               "cx": 79.975,
-              "cy": 128
+              "cy": 56
             }
           ],
           "points": 1
@@ -5124,22 +4116,22 @@
             {
               "value": "A",
               "cx": 63.775,
-              "cy": 133
+              "cy": 61
             },
             {
               "value": "B",
               "cx": 69.175,
-              "cy": 133
+              "cy": 61
             },
             {
               "value": "C",
               "cx": 74.575,
-              "cy": 133
+              "cy": 61
             },
             {
               "value": "D",
               "cx": 79.975,
-              "cy": 133
+              "cy": 61
             }
           ],
           "points": 1
@@ -5152,22 +4144,22 @@
             {
               "value": "A",
               "cx": 63.775,
-              "cy": 138
+              "cy": 66
             },
             {
               "value": "B",
               "cx": 69.175,
-              "cy": 138
+              "cy": 66
             },
             {
               "value": "C",
               "cx": 74.575,
-              "cy": 138
+              "cy": 66
             },
             {
               "value": "D",
               "cx": 79.975,
-              "cy": 138
+              "cy": 66
             }
           ],
           "points": 1
@@ -5180,22 +4172,22 @@
             {
               "value": "A",
               "cx": 63.775,
-              "cy": 143
+              "cy": 71
             },
             {
               "value": "B",
               "cx": 69.175,
-              "cy": 143
+              "cy": 71
             },
             {
               "value": "C",
               "cx": 74.575,
-              "cy": 143
+              "cy": 71
             },
             {
               "value": "D",
               "cx": 79.975,
-              "cy": 143
+              "cy": 71
             }
           ],
           "points": 1
@@ -5208,22 +4200,22 @@
             {
               "value": "A",
               "cx": 63.775,
-              "cy": 148
+              "cy": 76
             },
             {
               "value": "B",
               "cx": 69.175,
-              "cy": 148
+              "cy": 76
             },
             {
               "value": "C",
               "cx": 74.575,
-              "cy": 148
+              "cy": 76
             },
             {
               "value": "D",
               "cx": 79.975,
-              "cy": 148
+              "cy": 76
             }
           ],
           "points": 1
@@ -5236,22 +4228,22 @@
             {
               "value": "A",
               "cx": 63.775,
-              "cy": 154.4
+              "cy": 82.4
             },
             {
               "value": "B",
               "cx": 69.175,
-              "cy": 154.4
+              "cy": 82.4
             },
             {
               "value": "C",
               "cx": 74.575,
-              "cy": 154.4
+              "cy": 82.4
             },
             {
               "value": "D",
               "cx": 79.975,
-              "cy": 154.4
+              "cy": 82.4
             }
           ],
           "points": 1
@@ -5264,22 +4256,22 @@
             {
               "value": "A",
               "cx": 63.775,
-              "cy": 159.4
+              "cy": 87.4
             },
             {
               "value": "B",
               "cx": 69.175,
-              "cy": 159.4
+              "cy": 87.4
             },
             {
               "value": "C",
               "cx": 74.575,
-              "cy": 159.4
+              "cy": 87.4
             },
             {
               "value": "D",
               "cx": 79.975,
-              "cy": 159.4
+              "cy": 87.4
             }
           ],
           "points": 1
@@ -5292,22 +4284,22 @@
             {
               "value": "A",
               "cx": 63.775,
-              "cy": 164.4
+              "cy": 92.4
             },
             {
               "value": "B",
               "cx": 69.175,
-              "cy": 164.4
+              "cy": 92.4
             },
             {
               "value": "C",
               "cx": 74.575,
-              "cy": 164.4
+              "cy": 92.4
             },
             {
               "value": "D",
               "cx": 79.975,
-              "cy": 164.4
+              "cy": 92.4
             }
           ],
           "points": 1
@@ -5320,22 +4312,22 @@
             {
               "value": "A",
               "cx": 63.775,
-              "cy": 169.4
+              "cy": 97.4
             },
             {
               "value": "B",
               "cx": 69.175,
-              "cy": 169.4
+              "cy": 97.4
             },
             {
               "value": "C",
               "cx": 74.575,
-              "cy": 169.4
+              "cy": 97.4
             },
             {
               "value": "D",
               "cx": 79.975,
-              "cy": 169.4
+              "cy": 97.4
             }
           ],
           "points": 1
@@ -5348,22 +4340,22 @@
             {
               "value": "A",
               "cx": 63.775,
-              "cy": 174.4
+              "cy": 102.4
             },
             {
               "value": "B",
               "cx": 69.175,
-              "cy": 174.4
+              "cy": 102.4
             },
             {
               "value": "C",
               "cx": 74.575,
-              "cy": 174.4
+              "cy": 102.4
             },
             {
               "value": "D",
               "cx": 79.975,
-              "cy": 174.4
+              "cy": 102.4
             }
           ],
           "points": 1
@@ -5376,22 +4368,22 @@
             {
               "value": "A",
               "cx": 63.775,
-              "cy": 180.8
+              "cy": 108.8
             },
             {
               "value": "B",
               "cx": 69.175,
-              "cy": 180.8
+              "cy": 108.8
             },
             {
               "value": "C",
               "cx": 74.575,
-              "cy": 180.8
+              "cy": 108.8
             },
             {
               "value": "D",
               "cx": 79.975,
-              "cy": 180.8
+              "cy": 108.8
             }
           ],
           "points": 1
@@ -5404,22 +4396,22 @@
             {
               "value": "A",
               "cx": 63.775,
-              "cy": 185.8
+              "cy": 113.8
             },
             {
               "value": "B",
               "cx": 69.175,
-              "cy": 185.8
+              "cy": 113.8
             },
             {
               "value": "C",
               "cx": 74.575,
-              "cy": 185.8
+              "cy": 113.8
             },
             {
               "value": "D",
               "cx": 79.975,
-              "cy": 185.8
+              "cy": 113.8
             }
           ],
           "points": 1
@@ -5432,22 +4424,22 @@
             {
               "value": "A",
               "cx": 63.775,
-              "cy": 190.8
+              "cy": 118.8
             },
             {
               "value": "B",
               "cx": 69.175,
-              "cy": 190.8
+              "cy": 118.8
             },
             {
               "value": "C",
               "cx": 74.575,
-              "cy": 190.8
+              "cy": 118.8
             },
             {
               "value": "D",
               "cx": 79.975,
-              "cy": 190.8
+              "cy": 118.8
             }
           ],
           "points": 1
@@ -5460,22 +4452,22 @@
             {
               "value": "A",
               "cx": 63.775,
-              "cy": 195.8
+              "cy": 123.8
             },
             {
               "value": "B",
               "cx": 69.175,
-              "cy": 195.8
+              "cy": 123.8
             },
             {
               "value": "C",
               "cx": 74.575,
-              "cy": 195.8
+              "cy": 123.8
             },
             {
               "value": "D",
               "cx": 79.975,
-              "cy": 195.8
+              "cy": 123.8
             }
           ],
           "points": 1
@@ -5488,22 +4480,22 @@
             {
               "value": "A",
               "cx": 63.775,
-              "cy": 200.8
+              "cy": 128.8
             },
             {
               "value": "B",
               "cx": 69.175,
-              "cy": 200.8
+              "cy": 128.8
             },
             {
               "value": "C",
               "cx": 74.575,
-              "cy": 200.8
+              "cy": 128.8
             },
             {
               "value": "D",
               "cx": 79.975,
-              "cy": 200.8
+              "cy": 128.8
             }
           ],
           "points": 1
@@ -5516,22 +4508,22 @@
             {
               "value": "A",
               "cx": 63.775,
-              "cy": 207.2
+              "cy": 135.2
             },
             {
               "value": "B",
               "cx": 69.175,
-              "cy": 207.2
+              "cy": 135.2
             },
             {
               "value": "C",
               "cx": 74.575,
-              "cy": 207.2
+              "cy": 135.2
             },
             {
               "value": "D",
               "cx": 79.975,
-              "cy": 207.2
+              "cy": 135.2
             }
           ],
           "points": 1
@@ -5544,22 +4536,22 @@
             {
               "value": "A",
               "cx": 63.775,
-              "cy": 212.2
+              "cy": 140.2
             },
             {
               "value": "B",
               "cx": 69.175,
-              "cy": 212.2
+              "cy": 140.2
             },
             {
               "value": "C",
               "cx": 74.575,
-              "cy": 212.2
+              "cy": 140.2
             },
             {
               "value": "D",
               "cx": 79.975,
-              "cy": 212.2
+              "cy": 140.2
             }
           ],
           "points": 1
@@ -5572,22 +4564,22 @@
             {
               "value": "A",
               "cx": 63.775,
-              "cy": 217.2
+              "cy": 145.2
             },
             {
               "value": "B",
               "cx": 69.175,
-              "cy": 217.2
+              "cy": 145.2
             },
             {
               "value": "C",
               "cx": 74.575,
-              "cy": 217.2
+              "cy": 145.2
             },
             {
               "value": "D",
               "cx": 79.975,
-              "cy": 217.2
+              "cy": 145.2
             }
           ],
           "points": 1
@@ -5600,22 +4592,22 @@
             {
               "value": "A",
               "cx": 63.775,
-              "cy": 222.2
+              "cy": 150.2
             },
             {
               "value": "B",
               "cx": 69.175,
-              "cy": 222.2
+              "cy": 150.2
             },
             {
               "value": "C",
               "cx": 74.575,
-              "cy": 222.2
+              "cy": 150.2
             },
             {
               "value": "D",
               "cx": 79.975,
-              "cy": 222.2
+              "cy": 150.2
             }
           ],
           "points": 1
@@ -5628,22 +4620,22 @@
             {
               "value": "A",
               "cx": 63.775,
-              "cy": 227.2
+              "cy": 155.2
             },
             {
               "value": "B",
               "cx": 69.175,
-              "cy": 227.2
+              "cy": 155.2
             },
             {
               "value": "C",
               "cx": 74.575,
-              "cy": 227.2
+              "cy": 155.2
             },
             {
               "value": "D",
               "cx": 79.975,
-              "cy": 227.2
+              "cy": 155.2
             }
           ],
           "points": 1
@@ -5656,22 +4648,22 @@
             {
               "value": "A",
               "cx": 103.35,
-              "cy": 128
+              "cy": 56
             },
             {
               "value": "B",
               "cx": 108.75,
-              "cy": 128
+              "cy": 56
             },
             {
               "value": "C",
               "cx": 114.15,
-              "cy": 128
+              "cy": 56
             },
             {
               "value": "D",
               "cx": 119.55,
-              "cy": 128
+              "cy": 56
             }
           ],
           "points": 1
@@ -5684,22 +4676,22 @@
             {
               "value": "A",
               "cx": 103.35,
-              "cy": 133
+              "cy": 61
             },
             {
               "value": "B",
               "cx": 108.75,
-              "cy": 133
+              "cy": 61
             },
             {
               "value": "C",
               "cx": 114.15,
-              "cy": 133
+              "cy": 61
             },
             {
               "value": "D",
               "cx": 119.55,
-              "cy": 133
+              "cy": 61
             }
           ],
           "points": 1
@@ -5712,22 +4704,22 @@
             {
               "value": "A",
               "cx": 103.35,
-              "cy": 138
+              "cy": 66
             },
             {
               "value": "B",
               "cx": 108.75,
-              "cy": 138
+              "cy": 66
             },
             {
               "value": "C",
               "cx": 114.15,
-              "cy": 138
+              "cy": 66
             },
             {
               "value": "D",
               "cx": 119.55,
-              "cy": 138
+              "cy": 66
             }
           ],
           "points": 1
@@ -5740,22 +4732,22 @@
             {
               "value": "A",
               "cx": 103.35,
-              "cy": 143
+              "cy": 71
             },
             {
               "value": "B",
               "cx": 108.75,
-              "cy": 143
+              "cy": 71
             },
             {
               "value": "C",
               "cx": 114.15,
-              "cy": 143
+              "cy": 71
             },
             {
               "value": "D",
               "cx": 119.55,
-              "cy": 143
+              "cy": 71
             }
           ],
           "points": 1
@@ -5768,22 +4760,22 @@
             {
               "value": "A",
               "cx": 103.35,
-              "cy": 148
+              "cy": 76
             },
             {
               "value": "B",
               "cx": 108.75,
-              "cy": 148
+              "cy": 76
             },
             {
               "value": "C",
               "cx": 114.15,
-              "cy": 148
+              "cy": 76
             },
             {
               "value": "D",
               "cx": 119.55,
-              "cy": 148
+              "cy": 76
             }
           ],
           "points": 1
@@ -5796,22 +4788,22 @@
             {
               "value": "A",
               "cx": 103.35,
-              "cy": 154.4
+              "cy": 82.4
             },
             {
               "value": "B",
               "cx": 108.75,
-              "cy": 154.4
+              "cy": 82.4
             },
             {
               "value": "C",
               "cx": 114.15,
-              "cy": 154.4
+              "cy": 82.4
             },
             {
               "value": "D",
               "cx": 119.55,
-              "cy": 154.4
+              "cy": 82.4
             }
           ],
           "points": 1
@@ -5824,22 +4816,22 @@
             {
               "value": "A",
               "cx": 103.35,
-              "cy": 159.4
+              "cy": 87.4
             },
             {
               "value": "B",
               "cx": 108.75,
-              "cy": 159.4
+              "cy": 87.4
             },
             {
               "value": "C",
               "cx": 114.15,
-              "cy": 159.4
+              "cy": 87.4
             },
             {
               "value": "D",
               "cx": 119.55,
-              "cy": 159.4
+              "cy": 87.4
             }
           ],
           "points": 1
@@ -5852,22 +4844,22 @@
             {
               "value": "A",
               "cx": 103.35,
-              "cy": 164.4
+              "cy": 92.4
             },
             {
               "value": "B",
               "cx": 108.75,
-              "cy": 164.4
+              "cy": 92.4
             },
             {
               "value": "C",
               "cx": 114.15,
-              "cy": 164.4
+              "cy": 92.4
             },
             {
               "value": "D",
               "cx": 119.55,
-              "cy": 164.4
+              "cy": 92.4
             }
           ],
           "points": 1
@@ -5880,22 +4872,22 @@
             {
               "value": "A",
               "cx": 103.35,
-              "cy": 169.4
+              "cy": 97.4
             },
             {
               "value": "B",
               "cx": 108.75,
-              "cy": 169.4
+              "cy": 97.4
             },
             {
               "value": "C",
               "cx": 114.15,
-              "cy": 169.4
+              "cy": 97.4
             },
             {
               "value": "D",
               "cx": 119.55,
-              "cy": 169.4
+              "cy": 97.4
             }
           ],
           "points": 1
@@ -5908,22 +4900,22 @@
             {
               "value": "A",
               "cx": 103.35,
-              "cy": 174.4
+              "cy": 102.4
             },
             {
               "value": "B",
               "cx": 108.75,
-              "cy": 174.4
+              "cy": 102.4
             },
             {
               "value": "C",
               "cx": 114.15,
-              "cy": 174.4
+              "cy": 102.4
             },
             {
               "value": "D",
               "cx": 119.55,
-              "cy": 174.4
+              "cy": 102.4
             }
           ],
           "points": 1
@@ -5936,22 +4928,22 @@
             {
               "value": "A",
               "cx": 103.35,
-              "cy": 180.8
+              "cy": 108.8
             },
             {
               "value": "B",
               "cx": 108.75,
-              "cy": 180.8
+              "cy": 108.8
             },
             {
               "value": "C",
               "cx": 114.15,
-              "cy": 180.8
+              "cy": 108.8
             },
             {
               "value": "D",
               "cx": 119.55,
-              "cy": 180.8
+              "cy": 108.8
             }
           ],
           "points": 1
@@ -5964,22 +4956,22 @@
             {
               "value": "A",
               "cx": 103.35,
-              "cy": 185.8
+              "cy": 113.8
             },
             {
               "value": "B",
               "cx": 108.75,
-              "cy": 185.8
+              "cy": 113.8
             },
             {
               "value": "C",
               "cx": 114.15,
-              "cy": 185.8
+              "cy": 113.8
             },
             {
               "value": "D",
               "cx": 119.55,
-              "cy": 185.8
+              "cy": 113.8
             }
           ],
           "points": 1
@@ -5992,22 +4984,22 @@
             {
               "value": "A",
               "cx": 103.35,
-              "cy": 190.8
+              "cy": 118.8
             },
             {
               "value": "B",
               "cx": 108.75,
-              "cy": 190.8
+              "cy": 118.8
             },
             {
               "value": "C",
               "cx": 114.15,
-              "cy": 190.8
+              "cy": 118.8
             },
             {
               "value": "D",
               "cx": 119.55,
-              "cy": 190.8
+              "cy": 118.8
             }
           ],
           "points": 1
@@ -6020,22 +5012,22 @@
             {
               "value": "A",
               "cx": 103.35,
-              "cy": 195.8
+              "cy": 123.8
             },
             {
               "value": "B",
               "cx": 108.75,
-              "cy": 195.8
+              "cy": 123.8
             },
             {
               "value": "C",
               "cx": 114.15,
-              "cy": 195.8
+              "cy": 123.8
             },
             {
               "value": "D",
               "cx": 119.55,
-              "cy": 195.8
+              "cy": 123.8
             }
           ],
           "points": 1
@@ -6048,22 +5040,22 @@
             {
               "value": "A",
               "cx": 103.35,
-              "cy": 200.8
+              "cy": 128.8
             },
             {
               "value": "B",
               "cx": 108.75,
-              "cy": 200.8
+              "cy": 128.8
             },
             {
               "value": "C",
               "cx": 114.15,
-              "cy": 200.8
+              "cy": 128.8
             },
             {
               "value": "D",
               "cx": 119.55,
-              "cy": 200.8
+              "cy": 128.8
             }
           ],
           "points": 1
@@ -6076,22 +5068,22 @@
             {
               "value": "A",
               "cx": 103.35,
-              "cy": 207.2
+              "cy": 135.2
             },
             {
               "value": "B",
               "cx": 108.75,
-              "cy": 207.2
+              "cy": 135.2
             },
             {
               "value": "C",
               "cx": 114.15,
-              "cy": 207.2
+              "cy": 135.2
             },
             {
               "value": "D",
               "cx": 119.55,
-              "cy": 207.2
+              "cy": 135.2
             }
           ],
           "points": 1
@@ -6104,22 +5096,22 @@
             {
               "value": "A",
               "cx": 103.35,
-              "cy": 212.2
+              "cy": 140.2
             },
             {
               "value": "B",
               "cx": 108.75,
-              "cy": 212.2
+              "cy": 140.2
             },
             {
               "value": "C",
               "cx": 114.15,
-              "cy": 212.2
+              "cy": 140.2
             },
             {
               "value": "D",
               "cx": 119.55,
-              "cy": 212.2
+              "cy": 140.2
             }
           ],
           "points": 1
@@ -6132,22 +5124,22 @@
             {
               "value": "A",
               "cx": 103.35,
-              "cy": 217.2
+              "cy": 145.2
             },
             {
               "value": "B",
               "cx": 108.75,
-              "cy": 217.2
+              "cy": 145.2
             },
             {
               "value": "C",
               "cx": 114.15,
-              "cy": 217.2
+              "cy": 145.2
             },
             {
               "value": "D",
               "cx": 119.55,
-              "cy": 217.2
+              "cy": 145.2
             }
           ],
           "points": 1
@@ -6160,22 +5152,22 @@
             {
               "value": "A",
               "cx": 103.35,
-              "cy": 222.2
+              "cy": 150.2
             },
             {
               "value": "B",
               "cx": 108.75,
-              "cy": 222.2
+              "cy": 150.2
             },
             {
               "value": "C",
               "cx": 114.15,
-              "cy": 222.2
+              "cy": 150.2
             },
             {
               "value": "D",
               "cx": 119.55,
-              "cy": 222.2
+              "cy": 150.2
             }
           ],
           "points": 1
@@ -6188,22 +5180,22 @@
             {
               "value": "A",
               "cx": 103.35,
-              "cy": 227.2
+              "cy": 155.2
             },
             {
               "value": "B",
               "cx": 108.75,
-              "cy": 227.2
+              "cy": 155.2
             },
             {
               "value": "C",
               "cx": 114.15,
-              "cy": 227.2
+              "cy": 155.2
             },
             {
               "value": "D",
               "cx": 119.55,
-              "cy": 227.2
+              "cy": 155.2
             }
           ],
           "points": 1
@@ -6216,22 +5208,22 @@
             {
               "value": "A",
               "cx": 142.925,
-              "cy": 128
+              "cy": 56
             },
             {
               "value": "B",
               "cx": 148.325,
-              "cy": 128
+              "cy": 56
             },
             {
               "value": "C",
               "cx": 153.725,
-              "cy": 128
+              "cy": 56
             },
             {
               "value": "D",
               "cx": 159.125,
-              "cy": 128
+              "cy": 56
             }
           ],
           "points": 1
@@ -6244,22 +5236,22 @@
             {
               "value": "A",
               "cx": 142.925,
-              "cy": 133
+              "cy": 61
             },
             {
               "value": "B",
               "cx": 148.325,
-              "cy": 133
+              "cy": 61
             },
             {
               "value": "C",
               "cx": 153.725,
-              "cy": 133
+              "cy": 61
             },
             {
               "value": "D",
               "cx": 159.125,
-              "cy": 133
+              "cy": 61
             }
           ],
           "points": 1
@@ -6272,22 +5264,22 @@
             {
               "value": "A",
               "cx": 142.925,
-              "cy": 138
+              "cy": 66
             },
             {
               "value": "B",
               "cx": 148.325,
-              "cy": 138
+              "cy": 66
             },
             {
               "value": "C",
               "cx": 153.725,
-              "cy": 138
+              "cy": 66
             },
             {
               "value": "D",
               "cx": 159.125,
-              "cy": 138
+              "cy": 66
             }
           ],
           "points": 1
@@ -6300,22 +5292,22 @@
             {
               "value": "A",
               "cx": 142.925,
-              "cy": 143
+              "cy": 71
             },
             {
               "value": "B",
               "cx": 148.325,
-              "cy": 143
+              "cy": 71
             },
             {
               "value": "C",
               "cx": 153.725,
-              "cy": 143
+              "cy": 71
             },
             {
               "value": "D",
               "cx": 159.125,
-              "cy": 143
+              "cy": 71
             }
           ],
           "points": 1
@@ -6328,22 +5320,22 @@
             {
               "value": "A",
               "cx": 142.925,
-              "cy": 148
+              "cy": 76
             },
             {
               "value": "B",
               "cx": 148.325,
-              "cy": 148
+              "cy": 76
             },
             {
               "value": "C",
               "cx": 153.725,
-              "cy": 148
+              "cy": 76
             },
             {
               "value": "D",
               "cx": 159.125,
-              "cy": 148
+              "cy": 76
             }
           ],
           "points": 1
@@ -6356,22 +5348,22 @@
             {
               "value": "A",
               "cx": 142.925,
-              "cy": 154.4
+              "cy": 82.4
             },
             {
               "value": "B",
               "cx": 148.325,
-              "cy": 154.4
+              "cy": 82.4
             },
             {
               "value": "C",
               "cx": 153.725,
-              "cy": 154.4
+              "cy": 82.4
             },
             {
               "value": "D",
               "cx": 159.125,
-              "cy": 154.4
+              "cy": 82.4
             }
           ],
           "points": 1
@@ -6384,22 +5376,22 @@
             {
               "value": "A",
               "cx": 142.925,
-              "cy": 159.4
+              "cy": 87.4
             },
             {
               "value": "B",
               "cx": 148.325,
-              "cy": 159.4
+              "cy": 87.4
             },
             {
               "value": "C",
               "cx": 153.725,
-              "cy": 159.4
+              "cy": 87.4
             },
             {
               "value": "D",
               "cx": 159.125,
-              "cy": 159.4
+              "cy": 87.4
             }
           ],
           "points": 1
@@ -6412,22 +5404,22 @@
             {
               "value": "A",
               "cx": 142.925,
-              "cy": 164.4
+              "cy": 92.4
             },
             {
               "value": "B",
               "cx": 148.325,
-              "cy": 164.4
+              "cy": 92.4
             },
             {
               "value": "C",
               "cx": 153.725,
-              "cy": 164.4
+              "cy": 92.4
             },
             {
               "value": "D",
               "cx": 159.125,
-              "cy": 164.4
+              "cy": 92.4
             }
           ],
           "points": 1
@@ -6440,22 +5432,22 @@
             {
               "value": "A",
               "cx": 142.925,
-              "cy": 169.4
+              "cy": 97.4
             },
             {
               "value": "B",
               "cx": 148.325,
-              "cy": 169.4
+              "cy": 97.4
             },
             {
               "value": "C",
               "cx": 153.725,
-              "cy": 169.4
+              "cy": 97.4
             },
             {
               "value": "D",
               "cx": 159.125,
-              "cy": 169.4
+              "cy": 97.4
             }
           ],
           "points": 1
@@ -6468,22 +5460,22 @@
             {
               "value": "A",
               "cx": 142.925,
-              "cy": 174.4
+              "cy": 102.4
             },
             {
               "value": "B",
               "cx": 148.325,
-              "cy": 174.4
+              "cy": 102.4
             },
             {
               "value": "C",
               "cx": 153.725,
-              "cy": 174.4
+              "cy": 102.4
             },
             {
               "value": "D",
               "cx": 159.125,
-              "cy": 174.4
+              "cy": 102.4
             }
           ],
           "points": 1
@@ -6496,22 +5488,22 @@
             {
               "value": "A",
               "cx": 142.925,
-              "cy": 180.8
+              "cy": 108.8
             },
             {
               "value": "B",
               "cx": 148.325,
-              "cy": 180.8
+              "cy": 108.8
             },
             {
               "value": "C",
               "cx": 153.725,
-              "cy": 180.8
+              "cy": 108.8
             },
             {
               "value": "D",
               "cx": 159.125,
-              "cy": 180.8
+              "cy": 108.8
             }
           ],
           "points": 1
@@ -6524,22 +5516,22 @@
             {
               "value": "A",
               "cx": 142.925,
-              "cy": 185.8
+              "cy": 113.8
             },
             {
               "value": "B",
               "cx": 148.325,
-              "cy": 185.8
+              "cy": 113.8
             },
             {
               "value": "C",
               "cx": 153.725,
-              "cy": 185.8
+              "cy": 113.8
             },
             {
               "value": "D",
               "cx": 159.125,
-              "cy": 185.8
+              "cy": 113.8
             }
           ],
           "points": 1
@@ -6552,22 +5544,22 @@
             {
               "value": "A",
               "cx": 142.925,
-              "cy": 190.8
+              "cy": 118.8
             },
             {
               "value": "B",
               "cx": 148.325,
-              "cy": 190.8
+              "cy": 118.8
             },
             {
               "value": "C",
               "cx": 153.725,
-              "cy": 190.8
+              "cy": 118.8
             },
             {
               "value": "D",
               "cx": 159.125,
-              "cy": 190.8
+              "cy": 118.8
             }
           ],
           "points": 1
@@ -6580,22 +5572,22 @@
             {
               "value": "A",
               "cx": 142.925,
-              "cy": 195.8
+              "cy": 123.8
             },
             {
               "value": "B",
               "cx": 148.325,
-              "cy": 195.8
+              "cy": 123.8
             },
             {
               "value": "C",
               "cx": 153.725,
-              "cy": 195.8
+              "cy": 123.8
             },
             {
               "value": "D",
               "cx": 159.125,
-              "cy": 195.8
+              "cy": 123.8
             }
           ],
           "points": 1
@@ -6608,22 +5600,22 @@
             {
               "value": "A",
               "cx": 142.925,
-              "cy": 200.8
+              "cy": 128.8
             },
             {
               "value": "B",
               "cx": 148.325,
-              "cy": 200.8
+              "cy": 128.8
             },
             {
               "value": "C",
               "cx": 153.725,
-              "cy": 200.8
+              "cy": 128.8
             },
             {
               "value": "D",
               "cx": 159.125,
-              "cy": 200.8
+              "cy": 128.8
             }
           ],
           "points": 1
@@ -6636,22 +5628,22 @@
             {
               "value": "A",
               "cx": 142.925,
-              "cy": 207.2
+              "cy": 135.2
             },
             {
               "value": "B",
               "cx": 148.325,
-              "cy": 207.2
+              "cy": 135.2
             },
             {
               "value": "C",
               "cx": 153.725,
-              "cy": 207.2
+              "cy": 135.2
             },
             {
               "value": "D",
               "cx": 159.125,
-              "cy": 207.2
+              "cy": 135.2
             }
           ],
           "points": 1
@@ -6664,22 +5656,22 @@
             {
               "value": "A",
               "cx": 142.925,
-              "cy": 212.2
+              "cy": 140.2
             },
             {
               "value": "B",
               "cx": 148.325,
-              "cy": 212.2
+              "cy": 140.2
             },
             {
               "value": "C",
               "cx": 153.725,
-              "cy": 212.2
+              "cy": 140.2
             },
             {
               "value": "D",
               "cx": 159.125,
-              "cy": 212.2
+              "cy": 140.2
             }
           ],
           "points": 1
@@ -6692,22 +5684,22 @@
             {
               "value": "A",
               "cx": 142.925,
-              "cy": 217.2
+              "cy": 145.2
             },
             {
               "value": "B",
               "cx": 148.325,
-              "cy": 217.2
+              "cy": 145.2
             },
             {
               "value": "C",
               "cx": 153.725,
-              "cy": 217.2
+              "cy": 145.2
             },
             {
               "value": "D",
               "cx": 159.125,
-              "cy": 217.2
+              "cy": 145.2
             }
           ],
           "points": 1
@@ -6720,22 +5712,22 @@
             {
               "value": "A",
               "cx": 142.925,
-              "cy": 222.2
+              "cy": 150.2
             },
             {
               "value": "B",
               "cx": 148.325,
-              "cy": 222.2
+              "cy": 150.2
             },
             {
               "value": "C",
               "cx": 153.725,
-              "cy": 222.2
+              "cy": 150.2
             },
             {
               "value": "D",
               "cx": 159.125,
-              "cy": 222.2
+              "cy": 150.2
             }
           ],
           "points": 1
@@ -6748,22 +5740,22 @@
             {
               "value": "A",
               "cx": 142.925,
-              "cy": 227.2
+              "cy": 155.2
             },
             {
               "value": "B",
               "cx": 148.325,
-              "cy": 227.2
+              "cy": 155.2
             },
             {
               "value": "C",
               "cx": 153.725,
-              "cy": 227.2
+              "cy": 155.2
             },
             {
               "value": "D",
               "cx": 159.125,
-              "cy": 227.2
+              "cy": 155.2
             }
           ],
           "points": 1
@@ -6776,22 +5768,22 @@
             {
               "value": "A",
               "cx": 182.5,
-              "cy": 128
+              "cy": 56
             },
             {
               "value": "B",
               "cx": 187.9,
-              "cy": 128
+              "cy": 56
             },
             {
               "value": "C",
               "cx": 193.3,
-              "cy": 128
+              "cy": 56
             },
             {
               "value": "D",
               "cx": 198.7,
-              "cy": 128
+              "cy": 56
             }
           ],
           "points": 1
@@ -6804,22 +5796,22 @@
             {
               "value": "A",
               "cx": 182.5,
-              "cy": 133
+              "cy": 61
             },
             {
               "value": "B",
               "cx": 187.9,
-              "cy": 133
+              "cy": 61
             },
             {
               "value": "C",
               "cx": 193.3,
-              "cy": 133
+              "cy": 61
             },
             {
               "value": "D",
               "cx": 198.7,
-              "cy": 133
+              "cy": 61
             }
           ],
           "points": 1
@@ -6832,22 +5824,22 @@
             {
               "value": "A",
               "cx": 182.5,
-              "cy": 138
+              "cy": 66
             },
             {
               "value": "B",
               "cx": 187.9,
-              "cy": 138
+              "cy": 66
             },
             {
               "value": "C",
               "cx": 193.3,
-              "cy": 138
+              "cy": 66
             },
             {
               "value": "D",
               "cx": 198.7,
-              "cy": 138
+              "cy": 66
             }
           ],
           "points": 1
@@ -6860,22 +5852,22 @@
             {
               "value": "A",
               "cx": 182.5,
-              "cy": 143
+              "cy": 71
             },
             {
               "value": "B",
               "cx": 187.9,
-              "cy": 143
+              "cy": 71
             },
             {
               "value": "C",
               "cx": 193.3,
-              "cy": 143
+              "cy": 71
             },
             {
               "value": "D",
               "cx": 198.7,
-              "cy": 143
+              "cy": 71
             }
           ],
           "points": 1
@@ -6888,22 +5880,22 @@
             {
               "value": "A",
               "cx": 182.5,
-              "cy": 148
+              "cy": 76
             },
             {
               "value": "B",
               "cx": 187.9,
-              "cy": 148
+              "cy": 76
             },
             {
               "value": "C",
               "cx": 193.3,
-              "cy": 148
+              "cy": 76
             },
             {
               "value": "D",
               "cx": 198.7,
-              "cy": 148
+              "cy": 76
             }
           ],
           "points": 1
@@ -6916,22 +5908,22 @@
             {
               "value": "A",
               "cx": 182.5,
-              "cy": 154.4
+              "cy": 82.4
             },
             {
               "value": "B",
               "cx": 187.9,
-              "cy": 154.4
+              "cy": 82.4
             },
             {
               "value": "C",
               "cx": 193.3,
-              "cy": 154.4
+              "cy": 82.4
             },
             {
               "value": "D",
               "cx": 198.7,
-              "cy": 154.4
+              "cy": 82.4
             }
           ],
           "points": 1
@@ -6944,22 +5936,22 @@
             {
               "value": "A",
               "cx": 182.5,
-              "cy": 159.4
+              "cy": 87.4
             },
             {
               "value": "B",
               "cx": 187.9,
-              "cy": 159.4
+              "cy": 87.4
             },
             {
               "value": "C",
               "cx": 193.3,
-              "cy": 159.4
+              "cy": 87.4
             },
             {
               "value": "D",
               "cx": 198.7,
-              "cy": 159.4
+              "cy": 87.4
             }
           ],
           "points": 1
@@ -6972,22 +5964,22 @@
             {
               "value": "A",
               "cx": 182.5,
-              "cy": 164.4
+              "cy": 92.4
             },
             {
               "value": "B",
               "cx": 187.9,
-              "cy": 164.4
+              "cy": 92.4
             },
             {
               "value": "C",
               "cx": 193.3,
-              "cy": 164.4
+              "cy": 92.4
             },
             {
               "value": "D",
               "cx": 198.7,
-              "cy": 164.4
+              "cy": 92.4
             }
           ],
           "points": 1
@@ -7000,22 +5992,22 @@
             {
               "value": "A",
               "cx": 182.5,
-              "cy": 169.4
+              "cy": 97.4
             },
             {
               "value": "B",
               "cx": 187.9,
-              "cy": 169.4
+              "cy": 97.4
             },
             {
               "value": "C",
               "cx": 193.3,
-              "cy": 169.4
+              "cy": 97.4
             },
             {
               "value": "D",
               "cx": 198.7,
-              "cy": 169.4
+              "cy": 97.4
             }
           ],
           "points": 1
@@ -7028,22 +6020,22 @@
             {
               "value": "A",
               "cx": 182.5,
-              "cy": 174.4
+              "cy": 102.4
             },
             {
               "value": "B",
               "cx": 187.9,
-              "cy": 174.4
+              "cy": 102.4
             },
             {
               "value": "C",
               "cx": 193.3,
-              "cy": 174.4
+              "cy": 102.4
             },
             {
               "value": "D",
               "cx": 198.7,
-              "cy": 174.4
+              "cy": 102.4
             }
           ],
           "points": 1
@@ -7056,22 +6048,22 @@
             {
               "value": "A",
               "cx": 182.5,
-              "cy": 180.8
+              "cy": 108.8
             },
             {
               "value": "B",
               "cx": 187.9,
-              "cy": 180.8
+              "cy": 108.8
             },
             {
               "value": "C",
               "cx": 193.3,
-              "cy": 180.8
+              "cy": 108.8
             },
             {
               "value": "D",
               "cx": 198.7,
-              "cy": 180.8
+              "cy": 108.8
             }
           ],
           "points": 1
@@ -7084,22 +6076,22 @@
             {
               "value": "A",
               "cx": 182.5,
-              "cy": 185.8
+              "cy": 113.8
             },
             {
               "value": "B",
               "cx": 187.9,
-              "cy": 185.8
+              "cy": 113.8
             },
             {
               "value": "C",
               "cx": 193.3,
-              "cy": 185.8
+              "cy": 113.8
             },
             {
               "value": "D",
               "cx": 198.7,
-              "cy": 185.8
+              "cy": 113.8
             }
           ],
           "points": 1
@@ -7112,22 +6104,22 @@
             {
               "value": "A",
               "cx": 182.5,
-              "cy": 190.8
+              "cy": 118.8
             },
             {
               "value": "B",
               "cx": 187.9,
-              "cy": 190.8
+              "cy": 118.8
             },
             {
               "value": "C",
               "cx": 193.3,
-              "cy": 190.8
+              "cy": 118.8
             },
             {
               "value": "D",
               "cx": 198.7,
-              "cy": 190.8
+              "cy": 118.8
             }
           ],
           "points": 1
@@ -7140,22 +6132,22 @@
             {
               "value": "A",
               "cx": 182.5,
-              "cy": 195.8
+              "cy": 123.8
             },
             {
               "value": "B",
               "cx": 187.9,
-              "cy": 195.8
+              "cy": 123.8
             },
             {
               "value": "C",
               "cx": 193.3,
-              "cy": 195.8
+              "cy": 123.8
             },
             {
               "value": "D",
               "cx": 198.7,
-              "cy": 195.8
+              "cy": 123.8
             }
           ],
           "points": 1
@@ -7168,22 +6160,22 @@
             {
               "value": "A",
               "cx": 182.5,
-              "cy": 200.8
+              "cy": 128.8
             },
             {
               "value": "B",
               "cx": 187.9,
-              "cy": 200.8
+              "cy": 128.8
             },
             {
               "value": "C",
               "cx": 193.3,
-              "cy": 200.8
+              "cy": 128.8
             },
             {
               "value": "D",
               "cx": 198.7,
-              "cy": 200.8
+              "cy": 128.8
             }
           ],
           "points": 1
@@ -7196,22 +6188,22 @@
             {
               "value": "A",
               "cx": 182.5,
-              "cy": 207.2
+              "cy": 135.2
             },
             {
               "value": "B",
               "cx": 187.9,
-              "cy": 207.2
+              "cy": 135.2
             },
             {
               "value": "C",
               "cx": 193.3,
-              "cy": 207.2
+              "cy": 135.2
             },
             {
               "value": "D",
               "cx": 198.7,
-              "cy": 207.2
+              "cy": 135.2
             }
           ],
           "points": 1
@@ -7224,22 +6216,22 @@
             {
               "value": "A",
               "cx": 182.5,
-              "cy": 212.2
+              "cy": 140.2
             },
             {
               "value": "B",
               "cx": 187.9,
-              "cy": 212.2
+              "cy": 140.2
             },
             {
               "value": "C",
               "cx": 193.3,
-              "cy": 212.2
+              "cy": 140.2
             },
             {
               "value": "D",
               "cx": 198.7,
-              "cy": 212.2
+              "cy": 140.2
             }
           ],
           "points": 1
@@ -7252,22 +6244,22 @@
             {
               "value": "A",
               "cx": 182.5,
-              "cy": 217.2
+              "cy": 145.2
             },
             {
               "value": "B",
               "cx": 187.9,
-              "cy": 217.2
+              "cy": 145.2
             },
             {
               "value": "C",
               "cx": 193.3,
-              "cy": 217.2
+              "cy": 145.2
             },
             {
               "value": "D",
               "cx": 198.7,
-              "cy": 217.2
+              "cy": 145.2
             }
           ],
           "points": 1
@@ -7280,22 +6272,22 @@
             {
               "value": "A",
               "cx": 182.5,
-              "cy": 222.2
+              "cy": 150.2
             },
             {
               "value": "B",
               "cx": 187.9,
-              "cy": 222.2
+              "cy": 150.2
             },
             {
               "value": "C",
               "cx": 193.3,
-              "cy": 222.2
+              "cy": 150.2
             },
             {
               "value": "D",
               "cx": 198.7,
-              "cy": 222.2
+              "cy": 150.2
             }
           ],
           "points": 1
@@ -7308,22 +6300,22 @@
             {
               "value": "A",
               "cx": 182.5,
-              "cy": 227.2
+              "cy": 155.2
             },
             {
               "value": "B",
               "cx": 187.9,
-              "cy": 227.2
+              "cy": 155.2
             },
             {
               "value": "C",
               "cx": 193.3,
-              "cy": 227.2
+              "cy": 155.2
             },
             {
               "value": "D",
               "cx": 198.7,
-              "cy": 227.2
+              "cy": 155.2
             }
           ],
           "points": 1

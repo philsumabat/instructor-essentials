@@ -306,3 +306,437 @@ test('detectCornerMarkers isolates 4 corner fiducials and avoids student ID bubb
   assert.ok(Math.abs(corners[3].y - 1070) <= 1, `BL corner y should be ~1070, got ${corners[3].y}`);
 });
 
+test('checker.html implements responsive split master-detail layout with Sheet Inspector preview pane in #tab-roster', async () => {
+  const checkerHtml = await readFile(resolve(root, 'builder/checker.html'), 'utf8');
+
+  // Verify responsive split layout DOM structure
+  assert.ok(checkerHtml.includes('roster-split-layout'), 'Master-detail split layout class present');
+  assert.ok(checkerHtml.includes('roster-table-col'), 'Left table column present');
+  assert.ok(checkerHtml.includes('roster-preview-pane'), 'Right sheet inspector preview pane present');
+  // Verify canvas element supports #roster-preview-canvas
+  assert.ok(checkerHtml.includes('id="roster-preview-canvas"'), 'Side preview canvas element (#roster-preview-canvas) present');
+  assert.ok(checkerHtml.includes('id="roster-inspector-canvas"'), 'Legacy alias id="roster-inspector-canvas" supported');
+});
+
+test('checker.html Tab 1 has metric cards, Pass/Fail distribution bar, and summary table with switchTab navigation', async () => {
+  const checkerHtml = await readFile(resolve(root, 'builder/checker.html'), 'utf8');
+
+  // 1. Metric cards
+  assert.ok(checkerHtml.includes('Total Graded'), 'Metric card Total Graded present');
+  assert.ok(checkerHtml.includes('Average Score'), 'Metric card Average Score present');
+  assert.ok(checkerHtml.includes('Pass Rate'), 'Metric card Pass Rate present');
+  assert.ok(checkerHtml.includes('Reliability KR-20'), 'Metric card Reliability KR-20 present');
+
+  // 2. Pass/Fail distribution bar
+  assert.ok(checkerHtml.includes('id="distribution-card"'), 'Distribution card container present');
+  assert.ok(checkerHtml.includes('id="dist-bar-pass"'), 'Pass distribution bar element present');
+  assert.ok(checkerHtml.includes('id="dist-bar-fail"'), 'Fail distribution bar element present');
+  assert.ok(checkerHtml.includes('id="dist-label-pass"'), 'Pass label present');
+  assert.ok(checkerHtml.includes('id="dist-label-fail"'), 'Fail label present');
+  assert.ok(checkerHtml.includes('id="dist-label-threshold"'), 'Threshold label present');
+
+  // 3. Summary table and row click
+  assert.ok(checkerHtml.includes('id="table-summary-preview"'), 'Summary preview table present');
+  assert.ok(checkerHtml.includes("switchTab('roster')"), 'Summary table row click switches to roster tab');
+});
+
+test('checker.html Tab 2 supports table sorting, master-detail selection, side preview canvas (#roster-preview-canvas), student badge, JPEG and ZIP export', async () => {
+  const checkerHtml = await readFile(resolve(root, 'builder/checker.html'), 'utf8');
+
+  // Verify sortable table headers
+  assert.ok(checkerHtml.includes('th class="sortable" data-sort="studentId"'), 'Sortable studentId header present');
+  assert.ok(checkerHtml.includes('th class="sortable" data-sort="rawScore"'), 'Sortable rawScore header present');
+  assert.ok(checkerHtml.includes('th class="sortable" data-sort="percentage"'), 'Sortable percentage header present');
+  assert.ok(checkerHtml.includes('th class="sortable" data-sort="status"'), 'Sortable status header present');
+
+  // Compile script to test sortGrades function
+  const scriptMatch = checkerHtml.match(/<script>([\s\S]*?)<\/script>/);
+  assert.ok(scriptMatch, 'Script block present');
+  const code = scriptMatch[1];
+
+  const sandbox = {
+    document: {
+      getElementById: () => ({ addEventListener: () => {}, style: {} }),
+      querySelectorAll: () => [],
+      createElement: () => ({ getContext: () => ({}) })
+    },
+    window: {},
+    console,
+    Uint8Array,
+    Uint32Array,
+    DataView,
+    TextEncoder,
+    Image: class {},
+    FileReader: class {}
+  };
+  vm.createContext(sandbox);
+  new vm.Script(code).runInContext(sandbox);
+
+  const sortGrades = vm.runInContext('sortGrades', sandbox);
+  assert.ok(typeof sortGrades === 'function', 'sortGrades helper function defined');
+
+  // Test sorting by score
+  const sampleGrades = [
+    { studentId: '1002', studentName: 'Bob', rawScore: 40, percentage: 80 },
+    { studentId: '1001', studentName: 'Alice', rawScore: 45, percentage: 90 },
+    { studentId: '1003', studentName: 'Charlie', rawScore: 35, percentage: 70 }
+  ];
+
+  const sortedDesc = sortGrades(sampleGrades, 'rawScore', 'desc');
+  assert.equal(sortedDesc[0].studentId, '1001');
+  assert.equal(sortedDesc[1].studentId, '1002');
+  assert.equal(sortedDesc[2].studentId, '1003');
+
+  const sortedAsc = sortGrades(sampleGrades, 'studentName', 'asc');
+  assert.equal(sortedAsc[0].studentName, 'Alice');
+  assert.equal(sortedAsc[1].studentName, 'Bob');
+  assert.equal(sortedAsc[2].studentName, 'Charlie');
+
+  // Verify export buttons
+  assert.ok(checkerHtml.includes('id="btn-export-zip"'), 'Batch ZIP export button present');
+  assert.ok(checkerHtml.includes('createZip'), 'createZip uncompressed ZIP generator present');
+});
+
+test('parseRosterCSV handles standard, RFC 4180 quotes with commas, and matches student names accurately', async () => {
+  const checkerHtml = await readFile(resolve(root, 'builder/checker.html'), 'utf8');
+  const scriptMatch = checkerHtml.match(/<script>([\s\S]*?)<\/script>/);
+  const code = scriptMatch[1];
+
+  const sandbox = {
+    document: {
+      getElementById: () => ({ addEventListener: () => {}, style: {} }),
+      querySelectorAll: () => [],
+      createElement: () => ({ getContext: () => ({}) })
+    },
+    window: {},
+    console,
+    Uint8Array,
+    Uint32Array,
+    DataView,
+    TextEncoder,
+    Image: class {},
+    FileReader: class {}
+  };
+  vm.createContext(sandbox);
+  new vm.Script(code).runInContext(sandbox);
+
+  const parseRosterCSV = vm.runInContext('parseRosterCSV', sandbox);
+
+  // 1. Standard CSV
+  const csv1 = `Student ID,Full Name,Section
+10482901,Alice Walker,A1
+10482902,Benjamin Carter,A1`;
+  const roster1 = parseRosterCSV(csv1);
+  assert.equal(roster1.length, 2);
+  assert.equal(roster1[0].id, '10482901');
+  assert.equal(roster1[0].name, 'Alice Walker');
+
+  // 2. CSV with quotes containing commas ("Last, First")
+  const csv2 = `Student ID,Student Name
+10482901,"Walker, Alice"
+10482902,"Carter, Benjamin"`;
+  const roster2 = parseRosterCSV(csv2);
+  assert.equal(roster2.length, 2);
+  assert.equal(roster2[0].id, '10482901');
+  assert.equal(roster2[0].name, 'Walker, Alice');
+  assert.equal(roster2[1].id, '10482902');
+  assert.equal(roster2[1].name, 'Carter, Benjamin');
+
+  // 3. Alternate headers (ID, Name)
+  const csv3 = `id,name
+10482905,Elena Foster`;
+  const roster3 = parseRosterCSV(csv3);
+  assert.equal(roster3.length, 1);
+  assert.equal(roster3[0].id, '10482905');
+  assert.equal(roster3[0].name, 'Elena Foster');
+});
+
+test('Tab 3 Item Analysis properly renders True/False vs MCQ headers and per-item distractor frequencies', async () => {
+  const checkerHtml = await readFile(resolve(root, 'builder/checker.html'), 'utf8');
+
+  // Verify headers container
+  assert.ok(checkerHtml.includes('id="th-d1"'), 'th-d1 header present');
+  assert.ok(checkerHtml.includes('id="th-d2"'), 'th-d2 header present');
+  assert.ok(checkerHtml.includes('id="th-d3"'), 'th-d3 header present');
+  assert.ok(checkerHtml.includes('id="th-d4"'), 'th-d4 header present');
+  assert.ok(checkerHtml.includes('id="th-d5"'), 'th-d5 header present');
+  assert.ok(checkerHtml.includes('id="tbody-items"'), 'Item analysis table body present');
+
+  // Check script logic distinguishes pure TF vs mixed/MCQ
+  const scriptMatch = checkerHtml.match(/<script>([\s\S]*?)<\/script>/);
+  const code = scriptMatch[1];
+  assert.ok(code.includes('allTF'), 'distinguishes all-TF pure exams');
+  assert.ok(code.includes('isItemTF'), 'distinguishes individual item type for distractors');
+});
+
+test('checker.html is 100% offline self-contained with zero external fetch, script, or link tags', async () => {
+  const checkerHtml = await readFile(resolve(root, 'builder/checker.html'), 'utf8');
+
+  // Zero external stylesheet links
+  const extStyles = [...checkerHtml.matchAll(/<link\s+[^>]*rel=["']stylesheet["'][^>]*>/gi)];
+  assert.equal(extStyles.length, 0, 'No external stylesheets');
+
+  // Zero external scripts
+  const extScripts = [...checkerHtml.matchAll(/<script\s+[^>]*src=[^>]*>/gi)];
+  assert.equal(extScripts.length, 0, 'No external scripts');
+
+  // Zero fetch() calls
+  assert.ok(!checkerHtml.includes('fetch('), 'Must not use fetch() calls');
+});
+
+test('checker.html is rebranded to Instructor Essentials in title, meta tags, and header brand', async () => {
+  const checkerHtml = await readFile(resolve(root, 'builder/checker.html'), 'utf8');
+
+  assert.ok(checkerHtml.includes('<title>Instructor Essentials — Checker Studio</title>'), 'Document title must be rebranded');
+  assert.ok(checkerHtml.includes('<meta name="application-name" content="Instructor Essentials">'), 'Application-name meta tag present');
+  assert.ok(checkerHtml.includes('<meta name="description" content="Instructor Essentials — In-Browser OMR Exam Grading & Psychometrics">'), 'Description meta tag present');
+  assert.ok(checkerHtml.includes('<h1 class="app-brand__title">Instructor Essentials</h1>'), 'Brand heading must be Instructor Essentials');
+});
+
+test('checker.html implements progressive disclosure in sidebar, discreet collapsible toggle, and prominent results export bar', async () => {
+  const checkerHtml = await readFile(resolve(root, 'builder/checker.html'), 'utf8');
+
+  // Sidebar initial buttons
+  assert.ok(checkerHtml.includes('id="btn-sidebar-grade"'), 'Sidebar Grade Scans button present');
+  assert.ok(checkerHtml.includes('id="btn-sidebar-sample"'), 'Sidebar 1-Click Sample Test button present');
+
+  // Discreet collapsible toggle in sidebar
+  assert.ok(checkerHtml.includes('id="advanced-layout-key-toggle"'), 'Advanced layout & key collapsible toggle present');
+  assert.ok(checkerHtml.includes('⚙ Advanced Layout &amp; Key Options'), 'Collapsible toggle label present');
+
+  // Class modifiers for progressive disclosure
+  assert.ok(checkerHtml.includes('card--grading-settings'), 'Grading settings card has progressive disclosure class');
+  assert.ok(checkerHtml.includes('card--export-reports'), 'Export reports card has progressive disclosure class');
+  assert.ok(checkerHtml.includes('body:not(.has-data) .card--grading-settings'), 'CSS hides grading settings in initial state');
+  assert.ok(checkerHtml.includes('body:not(.has-data) .card--export-reports'), 'CSS hides export reports in initial state');
+
+  // Results view prominent export bar
+  assert.ok(checkerHtml.includes('id="results-export-bar"'), 'Results prominent export bar container present');
+  assert.ok(checkerHtml.includes('id="btn-results-export-zip"'), 'Prominent ZIP export button present');
+  assert.ok(checkerHtml.includes('id="btn-results-export-csv"'), 'Prominent CSV export button present');
+  assert.ok(checkerHtml.includes('id="btn-results-export-html"'), 'Prominent HTML export button present');
+});
+
+test('checker.html renders SVG Bell Curve with histogram, Gaussian curve, cutoff, and plain-language summary', async () => {
+  const checkerHtml = await readFile(resolve(root, 'builder/checker.html'), 'utf8');
+
+  // DOM elements
+  assert.ok(checkerHtml.includes('id="dist-bell-curve-container"'), 'Bell curve container present');
+  assert.ok(checkerHtml.includes('id="dist-bell-curve-narrative"'), 'Bell curve plain-language narrative present');
+
+  // Script logic verification
+  const scriptMatch = checkerHtml.match(/<script>([\s\S]*?)<\/script>/);
+  assert.ok(scriptMatch, 'Script block present');
+  const code = scriptMatch[1];
+
+  let renderedSvg = '';
+  let renderedNarrative = '';
+
+  const sandbox = {
+    document: {
+      getElementById: (id) => {
+        if (id === 'dist-bell-curve-container') {
+          return { set innerHTML(val) { renderedSvg = val; }, get innerHTML() { return renderedSvg; } };
+        }
+        if (id === 'dist-bell-curve-narrative') {
+          return { set innerHTML(val) { renderedNarrative = val; }, get innerHTML() { return renderedNarrative; } };
+        }
+        return { style: {}, addEventListener: () => {}, classList: { add: () => {}, remove: () => {} } };
+      },
+      querySelectorAll: () => [],
+      querySelector: () => ({ classList: { add: () => {}, remove: () => {} } }),
+      createElement: () => ({ getContext: () => ({}), style: {} }),
+      body: { classList: { add: () => {}, remove: () => {} } }
+    },
+    window: {},
+    console,
+    Uint8Array,
+    Uint32Array,
+    DataView,
+    TextEncoder,
+    Image: class {},
+    FileReader: class {}
+  };
+  vm.createContext(sandbox);
+  new vm.Script(code).runInContext(sandbox);
+
+  const renderBellCurve = vm.runInContext('renderBellCurve', sandbox);
+  assert.ok(typeof renderBellCurve === 'function', 'renderBellCurve function defined');
+
+  // Simulate cohort scores
+  const sampleGrades = [
+    { percentage: 65 }, { percentage: 70 }, { percentage: 75 },
+    { percentage: 80 }, { percentage: 85 }, { percentage: 90 },
+    { percentage: 55 }, { percentage: 78 }, { percentage: 82 }, { percentage: 95 }
+  ];
+
+  renderBellCurve(sampleGrades, 70);
+
+  // Verify SVG output contains histogram rects, Gaussian path, mean line, cutoff line, +/-1sigma
+  assert.ok(renderedSvg.includes('<svg'), 'SVG element generated');
+  assert.ok(renderedSvg.includes('rect'), 'Histogram bar rects generated');
+  assert.ok(renderedSvg.includes('path'), 'Fitted normal curve path generated');
+  assert.ok(renderedSvg.includes('Cutoff: 70%'), 'Pass threshold cutoff label rendered');
+  assert.ok(renderedSvg.includes('Mean:'), 'Mean label rendered');
+  assert.ok(renderedSvg.includes('±1σ'), 'Standard deviation ±1σ rendered');
+  assert.ok(renderedNarrative.includes('Cohort Bell Curve Distribution:'), 'Plain language explanation rendered');
+});
+
+test('validatePreflightKeyLayout detects key-layout mismatches and displays warning banner', async () => {
+  const checkerHtml = await readFile(resolve(root, 'builder/checker.html'), 'utf8');
+
+  // DOM elements
+  assert.ok(checkerHtml.includes('id="preflight-warning-banner"'), 'Preflight warning banner element present');
+  assert.ok(checkerHtml.includes('id="preflight-warning-text"'), 'Preflight warning text element present');
+
+  const scriptMatch = checkerHtml.match(/<script>([\s\S]*?)<\/script>/);
+  assert.ok(scriptMatch, 'Script block present');
+  const code = scriptMatch[1];
+
+  let bannerDisplay = 'none';
+  let warningHtml = '';
+
+  const sandbox = {
+    document: {
+      getElementById: (id) => {
+        if (id === 'preflight-warning-banner') {
+          return { style: { set display(val) { bannerDisplay = val; }, get display() { return bannerDisplay; } } };
+        }
+        if (id === 'preflight-warning-text') {
+          return { set innerHTML(val) { warningHtml = val; }, get innerHTML() { return warningHtml; } };
+        }
+        return { style: {}, addEventListener: () => {}, classList: { add: () => {}, remove: () => {} } };
+      },
+      querySelectorAll: () => [],
+      querySelector: () => ({ classList: { add: () => {}, remove: () => {} } }),
+      createElement: () => ({ getContext: () => ({}), style: {} }),
+      body: { classList: { add: () => {}, remove: () => {} } }
+    },
+    window: {},
+    console,
+    Uint8Array,
+    Uint32Array,
+    DataView,
+    TextEncoder,
+    Image: class {},
+    FileReader: class {}
+  };
+  vm.createContext(sandbox);
+  new vm.Script(code).runInContext(sandbox);
+
+  const validatePreflightKeyLayout = vm.runInContext('validatePreflightKeyLayout', sandbox);
+  const state = vm.runInContext('state', sandbox);
+
+  // Case 1: Layout has 50 items (1..50), Key has only 30 items (1..30)
+  state.layout = {
+    bubbles: Array.from({ length: 50 }, (_, i) => ({
+      item: String(i + 1),
+      choice: 'A'
+    }))
+  };
+  state.key = {
+    items: Object.fromEntries(Array.from({ length: 30 }, (_, i) => [
+      String(i + 1), { answer: 'A', points: 1, kind: 'mcq' }
+    ]))
+  };
+
+  const isValid = validatePreflightKeyLayout();
+  assert.equal(isValid, false, 'Validation must fail when items are unkeyed');
+  assert.equal(bannerDisplay, 'flex', 'Warning banner must be displayed');
+  assert.ok(warningHtml.includes('unkeyed'), 'Warning text must mention unkeyed questions');
+  assert.ok(warningHtml.includes('0 pts'), 'Warning text must explain unkeyed items score 0 pts');
+  assert.ok(warningHtml.includes('31–50'), 'Warning text must identify question range 31–50');
+
+  // Case 2: Matching layout and key
+  state.key = {
+    items: Object.fromEntries(Array.from({ length: 50 }, (_, i) => [
+      String(i + 1), { answer: 'A', points: 1, kind: 'mcq' }
+    ]))
+  };
+
+  const isMatched = validatePreflightKeyLayout();
+  assert.equal(isMatched, true, 'Validation must succeed when key matches layout');
+  assert.equal(bannerDisplay, 'none', 'Warning banner must be hidden when aligned');
+});
+
+test('processExamScan calculates reviewFlags for blanks, multi-marks, and unmatched IDs', async () => {
+  const checkerHtml = await readFile(resolve(root, 'builder/checker.html'), 'utf8');
+
+  // Badge class present in CSS and DOM
+  assert.ok(checkerHtml.includes('.badge-review'), 'badge-review CSS class present');
+  assert.ok(checkerHtml.includes('id="roster-badge-review"'), 'roster-badge-review element present in sheet inspector');
+
+  const scriptMatch = checkerHtml.match(/<script>([\s\S]*?)<\/script>/);
+  assert.ok(scriptMatch, 'Script block present');
+  const code = scriptMatch[1];
+
+  const sandbox = {
+    document: {
+      getElementById: () => ({ style: {}, addEventListener: () => {}, classList: { add: () => {}, remove: () => {} } }),
+      querySelectorAll: () => [],
+      querySelector: () => ({ classList: { add: () => {}, remove: () => {} } }),
+      createElement: () => ({
+        width: 100, height: 100,
+        getContext: () => ({
+          drawImage: () => {},
+          getImageData: () => ({ data: new Uint8ClampedArray(400) })
+        }),
+        style: {}
+      }),
+      body: { classList: { add: () => {}, remove: () => {} } }
+    },
+    window: {},
+    console,
+    Uint8Array,
+    Uint8ClampedArray,
+    Uint32Array,
+    DataView,
+    TextEncoder,
+    Image: class {},
+    FileReader: class {}
+  };
+  vm.createContext(sandbox);
+  new vm.Script(code).runInContext(sandbox);
+
+  const processExamScan = vm.runInContext('processExamScan', sandbox);
+  const state = vm.runInContext('state', sandbox);
+
+  // Setup simple layout and key
+  const mockLayout = {
+    page: { width: 210, height: 297 },
+    markers: {
+      "0": { center: [10, 10] },
+      "1": { center: [200, 10] },
+      "2": { center: [200, 280] },
+      "3": { center: [10, 280] }
+    },
+    bubbles: [
+      { item: "1", choice: "A", center: [30, 40], radius: 2 },
+      { item: "1", choice: "B", center: [35, 40], radius: 2 },
+      { item: "2", choice: "A", center: [30, 50], radius: 2 },
+      { item: "2", choice: "B", center: [35, 50], radius: 2 }
+    ]
+  };
+
+  const mockKey = {
+    items: {
+      "1": { answer: "A", points: 1, kind: "mcq" },
+      "2": { answer: "B", points: 1, kind: "mcq" }
+    }
+  };
+
+  state.roster = [{ id: "10482901", name: "Alice Walker" }];
+
+  const mockScan = {
+    name: "scan_01_99999999.jpg", // ID not in roster -> unmatched
+    img: { width: 400, height: 600 }
+  };
+
+  const grade = processExamScan(mockScan, mockLayout, mockKey, 0.20);
+  assert.ok(grade.reviewFlags, 'grade must include reviewFlags');
+  assert.equal(grade.reviewFlags.needsReview, true, 'Student with unmatched ID or blanks must need review');
+  assert.ok(grade.reviewFlags.reasons.length > 0, 'reviewFlags must provide clear reasons');
+});
+
+
+

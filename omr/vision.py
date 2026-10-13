@@ -170,7 +170,10 @@ class SheetWarper:
         if H is None:
             raise VisionError("Could not calculate homography matrix from detected markers.")
 
-        inv_H = np.linalg.inv(H)
+        try:
+            inv_H = np.linalg.inv(H)
+        except np.linalg.LinAlgError as exc:
+            raise VisionError(f"Singular homography matrix calculated from detected markers: {exc}") from exc
         warped_bgr = cv2.warpPerspective(
             bgr,
             H,

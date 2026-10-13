@@ -6,9 +6,13 @@
  * instant Answer Key generator, and millimeter-precise physical print export.
  */
 import { buildLayout, layoutStats, TemplateError, allGroups, PAPER_SIZES } from './layout-engine.js';
-import { renderSheetDOM, renderStandaloneHTML, pageRule } from './render-dom.js';
+import { renderSheetDOM, renderStandaloneHTML, pageRule, escapeHTML } from './render-dom.js';
 import { renderSVG } from './render-svg.js';
 import { SAMPLE_TEMPLATES } from './templates.js';
+
+const safeEscapeHTML = typeof escapeHTML === 'function'
+  ? escapeHTML
+  : (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
 const STORAGE_KEY = 'sheet-builder:template';
 const LEGACY_STORAGE_KEY = 'grader-studio:template';
@@ -177,7 +181,7 @@ function createDefaultZone(type) {
       return {
         type: 'student_id',
         id: uid('sid'),
-        label: 'Student ID',
+        label: 'ID no.',
         digits: 8,
         shading: true,
         boxHeight: 7.5,
@@ -192,8 +196,8 @@ function createDefaultZone(type) {
         w: availW,
         fieldHeight: 7.5,
         fields: [
-          { id: 'name', label: 'Student Name', role: 'name', row: 0, w: 108 },
-          { id: 'sid', label: 'Student ID', role: 'student_id', digits: 8, row: 0, w: 75 },
+          { id: 'name', label: 'Name', role: 'name', row: 0, w: 108 },
+          { id: 'sid', label: 'ID no.', role: 'student_id', digits: 8, row: 0, w: 75 },
           { id: 'offer', label: 'Offer No.', row: 1, w: 48 },
           { id: 'sched', label: 'Sched', row: 1, w: 52 },
           { id: 'date', label: 'Date', row: 1, w: 43 },
@@ -242,10 +246,10 @@ function createDefaultZone(type) {
       };
 
     case 'text':
-    case 'text_short':
       return {
-        type: type === 'text' ? 'text' : 'text_short',
+        type: 'text',
         id: uid('q'),
+        key: String(nextQ),
         label: `${nextQ}.`,
         boxHeight: 12,
         points: 2,
@@ -253,14 +257,29 @@ function createDefaultZone(type) {
         w: availW,
       };
 
+    case 'text_short':
+      return {
+        type: 'text_short',
+        id: uid('sa'),
+        label: 'Short Answer / Identification',
+        count: 5,
+        start: nextQ,
+        columns: 2,
+        boxHeight: 10,
+        pointsPerItem: 2,
+        w: availW,
+      };
+
     case 'text_essay':
       return {
         type: 'text_essay',
-        id: uid('q'),
-        label: `${nextQ}.`,
-        boxHeight: 45,
-        points: 5,
-        charset: 'any',
+        id: uid('essay'),
+        label: 'Essay / Discussion',
+        count: 1,
+        start: nextQ,
+        columns: 1,
+        boxHeight: 35,
+        pointsPerItem: 5,
         w: availW,
       };
 
@@ -269,7 +288,7 @@ function createDefaultZone(type) {
         type: 'instructions',
         id: uid('notes'),
         fontSize: 2.8,
-        text: 'Write your Student ID clearly. Fill each bubble completely with a dark pencil or pen.\nDo not fold, staple, or write outside the designated response areas.',
+        text: 'Write your ID no. clearly. Fill each bubble completely with a dark pencil or pen.\nDo not fold, staple, or write outside the designated response areas.',
         w: availW,
       };
 
@@ -479,27 +498,12 @@ function attachSvgZoneInteractions(scaler, svgEl, layout) {
 
       const zone = layout.zones[idx];
       if (zone && zone.bbox) {
-        // Draw crisp SVG dashed selection outline box
-        const NS = 'http://www.w3.org/2000/svg';
-        const selRect = document.createElementNS(NS, 'rect');
-        selRect.setAttribute('x', String(zone.bbox.x - 0.5));
-        selRect.setAttribute('y', String(zone.bbox.y - 0.5));
-        selRect.setAttribute('width', String(zone.bbox.w + 1.0));
-        selRect.setAttribute('height', String(zone.bbox.h + 1.0));
-        selRect.setAttribute('rx', '1.5');
-        selRect.setAttribute('fill', 'rgba(26, 95, 208, 0.08)');
-        selRect.setAttribute('stroke', '#1a5fd0');
-        selRect.setAttribute('stroke-width', '0.6');
-        selRect.setAttribute('stroke-dasharray', '2 1');
-        selRect.style.pointerEvents = 'none';
-        svgEl.append(selRect);
-
         // Floating action toolbar positioned directly above selected zone in scaler
         const toolbar = document.createElement('div');
         toolbar.className = 'zone-floating-toolbar app-chrome';
         toolbar.style.position = 'absolute';
-        toolbar.style.top = `${Math.max(0, zone.bbox.y - 7.5)}mm`;
-        toolbar.style.left = `${zone.bbox.x}mm`;
+        toolbar.style.top = `${zone.bbox.y * PX_PER_MM - 30}px`;
+        toolbar.style.left = `${zone.bbox.x * PX_PER_MM}px`;
         toolbar.innerHTML = `
           <span class="zone-drag-grip" title="Drag to reorder" draggable="true" data-zone-index="${idx}">⠿</span>
           <button type="button" class="btn-zone-up" title="Move Up" ${idx === 0 ? 'disabled' : ''}>▲</button>
@@ -726,8 +730,8 @@ function renderInspector() {
     instructions: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>',
   };
   const typeNames = {
-    student_id: 'Student ID',
-    fields: 'Student Info & ID',
+    student_id: 'ID no.',
+    fields: 'Info & ID no.',
     mcq: 'Multiple Choice (MCQ)',
     truefalse: 'True / False',
     modified_tf: 'Modified True / False',
@@ -835,6 +839,9 @@ function renderInspector() {
           <button type="button" class="pill-btn ${zone.layout === 'half-left' || zone.side === 'left' ? 'is-active' : ''}" data-placement="left">Side-by-Side (Left)</button>
           <button type="button" class="pill-btn ${zone.layout === 'half-right' || zone.side === 'right' || zone.inline ? 'is-active' : ''}" data-placement="right">Side-by-Side (Right)</button>
         </div>
+        <button type="button" class="btn btn--secondary btn--sm" id="insp-btn-pull-vacant" style="width: 100%; margin-top: 0.4rem;" title="Switch side to fill vacant column space">
+          ⇄ Move to Opposite / Vacant Side
+        </button>
       </div>
     `;
   } else if (zone.type === 'modified_tf') {
@@ -900,6 +907,9 @@ function renderInspector() {
           <button type="button" class="pill-btn ${zone.layout === 'half-left' || zone.side === 'left' ? 'is-active' : ''}" data-placement="left">Side-by-Side (Left)</button>
           <button type="button" class="pill-btn ${zone.layout === 'half-right' || zone.side === 'right' || zone.inline ? 'is-active' : ''}" data-placement="right">Side-by-Side (Right)</button>
         </div>
+        <button type="button" class="btn btn--secondary btn--sm" id="insp-btn-pull-vacant" style="width: 100%; margin-top: 0.4rem;" title="Switch side to fill vacant column space">
+          ⇄ Move to Opposite / Vacant Side
+        </button>
       </div>
     `;
   } else if (zone.type === 'student_id') {
@@ -935,11 +945,11 @@ function renderInspector() {
         <div class="checkbox-grid">
           <label class="field-checkbox-label">
             <input type="checkbox" id="field-name" ${hasField('name') ? 'checked' : ''}>
-            <span>Student Name</span>
+            <span>Name</span>
           </label>
           <label class="field-checkbox-label">
             <input type="checkbox" id="field-sid" ${hasSidField ? 'checked' : ''}>
-            <span>Student ID (8 Digits)</span>
+            <span>ID no. (8 Digits)</span>
           </label>
           <label class="field-checkbox-label">
             <input type="checkbox" id="field-offer" ${hasField('offer') || hasField('section') ? 'checked' : ''}>
@@ -966,40 +976,62 @@ function renderInspector() {
     `;
   } else if (zone.type === 'text' || zone.type === 'text_short' || zone.type === 'text_essay') {
     const defaultPts = zone.type === 'text_essay' ? 5 : 2;
-    const defaultH = zone.type === 'text_essay' ? 45 : (zone.type === 'text_short' ? 12 : 14);
+    const defaultH = zone.type === 'text_essay' ? 35 : (zone.type === 'text_short' ? 10 : 12);
+    const count = zone.count ?? 1;
+    const cols = zone.columns ?? 1;
 
     formHtml += `
       <div class="form-group">
-        <label class="form-label" for="insp-label">Question Prompt / Label</label>
+        <label class="form-label" for="insp-label">${count > 1 ? 'Section Title' : 'Question Prompt / Label'}</label>
         <input type="text" id="insp-label" class="form-input" value="${zone.label || ''}">
       </div>
 
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label" for="insp-points">Points</label>
+          <label class="form-label" for="insp-count">Questions</label>
           <div class="stepper-control">
-            <button type="button" class="stepper-btn" id="insp-points-minus" aria-label="Decrease points">−</button>
-            <input type="number" id="insp-points" class="stepper-input" value="${zone.points ?? defaultPts}" min="1" max="50">
-            <button type="button" class="stepper-btn" id="insp-points-plus" aria-label="Increase points">+</button>
+            <button type="button" class="stepper-btn" id="insp-count-minus" aria-label="Decrease question count">−</button>
+            <input type="number" id="insp-count" class="stepper-input" value="${count}" min="1" max="50">
+            <button type="button" class="stepper-btn" id="insp-count-plus" aria-label="Increase question count">+</button>
           </div>
         </div>
 
         <div class="form-group">
-          <label class="form-label" for="insp-charset">Allowed Chars</label>
-          <select id="insp-charset" class="form-select">
-            <option value="any" ${zone.charset === 'any' ? 'selected' : ''}>Any text</option>
-            <option value="digits" ${zone.charset === 'digits' ? 'selected' : ''}>Digits only (0–9)</option>
-            <option value="alpha" ${zone.charset === 'alpha' ? 'selected' : ''}>Letters only (A–Z)</option>
-          </select>
+          <label class="form-label" for="insp-start">Start No.</label>
+          <div class="stepper-control">
+            <button type="button" class="stepper-btn" id="insp-start-minus" aria-label="Decrease start number">−</button>
+            <input type="number" id="insp-start" class="stepper-input" value="${zone.start ?? 1}" min="1" max="999">
+            <button type="button" class="stepper-btn" id="insp-start-plus" aria-label="Increase start number">+</button>
+          </div>
         </div>
       </div>
 
       <div class="form-group">
-        <label class="form-label" for="insp-box-height">Box Height (mm)</label>
-        <div class="stepper-control">
-          <button type="button" class="stepper-btn" id="insp-box-height-minus" aria-label="Decrease box height">−</button>
-          <input type="number" id="insp-box-height" class="stepper-input" value="${zone.boxHeight ?? defaultH}" min="8" max="120">
-          <button type="button" class="stepper-btn" id="insp-box-height-plus" aria-label="Increase box height">+</button>
+        <label class="form-label">Columns</label>
+        <div class="pills-group" id="insp-cols-pills">
+          <button type="button" class="pill-btn ${cols === 1 ? 'is-active' : ''}" data-cols="1">1 Col</button>
+          <button type="button" class="pill-btn ${cols === 2 ? 'is-active' : ''}" data-cols="2">2 Cols</button>
+          <button type="button" class="pill-btn ${cols === 3 ? 'is-active' : ''}" data-cols="3">3 Cols</button>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="insp-box-height">Box Height (mm)</label>
+          <div class="stepper-control">
+            <button type="button" class="stepper-btn" id="insp-box-height-minus" aria-label="Decrease box height">−</button>
+            <input type="number" id="insp-box-height" class="stepper-input" value="${zone.boxHeight ?? defaultH}" min="6" max="80">
+            <button type="button" class="stepper-btn" id="insp-box-height-plus" aria-label="Increase box height">+</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="insp-points">Pts / Item</label>
+          <div class="stepper-control">
+            <button type="button" class="stepper-btn" id="insp-points-minus" aria-label="Decrease points">−</button>
+            <input type="number" id="insp-points" class="stepper-input" value="${zone.pointsPerItem ?? zone.points ?? defaultPts}" min="1" max="50">
+            <button type="button" class="stepper-btn" id="insp-points-plus" aria-label="Increase points">+</button>
+          </div>
         </div>
       </div>
 
@@ -1010,6 +1042,9 @@ function renderInspector() {
           <button type="button" class="pill-btn ${zone.layout === 'half-left' || zone.side === 'left' ? 'is-active' : ''}" data-placement="left">Side-by-Side (Left)</button>
           <button type="button" class="pill-btn ${zone.layout === 'half-right' || zone.side === 'right' || zone.inline ? 'is-active' : ''}" data-placement="right">Side-by-Side (Right)</button>
         </div>
+        <button type="button" class="btn btn--secondary btn--sm" id="insp-btn-pull-vacant" style="width: 100%; margin-top: 0.4rem;" title="Switch side to fill vacant column space">
+          ⇄ Move to Opposite / Vacant Side
+        </button>
       </div>
     `;
   } else if (zone.type === 'instructions') {
@@ -1026,6 +1061,18 @@ function renderInspector() {
           <button type="button" class="pill-btn ${zone.fontSize > 2.4 && zone.fontSize <= 2.8 ? 'is-active' : ''}" data-size="2.8">Normal (2.8mm)</button>
           <button type="button" class="pill-btn ${zone.fontSize > 2.8 ? 'is-active' : ''}" data-size="3.2">Large (3.2mm)</button>
         </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Module Page Placement</label>
+        <div class="pills-group" id="insp-placement-pills">
+          <button type="button" class="pill-btn ${(!zone.layout && !zone.side && !zone.inline) || zone.layout === 'full' ? 'is-active' : ''}" data-placement="full">Full Width</button>
+          <button type="button" class="pill-btn ${zone.layout === 'half-left' || zone.side === 'left' ? 'is-active' : ''}" data-placement="left">Side-by-Side (Left)</button>
+          <button type="button" class="pill-btn ${zone.layout === 'half-right' || zone.side === 'right' || zone.inline ? 'is-active' : ''}" data-placement="right">Side-by-Side (Right)</button>
+        </div>
+        <button type="button" class="btn btn--secondary btn--sm" id="insp-btn-pull-vacant" style="width: 100%; margin-top: 0.4rem;" title="Switch side to fill vacant column space">
+          ⇄ Move to Opposite / Vacant Side
+        </button>
       </div>
     `;
   }
@@ -1068,14 +1115,19 @@ function bindInspectorEvents(zone) {
   if (labelInput) {
     labelInput.addEventListener('input', () => {
       zone.label = labelInput.value;
+      update({ skipInspector: true });
+      const outlineTitle = document.querySelector(`.outline-item[data-zone-index="${idx}"] .outline-item__title`);
+      if (outlineTitle) outlineTitle.textContent = zone.label || (typeNames[zone.type] || zone.type);
+    });
+    labelInput.addEventListener('change', () => {
       update();
     });
   }
 
-  // Count & Start & Points steppers (for mcq, truefalse, modified_tf)
-  if (zone.type === 'mcq' || zone.type === 'truefalse' || zone.type === 'modified_tf') {
-    bindStepper('insp-count', () => zone.count, (val) => { zone.count = val; update(); }, 1, 100);
-    bindStepper('insp-start', () => zone.start, (val) => { zone.start = val; update(); }, 1, 999);
+  // Count & Start & Points steppers
+  if (['mcq', 'truefalse', 'modified_tf', 'text_short', 'text_essay', 'text'].includes(zone.type)) {
+    bindStepper('insp-count', () => zone.count ?? 1, (val) => { zone.count = val; update(); }, 1, 100);
+    bindStepper('insp-start', () => zone.start ?? 1, (val) => { zone.start = val; update(); }, 1, 999);
     bindStepper(
       'insp-points',
       () => zone.pointsPerItem ?? zone.points ?? (zone.type === 'modified_tf' ? 2 : 1),
@@ -1087,6 +1139,20 @@ function bindInspectorEvents(zone) {
       1,
       50,
     );
+  }
+
+  // Box height & Columns for text zones
+  if (['text_short', 'text_essay', 'text'].includes(zone.type)) {
+    bindStepper('insp-box-height', () => zone.boxHeight ?? 10, (val) => { zone.boxHeight = val; update(); }, 6, 120);
+
+    const colsPills = $$('#insp-cols-pills .pill-btn');
+    for (const pill of colsPills) {
+      pill.addEventListener('click', () => {
+        zone.columns = parseInt(pill.dataset.cols, 10) || 1;
+        renderInspector();
+        update();
+      });
+    }
   }
 
   // Placement pills (Module page placement)
@@ -1114,6 +1180,50 @@ function bindInspectorEvents(zone) {
       update();
     });
   }
+
+  // Switch side / pull to vacant column button
+  $('#insp-btn-pull-vacant')?.addEventListener('click', () => {
+    if (zone.layout === 'half-left' || zone.side === 'left') {
+      zone.layout = 'half-right';
+      zone.side = 'right';
+    } else {
+      zone.layout = 'half-left';
+      zone.side = 'left';
+    }
+    delete zone.inline;
+    delete zone.w;
+    renderInspector();
+    update();
+  });
+
+  // Split written answer into multiple modules
+  $('#insp-btn-split-modules')?.addEventListener('click', () => {
+    const input = prompt('How many separate question modules would you like to create for this section?', '3');
+    if (!input) return;
+    const num = Math.max(2, Math.min(20, parseInt(input, 10) || 3));
+    const basePts = zone.points ?? (zone.type === 'text_essay' ? 5 : 2);
+    const baseH = zone.boxHeight ?? (zone.type === 'text_essay' ? 45 : 12);
+    const baseCharset = zone.charset ?? 'any';
+    const baseType = zone.type;
+
+    const newZones = [];
+    for (let i = 0; i < num; i++) {
+      newZones.push({
+        type: baseType,
+        id: uid(baseType === 'text_essay' ? 'essay' : 'short'),
+        label: `Question ${i + 1}`,
+        boxHeight: baseH,
+        points: basePts,
+        charset: baseCharset,
+        layout: i % 2 === 0 ? 'half-left' : 'half-right',
+        side: i % 2 === 0 ? 'left' : 'right',
+      });
+    }
+    state.template.zones.splice(idx, 1, ...newZones);
+    state.selectedZoneIndex = idx;
+    renderInspector();
+    update();
+  });
 
   // Modified T/F correction box width
   if (zone.type === 'modified_tf') {
@@ -1149,6 +1259,9 @@ function bindInspectorEvents(zone) {
     if (customChoicesInput) {
       customChoicesInput.addEventListener('input', () => {
         zone.choices = customChoicesInput.value.toUpperCase();
+        update({ skipInspector: true });
+      });
+      customChoicesInput.addEventListener('change', () => {
         update();
       });
     }
@@ -1205,16 +1318,16 @@ function bindInspectorEvents(zone) {
 
     const updateFields = () => {
       const fields = [];
-      // Row 0: Student Name & Student ID (always standardized to 8 digits)
-      if (nameCb?.checked) fields.push({ id: 'name', label: 'Student Name', role: 'name', row: 0, w: 108 });
-      if (sidCb?.checked) fields.push({ id: 'sid', label: 'Student ID', role: 'student_id', digits: 8, row: 0, w: 75 });
+      // Row 0: Name & ID no. (always standardized to 8 digits)
+      if (nameCb?.checked) fields.push({ id: 'name', label: 'Name', role: 'name', row: 0, w: 108 });
+      if (sidCb?.checked) fields.push({ id: 'sid', label: 'ID no.', role: 'student_id', digits: 8, row: 0, w: 75 });
       // Row 1: Offer No., Sched, Date, Score
       if (offerCb?.checked) fields.push({ id: 'offer', label: 'Offer No.', row: 1, w: 48 });
       if (schedCb?.checked) fields.push({ id: 'sched', label: 'Sched', row: 1, w: 52 });
       if (dateCb?.checked) fields.push({ id: 'date', label: 'Date', row: 1, w: 43 });
       if (scoreCb?.checked) fields.push({ id: 'score', label: 'Score', role: 'score', row: 1, w: 40 });
       if (sigCb?.checked) fields.push({ id: 'signature', label: 'Signature', ocr: false, row: 1, w: 45 });
-      if (fields.length === 0) fields.push({ id: 'name', label: 'Student Name', role: 'name', row: 0, w: 108 });
+      if (fields.length === 0) fields.push({ id: 'name', label: 'Name', role: 'name', row: 0, w: 108 });
       zone.fields = fields;
       update();
     };
@@ -1248,6 +1361,9 @@ function bindInspectorEvents(zone) {
   if (textInput) {
     textInput.addEventListener('input', () => {
       zone.text = textInput.value;
+      update({ skipInspector: true });
+    });
+    textInput.addEventListener('change', () => {
       update();
     });
   }
@@ -1276,8 +1392,8 @@ function renderOutline() {
     instructions: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>',
   };
   const typeNames = {
-    student_id: 'Student ID',
-    fields: 'Student Info & ID',
+    student_id: 'ID no.',
+    fields: 'Info & ID no.',
     mcq: 'Multiple Choice (MCQ)',
     truefalse: 'True / False',
     modified_tf: 'Modified True / False',
@@ -1302,6 +1418,7 @@ function renderOutline() {
           <div class="outline-item__actions">
             <button type="button" class="btn-mini-arrow btn-outline-up" data-index="${i}" title="Move Up" ${i === 0 ? 'disabled' : ''}><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m18 15-6-6-6 6"/></svg></button>
             <button type="button" class="btn-mini-arrow btn-outline-down" data-index="${i}" title="Move Down" ${i === zones.length - 1 ? 'disabled' : ''}><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg></button>
+            <button type="button" class="btn-mini-arrow btn-outline-dup" data-index="${i}" title="Duplicate"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="13" height="13" x="9" y="9" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
             <button type="button" class="btn-mini-trash btn-outline-del" data-index="${i}" title="Delete"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
           </div>
         </div>
@@ -1360,6 +1477,14 @@ function renderOutline() {
     });
   });
 
+  els.outlineList.querySelectorAll('.btn-outline-dup').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const idx = parseInt(btn.dataset.index, 10);
+      duplicateZone(idx);
+    });
+  });
+
   els.outlineList.querySelectorAll('.btn-outline-del').forEach((btn) => {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -1401,7 +1526,7 @@ function renderMeta(layout) {
 }
 
 // ---- Core Update Function ----
-function update() {
+function update(options = {}) {
   if (!state.template) return;
 
   try {
@@ -1414,13 +1539,15 @@ function update() {
     return;
   }
 
-  // Two-way sync to raw JSON textarea and storage
+  // Two-way sync to raw JSON textarea and storage (avoid disrupting active typing)
   const serialized = JSON.stringify(state.template, null, 2);
-  els.rawJson.value = serialized;
+  if (els.rawJson && document.activeElement !== els.rawJson) {
+    els.rawJson.value = serialized;
+  }
   localStorage.setItem(STORAGE_KEY, serialized);
 
-  // Header input sync
-  if (els.examTitle.value !== state.template.title) {
+  // Header input sync (avoid resetting cursor while typing in exam title)
+  if (els.examTitle && document.activeElement !== els.examTitle && els.examTitle.value !== state.template.title) {
     els.examTitle.value = state.template.title || '';
   }
 
@@ -1436,7 +1563,9 @@ function update() {
   renderPreview();
 
   if (state.activeTab === 'inspector') {
-    renderInspector();
+    if (!options.skipInspector) {
+      renderInspector();
+    }
   } else if (state.activeTab === 'outline') {
     renderOutline();
   }
@@ -1447,8 +1576,10 @@ function openModal(modalEl) {
   if (!modalEl) return;
   if (typeof modalEl.showModal === 'function') {
     try {
-      modalEl.showModal();
-      return;
+      if (!modalEl.open) {
+        modalEl.showModal();
+        return;
+      }
     } catch {}
   }
   modalEl.setAttribute('open', '');
@@ -1458,8 +1589,10 @@ function closeModal(modalEl) {
   if (!modalEl) return;
   if (typeof modalEl.close === 'function') {
     try {
-      modalEl.close();
-      return;
+      if (modalEl.open) {
+        modalEl.close();
+        return;
+      }
     } catch {}
   }
   modalEl.removeAttribute('open');
@@ -1483,7 +1616,7 @@ function getActiveAnswerKeyPayload() {
     templateId: layout.templateId,
     exam_id: layout.templateId,
     total_points: totalPoints,
-    pass_score: currentAnswerKey.passScore || Math.round(totalPoints * 0.6),
+    pass_score: currentAnswerKey.passScore ?? Math.round(totalPoints * 0.6),
     items: currentAnswerKey.items,
   };
 }
@@ -1504,11 +1637,18 @@ function openAnswerKeyModal() {
   // 1. MCQ and True/False bubbles
   for (const g of allGroups(layout)) {
     if (g.kind === 'mcq' || g.kind === 'tf') {
-      const existing = existingKey[g.key];
+      const existing = existingKey[g.key] ?? existingKey[String(g.key)];
       const defaultAns = g.options[0]?.value || (g.kind === 'tf' ? 'T' : 'A');
+      const existingAns = typeof existing === 'object' && existing !== null && existing.answer !== undefined
+        ? existing.answer
+        : (typeof existing === 'string' || typeof existing === 'number' ? String(existing) : null);
+      const existingPts = typeof existing === 'object' && existing !== null && existing.points !== undefined
+        ? Number(existing.points)
+        : null;
+
       currentAnswerKey.items[g.key] = {
-        answer: existing ? existing.answer : defaultAns,
-        points: existing ? Number(existing.points || 1) : Number(g.points || 1),
+        answer: existingAns ?? defaultAns,
+        points: existingPts ?? Number(g.points || 1),
         kind: g.kind,
         options: g.options.map((o) => o.value),
         label: g.label || g.key,
@@ -1517,12 +1657,20 @@ function openAnswerKeyModal() {
   }
 
   // 2. Graded handwriting OCR boxes (modified_tf correction, short answer, essay)
-  for (const roi of layout.zones.flatMap((z) => z.rois)) {
+  for (const roi of layout.zones.flatMap((z) => z.rois || [])) {
     if (roi.graded) {
-      const existing = existingKey[roi.key];
+      const existing = existingKey[roi.key] ?? existingKey[String(roi.key)];
+      const defaultAns = roi.role === 'correction' ? 'Correction' : 'Sample Answer';
+      const existingAns = typeof existing === 'object' && existing !== null && existing.answer !== undefined
+        ? existing.answer
+        : (typeof existing === 'string' || typeof existing === 'number' ? String(existing) : null);
+      const existingPts = typeof existing === 'object' && existing !== null && existing.points !== undefined
+        ? Number(existing.points)
+        : null;
+
       currentAnswerKey.items[roi.key] = {
-        answer: existing ? existing.answer : (roi.role === 'correction' ? 'Correction' : 'Sample Answer'),
-        points: existing ? Number(existing.points || 1) : Number(roi.points || 1),
+        answer: existingAns ?? defaultAns,
+        points: existingPts ?? Number(roi.points || 1),
         kind: 'text',
         rubric: roi.charset === 'digits' ? 'exact' : 'case_insensitive',
         label: roi.label || roi.key,
@@ -1532,6 +1680,9 @@ function openAnswerKeyModal() {
 
   const totalPoints = Object.values(currentAnswerKey.items).reduce((s, it) => s + Number(it.points || 1), 0);
   currentAnswerKey.passScore = state.template?.answerKey?.pass_score ?? Math.round(totalPoints * 0.6);
+  if (state.template?.answerKey?.pass_score !== undefined && els.keyPassingInput) {
+    els.keyPassingInput.dataset.userEdited = 'true';
+  }
 
   renderAnswerKeyModalContent();
   openModal(els.modalAnswerKey);
@@ -1564,17 +1715,68 @@ function renderAnswerKeyModalContent() {
     return;
   }
 
-  let html = '';
+  // Preflight discrepancy check between sheet and key
+  const sheetItemKeys = new Set();
+  const sheetItemsMeta = {};
+  for (const zone of layout.zones) {
+    for (const g of zone.groups.filter((g) => g.kind === 'mcq' || g.kind === 'tf')) {
+      sheetItemKeys.add(String(g.key));
+      sheetItemsMeta[String(g.key)] = { kind: g.kind, options: g.options.map((o) => o.value) };
+    }
+    for (const r of (zone.rois || []).filter((r) => r.graded)) {
+      sheetItemKeys.add(String(r.key));
+      sheetItemsMeta[String(r.key)] = { kind: 'text', label: r.label || r.key };
+    }
+  }
+
+  const missingInKey = [];
+  for (const k of sheetItemKeys) {
+    if (!currentAnswerKey.items[k] || !currentAnswerKey.items[k].answer) {
+      missingInKey.push(k);
+    }
+  }
+
+  const extraInKey = [];
+  for (const k of Object.keys(currentAnswerKey.items)) {
+    if (!sheetItemKeys.has(k)) {
+      extraInKey.push(k);
+    }
+  }
+
+  let discrepancyHtml = '';
+  if (missingInKey.length > 0 || extraInKey.length > 0) {
+    let msg = '';
+    if (missingInKey.length > 0) {
+      msg += `<strong>${missingInKey.length} questions</strong> on sheet have no answer set (${missingInKey.slice(0, 4).join(', ')}${missingInKey.length > 4 ? '...' : ''}). Unkeyed questions will score 0 pts. `;
+    }
+    if (extraInKey.length > 0) {
+      msg += `Key contains ${extraInKey.length} extra items (${extraInKey.slice(0, 3).join(', ')}) not on current sheet. `;
+    }
+    discrepancyHtml = `
+      <div class="key-discrepancy-banner" id="key-discrepancy-banner">
+        <div>
+          <span style="font-weight: 700;">⚠️ Exam Sheet &amp; Key Discrepancy:</span>
+          <span>${msg}</span>
+        </div>
+        <button type="button" class="btn btn--secondary btn-xs" id="btn-sync-key-sheet" title="Auto-fill default answers for all sheet questions and remove orphaned items">
+          Auto-Sync with Sheet
+        </button>
+      </div>
+    `;
+  }
+
+  let html = discrepancyHtml;
   for (const zone of layout.zones) {
     const zoneGroups = zone.groups.filter((g) => g.kind === 'mcq' || g.kind === 'tf');
     const zoneRois = (zone.rois || []).filter((r) => r.graded);
 
     if (zoneGroups.length === 0 && zoneRois.length === 0) continue;
 
+    const zoneCols = zone.columns ? Math.min(4, Math.max(1, zone.columns)) : 3;
     html += `
       <div class="key-section-card">
-        <h4 class="key-section-title">${escapeHTML(zone.label || zone.type.toUpperCase())}</h4>
-        <div class="key-matrix-grid">
+        <h4 class="key-section-title">${safeEscapeHTML(zone.label || zone.type.toUpperCase())}</h4>
+        <div class="key-matrix-grid" style="column-count: ${zoneCols};">
     `;
 
     for (const g of zoneGroups) {
@@ -1605,8 +1807,8 @@ function renderAnswerKeyModalContent() {
 
       html += `
         <div class="key-item-cell" data-key="${roi.key}" style="grid-column: 1 / -1; display: flex; gap: 0.5rem;">
-          <span class="key-item-num">${escapeHTML(item.label || roi.key)}:</span>
-          <input type="text" class="key-text-input" data-key="${roi.key}" value="${escapeHTML(ansVal)}" placeholder="Accepted answer">
+          <span class="key-item-num">${safeEscapeHTML(item.label || roi.key)}:</span>
+          <input type="text" class="key-text-input" data-key="${roi.key}" value="${safeEscapeHTML(ansVal)}" placeholder="Accepted answer">
           <input type="number" class="key-pts-input" data-key="${roi.key}" value="${item.points}" min="1" max="50" title="Points">
         </div>
       `;
@@ -1642,6 +1844,10 @@ function renderAnswerKeyModalContent() {
         let newTotal = 0;
         for (const it of Object.values(currentAnswerKey.items)) newTotal += Number(it.points || 1);
         if (els.keyMetricPoints) els.keyMetricPoints.textContent = String(newTotal);
+        if (!els.keyPassingInput?.dataset.userEdited) {
+          currentAnswerKey.passScore = Math.round(newTotal * 0.6);
+          if (els.keyPassingInput) els.keyPassingInput.value = currentAnswerKey.passScore;
+        }
       }
     });
   });
@@ -1655,6 +1861,27 @@ function renderAnswerKeyModalContent() {
       }
     });
   });
+
+  // Bind Auto-Sync with Sheet button
+  els.keyItemsContainer.querySelector('#btn-sync-key-sheet')?.addEventListener('click', () => {
+    for (const [k, meta] of Object.entries(sheetItemsMeta)) {
+      if (!currentAnswerKey.items[k] || !currentAnswerKey.items[k].answer) {
+        currentAnswerKey.items[k] = {
+          answer: meta.options ? meta.options[0] : 'Answer',
+          points: 1,
+          kind: meta.kind,
+          options: meta.options,
+          label: meta.label || k,
+        };
+      }
+    }
+    for (const k of Object.keys(currentAnswerKey.items)) {
+      if (!sheetItemKeys.has(k)) {
+        delete currentAnswerKey.items[k];
+      }
+    }
+    renderAnswerKeyModalContent();
+  });
 }
 
 // Pre-fill answer key download helper (for backwards compatibility)
@@ -1665,7 +1892,7 @@ function downloadAnswerKey() {
 // ---- Load Template Helper ----
 async function loadTemplate(tpl) {
   state.template = tpl;
-  state.selectedZoneIndex = 0;
+  state.selectedZoneIndex = tpl.zones?.length > 0 ? 0 : -1;
   update();
   fitPreview();
 }
@@ -1736,9 +1963,9 @@ function renderSavedBuildsList() {
       return `
         <div class="saved-build-card" data-build-id="${b.id}">
           <div class="saved-build-card__info">
-            <h4 class="saved-build-card__title">${escapeHTML(b.title || 'Untitled Exam')}</h4>
+            <h4 class="saved-build-card__title">${safeEscapeHTML(b.title || 'Untitled Exam')}</h4>
             <div class="saved-build-card__meta">
-              <span class="badge badge--paper">${escapeHTML(b.paper || 'Folio')}</span>
+              <span class="badge badge--paper">${safeEscapeHTML(b.paper || 'Folio')}</span>
               <span class="badge badge--questions">${b.questionCount || 0} Questions</span>
               <span class="saved-build-card__date">${dateStr}</span>
             </div>
@@ -1861,15 +2088,24 @@ function renderPartFields(part) {
     return `
       <div class="gen-field-inline">
         <label>Questions:</label>
-        <input type="number" class="gen-input gen-input--sm part-input-count" value="${part.count ?? 5}" min="1" max="20">
+        <input type="number" class="gen-input gen-input--sm part-input-count" value="${part.count ?? 5}" min="1" max="25">
+      </div>
+      <div class="gen-field-inline">
+        <label>Columns:</label>
+        <select class="gen-select gen-select--sm part-select-cols">
+          <option value="auto" ${(part.cols ?? 'auto') === 'auto' ? 'selected' : ''}>Auto</option>
+          <option value="1" ${part.cols === '1' ? 'selected' : ''}>1</option>
+          <option value="2" ${part.cols === '2' ? 'selected' : ''}>2</option>
+          <option value="3" ${part.cols === '3' ? 'selected' : ''}>3</option>
+        </select>
       </div>
       <div class="gen-field-inline">
         <label>Box Height:</label>
-        <input type="number" class="gen-input gen-input--sm part-input-height" value="${part.boxHeight ?? 12}" min="6" max="25"> mm
+        <input type="number" class="gen-input gen-input--sm part-input-height" value="${part.boxHeight ?? 10}" min="6" max="30"> mm
       </div>
       <div class="gen-field-inline">
-        <label>Pts/Question:</label>
-        <input type="number" class="gen-input gen-input--sm part-input-pts" value="${part.pts ?? 2}" min="1" max="10">
+        <label>Pts/Item:</label>
+        <input type="number" class="gen-input gen-input--sm part-input-pts" value="${part.pts ?? 2}" min="1" max="20">
       </div>
     `;
   }
@@ -1877,14 +2113,22 @@ function renderPartFields(part) {
     return `
       <div class="gen-field-inline">
         <label>Questions:</label>
-        <input type="number" class="gen-input gen-input--sm part-input-count" value="${part.count ?? 1}" min="1" max="5">
+        <input type="number" class="gen-input gen-input--sm part-input-count" value="${part.count ?? 1}" min="1" max="10">
+      </div>
+      <div class="gen-field-inline">
+        <label>Columns:</label>
+        <select class="gen-select gen-select--sm part-select-cols">
+          <option value="auto" ${(part.cols ?? 'auto') === 'auto' ? 'selected' : ''}>Auto</option>
+          <option value="1" ${part.cols === '1' ? 'selected' : ''}>1</option>
+          <option value="2" ${part.cols === '2' ? 'selected' : ''}>2</option>
+        </select>
       </div>
       <div class="gen-field-inline">
         <label>Box Height:</label>
-        <input type="number" class="gen-input gen-input--sm part-input-height" value="${part.boxHeight ?? 36}" min="15" max="80"> mm
+        <input type="number" class="gen-input gen-input--sm part-input-height" value="${part.boxHeight ?? 35}" min="15" max="80"> mm
       </div>
       <div class="gen-field-inline">
-        <label>Pts/Question:</label>
+        <label>Pts/Item:</label>
         <input type="number" class="gen-input gen-input--sm part-input-pts" value="${part.pts ?? 5}" min="1" max="50">
       </div>
     `;
@@ -1932,23 +2176,23 @@ function renderGeneratorParts() {
     card.querySelector('[data-action="change-type"]').addEventListener('change', (e) => {
       part.type = e.target.value;
       if (part.type === 'mcq') {
-        part.count = part.count || 30;
+        part.count = Math.min(Math.max(part.count || 30, 1), 100);
         part.choices = part.choices || 'ABCD';
         part.cols = part.cols || 'auto';
         part.pts = part.pts || 1;
       } else if (part.type === 'truefalse') {
-        part.count = part.count || 10;
+        part.count = Math.min(Math.max(part.count || 10, 1), 50);
         part.cols = part.cols || 'auto';
         part.pts = part.pts || 1;
       } else if (part.type === 'modified_tf') {
-        part.count = part.count || 5;
+        part.count = Math.min(Math.max(part.count || 5, 1), 25);
         part.pts = part.pts || 2;
       } else if (part.type === 'text_short') {
-        part.count = part.count || 5;
+        part.count = Math.min(Math.max(part.count || 5, 1), 20);
         part.boxHeight = part.boxHeight || 12;
         part.pts = part.pts || 2;
       } else if (part.type === 'text_essay') {
-        part.count = part.count || 1;
+        part.count = Math.min(Math.max(part.count || 1, 1), 5);
         part.boxHeight = part.boxHeight || 36;
         part.pts = part.pts || 5;
       }
@@ -2023,6 +2267,14 @@ function renderGeneratorParts() {
       });
     }
 
+    const splitSelect = card.querySelector('.part-select-split');
+    if (splitSelect) {
+      splitSelect.addEventListener('change', () => {
+        part.layout = splitSelect.value;
+        updateGeneratorLivePreview();
+      });
+    }
+
     els.genPartsList.appendChild(card);
   });
 
@@ -2034,7 +2286,7 @@ function updateGeneratorLivePreview() {
   if (!els.genWireframe) return;
   const paper = els.genPaper?.value || 'A4';
   const paperSpec = PAPER_SIZES[paper] || PAPER_SIZES['A4'];
-  const title = (els.genTitle?.value || '').trim() || 'EXAMINATION';
+  const title = (els.genTitle?.value || '').trim() || 'MIDTERM EXAMINATION';
   const sidMode = els.genSidMode?.value || 'fields';
   const includeInstructions = els.genInstructions ? els.genInstructions.checked : true;
 
@@ -2048,20 +2300,27 @@ function updateGeneratorLivePreview() {
   let totalPoints = 0;
   let estimatedHeight = 24 + 12; // margins & fiducials
 
-  let wfHtml = '';
+  let wfHtml = `
+    <div class="wf-fiducials" aria-hidden="true">
+      <span class="wf-fiducial wf-fiducial--tl"></span>
+      <span class="wf-fiducial wf-fiducial--tr"></span>
+      <span class="wf-fiducial wf-fiducial--bl"></span>
+      <span class="wf-fiducial wf-fiducial--br"></span>
+    </div>
+  `;
 
   // 1. Header wireframe
   wfHtml += `
     <div class="wf-header-block">
-      <div class="wf-title-text">${escapeHTML(title)}</div>
+      <div class="wf-title-text">${safeEscapeHTML(title)}</div>
       <div class="wf-details-row">
-        <span>Name: ______________________</span>
-        <span>ID: [ 8 Digits ]</span>
+        <span><strong>Name:</strong> ______________________</span>
+        <span><strong>ID no.</strong> [ 8 Digits ]</span>
       </div>
       <div class="wf-details-row">
-        <span>Offer No. _______</span>
-        <span>Sched _______</span>
-        <span>Score: [____]</span>
+        <span><strong>Offer No.</strong> _______</span>
+        <span><strong>Sched</strong> _______</span>
+        <span><strong>Score:</strong> [____]</span>
       </div>
     </div>
   `;
@@ -2070,7 +2329,7 @@ function updateGeneratorLivePreview() {
   if (sidMode === 'grid') {
     wfHtml += `
       <div class="wf-section-block">
-        <div class="wf-sec-title"><span>Student ID (8 Digits)</span><span class="wf-sec-badge">OMR Shading Grid</span></div>
+        <div class="wf-sec-title"><span>ID no. (8 Digits)</span><span class="wf-sec-badge">OMR Shading Grid</span></div>
         <div style="font-size: 0.65rem; color: #64748b; text-align: center;">[ 8 Columns × 10 Rows Bubble Matrix ]</div>
       </div>
     `;
@@ -2080,7 +2339,7 @@ function updateGeneratorLivePreview() {
   // 2. Instructions wireframe
   if (includeInstructions) {
     wfHtml += `
-      <div style="font-size: 0.65rem; color: #64748b; border: 1px dashed #cbd5e1; border-radius: 3px; padding: 0.25rem 0.4rem; background: #f8fafc;">
+      <div style="font-size: 0.65rem; color: #475569; border: 1px dashed #cbd5e1; border-radius: 3px; padding: 0.25rem 0.4rem; background: #f8fafc;">
         Instructions: Shade bubbles completely with dark pencil. Print write-in answers clearly.
       </div>
     `;
@@ -2138,8 +2397,11 @@ function updateGeneratorLivePreview() {
       estimatedHeight += count * ((part.boxHeight || 12) + 4);
       sampleBadges = `
         <div class="wf-bubbles-matrix">
-          <div class="wf-item-row">${startQ}. [ Written Box · ${part.boxHeight || 12}mm ]</div>
-          ${count > 1 ? `<div class="wf-item-row">... ${count} items total</div>` : ''}
+          <div class="wf-item-row" style="width: 100%; display: flex; flex-direction: column; gap: 0.2rem;">
+            <span>${startQ}.</span>
+            <div class="wf-box-writein" style="height: ${Math.min(28, (part.boxHeight || 12))}px;">Write-in answer / term</div>
+          </div>
+          ${count > 1 ? `<div class="wf-item-row" style="font-size: 0.65rem; color: #64748b; font-style: italic;">... +${count - 1} more items (${startQ + 1}–${endQ})</div>` : ''}
         </div>
       `;
     } else if (part.type === 'text_essay') {
@@ -2147,7 +2409,10 @@ function updateGeneratorLivePreview() {
       estimatedHeight += count * ((part.boxHeight || 36) + 4);
       sampleBadges = `
         <div class="wf-bubbles-matrix">
-          <div class="wf-item-row">${startQ}. [ Essay Box · ${part.boxHeight || 36}mm ]</div>
+          <div class="wf-item-row" style="width: 100%; display: flex; flex-direction: column; gap: 0.2rem;">
+            <span>${startQ}.</span>
+            <div class="wf-box-writein" style="height: ${Math.min(50, (part.boxHeight || 36))}px;">Extended explanation / essay response</div>
+          </div>
         </div>
       `;
     }
@@ -2196,7 +2461,7 @@ function generateExamFromGeneratorModal() {
       w: availW,
       fieldHeight: 7.5,
       fields: [
-        { id: 'name', label: 'Student Name', role: 'name', row: 0, w: 140 },
+        { id: 'name', label: 'Name', role: 'name', row: 0, w: 140 },
         { id: 'score', label: 'Score', role: 'score', row: 0, w: 40 },
         { id: 'offer', label: 'Offer No.', row: 1, w: 50 },
         { id: 'sched', label: 'Sched', row: 1, w: 70 },
@@ -2206,7 +2471,7 @@ function generateExamFromGeneratorModal() {
     zones.push({
       type: 'student_id',
       id: uid('sid'),
-      label: 'Student ID',
+      label: 'ID no.',
       digits: 8,
       shading: true,
       w: availW,
@@ -2219,8 +2484,8 @@ function generateExamFromGeneratorModal() {
       w: availW,
       fieldHeight: 7.5,
       fields: [
-        { id: 'name', label: 'Student Name', role: 'name', row: 0, w: 108 },
-        { id: 'sid', label: 'Student ID', role: 'student_id', digits: 8, row: 0, w: 75 },
+        { id: 'name', label: 'Name', role: 'name', row: 0, w: 108 },
+        { id: 'sid', label: 'ID no.', role: 'student_id', digits: 8, row: 0, w: 75 },
         { id: 'offer', label: 'Offer No.', row: 1, w: 48 },
         { id: 'sched', label: 'Sched', row: 1, w: 52 },
         { id: 'date', label: 'Date', row: 1, w: 43 },
@@ -2251,7 +2516,9 @@ function generateExamFromGeneratorModal() {
     if (part.type === 'mcq') {
       const count = Math.max(1, part.count || 30);
       const choices = part.choices || 'ABCD';
-      const cols = part.cols === 'auto' ? (count <= 10 ? 1 : count <= 30 ? 2 : count <= 60 ? 3 : 4) : parseInt(part.cols, 10);
+      const cols = part.cols === 'auto'
+        ? (count <= 10 ? 1 : count <= 20 ? (availW > 120 ? 3 : 2) : count <= 35 ? (availW > 120 ? 3 : 2) : (availW > 120 ? 4 : 2))
+        : parseInt(part.cols, 10);
       const pts = Math.max(1, part.pts || 1);
 
       zones.push({
@@ -2268,7 +2535,9 @@ function generateExamFromGeneratorModal() {
       currentQ += count;
     } else if (part.type === 'truefalse') {
       const count = Math.max(1, part.count || 10);
-      const cols = part.cols === 'auto' ? (count <= 10 ? 2 : count <= 25 ? 3 : 4) : parseInt(part.cols, 10);
+      const cols = part.cols === 'auto'
+        ? (count <= 10 ? (availW > 120 ? 3 : 2) : count <= 25 ? (availW > 120 ? 4 : 2) : 4)
+        : parseInt(part.cols, 10);
       const pts = Math.max(1, part.pts || 1);
 
       zones.push({
@@ -2303,37 +2572,39 @@ function generateExamFromGeneratorModal() {
     } else if (part.type === 'text_short') {
       const count = Math.max(1, part.count || 5);
       const pts = Math.max(1, part.pts || 2);
-      const h = part.boxHeight || 12;
+      const h = part.boxHeight || 10;
+      const cols = part.cols === 'auto' ? (count <= 4 ? 1 : 2) : (parseInt(part.cols, 10) || 1);
 
-      for (let i = 0; i < count; i++) {
-        zones.push({
-          type: 'text_short',
-          id: uid('sa'),
-          label: `${currentQ}.`,
-          w: availW,
-          boxHeight: h,
-          points: pts,
-          charset: 'any',
-        });
-        currentQ++;
-      }
+      zones.push({
+        type: 'text_short',
+        id: uid('sa'),
+        label: `Part ${roman} — Short Answer`,
+        count,
+        start: currentQ,
+        columns: cols,
+        boxHeight: h,
+        pointsPerItem: pts,
+        w: availW,
+      });
+      currentQ += count;
     } else if (part.type === 'text_essay') {
       const count = Math.max(1, part.count || 1);
       const pts = Math.max(1, part.pts || 5);
       const h = part.boxHeight || 36;
+      const cols = part.cols === 'auto' ? (count <= 2 ? 1 : 2) : (parseInt(part.cols, 10) || 1);
 
-      for (let i = 0; i < count; i++) {
-        zones.push({
-          type: 'text_essay',
-          id: uid('essay'),
-          label: `${currentQ}.`,
-          w: availW,
-          boxHeight: h,
-          points: pts,
-          charset: 'any',
-        });
-        currentQ++;
-      }
+      zones.push({
+        type: 'text_essay',
+        id: uid('essay'),
+        label: `Part ${roman} — Essay`,
+        count,
+        start: currentQ,
+        columns: cols,
+        boxHeight: h,
+        pointsPerItem: pts,
+        w: availW,
+      });
+      currentQ += count;
     }
   }
 
@@ -2358,11 +2629,13 @@ function initEvents() {
   });
 
   // Generator modal events
-  els.btnGenerator?.addEventListener('click', () => {
+  const openGeneratorModal = () => {
     renderGeneratorParts();
     updateGeneratorLivePreview();
     openModal(els.modalGenerator);
-  });
+  };
+  els.btnGenerator?.addEventListener('click', openGeneratorModal);
+  $('#btn-sidebar-generator')?.addEventListener('click', openGeneratorModal);
 
   els.btnGenAddPart?.addEventListener('click', () => {
     generatorParts.push({ type: 'mcq', count: 10, choices: 'ABCD', cols: 'auto', pts: 1 });
@@ -2428,7 +2701,12 @@ function initEvents() {
     if (els.examTitle) els.examTitle.value = title;
 
     // Ensure a unique ID for this saved build so it doesn't overwrite preset IDs
-    if (!state.template.id || state.template.id === 'blank' || state.template.id.startsWith('exam-') || state.template.id.startsWith('bio101')) {
+    const isPresetId = !state.template.id ||
+      state.template.id === 'blank' ||
+      state.template.id.startsWith('exam-') ||
+      Object.keys(SAMPLE_TEMPLATES).includes(state.template.id) ||
+      Object.values(SAMPLE_TEMPLATES).some((t) => t.id === state.template.id);
+    if (isPresetId) {
       state.template.id = `build_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`;
     }
 
@@ -2622,6 +2900,8 @@ function initEvents() {
       }
     } catch (err) {
       alert(`Invalid Answer Key JSON: ${err.message}`);
+    } finally {
+      els.keyFileImport.value = '';
     }
   });
 
@@ -2645,19 +2925,23 @@ function initEvents() {
 
   // Export actions
   els.buttons.svg?.addEventListener('click', () => {
+    if (!state.layout) return;
     download(`${state.layout.templateId}.svg`, renderSVG(state.layout), 'image/svg+xml');
   });
 
   els.buttons.html?.addEventListener('click', async () => {
+    if (!state.layout) return;
     download(`${state.layout.templateId}.sheet.html`, renderStandaloneHTML(state.layout, await getSheetCss()), 'text/html');
   });
 
   els.buttons.layout?.addEventListener('click', () => {
+    if (!state.layout) return;
     download(`${state.layout.templateId}.layout.json`, `${JSON.stringify(state.layout, null, 2)}\n`, 'application/json');
   });
 
   els.buttons.template?.addEventListener('click', () => {
-    download(`${state.layout.templateId}.template.json`, `${JSON.stringify(state.template, null, 2)}\n`, 'application/json');
+    if (!state.layout || !state.template) return;
+    download(`${state.layout.templateId}.sheet.json`, `${JSON.stringify(state.template, null, 2)}\n`, 'application/json');
   });
 
   // Canvas zoom
@@ -2713,9 +2997,11 @@ function initEvents() {
   setupCanvasDragDrop();
 
   // ResizeObserver for canvas fit
-  new ResizeObserver(() => {
-    if (state.zoom === 1.0) fitPreview();
-  }).observe(els.preview);
+  if (typeof ResizeObserver !== 'undefined' && els.preview) {
+    new ResizeObserver(() => {
+      if (state.zoom === 1.0) fitPreview();
+    }).observe(els.preview);
+  }
 }
 
 // ---- Boot Guard & Initialization ----

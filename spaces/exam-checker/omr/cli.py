@@ -14,8 +14,8 @@ from omr.roster import Roster
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
-        prog="omr",
-        description="Optical Mark Recognition (OMR) & Document Grading Pipeline",
+        prog="checker",
+        description="Checker — Optical Mark Recognition & Document Grading Pipeline",
     )
     parser.add_argument(
         "--layout",
@@ -66,6 +66,9 @@ def main(argv: list[str] | None = None) -> int:
             p = Path(pattern)
             if p.exists():
                 scan_files.append(p)
+
+    # Deduplicate and sort for deterministic processing order
+    scan_files = sorted(set(scan_files))
 
     if not scan_files:
         print(f"Error: No image files matched: {args.scans}", file=sys.stderr)

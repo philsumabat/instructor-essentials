@@ -16,8 +16,8 @@ export const SAMPLE_TEMPLATES = {
         w: 186,
         fieldHeight: 7.5,
         fields: [
-          { id: 'name', label: 'Student Name', role: 'name', row: 0, w: 108 },
-          { id: 'sid', label: 'Student ID', role: 'student_id', digits: 8, row: 0, w: 75 },
+          { id: 'name', label: 'Name', role: 'name', row: 0, w: 108 },
+          { id: 'sid', label: 'ID no.', role: 'student_id', digits: 8, row: 0, w: 75 },
           { id: 'offer', label: 'Offer No.', row: 1, w: 48 },
           { id: 'sched', label: 'Sched', row: 1, w: 52 },
           { id: 'date', label: 'Date', row: 1, w: 43 },
@@ -29,7 +29,7 @@ export const SAMPLE_TEMPLATES = {
         id: 'notes',
         w: 186,
         fontSize: 2.6,
-        text: 'Write your 8-digit Student ID clearly in the boxes above. Part I & II: fill each bubble completely with a dark pencil or pen.\nPart III: print your answer clearly in block capital letters inside the answer box corresponding to each question number.',
+        text: 'Write your 8-digit ID no. clearly in the boxes above. Part I & II: fill each bubble completely with a dark pencil or pen.\nPart III: print your answer clearly in block capital letters inside the answer box corresponding to each question number.',
       },
       {
         type: 'mcq',
@@ -85,8 +85,8 @@ export const SAMPLE_TEMPLATES = {
         w: 191.9,
         fieldHeight: 7.5,
         fields: [
-          { id: 'name', label: 'Student Name', role: 'name', row: 0, w: 112 },
-          { id: 'sid', label: 'Student ID', role: 'student_id', digits: 8, row: 0, w: 79.9 },
+          { id: 'name', label: 'Name', role: 'name', row: 0, w: 112 },
+          { id: 'sid', label: 'ID no.', role: 'student_id', digits: 8, row: 0, w: 79.9 },
           { id: 'offer', label: 'Offer No.', row: 1, w: 50 },
           { id: 'sched', label: 'Sched', row: 1, w: 54 },
           { id: 'date', label: 'Date', row: 1, w: 45 },
@@ -118,8 +118,8 @@ export const SAMPLE_TEMPLATES = {
         w: 191.9,
         fieldHeight: 7.5,
         fields: [
-          { id: 'name', label: 'Student Name', role: 'name', row: 0, w: 112 },
-          { id: 'sid', label: 'Student ID', role: 'student_id', digits: 8, row: 0, w: 77 },
+          { id: 'name', label: 'Name', role: 'name', row: 0, w: 112 },
+          { id: 'sid', label: 'ID no.', role: 'student_id', digits: 8, row: 0, w: 77 },
           { id: 'offer', label: 'Offer No.', row: 1, w: 50 },
           { id: 'sched', label: 'Sched', row: 1, w: 54 },
           { id: 'date', label: 'Date', row: 1, w: 45 },
@@ -180,8 +180,8 @@ export const SAMPLE_TEMPLATES = {
         w: 186,
         fieldHeight: 7.5,
         fields: [
-          { id: 'name', label: 'Student Name', role: 'name', row: 0, w: 108 },
-          { id: 'sid', label: 'Student ID', role: 'student_id', digits: 8, row: 0, w: 75 },
+          { id: 'name', label: 'Name', role: 'name', row: 0, w: 108 },
+          { id: 'sid', label: 'ID no.', role: 'student_id', digits: 8, row: 0, w: 75 },
           { id: 'offer', label: 'Offer No.', row: 1, w: 48 },
           { id: 'sched', label: 'Sched', row: 1, w: 52 },
           { id: 'date', label: 'Date', row: 1, w: 43 },

@@ -131,7 +131,7 @@ window.Templates = Templates;
 // 6. Sheet Builder Controller Application (IIFE Isolated)
 (function(LayoutEngine, RenderDOM, RenderSVG, Templates) {
   const { buildLayout, layoutStats, TemplateError, allGroups, PAPER_SIZES } = LayoutEngine;
-  const { renderSheetDOM, renderStandaloneHTML, pageRule } = RenderDOM;
+  const { renderSheetDOM, renderStandaloneHTML, pageRule, escapeHTML } = RenderDOM;
   const { renderSVG } = RenderSVG;
   const { SAMPLE_TEMPLATES } = Templates;
 ${cleanApp}

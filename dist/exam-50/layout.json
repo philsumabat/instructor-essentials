@@ -186,11 +186,11 @@
         {
           "id": "info.name",
           "key": "name",
-          "label": "Student Name",
+          "label": "Name",
           "role": "name",
-          "x": 36.5,
+          "x": 25.7,
           "y": 22.5,
-          "w": 83.049,
+          "w": 93.849,
           "h": 7.5,
           "charset": "any",
           "multiline": false,
@@ -202,11 +202,11 @@
         {
           "id": "info.sid",
           "key": "sid",
-          "label": "Student ID",
+          "label": "ID no.",
           "role": "student_id",
-          "x": 144.549,
+          "x": 139.349,
           "y": 22.5,
-          "w": 50.951,
+          "w": 56.151,
           "h": 7.5,
           "charset": "digits",
           "multiline": false,
@@ -282,18 +282,18 @@
       ],
       "rows": [
         {
-          "label": "Student Name",
+          "label": "Name",
           "x": 14.5,
           "y": 22.5,
-          "labelW": 22,
+          "labelW": 11.2,
           "h": 7.5,
           "digits": 0
         },
         {
-          "label": "Student ID",
+          "label": "ID no.",
           "x": 122.549,
           "y": 22.5,
-          "labelW": 22,
+          "labelW": 16.8,
           "h": 7.5,
           "digits": 8
         },
@@ -345,7 +345,7 @@
       "grids": [],
       "groups": [],
       "rois": [],
-      "text": "Write your 8-digit Student ID clearly in the boxes above. Part I & II: fill each bubble completely with a dark pencil or pen.\nPart III: print your answer clearly in block capital letters inside the answer box corresponding to each question number.",
+      "text": "Write your 8-digit ID no. clearly in the boxes above. Part I & II: fill each bubble completely with a dark pencil or pen.\nPart III: print your answer clearly in block capital letters inside the answer box corresponding to each question number.",
       "fontSize": 2.6,
       "lines": 2
     },
@@ -4433,7 +4433,8 @@
       "prompt": "61.",
       "points": 2,
       "isInline": true,
-      "labelW": 9
+      "labelW": 9,
+      "count": 1
     },
     {
       "id": "q62",
@@ -4467,7 +4468,8 @@
       "prompt": "62.",
       "points": 2,
       "isInline": true,
-      "labelW": 9
+      "labelW": 9,
+      "count": 1
     }
   ],
   "warnings": []

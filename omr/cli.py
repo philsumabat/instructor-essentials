@@ -67,6 +67,9 @@ def main(argv: list[str] | None = None) -> int:
             if p.exists():
                 scan_files.append(p)
 
+    # Deduplicate and sort for deterministic processing order
+    scan_files = sorted(set(scan_files))
+
     if not scan_files:
         print(f"Error: No image files matched: {args.scans}", file=sys.stderr)
         return 1

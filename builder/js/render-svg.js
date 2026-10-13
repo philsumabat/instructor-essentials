@@ -101,14 +101,21 @@ function zoneSVG(zone, layout, zoneIndex) {
     });
   }
   if (zone.type === 'text' || zone.type === 'text_short' || zone.type === 'text_essay') {
-    const roi = zone.rois[0];
-    if (zone.isInline && zone.prompt) {
-      out.push(text(b.x + 2.5, roi.y + roi.h / 2, zone.prompt, { size: typography.label, weight: 700 }));
-    } else if (zone.prompt) {
-      const lines = wrap(zone.prompt, typography.label, roi.w);
-      lines.forEach((line, i) => out.push(text(roi.x, b.y + 2.5 + (i + 0.5) * typography.label * 1.3, line, { size: typography.label })));
+    if (zone.items && zone.items.length > 0) {
+      zone.items.forEach((item) => {
+        out.push(text(item.labelX, item.labelY + item.boxH / 2, item.label, { size: typography.number, weight: 700 }));
+        out.push(`<rect data-roi="${esc(item.id)}" x="${f(item.boxX + 0.15)}" y="${f(item.boxY + 0.15)}" width="${f(item.boxW - 0.3)}" height="${f(item.boxH - 0.3)}" fill="none" stroke="#000" stroke-width="0.3"/>`);
+      });
+    } else if (zone.rois && zone.rois.length > 0) {
+      const roi = zone.rois[0];
+      if (zone.isInline && zone.prompt) {
+        out.push(text(b.x + 2.5, roi.y + roi.h / 2, zone.prompt, { size: typography.label, weight: 700 }));
+      } else if (zone.prompt) {
+        const lines = wrap(zone.prompt, typography.label, roi.w);
+        lines.forEach((line, i) => out.push(text(roi.x, b.y + 2.5 + (i + 0.5) * typography.label * 1.3, line, { size: typography.label })));
+      }
+      out.push(`<rect data-roi="${esc(roi.id)}" x="${f(roi.x + 0.15)}" y="${f(roi.y + 0.15)}" width="${f(roi.w - 0.3)}" height="${f(roi.h - 0.3)}" fill="none" stroke="#000" stroke-width="0.3"/>`);
     }
-    out.push(`<rect data-roi="${esc(roi.id)}" x="${f(roi.x + 0.15)}" y="${f(roi.y + 0.15)}" width="${f(roi.w - 0.3)}" height="${f(roi.h - 0.3)}" fill="none" stroke="#000" stroke-width="0.3"/>`);
   }
   out.push('</g>');
   return out.join('');

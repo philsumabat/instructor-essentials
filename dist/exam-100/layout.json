@@ -186,11 +186,11 @@
         {
           "id": "info.name",
           "key": "name",
-          "label": "Student Name",
+          "label": "Name",
           "role": "name",
-          "x": 36.5,
+          "x": 25.7,
           "y": 22.5,
-          "w": 85.331,
+          "w": 96.131,
           "h": 7.5,
           "charset": "any",
           "multiline": false,
@@ -202,11 +202,11 @@
         {
           "id": "info.sid",
           "key": "sid",
-          "label": "Student ID",
+          "label": "ID no.",
           "role": "student_id",
-          "x": 146.831,
+          "x": 141.631,
           "y": 22.5,
-          "w": 54.569,
+          "w": 59.769,
           "h": 7.5,
           "charset": "digits",
           "multiline": false,
@@ -282,18 +282,18 @@
       ],
       "rows": [
         {
-          "label": "Student Name",
+          "label": "Name",
           "x": 14.5,
           "y": 22.5,
-          "labelW": 22,
+          "labelW": 11.2,
           "h": 7.5,
           "digits": 0
         },
         {
-          "label": "Student ID",
+          "label": "ID no.",
           "x": 124.831,
           "y": 22.5,
-          "labelW": 22,
+          "labelW": 16.8,
           "h": 7.5,
           "digits": 8
         },

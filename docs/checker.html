@@ -3,7 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Checker — In-Browser OMR Exam Grading & Psychometrics</title>
+  <title>Instructor Essentials — Checker Studio</title>
+  <meta name="description" content="Instructor Essentials — In-Browser OMR Exam Grading & Psychometrics">
+  <meta name="application-name" content="Instructor Essentials">
   <style>
     :root {
       color-scheme: light dark;
@@ -109,6 +111,42 @@
       letter-spacing: 0.05em;
       font-weight: 600;
       color: var(--text-muted);
+    }
+
+    .workflow-nav {
+      display: inline-flex;
+      align-items: center;
+      background: var(--panel-alt);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-full);
+      padding: 2px;
+      gap: 2px;
+      margin-left: 0.5rem;
+    }
+
+    .workflow-nav__item {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: var(--radius-full);
+      font-size: 0.76rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: all 0.15s ease;
+      user-select: none;
+    }
+
+    .workflow-nav__item:hover {
+      color: var(--text);
+      background: rgba(0, 0, 0, 0.04);
+    }
+
+    .workflow-nav__item.is-active {
+      color: var(--accent);
+      background: var(--panel);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
     }
 
     .header-actions {
@@ -513,6 +551,262 @@
       background: #fff;
     }
 
+    /* Master-Detail Split Layout for Student Roster */
+    .roster-split-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 460px;
+      gap: 1.25rem;
+      align-items: start;
+    }
+
+    .roster-table-col {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .roster-table-col .table-container {
+      overflow-x: auto;
+    }
+
+    #tbody-roster tr {
+      cursor: pointer;
+    }
+
+    #tbody-roster tr.is-selected td {
+      background: var(--accent-light);
+      color: var(--text);
+    }
+
+    #tbody-roster tr.is-selected td:first-child {
+      border-left: 3px solid var(--accent);
+    }
+
+    .roster-preview-pane {
+      position: sticky;
+      top: 1rem;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .roster-preview-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .roster-preview-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      background: var(--panel-header);
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+
+    .roster-preview-title-group {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      flex-wrap: wrap;
+    }
+
+    .roster-preview-title {
+      margin: 0;
+      font-size: 0.95rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      color: var(--text);
+    }
+
+    .roster-student-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.2rem 0.55rem;
+      background: var(--panel-alt);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-full);
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .roster-badge-name {
+      color: var(--text);
+    }
+
+    .roster-preview-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .roster-preview-legend {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      padding: 0.45rem 1rem;
+      background: var(--panel);
+      border-bottom: 1px solid var(--border);
+      font-size: 0.74rem;
+      color: var(--text-muted);
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .legend-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .legend-dot--correct {
+      background: #10b981;
+    }
+
+    .legend-dot--incorrect {
+      background: #ef4444;
+    }
+
+    .legend-dot--missed {
+      background: #f59e0b;
+    }
+
+    .roster-canvas-wrap {
+      padding: 1rem;
+      background: #1e222b;
+      overflow: auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 480px;
+      max-height: calc(100vh - 200px);
+    }
+
+    #roster-preview-canvas,
+    #roster-inspector-canvas {
+      max-width: 100%;
+      height: auto;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45);
+      border-radius: var(--radius-xs);
+      image-rendering: -webkit-optimize-contrast;
+      image-rendering: crisp-edges;
+    }
+
+    /* Table Column Sorting */
+    th.sortable {
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.15s ease, color 0.15s ease;
+      white-space: nowrap;
+    }
+
+    th.sortable:hover {
+      background: var(--panel-alt);
+      color: var(--accent);
+    }
+
+    th.sortable .sort-icon {
+      display: inline-block;
+      margin-left: 4px;
+      font-size: 0.65rem;
+      opacity: 0.35;
+    }
+
+    th.sortable.is-sorted-asc .sort-icon {
+      opacity: 1;
+      color: var(--accent);
+    }
+    th.sortable.is-sorted-asc .sort-icon::after {
+      content: "▲";
+    }
+
+    th.sortable.is-sorted-desc .sort-icon {
+      opacity: 1;
+      color: var(--accent);
+    }
+    th.sortable.is-sorted-desc .sort-icon::after {
+      content: "▼";
+    }
+
+    /* Cohort Distribution Bar */
+    .distribution-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 1rem 1.25rem;
+      box-shadow: var(--shadow-xs);
+    }
+
+    .distribution-track {
+      height: 12px;
+      width: 100%;
+      background: var(--panel-alt);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+      display: flex;
+      border: 1px solid var(--border);
+    }
+
+    .dist-bar-segment {
+      height: 100%;
+      transition: width 0.3s var(--ease);
+    }
+
+    .dist-bar-segment--pass {
+      background: var(--success);
+    }
+
+    .dist-bar-segment--fail {
+      background: var(--danger);
+    }
+
+    .roster-preview-empty {
+      padding: 3rem 1.5rem;
+      text-align: center;
+      color: #94a3b8;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      font-size: 0.82rem;
+      line-height: 1.4;
+    }
+
+    @media (max-width: 1200px) {
+      .roster-split-layout {
+        grid-template-columns: minmax(0, 1fr) 400px;
+      }
+    }
+
+    @media (max-width: 960px) {
+      .roster-split-layout {
+        grid-template-columns: 1fr;
+      }
+      .roster-preview-pane {
+        position: static;
+      }
+      .roster-canvas-wrap {
+        min-height: 360px;
+        max-height: 540px;
+      }
+    }
+
     /* Diagnostics & Empty State */
     .empty-state {
       padding: 4rem 2rem;
@@ -548,6 +842,225 @@
       from { transform: rotate(0deg); }
       to { transform: rotate(360deg); }
     }
+
+    /* Initial Main Content Empty State */
+    .checker-empty-state {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: calc(100vh - 120px);
+      padding: 2rem;
+    }
+
+    .checker-empty-card {
+      max-width: 500px;
+      width: 100%;
+      text-align: center;
+      background: var(--panel);
+      border: 1px dashed var(--border);
+      border-radius: var(--radius-xl);
+      padding: 3rem 2.25rem;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .checker-empty-icon {
+      color: var(--accent);
+      background: var(--accent-light);
+      width: 64px;
+      height: 64px;
+      border-radius: var(--radius-full);
+      display: grid;
+      place-items: center;
+      margin-bottom: 0.25rem;
+    }
+
+    .checker-empty-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--text);
+      margin: 0;
+    }
+
+    .checker-empty-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin: 0;
+    }
+
+    .checker-empty-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-top: 0.5rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    /* Progressive Disclosure: In initial state (:not(.has-data)), hide Grading Settings and Export Reports cards */
+    body:not(.has-data) .card--grading-settings,
+    body:not(.has-data) .card--export-reports {
+      display: none !important;
+    }
+
+    body:not(.has-data) #results-export-bar {
+      display: none !important;
+    }
+
+    /* Conditional results visibility: hide results tabs & panes until scans are graded */
+    .main-content:not(.has-data) .tabs-bar,
+    .main-content:not(.has-data) .tab-pane,
+    body:not(.has-data) .tabs-bar,
+    body:not(.has-data) .tab-pane {
+      display: none !important;
+    }
+
+    .main-content.has-data .checker-empty-state,
+    body.has-data .checker-empty-state {
+      display: none !important;
+    }
+
+    /* Sidebar collapsible details */
+    .sidebar-collapsible {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      background: var(--panel);
+      margin-top: 0.65rem;
+      overflow: hidden;
+      transition: all 0.15s ease;
+    }
+
+    .sidebar-collapsible__summary {
+      padding: 0.65rem 0.85rem;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      user-select: none;
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      list-style: none;
+      transition: color 0.15s ease, background 0.15s ease;
+    }
+
+    .sidebar-collapsible__summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .sidebar-collapsible__summary:hover {
+      color: var(--text);
+      background: var(--panel-alt);
+    }
+
+    .sidebar-collapsible[open] .sidebar-collapsible__summary {
+      color: var(--accent);
+      border-bottom: 1px solid var(--border);
+      background: var(--panel-alt);
+    }
+
+    .sidebar-collapsible__content {
+      padding: 0.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .sidebar-collapsible__content .section-card {
+      margin: 0;
+      border: none;
+      box-shadow: none;
+      padding: 0.4rem 0.2rem;
+      background: transparent;
+    }
+
+    /* Prominent Export Reports Bar */
+    .results-export-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.75rem 1.15rem;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      margin-bottom: 1rem;
+      box-shadow: var(--shadow-sm);
+      flex-wrap: wrap;
+    }
+
+    .results-export-bar__title {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 700;
+      font-size: 0.88rem;
+      color: var(--text);
+    }
+
+    .results-export-bar__buttons {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    /* Preflight Warning Banner */
+    .preflight-warning-banner {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.85rem;
+      background: var(--warning-light);
+      border: 1px solid var(--warning);
+      border-radius: var(--radius-md);
+      padding: 0.85rem 1.15rem;
+      margin-bottom: 1rem;
+      color: var(--text);
+    }
+
+    .preflight-warning-icon {
+      color: var(--warning);
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .preflight-warning-body {
+      flex: 1;
+    }
+
+    .preflight-warning-title {
+      font-weight: 700;
+      font-size: 0.88rem;
+      color: var(--warning);
+      margin-bottom: 0.25rem;
+    }
+
+    .preflight-warning-text {
+      font-size: 0.8rem;
+      line-height: 1.45;
+      color: var(--text);
+    }
+
+    /* Review badge */
+    .badge-review {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 0.15rem 0.45rem;
+      border-radius: var(--radius-full);
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      background: var(--warning-light);
+      color: var(--warning);
+      border: 1px solid currentColor;
+      white-space: nowrap;
+    }
   </style>
 </head>
 <body>
@@ -556,22 +1069,27 @@
     <div class="app-brand">
       <div class="app-brand__logo" aria-hidden="true">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-          <polyline points="22 4 12 14.01 9 11.01"/>
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <path d="m9 15 2 2 4-4"/>
         </svg>
       </div>
-      <div>
-        <h1 class="app-brand__title">Checker <span>Studio</span></h1>
+      <div class="app-brand__title-wrap">
+        <h1 class="app-brand__title">Instructor Essentials</h1>
       </div>
+      <nav class="workflow-nav" aria-label="Workflow switcher">
+        <a href="index.html" class="workflow-nav__item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          <span>Sheet Builder</span>
+        </a>
+        <a href="checker.html" class="workflow-nav__item is-active" aria-current="page">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          <span>Checker Studio</span>
+        </a>
+      </nav>
     </div>
 
     <div class="header-actions">
-      <!-- Switch to Sheet Builder -->
-      <a href="index.html" class="btn btn--secondary" title="Open Visual Sheet Builder">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><circle cx="10" cy="13" r="1.5"/><circle cx="14" cy="13" r="1.5"/></svg>
-        <span>Sheet Builder</span>
-      </a>
-
       <!-- Quick 1-Click Sample Test -->
       <button type="button" id="btn-sample-grade" class="btn btn--accent" title="Pre-load BIO 101 Midterm sample data and grade instantly">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
@@ -605,66 +1123,96 @@
         <div class="progress-bar" id="grading-progress">
           <div class="progress-bar-inner" id="grading-progress-inner"></div>
         </div>
-      </div>
-
-      <!-- Layout Section -->
-      <div class="section-card">
-        <h2 class="section-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18M9 21V9"/></svg><span>Layout</span></h2>
-        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-          <label style="font-size: 0.78rem; font-weight: 600;">Active Layout Template:</label>
-          <select id="preset-selector" style="padding: 0.4rem; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-size: 0.82rem;">
-            <option value="exam-50">50 MCQ + T/F + Short Answer (A4)</option>
-            <option value="exam-100">100-Item MCQ (Letter)</option>
-            <option value="quiz-tf">20 T/F &amp; Mod T/F (Folio)</option>
-            <option value="quiz-bonus">10 MCQ + Bonus Identification (A4)</option>
-            <option value="custom">Upload Custom Layout (.json)</option>
-          </select>
-        </div>
-
-        <div id="custom-files-box" style="display: none; flex-direction: column; gap: 0.5rem;">
-          <label style="font-size: 0.75rem; color: var(--text-muted);">Layout JSON (from Sheet Builder):</label>
-          <input type="file" id="input-layout" accept=".json" style="font-size: 0.75rem;">
-
-          <label style="font-size: 0.75rem; color: var(--text-muted);">Roster CSV (Optional):</label>
-          <input type="file" id="input-roster" accept=".csv" style="font-size: 0.75rem;">
-        </div>
-
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; margin-top: 0.25rem;">
-          <button type="button" id="btn-export-layout-json" class="btn btn--secondary btn--sm" title="Download active layout geometry JSON (ArUco & bubble coordinates)">
-            <span>Export Layout</span>
+        <div class="sidebar-actions-wrap" style="margin-top: 0.75rem; display: flex; flex-direction: column; gap: 0.5rem;">
+          <button type="button" id="btn-sidebar-grade" class="btn btn--primary" style="width: 100%; font-weight: 700; padding: 0.55rem 1rem;" title="Execute computer-vision OMR grading on loaded scans">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            <span>Grade Scans</span>
           </button>
-          <button type="button" id="btn-export-sheet" class="btn btn--secondary btn--sm" title="Download clean printable sheet image">
-            <span>Export Sheet</span>
+          <button type="button" id="btn-sidebar-sample" class="btn btn--accent btn--sm" style="width: 100%;" title="Pre-load BIO 101 Midterm sample data and grade instantly">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            <span>1-Click Sample Test</span>
           </button>
         </div>
       </div>
 
-      <!-- Answer Key Section -->
-      <div class="section-card">
-        <h2 class="section-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 3-9.5 9.5"/><path d="m15.5 7.5 3 3M18 5l2 2"/></svg><span>Answer Key</span></h2>
-        <div id="key-status-box" style="background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.5rem 0.65rem; font-size: 0.78rem;">
-          <div style="font-weight: 600; color: var(--accent); margin-bottom: 0.15rem;" id="key-title-display">Active Answer Key</div>
-          <div style="color: var(--text-muted); font-size: 0.72rem;" id="key-stats-display">50 Questions • 60 Points</div>
-        </div>
+      <!-- Advanced Layout & Key Options Collapsible -->
+      <details id="advanced-layout-key-toggle" class="sidebar-collapsible">
+        <summary class="sidebar-collapsible__summary">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <span>⚙ Advanced Layout &amp; Key Options</span>
+        </summary>
+        <div class="sidebar-collapsible__content">
+          <!-- Layout Section -->
+          <div class="section-card">
+            <h2 class="section-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18M9 21V9"/></svg><span>Layout</span></h2>
+            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+              <label style="font-size: 0.78rem; font-weight: 600;">Active Layout Template:</label>
+              <select id="preset-selector" style="padding: 0.4rem; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-size: 0.82rem;">
+                <option value="exam-50">50 MCQ + T/F + Short Answer (A4)</option>
+                <option value="exam-100">100-Item MCQ (Letter)</option>
+                <option value="quiz-tf">20 T/F &amp; Mod T/F (Folio)</option>
+                <option value="quiz-bonus">10 MCQ + Bonus Identification (A4)</option>
+                <option value="custom">Upload Custom Layout (.json)</option>
+              </select>
+            </div>
 
-        <div style="display: flex; flex-direction: column; gap: 0.4rem;">
-          <label class="btn btn--secondary btn--sm" style="cursor: pointer; justify-content: center;" title="Upload custom answer key (.json)">
-            <span>Upload Answer Key</span>
-            <input type="file" id="input-key" accept=".json" style="display: none;">
-          </label>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem;">
-            <button type="button" id="btn-edit-key" class="btn btn--secondary btn--sm" title="View or edit answer key values in modal">
-              <span>Edit Key</span>
-            </button>
-            <button type="button" id="btn-download-key-template" class="btn btn--secondary btn--sm" title="Download JSON template for the active layout">
-              <span>Template</span>
-            </button>
+            <div id="custom-files-box" style="display: none; flex-direction: column; gap: 0.5rem;">
+              <label style="font-size: 0.75rem; color: var(--text-muted);">Layout JSON (from Sheet Builder):</label>
+              <input type="file" id="input-layout" accept=".json" style="font-size: 0.75rem;">
+
+              <label style="font-size: 0.75rem; color: var(--text-muted);">Roster CSV (Optional):</label>
+              <input type="file" id="input-roster" accept=".csv" style="font-size: 0.75rem;">
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 0.4rem; margin-top: 0.35rem;">
+              <label class="btn btn--secondary btn--sm" style="cursor: pointer; justify-content: center;" title="Upload custom student roster CSV (ID & Name)">
+                <span>Upload Roster (.csv)</span>
+                <input type="file" id="input-roster-direct" accept=".csv" style="display: none;">
+              </label>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem;">
+                <button type="button" id="btn-export-layout-json" class="btn btn--secondary btn--sm" title="Download active layout geometry JSON (ArUco & bubble coordinates)">
+                  <span>Export Layout</span>
+                </button>
+                <button type="button" id="btn-export-sheet" class="btn btn--secondary btn--sm" title="Download clean printable sheet image">
+                  <span>Export Sheet</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Answer Key Section -->
+          <div class="section-card">
+            <h2 class="section-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 3-9.5 9.5"/><path d="m15.5 7.5 3 3M18 5l2 2"/></svg><span>Answer Key</span></h2>
+            <div id="key-status-box" style="background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.5rem 0.65rem; font-size: 0.78rem;">
+              <div style="font-weight: 600; color: var(--accent); margin-bottom: 0.15rem;" id="key-title-display">Active Answer Key</div>
+              <div style="color: var(--text-muted); font-size: 0.72rem;" id="key-stats-display">50 Questions • 60 Points</div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 0.4rem;">
+              <label class="btn btn--accent btn--sm" style="cursor: pointer; justify-content: center; gap: 0.4rem;" title="Photograph or scan a filled master exam sheet to automatically decode as answer key">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                <span>Scan Sheet as Answer Key</span>
+                <input type="file" id="input-key-scan" accept="image/*" style="display: none;">
+              </label>
+              <label class="btn btn--secondary btn--sm" style="cursor: pointer; justify-content: center;" title="Upload custom answer key (.json)">
+                <span>Upload Answer Key</span>
+                <input type="file" id="input-key" accept=".json" style="display: none;">
+              </label>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem;">
+                <button type="button" id="btn-edit-key" class="btn btn--secondary btn--sm" title="View or edit answer key values in modal">
+                  <span>Edit Key</span>
+                </button>
+                <button type="button" id="btn-download-key-template" class="btn btn--secondary btn--sm" title="Download JSON template for the active layout">
+                  <span>Template</span>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      </details>
 
       <!-- Grading Settings Section -->
-      <div class="section-card">
+      <div class="section-card card--grading-settings">
         <h2 class="section-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg><span>Grading Settings</span></h2>
         <div style="display: flex; justify-content: space-between; align-items: center;">
           <label style="font-size: 0.78rem;">Passing Score (%):</label>
@@ -686,7 +1234,7 @@
       </div>
 
       <!-- Export Actions -->
-      <div class="section-card">
+      <div class="section-card card--export-reports">
         <h2 class="section-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span>Export Reports</span></h2>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 0.5rem;">
           <button type="button" id="btn-export-csv" class="btn btn--secondary btn--sm" disabled>
@@ -705,6 +1253,67 @@
 
     <!-- Main Content Area -->
     <main class="main-content">
+      <!-- Preflight Mismatch Warning Banner -->
+      <div id="preflight-warning-banner" class="preflight-warning-banner" style="display: none;">
+        <div class="preflight-warning-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+        <div class="preflight-warning-body">
+          <div class="preflight-warning-title">Preflight Alignment Warning</div>
+          <div id="preflight-warning-text" class="preflight-warning-text"></div>
+        </div>
+        <button type="button" class="btn btn--secondary btn--sm" onclick="$('btn-edit-key').click();">Edit Key</button>
+      </div>
+
+      <!-- Initial Empty State (shown before scans are graded) -->
+      <div id="checker-empty-state" class="checker-empty-state">
+        <div class="checker-empty-card">
+          <div class="checker-empty-icon" aria-hidden="true">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <path d="m9 15 2 2 4-4"/>
+            </svg>
+          </div>
+          <h2 class="checker-empty-title">Ready to Grade Exam Scans</h2>
+          <p class="checker-empty-desc">
+            Drop exam scans on the left panel, select your layout template, and click <strong>Grade Scans</strong>. Or try the instant 1-click sample test with pre-loaded scans.
+          </p>
+          <div class="checker-empty-actions">
+            <button type="button" id="btn-empty-sample" class="btn btn--accent">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              <span>1-Click Sample Test</span>
+            </button>
+            <button type="button" id="btn-empty-upload" class="btn btn--secondary">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              <span>Upload Scans</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Prominent Export Reports Bar (revealed when scans are graded) -->
+      <div id="results-export-bar" class="results-export-bar">
+        <div class="results-export-bar__title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <span>Export Reports &amp; Graded Sheets</span>
+        </div>
+        <div class="results-export-bar__buttons">
+          <button type="button" id="btn-results-export-zip" class="btn btn--primary" title="Export all graded exam sheets as high-quality annotated JPEGs in a ZIP archive">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5M12 12v10"/></svg>
+            <span>Download All Sheets (ZIP)</span>
+          </button>
+          <button type="button" id="btn-results-export-csv" class="btn btn--secondary" title="Export student grades and scores as CSV">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <span>Export CSV</span>
+          </button>
+          <button type="button" id="btn-results-export-html" class="btn btn--secondary" title="Export item analysis and psychometrics report as HTML">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            <span>Item Analysis</span>
+          </button>
+        </div>
+      </div>
+
       <!-- Tabs Navigation -->
       <nav class="tabs-bar">
         <button type="button" class="tab-btn is-active" data-tab="summary">
@@ -722,24 +1331,24 @@
       <div id="tab-summary" class="tab-pane">
         <div class="metrics-grid">
           <div class="metric-card">
-            <span class="metric-card__label">Exams Graded</span>
+            <span class="metric-card__label">Total Graded</span>
             <span class="metric-card__val" id="metric-count">0</span>
             <span class="metric-card__sub" id="metric-count-sub">0 submitted</span>
           </div>
           <div class="metric-card">
-            <span class="metric-card__label">Class Mean Score</span>
+            <span class="metric-card__label">Average Score</span>
             <span class="metric-card__val" id="metric-mean">0.0</span>
             <span class="metric-card__sub" id="metric-mean-sub">0.0%</span>
           </div>
           <div class="metric-card">
-            <span class="metric-card__label">Passing Rate</span>
+            <span class="metric-card__label">Pass Rate</span>
             <span class="metric-card__val" id="metric-passrate">0.0%</span>
             <span class="metric-card__sub" id="metric-passrate-sub">0 passed / 0 failed</span>
           </div>
           <div class="metric-card">
-            <span class="metric-card__label">Cronbach's Alpha (α)</span>
+            <span class="metric-card__label">Reliability KR-20</span>
             <span class="metric-card__val" id="metric-alpha">—</span>
-            <span class="metric-card__sub">Internal Reliability</span>
+            <span class="metric-card__sub">Internal Reliability (α)</span>
           </div>
           <div class="metric-card">
             <span class="metric-card__label">Score Std Dev</span>
@@ -748,15 +1357,47 @@
           </div>
         </div>
 
-        <div style="margin-top: 1.5rem;" class="table-container">
+        <!-- Pass / Fail Distribution Bar & Bell Curve -->
+        <div class="distribution-card" id="distribution-card" style="margin-top: 1.25rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.65rem; flex-wrap: wrap; gap: 0.5rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span style="font-weight: 700; font-size: 0.88rem; color: var(--text);">Pass / Fail Distribution &amp; Score Bell Curve</span>
+              <span id="dist-label-threshold" style="font-size: 0.75rem; color: var(--text-muted); background: var(--panel-alt); padding: 0.15rem 0.5rem; border-radius: var(--radius-full); border: 1px solid var(--border);">Threshold: 60%</span>
+            </div>
+            <div style="display: flex; gap: 1rem; font-size: 0.78rem;">
+              <span style="display: inline-flex; align-items: center; gap: 0.35rem;">
+                <span style="width: 10px; height: 10px; border-radius: 2px; background: var(--success); display: inline-block;"></span>
+                <span id="dist-label-pass" style="font-weight: 600; color: var(--text);">Pass: 0 (0.0%)</span>
+              </span>
+              <span style="display: inline-flex; align-items: center; gap: 0.35rem;">
+                <span style="width: 10px; height: 10px; border-radius: 2px; background: var(--danger); display: inline-block;"></span>
+                <span id="dist-label-fail" style="font-weight: 600; color: var(--text);">Fail: 0 (0.0%)</span>
+              </span>
+            </div>
+          </div>
+          <div class="distribution-track" style="margin-bottom: 0.85rem; height: 6px; border-radius: var(--radius-full);">
+            <div id="dist-bar-pass" class="dist-bar-segment dist-bar-segment--pass" style="width: 0%;" title="Passing Students"></div>
+            <div id="dist-bar-fail" class="dist-bar-segment dist-bar-segment--fail" style="width: 0%;" title="Failing Students"></div>
+          </div>
+          <!-- SVG Bell Curve & Histogram Container -->
+          <div id="dist-bell-curve-container" style="width: 100%; overflow-x: auto;">
+            <div style="text-align: center; color: var(--text-muted); padding: 1.5rem; font-size: 0.8rem;">
+              Grade scans or click <strong>1-Click Sample Test</strong> to view score bell curve &amp; distribution.
+            </div>
+          </div>
+          <!-- Plain-language annotation text beneath the curve -->
+          <div id="dist-bell-curve-narrative" style="margin-top: 0.75rem;"></div>
+        </div>
+
+        <div style="margin-top: 1.25rem;" class="table-container">
           <table id="table-summary-preview">
             <thead>
               <tr>
-                <th>Student ID</th>
-                <th>Full Name</th>
-                <th>Score</th>
-                <th>Percentage</th>
-                <th>Status</th>
+                <th class="sortable" data-sort="studentId">Student ID <span class="sort-icon"></span></th>
+                <th class="sortable" data-sort="studentName">Full Name <span class="sort-icon"></span></th>
+                <th class="sortable" data-sort="rawScore">Score <span class="sort-icon"></span></th>
+                <th class="sortable" data-sort="percentage">Percentage <span class="sort-icon"></span></th>
+                <th class="sortable" data-sort="status">Status <span class="sort-icon"></span></th>
                 <th>Sheet Inspector</th>
               </tr>
             </thead>
@@ -773,24 +1414,80 @@
 
       <!-- Tab 2: Full Student Roster & Scores -->
       <div id="tab-roster" class="tab-pane" style="display: none;">
-        <div class="table-container">
-          <table>
-            <thead>
-              <tr>
-                <th>Exam ID</th>
-                <th>Student ID</th>
-                <th>Student Name</th>
-                <th>Raw Score</th>
-                <th>Max Score</th>
-                <th>Percentage</th>
-                <th>Pass / Fail</th>
-                <th>Sheet Inspector</th>
-              </tr>
-            </thead>
-            <tbody id="tbody-roster">
-              <tr><td colspan="8" style="text-align: center; padding: 2rem; color: var(--text-muted);">No student grades available.</td></tr>
-            </tbody>
-          </table>
+        <div class="roster-split-layout">
+          <!-- Left side: Roster Table -->
+          <div class="roster-table-col">
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th class="sortable" data-sort="examId">Exam ID <span class="sort-icon"></span></th>
+                    <th class="sortable" data-sort="studentId">Student ID <span class="sort-icon"></span></th>
+                    <th class="sortable" data-sort="studentName">Student Name <span class="sort-icon"></span></th>
+                    <th class="sortable" data-sort="rawScore">Raw Score <span class="sort-icon"></span></th>
+                    <th class="sortable" data-sort="maxScore">Max Score <span class="sort-icon"></span></th>
+                    <th class="sortable" data-sort="percentage">Percentage <span class="sort-icon"></span></th>
+                    <th class="sortable" data-sort="status">Pass / Fail <span class="sort-icon"></span></th>
+                    <th>Sheet Inspector</th>
+                  </tr>
+                </thead>
+                <tbody id="tbody-roster">
+                  <tr><td colspan="8" style="text-align: center; padding: 2rem; color: var(--text-muted);">No student grades available.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Right side: Sheet Inspector Preview Pane -->
+          <div class="roster-preview-pane">
+            <div class="roster-preview-card">
+              <!-- Top bar with Sheet Inspector title, current student badge, download JPEG and full view expand button -->
+              <div class="roster-preview-header">
+                <div class="roster-preview-title-group">
+                  <h3 class="roster-preview-title">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                    <span>Sheet Inspector</span>
+                  </h3>
+                  <div id="roster-student-badge" class="roster-student-badge" style="display: none; align-items: center; gap: 0.35rem; flex-wrap: wrap;">
+                    <span id="roster-badge-name" class="roster-badge-name">—</span>
+                    <span id="roster-badge-score" class="roster-badge-score">—</span>
+                    <span id="roster-badge-review" class="badge-review" style="display: none;"></span>
+                  </div>
+                </div>
+                <div class="roster-preview-actions">
+                  <button type="button" id="btn-roster-download-jpeg" class="btn btn--secondary btn--sm" disabled title="Download current student's graded sheet as JPEG">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                    <span>Download Sheet (JPEG)</span>
+                  </button>
+                  <button type="button" id="btn-roster-expand-modal" class="btn btn--secondary btn--sm" disabled title="Open full size inspector modal">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+                    <span>Full View</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Review Alert Notice Banner -->
+              <div id="roster-review-alert" style="display: none; background: var(--warning-light); border: 1px solid var(--warning); border-radius: var(--radius-sm); padding: 0.45rem 0.75rem; margin-bottom: 0.65rem; font-size: 0.76rem; color: var(--text);"></div>
+
+              <!-- Color legend: Green = Correct, Red = Incorrect, Amber = Missed Key -->
+              <div class="roster-preview-legend">
+                <span class="legend-item"><span class="legend-dot legend-dot--correct"></span> Correct</span>
+                <span class="legend-item"><span class="legend-dot legend-dot--incorrect"></span> Incorrect</span>
+                <span class="legend-item"><span class="legend-dot legend-dot--missed"></span> Missed Key</span>
+              </div>
+
+              <!-- Canvas container with canvas & empty state -->
+              <div class="roster-canvas-wrap">
+                <div id="roster-preview-empty" class="roster-preview-empty">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.6; margin-bottom: 0.5rem;" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><circle cx="12" cy="14" r="3"/></svg>
+                  <span>Select a student from the roster to inspect their graded exam sheet</span>
+                </div>
+                <!-- Accessible via #roster-preview-canvas and legacy alias -->
+                <canvas id="roster-preview-canvas" width="800" height="1131" style="display: none; max-width: 100%; height: auto;"></canvas>
+                <!-- id="roster-inspector-canvas" -->
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -915,12 +1612,25 @@
       roster: SAMPLE_ROSTER,
       results: null, // { grades, psychometrics }
       selectedStudentIdx: 0,
-      activeTab: "summary"
+      activeTab: "summary",
+      rosterSort: { col: null, dir: 'asc' },
+      summarySort: { col: null, dir: 'asc' }
     };
 
     // ---- DOM Elements ----
-    const $ = (id) => document.getElementById(id);
+    const $ = (id) => {
+      if (id === 'roster-inspector-canvas' || id === 'roster-preview-canvas') {
+        return document.getElementById('roster-preview-canvas') || document.getElementById('roster-inspector-canvas');
+      }
+      return document.getElementById(id);
+    };
     const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+
+    function switchTab(tabName) {
+      const btn = document.querySelector(`.tab-btn[data-tab="${tabName}"]`);
+      if (btn) btn.click();
+    }
+    window.switchTab = switchTab;
 
     // Tab Switching
     $$('.tab-btn').forEach(btn => {
@@ -932,6 +1642,12 @@
         if ($(tabId)) $(tabId).style.display = 'block';
         state.activeTab = btn.dataset.tab;
         if (state.activeTab === 'viewer') renderViewerSheet();
+        if (state.activeTab === 'roster' && state.results && state.results.grades && state.results.grades.length > 0) {
+          const idx = (state.selectedStudentIdx != null && state.selectedStudentIdx < state.results.grades.length)
+            ? state.selectedStudentIdx
+            : 0;
+          inspectStudent(idx);
+        }
       });
     });
 
@@ -1098,18 +1814,52 @@
     }
 
     function parseRosterCSV(csvText) {
+      if (!csvText) return [];
       const lines = csvText.trim().split(/\r?\n/);
       if (lines.length < 2) return [];
-      const header = lines[0].split(',').map(h => h.trim().toLowerCase());
-      const idCol = header.findIndex(h => h.includes('id'));
-      const nameCol = header.findIndex(h => h.includes('name'));
+
+      // Tokenize CSV line respecting RFC 4180 quotes
+      function parseCSVLine(line) {
+        const result = [];
+        let cur = '';
+        let inQuotes = false;
+        for (let i = 0; i < line.length; i++) {
+          const ch = line[i];
+          if (ch === '"') {
+            if (inQuotes && line[i + 1] === '"') {
+              cur += '"';
+              i++;
+            } else {
+              inQuotes = !inQuotes;
+            }
+          } else if (ch === ',' && !inQuotes) {
+            result.push(cur.trim());
+            cur = '';
+          } else {
+            cur += ch;
+          }
+        }
+        result.push(cur.trim());
+        return result;
+      }
+
+      const header = parseCSVLine(lines[0]).map(h => h.trim().toLowerCase().replace(/^["']|["']$/g, ''));
+      const idCol = header.findIndex(h => h.includes('id') || h === 'student_id');
+      const nameCol = header.findIndex(h => h.includes('name') || h === 'student_name');
+
       const roster = [];
       for (let i = 1; i < lines.length; i++) {
-        const parts = lines[i].split(',').map(s => s.trim().replace(/^["']|["']$/g, ''));
-        if (parts.length > 1) {
+        if (!lines[i].trim()) continue;
+        const parts = parseCSVLine(lines[i]);
+        if (parts.length > 0) {
           const id = idCol !== -1 ? parts[idCol] : parts[0];
-          const name = nameCol !== -1 ? parts[nameCol] : parts[1];
-          if (id && name) roster.push({ id, name });
+          const name = nameCol !== -1 ? parts[nameCol] : (parts[1] || `Student ${id}`);
+          if (id) {
+            roster.push({
+              id: String(id).trim().replace(/^["']|["']$/g, ''),
+              name: String(name || `Student ${id}`).trim().replace(/^["']|["']$/g, '')
+            });
+          }
         }
       }
       return roster;
@@ -1138,6 +1888,246 @@
       const qCount = items.length;
       const totalPts = items.reduce((sum, it) => sum + (it.points || 1), 0);
       if (statsEl) statsEl.textContent = `${qCount} Questions • ${totalPts} Points`;
+      validatePreflightKeyLayout();
+    }
+
+    // Preflight Mismatch Validation between Key and Layout
+    function validatePreflightKeyLayout() {
+      const banner = $('preflight-warning-banner');
+      const textEl = $('preflight-warning-text');
+      if (!banner || !textEl) return true;
+
+      if (!state.layout || !state.key) {
+        banner.style.display = 'none';
+        return true;
+      }
+
+      // Collect question items and choices from layout bubbles
+      const layoutQuestions = new Map();
+      for (const b of (state.layout.bubbles || [])) {
+        if (b.item && !b.item.startsWith('sid[')) {
+          if (!layoutQuestions.has(b.item)) {
+            layoutQuestions.set(b.item, new Set());
+          }
+          if (b.choice) {
+            layoutQuestions.get(b.item).add(b.choice);
+          }
+        }
+      }
+
+      const keyItems = state.key.items || {};
+      const layoutKeys = Array.from(layoutQuestions.keys());
+      const keyKeys = Object.keys(keyItems);
+
+      // 1. Unkeyed questions in layout (on sheet but missing in key)
+      const unkeyed = layoutKeys.filter(q => !keyItems[q]);
+
+      // 2. Extra keyed items (in key but not on sheet layout)
+      const extraKeyed = keyKeys.filter(q => !layoutQuestions.has(q) && keyItems[q].kind !== 'text');
+
+      // 3. Choice mismatches (key answer not present among bubble choices)
+      const invalidChoices = [];
+      for (const [q, choices] of layoutQuestions.entries()) {
+        const kItem = keyItems[q];
+        if (kItem && kItem.kind !== 'text' && kItem.answer) {
+          if (choices.size > 0 && !choices.has(kItem.answer)) {
+            invalidChoices.push({ q, ans: kItem.answer, choices: Array.from(choices) });
+          }
+        }
+      }
+
+      const formatRange = (items) => {
+        if (items.length <= 3) return items.join(', ');
+        const nums = items.map(Number);
+        const isSeq = nums.every((n, i) => i === 0 || n === nums[i - 1] + 1);
+        if (isSeq && !nums.some(isNaN)) {
+          return `${nums[0]}–${nums[nums.length - 1]}`;
+        }
+        return `${items.slice(0, 3).join(', ')}... (+${items.length - 3} more)`;
+      };
+
+      const warnings = [];
+      if (unkeyed.length > 0) {
+        warnings.push(`<strong>Questions ${formatRange(unkeyed)} are unkeyed:</strong> ${unkeyed.length} question${unkeyed.length > 1 ? 's are' : ' is'} present on the sheet layout but missing from the answer key, and will score <strong>0 pts</strong>.`);
+      }
+      if (extraKeyed.length > 0) {
+        warnings.push(`<strong>Key contains ${extraKeyed.length} extra question${extraKeyed.length > 1 ? 's' : ''}:</strong> Questions ${formatRange(extraKeyed)} are in the answer key but do not exist on this sheet layout.`);
+      }
+      if (invalidChoices.length > 0) {
+        const choiceDetails = invalidChoices.map(ic => `Q${ic.q} (keyed '${ic.ans}', layout has [${ic.choices.join(', ')}])`).slice(0, 3).join('; ');
+        warnings.push(`<strong>Choice mismatch:</strong> Key answer choice does not exist on sheet: ${choiceDetails}${invalidChoices.length > 3 ? '...' : ''}.`);
+      }
+
+      if (warnings.length > 0) {
+        textEl.innerHTML = warnings.map(w => `<div style="margin-bottom: 0.25rem;">• ${w}</div>`).join('');
+        banner.style.display = 'flex';
+        return false;
+      } else {
+        banner.style.display = 'none';
+        return true;
+      }
+    }
+
+    // Render SVG Bell Curve with Histogram & Annotations
+    function renderBellCurve(grades, passThreshold) {
+      const container = $('dist-bell-curve-container');
+      const narrative = $('dist-bell-curve-narrative');
+      if (!container) return;
+
+      if (!grades || grades.length === 0) {
+        container.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 1.5rem; font-size: 0.8rem;">No grade data available.</div>';
+        if (narrative) narrative.innerHTML = '';
+        return;
+      }
+
+      const scores = grades.map(g => g.percentage);
+      const n = scores.length;
+      const mean = scores.reduce((a, b) => a + b, 0) / n;
+      const variance = scores.reduce((s, x) => s + Math.pow(x - mean, 2), 0) / (n > 1 ? n - 1 : 1);
+      const stdDev = Math.sqrt(variance);
+      const min = Math.min(...scores);
+      const max = Math.max(...scores);
+      const passCount = grades.filter(g => g.percentage >= passThreshold).length;
+      const passRate = (passCount / n) * 100;
+
+      // Group into 10 score bins: 0-10%, 10-20%, ..., 90-100%
+      const bins = new Array(10).fill(0);
+      scores.forEach(s => {
+        const idx = Math.min(9, Math.max(0, Math.floor(s / 10)));
+        bins[idx]++;
+      });
+      const maxBin = Math.max(...bins, 1);
+
+      const svgW = 760;
+      const svgH = 220;
+      const padL = 45;
+      const padR = 35;
+      const padT = 32;
+      const padB = 32;
+      const plotW = svgW - padL - padR; // 680
+      const plotH = svgH - padT - padB; // 156
+      const baseY = padT + plotH; // 188
+
+      const xCoord = (pct) => padL + (Math.max(0, Math.min(100, pct)) / 100) * plotW;
+
+      // Histogram bars SVG
+      let barsSvg = '';
+      const barW = Math.max(4, (plotW / 10) - 3);
+      for (let i = 0; i < 10; i++) {
+        const binStart = i * 10;
+        const binEnd = (i + 1) * 10;
+        const binCenter = binStart + 5;
+        const count = bins[i];
+        const bx = xCoord(binStart) + 1.5;
+        const bh = count > 0 ? (count / maxBin) * (plotH * 0.72) : 0;
+        const by = baseY - bh;
+        const isPass = binCenter >= passThreshold;
+        const fill = isPass ? 'rgba(16, 185, 129, 0.35)' : 'rgba(244, 63, 94, 0.35)';
+        const stroke = isPass ? 'rgba(16, 185, 129, 0.75)' : 'rgba(244, 63, 94, 0.75)';
+
+        barsSvg += `<rect x="${bx.toFixed(1)}" y="${by.toFixed(1)}" width="${barW.toFixed(1)}" height="${bh.toFixed(1)}" fill="${fill}" stroke="${stroke}" stroke-width="1" rx="2" />`;
+        if (count > 0) {
+          barsSvg += `<text x="${(bx + barW / 2).toFixed(1)}" y="${(by - 4).toFixed(1)}" text-anchor="middle" font-size="10" font-weight="600" fill="var(--text-muted)">${count}</text>`;
+        }
+      }
+
+      // Gaussian Bell Curve points
+      const effectiveSigma = Math.max(stdDev, 4.0);
+      const gauss = (x) => Math.exp(-0.5 * Math.pow((x - mean) / effectiveSigma, 2));
+
+      const pts = [];
+      for (let s = 0; s <= 100; s += 0.5) {
+        const yVal = baseY - (gauss(s) * (plotH * 0.88));
+        pts.push({ s, x: xCoord(s), y: yVal });
+      }
+
+      // Shaded Failing area (s <= passThreshold)
+      const failPts = pts.filter(p => p.s <= passThreshold);
+      const cutoffX = xCoord(passThreshold);
+      const failPath = `M ${xCoord(0).toFixed(1)} ${baseY} ` +
+        failPts.map(p => `L ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' ') +
+        ` L ${cutoffX.toFixed(1)} ${baseY} Z`;
+
+      // Shaded Passing area (s >= passThreshold)
+      const passPts = pts.filter(p => p.s >= passThreshold);
+      const passPath = `M ${cutoffX.toFixed(1)} ${baseY} ` +
+        passPts.map(p => `L ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' ') +
+        ` L ${xCoord(100).toFixed(1)} ${baseY} Z`;
+
+      // Curve stroke path
+      const curvePath = 'M ' + pts.map(p => `${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' L ');
+
+      // Mean & Threshold X coords
+      const meanX = xCoord(mean);
+      const closeLabels = Math.abs(meanX - cutoffX) < 70;
+      const meanLabelY = closeLabels ? padT - 18 : padT - 14;
+      const cutoffLabelY = closeLabels ? padT - 2 : padT - 14;
+
+      // Standard deviation +/- 1 sigma
+      const sigLeftX = xCoord(Math.max(0, mean - stdDev));
+      const sigRightX = xCoord(Math.min(100, mean + stdDev));
+      const sigY = padT + 12;
+
+      // Grid / Ticks (0, 20, 40, 60, 80, 100)
+      let ticksSvg = '';
+      for (let t = 0; t <= 100; t += 20) {
+        const tx = xCoord(t);
+        ticksSvg += `<line x1="${tx.toFixed(1)}" y1="${padT}" x2="${tx.toFixed(1)}" y2="${baseY}" stroke="var(--border)" stroke-width="0.75" stroke-dasharray="2 3" />`;
+        ticksSvg += `<text x="${tx.toFixed(1)}" y="${baseY + 16}" text-anchor="middle" font-size="10" fill="var(--text-muted)">${t}%</text>`;
+      }
+
+      container.innerHTML = `
+        <svg viewBox="0 0 ${svgW} ${svgH}" style="width: 100%; height: auto; max-height: 240px; display: block;" role="img" aria-label="Score Distribution Bell Curve">
+          <!-- Grid Lines & Ticks -->
+          ${ticksSvg}
+
+          <!-- Base X-Axis -->
+          <line x1="${padL}" y1="${baseY}" x2="${(padL + plotW).toFixed(1)}" y2="${baseY}" stroke="var(--border)" stroke-width="1.5" />
+
+          <!-- Histogram Bars -->
+          ${barsSvg}
+
+          <!-- Shaded Regions under Bell Curve -->
+          <path d="${failPath}" fill="rgba(244, 63, 94, 0.16)" />
+          <path d="${passPath}" fill="rgba(16, 185, 129, 0.16)" />
+
+          <!-- Bell Curve Stroke -->
+          <path d="${curvePath}" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" />
+
+          <!-- Standard Deviation +/- 1 Sigma Indicator -->
+          <line x1="${sigLeftX.toFixed(1)}" y1="${sigY}" x2="${sigRightX.toFixed(1)}" y2="${sigY}" stroke="var(--text-muted)" stroke-width="1.2" stroke-dasharray="2 2" />
+          <line x1="${sigLeftX.toFixed(1)}" y1="${sigY - 4}" x2="${sigLeftX.toFixed(1)}" y2="${sigY + 4}" stroke="var(--text-muted)" stroke-width="1.2" />
+          <line x1="${sigRightX.toFixed(1)}" y1="${sigY - 4}" x2="${sigRightX.toFixed(1)}" y2="${sigY + 4}" stroke="var(--text-muted)" stroke-width="1.2" />
+          <text x="${((sigLeftX + sigRightX) / 2).toFixed(1)}" y="${sigY - 3}" text-anchor="middle" font-size="9" font-weight="600" fill="var(--text-muted)">±1σ (${stdDev.toFixed(1)}%)</text>
+
+          <!-- Mean Line & Label -->
+          <line x1="${meanX.toFixed(1)}" y1="${padT}" x2="${meanX.toFixed(1)}" y2="${baseY}" stroke="var(--accent)" stroke-width="2" stroke-dasharray="4 3" />
+          <rect x="${(meanX - 34).toFixed(1)}" y="${meanLabelY - 11}" width="68" height="15" rx="3" fill="var(--panel)" stroke="var(--accent)" stroke-width="1" />
+          <text x="${meanX.toFixed(1)}" y="${meanLabelY}" text-anchor="middle" font-size="9.5" font-weight="700" fill="var(--accent)">Mean: ${mean.toFixed(1)}%</text>
+
+          <!-- Cutoff Line & Label -->
+          <line x1="${cutoffX.toFixed(1)}" y1="${padT}" x2="${cutoffX.toFixed(1)}" y2="${baseY}" stroke="var(--danger)" stroke-width="2" />
+          <rect x="${(cutoffX - 34).toFixed(1)}" y="${cutoffLabelY - 11}" width="68" height="15" rx="3" fill="var(--panel)" stroke="var(--danger)" stroke-width="1" />
+          <text x="${cutoffX.toFixed(1)}" y="${cutoffLabelY}" text-anchor="middle" font-size="9.5" font-weight="700" fill="var(--danger)">Cutoff: ${passThreshold}%</text>
+        </svg>
+      `;
+
+      if (narrative) {
+        let spreadComment = 'Scores reflect a normal, healthy Gaussian distribution across the cohort.';
+        if (stdDev < 8) {
+          spreadComment = 'Scores are tightly clustered around the class average with low variance.';
+        } else if (stdDev > 18) {
+          spreadComment = 'Scores show notable dispersion across the cohort; consider reviewing high-discrimination questions.';
+        }
+
+        narrative.innerHTML = `
+          <div style="font-size: 0.8rem; line-height: 1.5; color: var(--text-muted); background: var(--panel-alt); padding: 0.6rem 0.85rem; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+            <strong>Cohort Bell Curve Distribution:</strong> Mean score is <strong>${mean.toFixed(1)}%</strong> (μ) with standard deviation <strong>±${stdDev.toFixed(1)}%</strong> (σ), ranging from ${min.toFixed(1)}% to ${max.toFixed(1)}%.
+            <strong>${passCount} of ${n} students (${passRate.toFixed(1)}%)</strong> met or exceeded the ${passThreshold}% pass threshold.
+            ${spreadComment}
+          </div>
+        `;
+      }
     }
 
     // Draw Blank Printable Exam Sheet onto Canvas
@@ -1329,6 +2319,7 @@
         try {
           const json = JSON.parse(evt.target.result);
           state.layout = parseLayout(json);
+          validatePreflightKeyLayout();
           alert(`Loaded custom layout: ${state.layout.bubbles.length} bubbles parsed.`);
         } catch (err) {
           alert("Error parsing layout JSON: " + err.message);
@@ -1357,16 +2348,69 @@
       reader.readAsText(file);
     };
 
-    $('input-roster').onchange = (e) => {
+    $('input-key-scan').onchange = (e) => {
       const file = e.target.files[0];
+      if (!file) return;
+      ensureActiveLayout();
+      if (!state.layout) {
+        alert("Please choose a preset layout or upload a layout JSON first so question bubbles can be located.");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        const img = new Image();
+        img.onload = () => {
+          try {
+            const decodedKey = decodeMasterKeyFromScan(img, state.layout);
+            state.key = decodedKey;
+            updateKeyDisplay();
+            validatePreflightKeyLayout();
+            const count = Object.keys(decodedKey.items).length;
+            alert(`✔ Master Answer Key Decoded!\n\nRecognized ${count} question answers from "${file.name}".\n\nYou can click 'Edit Key' to verify or adjust point values.`);
+            if (state.scans.length > 0) {
+              $('btn-grade-now').click();
+            }
+          } catch (err) {
+            alert("Error decoding answer key from scanned sheet: " + err.message);
+          }
+        };
+        img.onerror = () => alert("Could not load image file.");
+        img.src = evt.target.result;
+      };
+      reader.readAsDataURL(file);
+    };
+
+    function handleRosterUpload(file) {
       if (!file) return;
       const reader = new FileReader();
       reader.onload = (evt) => {
-        state.roster = parseRosterCSV(evt.target.result);
-        alert(`Loaded custom roster: ${state.roster.length} students.`);
+        try {
+          const parsed = parseRosterCSV(evt.target.result);
+          if (parsed.length === 0) {
+            alert("No student records found in the uploaded CSV. Ensure it has 'Student ID' and 'Name' columns.");
+            return;
+          }
+          state.roster = parsed;
+          // Immediately re-match student names if grades already exist
+          if (state.results && state.results.grades) {
+            state.results.grades.forEach(g => {
+              const match = state.roster.find(r => String(r.id).trim() === String(g.studentId).trim());
+              if (match) g.studentName = match.name;
+            });
+            renderResults();
+          }
+          alert(`Successfully loaded custom roster: ${state.roster.length} students.`);
+        } catch (err) {
+          alert("Error parsing roster CSV: " + err.message);
+        }
       };
       reader.readAsText(file);
-    };
+    }
+
+    $('input-roster').onchange = (e) => handleRosterUpload(e.target.files[0]);
+    if ($('input-roster-direct')) {
+      $('input-roster-direct').onchange = (e) => handleRosterUpload(e.target.files[0]);
+    }
 
     // Window references for testability and debugging
     window.PRESETS = PRESETS;
@@ -1480,6 +2524,97 @@
       }
 
       return corners; // [TL, TR, BR, BL]
+    }
+
+    // Decode a filled physical exam sheet as a master answer key
+    function decodeMasterKeyFromScan(img, layout, bubbleThreshold = 0.16) {
+      const pxPerMm = 4.0;
+      const offscreen = document.createElement('canvas');
+      offscreen.width = img.width;
+      offscreen.height = img.height;
+      const offCtx = offscreen.getContext('2d', { willReadFrequently: true });
+      offCtx.drawImage(img, 0, 0);
+
+      // Detect 4 corner markers in source image
+      const srcCorners = detectCornerMarkers(offCtx, img.width, img.height);
+      const dstCorners = [
+        { x: layout.markers["0"].center[0] * pxPerMm, y: layout.markers["0"].center[1] * pxPerMm },
+        { x: layout.markers["1"].center[0] * pxPerMm, y: layout.markers["1"].center[1] * pxPerMm },
+        { x: layout.markers["2"].center[0] * pxPerMm, y: layout.markers["2"].center[1] * pxPerMm },
+        { x: layout.markers["3"].center[0] * pxPerMm, y: layout.markers["3"].center[1] * pxPerMm }
+      ];
+      const H_canToSrc = computeHomography(dstCorners, srcCorners);
+
+      // Group bubbles by item
+      const itemBubbles = {};
+      for (const b of layout.bubbles) {
+        if (!itemBubbles[b.item]) itemBubbles[b.item] = [];
+        itemBubbles[b.item].push(b);
+      }
+
+      const items = {};
+      for (const [itemKey, bubbles] of Object.entries(itemBubbles)) {
+        if (itemKey.startsWith('sid[')) continue;
+
+        let bestChoice = null;
+        let maxDensity = -1;
+
+        for (const b of bubbles) {
+          const canX = b.center[0] * pxPerMm;
+          const canY = b.center[1] * pxPerMm;
+          const rad = b.radius * pxPerMm;
+          const srcPt = applyHomography(H_canToSrc, { x: canX, y: canY });
+
+          const sampleR = Math.max(2, Math.round(rad * 0.65));
+          const bgR = Math.max(4, Math.round(rad * 1.25));
+          const sx = Math.round(srcPt.x);
+          const sy = Math.round(srcPt.y);
+
+          let bubbleLumSum = 0, bubbleCount = 0;
+          let bgLumSum = 0, bgCount = 0;
+
+          if (sx >= bgR && sx < img.width - bgR && sy >= bgR && sy < img.height - bgR) {
+            const block = offCtx.getImageData(sx - bgR, sy - bgR, bgR * 2 + 1, bgR * 2 + 1).data;
+            const bSize = bgR * 2 + 1;
+            for (let dy = -bgR; dy <= bgR; dy++) {
+              for (let dx = -bgR; dx <= bgR; dx++) {
+                const d2 = dx * dx + dy * dy;
+                const idx = ((dy + bgR) * bSize + (dx + bgR)) * 4;
+                const lum = 0.299 * block[idx] + 0.587 * block[idx + 1] + 0.114 * block[idx + 2];
+                if (d2 <= sampleR * sampleR) {
+                  bubbleLumSum += lum;
+                  bubbleCount++;
+                } else if (d2 > (rad * rad) && d2 <= (bgR * bgR)) {
+                  bgLumSum += lum;
+                  bgCount++;
+                }
+              }
+            }
+          }
+
+          const bubbleLum = bubbleCount > 0 ? (bubbleLumSum / bubbleCount) : 255;
+          const bgLum = bgCount > 0 ? (bgLumSum / bgCount) : 240;
+          const fillDensity = bgLum > 0 ? Math.max(0, (bgLum - bubbleLum) / bgLum) : 0;
+
+          if (fillDensity > maxDensity) {
+            maxDensity = fillDensity;
+            bestChoice = b.choice;
+          }
+        }
+
+        const isTf = bubbles.length === 2 && bubbles.some(b => b.choice === 'T' || b.choice === 'True');
+        const defaultChoice = bubbles[0]?.choice || 'A';
+        items[itemKey] = {
+          answer: maxDensity >= bubbleThreshold ? bestChoice : defaultChoice,
+          points: 1.0,
+          kind: isTf ? 'tf' : 'mcq'
+        };
+      }
+
+      return {
+        title: "Scanned Master Key",
+        items
+      };
     }
 
     // Process a single scanned exam image
@@ -1596,13 +2731,59 @@
         };
       }
 
-      // Extract Student ID from file name or sequential index
-      const matchedId = scan.name.match(/\d{6,10}/);
-      const studentId = matchedId ? matchedId[0] : `STU-${Math.floor(100000 + Math.random() * 900000)}`;
-      const rosterEntry = state.roster.find(r => r.id === studentId);
+      // Extract Student ID: from filled sid bubbles first, then filename match, then fallback
+      let bubbleSid = "";
+      const sidKeys = Object.keys(itemAnswers).filter(k => k.startsWith("sid["));
+      if (sidKeys.length > 0) {
+        sidKeys.sort((a, b) => {
+          const na = parseInt(a.match(/\d+/)?.[0] || "0");
+          const nb = parseInt(b.match(/\d+/)?.[0] || "0");
+          return na - nb;
+        });
+        bubbleSid = sidKeys.map(k => (itemAnswers[k] && itemAnswers[k][0]) || "").join("");
+      }
+
+      const matchedId = scan.name ? scan.name.match(/\d{6,10}/) : null;
+      const studentId = (bubbleSid && bubbleSid.length >= 6)
+        ? bubbleSid
+        : (matchedId ? matchedId[0] : `STU-${Math.floor(100000 + Math.random() * 900000)}`);
+      const rosterEntry = state.roster.find(r => String(r.id).trim() === String(studentId).trim());
       const studentName = rosterEntry ? rosterEntry.name : `Student ${studentId}`;
 
       const percentage = maxScore > 0 ? (rawScore / maxScore) * 100 : 0;
+
+      // Check Review Flags: blank responses, multiple marks, unmatched ID
+      let blankCount = 0;
+      let multiMarkCount = 0;
+      const blankQuestions = [];
+      const multiMarkQuestions = [];
+
+      for (const [itemNumStr, itemResult] of Object.entries(gradedItems)) {
+        if (itemResult.actual === "BLANK" || !itemResult.actual) {
+          blankCount++;
+          blankQuestions.push(itemNumStr);
+        } else if (itemResult.actual.includes(",")) {
+          multiMarkCount++;
+          multiMarkQuestions.push(itemNumStr);
+        }
+      }
+
+      const isUnmatchedId = (!rosterEntry && state.roster && state.roster.length > 0) || String(studentId).startsWith("STU-");
+
+      const reviewReasons = [];
+      if (blankCount > 0) reviewReasons.push(`${blankCount} blank response${blankCount > 1 ? 's' : ''}`);
+      if (multiMarkCount > 0) reviewReasons.push(`${multiMarkCount} multiple mark${multiMarkCount > 1 ? 's' : ''}`);
+      if (isUnmatchedId) reviewReasons.push(`Unmatched Student ID`);
+
+      const reviewFlags = {
+        needsReview: reviewReasons.length > 0,
+        reasons: reviewReasons,
+        blankCount,
+        blankQuestions,
+        multiMarkCount,
+        multiMarkQuestions,
+        isUnmatchedId
+      };
 
       return {
         examId: scan.name,
@@ -1616,7 +2797,8 @@
         H_canToSrc,
         targetW,
         targetH,
-        scanImg: scan.img
+        scanImg: scan.img,
+        reviewFlags
       };
     }
 
@@ -1717,6 +2899,8 @@
           return;
         }
       }
+
+      validatePreflightKeyLayout();
 
       const passThreshold = parseFloat($('input-threshold').value) || 60;
       const bubbleThreshold = parseFloat($('input-bubble-threshold').value) || 0.20;
@@ -1849,9 +3033,141 @@
       $('btn-grade-now').click();
     };
 
+    // Render Summary Table
+    function renderSummaryTable() {
+      if (!state.results || !state.results.grades) return;
+      const { grades, passThreshold } = state.results;
+      $('tbody-summary').innerHTML = grades.map((g, idx) => `
+        <tr onclick="inspectStudent(${idx}); switchTab('roster');" class="${state.selectedStudentIdx === idx ? 'is-selected' : ''}">
+          <td><strong>${g.studentId}</strong></td>
+          <td>${g.studentName}</td>
+          <td>${g.rawScore.toFixed(1)} / ${g.maxScore.toFixed(1)}</td>
+          <td>${g.percentage.toFixed(1)}%</td>
+          <td><span class="${g.percentage >= passThreshold ? 'badge-pass' : 'badge-fail'}">${g.percentage >= passThreshold ? 'PASS' : 'FAIL'}</span></td>
+          <td><button type="button" class="btn btn--secondary btn--sm" onclick="event.stopPropagation(); inspectStudent(${idx}); switchTab('roster');">Sheet Inspector</button></td>
+        </tr>
+      `).join('');
+    }
+
+    // Render Roster Table
+    function renderRosterTable() {
+      if (!state.results || !state.results.grades) return;
+      const { grades, passThreshold } = state.results;
+      $('tbody-roster').innerHTML = grades.map((g, idx) => `
+        <tr onclick="inspectStudent(${idx})" data-idx="${idx}" class="${state.selectedStudentIdx === idx ? 'is-selected' : ''}">
+          <td><code>${g.examId}</code></td>
+          <td><strong>${g.studentId}</strong></td>
+          <td>
+            <div style="display: flex; align-items: center; gap: 0.45rem; flex-wrap: wrap;">
+              <span>${g.studentName}</span>
+              ${g.reviewFlags && g.reviewFlags.needsReview ? `
+                <span class="badge-review" title="${g.reviewFlags.reasons.join('; ')}">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                  <span>Needs Review</span>
+                </span>
+              ` : ''}
+            </div>
+          </td>
+          <td>${g.rawScore.toFixed(1)}</td>
+          <td>${g.maxScore.toFixed(1)}</td>
+          <td><strong>${g.percentage.toFixed(1)}%</strong></td>
+          <td><span class="${g.percentage >= passThreshold ? 'badge-pass' : 'badge-fail'}">${g.percentage >= passThreshold ? 'PASS' : 'FAIL'}</span></td>
+          <td><button type="button" class="btn btn--secondary btn--sm" onclick="event.stopPropagation(); inspectStudent(${idx})">Sheet Inspector</button></td>
+        </tr>
+      `).join('');
+    }
+
+    // Sorting Helper
+    function sortGrades(gradesList, col, dir) {
+      return [...gradesList].sort((a, b) => {
+        let valA, valB;
+        if (col === 'status') {
+          const thresh = state.results?.passThreshold || 60;
+          valA = a.percentage >= thresh ? 1 : 0;
+          valB = b.percentage >= thresh ? 1 : 0;
+        } else if (col === 'score' || col === 'rawScore') {
+          valA = a.rawScore;
+          valB = b.rawScore;
+        } else {
+          valA = a[col] ?? '';
+          valB = b[col] ?? '';
+        }
+        if (typeof valA === 'string' && typeof valB === 'string') {
+          const cmp = valA.localeCompare(valB, undefined, { numeric: true, sensitivity: 'base' });
+          return dir === 'asc' ? cmp : -cmp;
+        }
+        return dir === 'asc' ? (valA - valB) : (valB - valA);
+      });
+    }
+
+    function updateSortHeaders(containerSel, activeCol, dir) {
+      $$(containerSel + ' th.sortable').forEach(th => {
+        th.classList.remove('is-sorted-asc', 'is-sorted-desc');
+        if (th.dataset.sort === activeCol) {
+          th.classList.add(dir === 'asc' ? 'is-sorted-asc' : 'is-sorted-desc');
+        }
+      });
+    }
+
+    function setupTableSorting() {
+      $$('#tab-roster th.sortable').forEach(th => {
+        th.onclick = () => {
+          if (!state.results || !state.results.grades || state.results.grades.length === 0) return;
+          const col = th.dataset.sort;
+          let dir = 'asc';
+          if (state.rosterSort.col === col) {
+            dir = state.rosterSort.dir === 'asc' ? 'desc' : 'asc';
+          } else if (col === 'rawScore' || col === 'percentage' || col === 'maxScore') {
+            dir = 'desc';
+          }
+          state.rosterSort = { col, dir };
+
+          const curId = state.results.grades[state.selectedStudentIdx]?.studentId;
+          state.results.grades = sortGrades(state.results.grades, col, dir);
+          if (curId) {
+            const newIdx = state.results.grades.findIndex(g => g.studentId === curId);
+            state.selectedStudentIdx = newIdx !== -1 ? newIdx : 0;
+          }
+
+          updateSortHeaders('#tab-roster', col, dir);
+          renderRosterTable();
+          renderSummaryTable();
+          inspectStudent(state.selectedStudentIdx);
+        };
+      });
+
+      $$('#tab-summary th.sortable').forEach(th => {
+        th.onclick = () => {
+          if (!state.results || !state.results.grades || state.results.grades.length === 0) return;
+          const col = th.dataset.sort;
+          let dir = 'asc';
+          if (state.summarySort.col === col) {
+            dir = state.summarySort.dir === 'asc' ? 'desc' : 'asc';
+          } else if (col === 'rawScore' || col === 'score' || col === 'percentage') {
+            dir = 'desc';
+          }
+          state.summarySort = { col, dir };
+
+          const curId = state.results.grades[state.selectedStudentIdx]?.studentId;
+          state.results.grades = sortGrades(state.results.grades, col, dir);
+          if (curId) {
+            const newIdx = state.results.grades.findIndex(g => g.studentId === curId);
+            state.selectedStudentIdx = newIdx !== -1 ? newIdx : 0;
+          }
+
+          updateSortHeaders('#tab-summary', col, dir);
+          renderSummaryTable();
+          renderRosterTable();
+        };
+      });
+    }
+
     // Render Graded Results
     function renderResults() {
       if (!state.results) return;
+      document.body.classList.add('has-data');
+      document.querySelector('.main-content')?.classList.add('has-data');
+      $('advanced-layout-key-toggle')?.setAttribute('open', '');
       const { grades, psychometrics, passThreshold } = state.results;
 
       // Summary Cards
@@ -1861,39 +3177,30 @@
       $('metric-mean-sub').textContent = `${((psychometrics.meanScore / psychometrics.totalPossible) * 100).toFixed(1)}%`;
 
       const passCount = grades.filter(g => g.percentage >= passThreshold).length;
-      const passRate = (passCount / grades.length) * 100;
+      const failCount = grades.length - passCount;
+      const passRate = grades.length > 0 ? (passCount / grades.length) * 100 : 0;
+      const failRate = grades.length > 0 ? (failCount / grades.length) * 100 : 0;
       $('metric-passrate').textContent = `${passRate.toFixed(1)}%`;
-      $('metric-passrate-sub').textContent = `${passCount} passed / ${grades.length - passCount} failed`;
+      $('metric-passrate-sub').textContent = `${passCount} passed / ${failCount} failed`;
 
       $('metric-alpha').textContent = psychometrics.cronbachAlpha.toFixed(3);
       $('metric-stddev').textContent = `±${psychometrics.stdDev.toFixed(2)}`;
       $('metric-median').textContent = `Median: ${psychometrics.median.toFixed(1)}`;
 
-      // Summary Table Preview
-      $('tbody-summary').innerHTML = grades.map((g, idx) => `
-        <tr onclick="inspectStudent(${idx})">
-          <td><strong>${g.studentId}</strong></td>
-          <td>${g.studentName}</td>
-          <td>${g.rawScore.toFixed(1)} / ${g.maxScore.toFixed(1)}</td>
-          <td>${g.percentage.toFixed(1)}%</td>
-          <td><span class="${g.percentage >= passThreshold ? 'badge-pass' : 'badge-fail'}">${g.percentage >= passThreshold ? 'PASS' : 'FAIL'}</span></td>
-          <td><button type="button" class="btn btn--secondary btn--sm" onclick="event.stopPropagation(); inspectStudent(${idx})">Sheet Inspector</button></td>
-        </tr>
-      `).join('');
+      // Update Pass/Fail Distribution Bar
+      if ($('dist-bar-pass')) $('dist-bar-pass').style.width = `${passRate.toFixed(1)}%`;
+      if ($('dist-bar-fail')) $('dist-bar-fail').style.width = `${failRate.toFixed(1)}%`;
+      if ($('dist-label-pass')) $('dist-label-pass').textContent = `Pass: ${passCount} (${passRate.toFixed(1)}%)`;
+      if ($('dist-label-fail')) $('dist-label-fail').textContent = `Fail: ${failCount} (${failRate.toFixed(1)}%)`;
+      if ($('dist-label-threshold')) $('dist-label-threshold').textContent = `Threshold: ${passThreshold}%`;
 
-      // Roster Table
-      $('tbody-roster').innerHTML = grades.map((g, idx) => `
-        <tr onclick="inspectStudent(${idx})">
-          <td><code>${g.examId}</code></td>
-          <td><strong>${g.studentId}</strong></td>
-          <td>${g.studentName}</td>
-          <td>${g.rawScore.toFixed(1)}</td>
-          <td>${g.maxScore.toFixed(1)}</td>
-          <td><strong>${g.percentage.toFixed(1)}%</strong></td>
-          <td><span class="${g.percentage >= passThreshold ? 'badge-pass' : 'badge-fail'}">${g.percentage >= passThreshold ? 'PASS' : 'FAIL'}</span></td>
-          <td><button type="button" class="btn btn--secondary btn--sm" onclick="event.stopPropagation(); inspectStudent(${idx})">Sheet Inspector</button></td>
-        </tr>
-      `).join('');
+      // Update Bell Curve & Score Histogram
+      renderBellCurve(grades, passThreshold);
+
+      // Render Tables
+      renderSummaryTable();
+      renderRosterTable();
+      setupTableSorting();
 
       // Student Selector in Viewer
       const sel = $('viewer-student-select');
@@ -1903,28 +3210,45 @@
       sel.onchange = (e) => {
         state.selectedStudentIdx = parseInt(e.target.value);
         renderViewerSheet();
+        inspectStudent(state.selectedStudentIdx);
       };
 
       // Item Psychometrics Table: dynamically adjust columns for MCQ vs True/False
-      const isTF = Object.values(state.key.items).some(it => it.kind === 'tf' || it.kind === 'modified_tf' || it.answer === 'T' || it.answer === 'F');
-      if ($('th-d1')) $('th-d1').textContent = isTF ? 'T' : 'A';
-      if ($('th-d2')) $('th-d2').textContent = isTF ? 'F' : 'B';
-      if ($('th-d3')) $('th-d3').textContent = isTF ? '—' : 'C';
-      if ($('th-d4')) $('th-d4').textContent = isTF ? '—' : 'D';
-      if ($('th-d5')) $('th-d5').textContent = isTF ? '—' : 'E';
+      const allTF = Object.values(state.key.items).every(it => it.kind === 'tf' || it.kind === 'modified_tf' || it.answer === 'T' || it.answer === 'F');
+      const hasTF = Object.values(state.key.items).some(it => it.kind === 'tf' || it.kind === 'modified_tf' || it.answer === 'T' || it.answer === 'F');
+
+      if ($('th-d1')) $('th-d1').textContent = allTF ? 'T' : (hasTF ? 'A (T)' : 'A');
+      if ($('th-d2')) $('th-d2').textContent = allTF ? 'F' : (hasTF ? 'B (F)' : 'B');
+      if ($('th-d3')) $('th-d3').textContent = allTF ? '—' : 'C';
+      if ($('th-d4')) $('th-d4').textContent = allTF ? '—' : 'D';
+      if ($('th-d5')) $('th-d5').textContent = allTF ? '—' : 'E';
 
       const itemKeys = Object.keys(psychometrics.itemStats).sort((a, b) => {
         const na = Number(a), nb = Number(b);
         if (!isNaN(na) && !isNaN(nb)) return na - nb;
         return a.localeCompare(b);
       });
+
       $('tbody-items').innerHTML = itemKeys.map(k => {
         const item = psychometrics.itemStats[k];
-        const d1 = isTF ? (item.distractors.T || 0) : (item.distractors.A || 0);
-        const d2 = isTF ? (item.distractors.F || 0) : (item.distractors.B || 0);
-        const d3 = isTF ? '—' : (item.distractors.C || 0);
-        const d4 = isTF ? '—' : (item.distractors.D || 0);
-        const d5 = isTF ? '—' : (item.distractors.E || 0);
+        const keyItem = state.key.items[k] || {};
+        const isItemTF = (keyItem.kind === 'tf' || keyItem.kind === 'modified_tf' || item.correctAnswer === 'T' || item.correctAnswer === 'F');
+
+        let d1, d2, d3, d4, d5;
+        if (isItemTF) {
+          d1 = item.distractors.T || 0;
+          d2 = item.distractors.F || 0;
+          d3 = '—';
+          d4 = '—';
+          d5 = '—';
+        } else {
+          d1 = item.distractors.A || 0;
+          d2 = item.distractors.B || 0;
+          d3 = item.distractors.C || 0;
+          d4 = item.distractors.D || 0;
+          d5 = item.distractors.E || 0;
+        }
+
         return `
           <tr>
             <td><strong>#${k}</strong></td>
@@ -1949,18 +3273,126 @@
       $('btn-export-zip').disabled = false;
       $('btn-download-sheet-jpeg').disabled = false;
       if ($('btn-viewer-download-zip')) $('btn-viewer-download-zip').disabled = false;
+      if ($('btn-results-export-zip')) $('btn-results-export-zip').disabled = false;
+      if ($('btn-results-export-csv')) $('btn-results-export-csv').disabled = false;
+      if ($('btn-results-export-html')) $('btn-results-export-html').disabled = false;
+
+      // Default to selecting the first student (index 0) in the roster preview pane
+      if (grades.length > 0) {
+        inspectStudent(0);
+      }
+    }
+
+    function renderRosterPreview(idx) {
+      const reviewBadgeEl = $('roster-badge-review');
+      const reviewAlertEl = $('roster-review-alert');
+
+      if (!state.results || !state.results.grades || !state.results.grades[idx]) {
+        if ($('roster-student-badge')) $('roster-student-badge').style.display = 'none';
+        if (reviewBadgeEl) reviewBadgeEl.style.display = 'none';
+        if (reviewAlertEl) reviewAlertEl.style.display = 'none';
+        if ($('btn-roster-download-jpeg')) $('btn-roster-download-jpeg').disabled = true;
+        if ($('btn-roster-expand-modal')) $('btn-roster-expand-modal').disabled = true;
+        if ($('roster-preview-empty')) $('roster-preview-empty').style.display = 'flex';
+        const canvas = $('roster-preview-canvas') || $('roster-inspector-canvas');
+        if (canvas) canvas.style.display = 'none';
+        return;
+      }
+
+      const grade = state.results.grades[idx];
+      const passThreshold = (state.results && state.results.passThreshold != null) ? state.results.passThreshold : 60;
+      const isPass = grade.percentage >= passThreshold;
+
+      if ($('roster-student-badge')) $('roster-student-badge').style.display = 'inline-flex';
+      if ($('roster-badge-name')) $('roster-badge-name').textContent = `${grade.studentName} (${grade.studentId})`;
+      if ($('roster-badge-score')) {
+        $('roster-badge-score').textContent = `${grade.rawScore.toFixed(1)} / ${grade.maxScore.toFixed(1)} (${grade.percentage.toFixed(1)}%)`;
+        $('roster-badge-score').className = isPass ? 'badge-pass' : 'badge-fail';
+      }
+
+      if (grade.reviewFlags && grade.reviewFlags.needsReview) {
+        if (reviewBadgeEl) {
+          reviewBadgeEl.style.display = 'inline-flex';
+          reviewBadgeEl.textContent = 'Needs Review';
+          reviewBadgeEl.title = grade.reviewFlags.reasons.join('; ');
+        }
+        if (reviewAlertEl) {
+          reviewAlertEl.style.display = 'block';
+          reviewAlertEl.innerHTML = `<strong>⚠️ Needs Review:</strong> ${grade.reviewFlags.reasons.join(' • ')}`;
+        }
+      } else {
+        if (reviewBadgeEl) reviewBadgeEl.style.display = 'none';
+        if (reviewAlertEl) reviewAlertEl.style.display = 'none';
+      }
+
+      if ($('btn-roster-download-jpeg')) $('btn-roster-download-jpeg').disabled = false;
+      if ($('btn-roster-expand-modal')) $('btn-roster-expand-modal').disabled = false;
+
+      if ($('roster-preview-empty')) $('roster-preview-empty').style.display = 'none';
+      const canvas = $('roster-preview-canvas') || $('roster-inspector-canvas');
+      if (canvas) {
+        canvas.style.display = 'block';
+        drawGradeOnCanvas(grade, canvas);
+      }
     }
 
     window.inspectStudent = (idx) => {
+      if (!state.results || !state.results.grades || !state.results.grades[idx]) return;
       state.selectedStudentIdx = idx;
+
+      const rows = $$('#tbody-roster tr');
+      rows.forEach((row, rIdx) => {
+        if (rIdx === idx) {
+          row.classList.add('is-selected');
+        } else {
+          row.classList.remove('is-selected');
+        }
+      });
+
+      const summaryRows = $$('#tbody-summary tr');
+      summaryRows.forEach((row, rIdx) => {
+        if (rIdx === idx) {
+          row.classList.add('is-selected');
+        } else {
+          row.classList.remove('is-selected');
+        }
+      });
+
       const sel = $('viewer-student-select');
       if (sel) sel.value = idx;
       renderViewerSheet();
-      const modal = $('modal-viewer');
-      if (modal?.showModal) {
-        modal.showModal();
-      }
+
+      renderRosterPreview(idx);
     };
+
+    if ($('btn-roster-download-jpeg')) {
+      $('btn-roster-download-jpeg').onclick = () => {
+        if (!state.results || !state.results.grades || state.selectedStudentIdx == null) return;
+        const grade = state.results.grades[state.selectedStudentIdx];
+        if (!grade) return;
+        const canvas = $('roster-preview-canvas') || $('roster-inspector-canvas');
+        if (!canvas) return;
+        drawGradeOnCanvas(grade, canvas);
+        const examName = grade.examId ? grade.examId.replace(/\.[^/.]+$/, "") : `student_${grade.studentId}`;
+        const filename = `${examName}_graded.jpg`;
+        canvas.toBlob((blob) => {
+          if (blob) {
+            downloadFile(filename, blob, "image/jpeg");
+          }
+        }, "image/jpeg", 0.95);
+      };
+    }
+
+    if ($('btn-roster-expand-modal')) {
+      $('btn-roster-expand-modal').onclick = () => {
+        if (state.selectedStudentIdx == null) return;
+        renderViewerSheet();
+        const modal = $('modal-viewer');
+        if (modal?.showModal) {
+          modal.showModal();
+        }
+      };
+    }
 
     $('btn-close-viewer').onclick = () => $('modal-viewer').close();
     $('modal-viewer').onclick = (e) => {
@@ -1972,7 +3404,9 @@
 
     // Draw Graded and Annotated Sheet onto any HTMLCanvasElement
     function drawGradeOnCanvas(grade, canvas) {
-      const ctx = canvas.getContext('2d');
+      if (!canvas) return;
+      const ctx = canvas.getContext ? canvas.getContext('2d') : null;
+      if (!ctx || !ctx.drawImage) return;
       canvas.width = grade.targetW || 840;
       canvas.height = grade.targetH || 1188;
 
@@ -2034,6 +3468,12 @@
       const grade = state.results.grades[state.selectedStudentIdx];
       const canvas = $('viewer-canvas');
       drawGradeOnCanvas(grade, canvas);
+      if ($('viewer-student-info')) {
+        $('viewer-student-info').textContent = `${grade.studentName} (${grade.studentId}) — Score: ${grade.rawScore.toFixed(1)} / ${grade.maxScore.toFixed(1)} (${grade.percentage.toFixed(1)}%)`;
+      }
+      if ($('viewer-student-select')) {
+        $('viewer-student-select').value = state.selectedStudentIdx;
+      }
     }
 
     // Download Graded Sheet (JPEG)
@@ -2238,7 +3678,7 @@
 </head>
 <body>
   <h1>Item Analysis Report</h1>
-  <p>${state.key.title} &bull; Generated by Checker</p>
+  <p>${state.key.title} &bull; Generated by Instructor Essentials — Checker Studio</p>
   <div class="metrics">
     <div class="metric"><span>Mean Score</span><b>${psychometrics.meanScore.toFixed(1)}</b></div>
     <div class="metric"><span>Cronbach's Alpha (α)</span><b>${psychometrics.cronbachAlpha.toFixed(3)}</b></div>
@@ -2279,6 +3719,19 @@
     window.computePsychometrics = computePsychometrics;
     window.processExamScan = processExamScan;
     window.updateKeyDisplay = updateKeyDisplay;
+    window.validatePreflightKeyLayout = validatePreflightKeyLayout;
+    window.renderBellCurve = renderBellCurve;
+
+    // Sidebar & Results Export button listeners
+    $('btn-sidebar-grade')?.addEventListener('click', () => $('btn-grade-now').click());
+    $('btn-sidebar-sample')?.addEventListener('click', () => $('btn-sample-grade').click());
+    $('btn-results-export-zip')?.addEventListener('click', () => $('btn-export-zip').click());
+    $('btn-results-export-csv')?.addEventListener('click', () => $('btn-export-csv').click());
+    $('btn-results-export-html')?.addEventListener('click', () => $('btn-export-html').click());
+
+    // Empty state CTA listeners
+    $('btn-empty-sample')?.addEventListener('click', () => $('btn-sample-grade').click());
+    $('btn-empty-upload')?.addEventListener('click', () => $('input-scans').click());
 
     // Initial boot display
     updateKeyDisplay();

@@ -11,8 +11,8 @@
       "w": 186,
       "fieldHeight": 7.5,
       "fields": [
-        { "id": "name", "label": "Student Name", "role": "name", "row": 0, "w": 108 },
-        { "id": "sid", "label": "Student ID", "role": "student_id", "digits": 8, "row": 0, "w": 75 },
+        { "id": "name", "label": "Name", "role": "name", "row": 0, "w": 108 },
+        { "id": "sid", "label": "ID no.", "role": "student_id", "digits": 8, "row": 0, "w": 75 },
         { "id": "offer", "label": "Offer No.", "row": 1, "w": 48 },
         { "id": "sched", "label": "Sched", "row": 1, "w": 52 },
         { "id": "date", "label": "Date", "row": 1, "w": 43 },
@@ -24,7 +24,7 @@
       "id": "notes",
       "w": 186,
       "fontSize": 2.6,
-      "text": "Write your 8-digit Student ID clearly in the boxes above. Part I & II: fill each bubble completely with a dark pencil or pen.\nPart III: print your answer clearly in block capital letters inside the answer box corresponding to each question number."
+      "text": "Write your 8-digit ID no. clearly in the boxes above. Part I & II: fill each bubble completely with a dark pencil or pen.\nPart III: print your answer clearly in block capital letters inside the answer box corresponding to each question number."
     },
     { "type": "mcq", "id": "part1", "label": "Part I — Multiple Choice (1–50)", "count": 50, "choices": "ABCDE", "columns": 4, "pointsPerItem": 1, "w": 186 },
     { "type": "truefalse", "id": "part2", "label": "Part II — True / False (51–60)", "count": 10, "columns": 5, "pointsPerItem": 1, "w": 186 },

@@ -115,3 +115,37 @@ def test_hf_space_run_grading_pipeline():
     assert "<iframe" in report_html
     assert report_path is not None and Path(report_path).exists()
     assert grades_json_path is not None and Path(grades_json_path).exists()
+
+
+def test_hf_space_extract_path(tmp_path):
+    # None
+    assert _extract_path(None) is None
+
+    # Existing file path
+    f = tmp_path / "sample.txt"
+    f.write_text("test")
+    assert _extract_path(str(f)) == f
+    assert _extract_path(f) == f
+
+    # Non-existent
+    assert _extract_path(tmp_path / "nonexistent.txt") is None
+
+    # Dict with 'path'
+    assert _extract_path({"path": str(f)}) == f
+    # Dict with 'name'
+    assert _extract_path({"name": str(f)}) == f
+    assert _extract_path({"path": "/no/such/path"}) is None
+
+    # Object with .path attribute
+    class DummyPathObj:
+        def __init__(self, path):
+            self.path = path
+
+    assert _extract_path(DummyPathObj(str(f))) == f
+
+    # Object with .name attribute
+    class DummyNameObj:
+        def __init__(self, name):
+            self.name = name
+
+    assert _extract_path(DummyNameObj(str(f))) == f

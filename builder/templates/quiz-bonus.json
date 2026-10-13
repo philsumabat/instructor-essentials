@@ -11,8 +11,8 @@
       "w": 186,
       "fieldHeight": 7.5,
       "fields": [
-        { "id": "name", "label": "Student Name", "role": "name", "row": 0, "w": 108 },
-        { "id": "sid", "label": "Student ID", "role": "student_id", "digits": 8, "row": 0, "w": 75 },
+        { "id": "name", "label": "Name", "role": "name", "row": 0, "w": 108 },
+        { "id": "sid", "label": "ID no.", "role": "student_id", "digits": 8, "row": 0, "w": 75 },
         { "id": "offer", "label": "Offer No.", "row": 1, "w": 48 },
         { "id": "sched", "label": "Sched", "row": 1, "w": 52 },
         { "id": "date", "label": "Date", "row": 1, "w": 43 },

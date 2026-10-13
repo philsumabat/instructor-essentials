@@ -6,6 +6,7 @@ results to student identities from the roster.
 """
 from __future__ import annotations
 
+import difflib
 import json
 import re
 from dataclasses import dataclass, field
@@ -217,7 +218,6 @@ class GradingEngine:
 
         if key_spec.rubric == "case_insensitive" or key_spec.kind == "text":
             norm_resp = cleaned_resp.upper()
-            import difflib
             def is_match_text(resp: str, target: str) -> bool:
                 r = resp.strip()
                 t = target.upper().strip()

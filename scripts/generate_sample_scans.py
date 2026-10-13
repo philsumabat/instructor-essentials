@@ -5,14 +5,17 @@ from __future__ import annotations
 import csv
 import json
 import random
+import sys
 from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 import cv2
 
 from omr.layout import Layout
 from omr.simulator import ExamSimulator
-
-ROOT = Path(__file__).resolve().parent.parent
 
 
 def main():

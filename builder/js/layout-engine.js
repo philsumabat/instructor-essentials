@@ -185,7 +185,7 @@ function layoutStudentId(zone, ctx, x, y, availW) {
     const roi = {
       id: zone.id,
       key: zone.id,
-      label: zone.label || 'Student ID',
+      label: zone.label || 'ID no.',
       role: 'student_id',
       x: r3(boxX),
       y: r3(boxY),
@@ -241,7 +241,25 @@ function layoutChoices(zone, ctx, x, y, availW) {
   const naturalW = 2 * PAD + columns * blockW + (columns - 1) * minBlockGap;
   const w = targetW ?? naturalW;
   if (w + 0.01 < naturalW) ctx.warn(`Zone "${zone.id}": width ${w}mm is narrower than the ${r3(naturalW)}mm required for ${columns} column(s)`);
-  const blockPitch = columns > 1 ? (w - 2 * PAD - blockW) / (columns - 1) : 0;
+
+  const usable = w - 2 * PAD;
+  let blockPitch = 0;
+  let startColX = x + PAD;
+
+  if (columns > 1) {
+    const rawGap = (usable - columns * blockW) / (columns - 1);
+    const maxAestheticGap = 24;
+    const minAestheticGap = 4;
+    if (rawGap > maxAestheticGap) {
+      // Aesthetic optimization: clamp excessive whitespace and center column group
+      const balancedGap = Math.min(maxAestheticGap, Math.max(minAestheticGap, usable * 0.08));
+      const groupW = columns * blockW + (columns - 1) * balancedGap;
+      startColX = x + PAD + (usable - groupW) / 2;
+      blockPitch = blockW + balancedGap;
+    } else {
+      blockPitch = (usable - blockW) / (columns - 1);
+    }
+  }
 
   const rowHeights = Array.from({ length: rowsPerCol }, (_, r) => {
     const groupBreak = bubble.groupEvery > 0 && (r + 1) % bubble.groupEvery === 0 && r < rowsPerCol - 1;
@@ -251,7 +269,7 @@ function layoutChoices(zone, ctx, x, y, availW) {
   const grids = [];
   const groups = [];
   for (let c = 0; c < columns; c += 1) {
-    const grid = makeGrid(x + PAD + c * blockPitch, y + PAD + titleH, [numberW, ...choices.map(() => bubble.pitchX)], rowHeights);
+    const grid = makeGrid(startColX + c * blockPitch, y + PAD + titleH, [numberW, ...choices.map(() => bubble.pitchX)], rowHeights);
     for (let r = 0; r < rowsPerCol; r += 1) {
       const idx = c * rowsPerCol + r; // column-major numbering, the convention on paper answer sheets
       if (idx >= count) break;
@@ -284,12 +302,28 @@ function layoutModifiedTrueFalse(zone, ctx, x, y, availW) {
   const titleH = zone.label ? TITLE_H : 0;
 
   let columns = zone.columns == null ? 1 : positiveInt(zone.columns, `Zone "${zone.id}" columns`);
-  const targetW = zone.w ?? null;
+  const targetW = zone.w ?? availW;
   const rowsPerCol = Math.ceil(count / columns);
   const minBlockGap = 4;
   const naturalW = 2 * PAD + columns * blockW + (columns - 1) * minBlockGap;
   const w = targetW ?? naturalW;
-  const blockPitch = columns > 1 ? (w - 2 * PAD - blockW) / (columns - 1) : 0;
+
+  const usable = w - 2 * PAD;
+  let blockPitch = 0;
+  let startColX = x + PAD;
+
+  if (columns > 1) {
+    const rawGap = (usable - columns * blockW) / (columns - 1);
+    const maxAestheticGap = 24;
+    if (rawGap > maxAestheticGap) {
+      const balancedGap = Math.min(maxAestheticGap, Math.max(minBlockGap, usable * 0.08));
+      const groupW = columns * blockW + (columns - 1) * balancedGap;
+      startColX = x + PAD + (usable - groupW) / 2;
+      blockPitch = blockW + balancedGap;
+    } else {
+      blockPitch = (usable - blockW) / (columns - 1);
+    }
+  }
 
   const rowH = Math.max(bubble.pitchY, 7);
   const rowHeights = Array(rowsPerCol).fill(rowH);
@@ -299,7 +333,7 @@ function layoutModifiedTrueFalse(zone, ctx, x, y, availW) {
   const rois = [];
 
   for (let c = 0; c < columns; c += 1) {
-    const colX = x + PAD + c * (columns > 1 ? blockPitch : blockW);
+    const colX = startColX + c * blockPitch;
     const grid = makeGrid(colX, y + PAD + titleH, [numberW, bubble.pitchX, bubble.pitchX], rowHeights);
 
     for (let r = 0; r < rowsPerCol; r += 1) {
@@ -457,43 +491,119 @@ function layoutText(zone, ctx, x, y, availW) {
   const innerW = w - 2 * PAD;
   const boxH = zone.boxHeight ?? 8;
   positiveNumber(boxH, `Zone "${zone.id}" boxHeight`);
-  const prompt = String(zone.label ?? '');
-  const points = zone.points ?? 1;
+  const count = positiveInt(zone.count ?? 1, `Zone "${zone.id}" count`);
+  const points = Number(zone.pointsPerItem ?? zone.points ?? 1);
 
-  const isInline = zone.inlineLabel ?? (prompt.length <= 10 || boxH <= 10);
-  let promptH = 0;
-  let boxX = x + PAD;
-  let boxY = y + PAD;
-  let boxW = innerW;
-  let labelW = 0;
+  // Single-item text box (backwards-compatible)
+  if (count <= 1) {
+    const prompt = String(zone.label ?? '');
+    const isInline = zone.inlineLabel ?? (prompt.length <= 10 || boxH <= 10);
+    let promptH = 0;
+    let boxX = x + PAD;
+    let boxY = y + PAD;
+    let boxW = innerW;
+    let labelW = 0;
 
-  if (isInline && prompt) {
-    labelW = zone.labelWidth ?? Math.min(18, Math.max(8, prompt.length * 3.0));
-    boxX = x + PAD + labelW;
-    boxW = innerW - labelW;
-  } else if (prompt) {
-    const promptLines = estimateLines(prompt, typography.label, innerW);
-    promptH = promptLines * typography.label * LINE_HEIGHT;
-    boxY = y + PAD + promptH + 1.2;
+    if (isInline && prompt) {
+      labelW = zone.labelWidth ?? Math.min(18, Math.max(8, prompt.length * 3.0));
+      boxX = x + PAD + labelW;
+      boxW = innerW - labelW;
+    } else if (prompt) {
+      const promptLines = estimateLines(prompt, typography.label, innerW);
+      promptH = promptLines * typography.label * LINE_HEIGHT;
+      boxY = y + PAD + promptH + 1.2;
+    }
+
+    const roi = {
+      id: zone.id,
+      key: zone.key ?? zone.id,
+      label: prompt || zone.id,
+      role: null,
+      x: r3(boxX),
+      y: r3(boxY),
+      w: r3(boxW),
+      h: r3(boxH),
+      charset: CHARSETS.has(zone.charset) ? zone.charset : 'any',
+      multiline: zone.multiline ?? boxH > 15,
+      ocr: true,
+      graded: zone.graded !== false,
+      points,
+    };
+    const h = (isInline ? y + PAD + boxH + PAD : boxY + boxH + PAD) - y;
+    return { bbox: { x, y, w, h }, grids: [], groups: [], rois: [roi], extra: { prompt, points, isInline, labelW, count: 1 } };
   }
 
-  const roi = {
-    id: zone.id,
-    key: zone.key ?? zone.id,
-    label: prompt || zone.id,
-    role: null,
-    x: r3(boxX),
-    y: r3(boxY),
-    w: r3(boxW),
-    h: r3(boxH),
-    charset: CHARSETS.has(zone.charset) ? zone.charset : 'any',
-    multiline: zone.multiline ?? boxH > 15,
-    ocr: true,
-    graded: zone.graded !== false,
-    points,
+  // Multi-item combined module (e.g. 5 or 10 short answer items in 1, 2, or 3 columns)
+  const titleH = zone.label ? TITLE_H : 0;
+  const start = zone.start == null ? ctx.nextQuestion : positiveInt(zone.start, `Zone "${zone.id}" start`);
+  const columns = Math.max(1, zone.columns ? positiveInt(zone.columns, `Zone "${zone.id}" columns`) : 1);
+  const rowsPerCol = Math.ceil(count / columns);
+  const interColGap = 4;
+  const colW = (innerW - (columns - 1) * interColGap) / columns;
+  const rowGap = 3;
+
+  const items = [];
+  const rois = [];
+
+  for (let c = 0; c < columns; c += 1) {
+    const colX = x + PAD + c * (colW + interColGap);
+    for (let r = 0; r < rowsPerCol; r += 1) {
+      const idx = c * rowsPerCol + r;
+      if (idx >= count) break;
+      const q = start + idx;
+      const itemY = y + PAD + titleH + r * (boxH + rowGap);
+      const qLabel = `${q}.`;
+      const labelW = Math.max(7, qLabel.length * 3.2);
+      const itemBoxX = colX + labelW;
+      const itemBoxW = Math.max(12, colW - labelW);
+
+      const roi = {
+        id: `${zone.id}.${q}`,
+        key: String(q),
+        label: qLabel,
+        role: null,
+        x: r3(itemBoxX),
+        y: r3(itemY),
+        w: r3(itemBoxW),
+        h: r3(boxH),
+        charset: CHARSETS.has(zone.charset) ? zone.charset : 'any',
+        multiline: zone.multiline ?? boxH > 15,
+        ocr: true,
+        graded: zone.graded !== false,
+        points,
+      };
+      rois.push(roi);
+      items.push({
+        id: roi.id,
+        q,
+        label: qLabel,
+        labelX: r3(colX),
+        labelY: r3(itemY),
+        labelW: r3(labelW),
+        boxX: r3(itemBoxX),
+        boxY: r3(itemY),
+        boxW: r3(itemBoxW),
+        boxH: r3(boxH),
+      });
+    }
+  }
+
+  ctx.nextQuestion = start + count;
+  const h = 2 * PAD + titleH + rowsPerCol * (boxH + rowGap) - rowGap;
+  return {
+    bbox: { x, y, w, h },
+    grids: [],
+    groups: [],
+    rois,
+    extra: {
+      count,
+      start,
+      columns,
+      boxHeight: boxH,
+      pointsPerItem: points,
+      items,
+    },
   };
-  const h = (isInline ? y + PAD + boxH + PAD : boxY + boxH + PAD) - y;
-  return { bbox: { x, y, w, h }, grids: [], groups: [], rois: [roi], extra: { prompt, points, isInline, labelW } };
 }
 
 const ZONE_LAYOUTS = {
@@ -551,6 +661,8 @@ export function buildLayout(input) {
   const seenZoneIds = new Set();
   const seenKeys = new Map();
   const halfW = r3((content.w - tpl.gap) / 2);
+  let leftColBottom = content.y;
+  let rightColBottom = content.y;
   let rowBottom = content.y;
   let rowTop = content.y;
   let prev = null;
@@ -563,31 +675,53 @@ export function buildLayout(input) {
     if (seenZoneIds.has(raw.id)) throw new TemplateError(`Duplicate zone id "${raw.id}"`);
     seenZoneIds.add(raw.id);
 
-    const isHalfLeft = raw.layout === 'half-left' || raw.side === 'left' || raw.placement === 'left';
-    const isHalfRight = raw.layout === 'half-right' || raw.side === 'right' || raw.placement === 'right';
+    const isFullWidthZone = raw.type === 'fields' || raw.type === 'student_id';
+    let isHalfLeft = !isFullWidthZone && (raw.layout === 'half-left' || raw.side === 'left' || raw.placement === 'left');
+    let isHalfRight = !isFullWidthZone && (raw.layout === 'half-right' || raw.side === 'right' || raw.placement === 'right');
+
+    // Auto-coerce compact modules to side-by-side if placement is not explicitly 'full' and width is not locked
+    const isExplicitFull = raw.layout === 'full' || raw.placement === 'full' || raw.w != null;
+    if (!isFullWidthZone && !isHalfLeft && !isHalfRight && !isExplicitFull) {
+      if (raw.type === 'mcq' || raw.type === 'truefalse') {
+        const count = Number(raw.count || 20);
+        const cols = raw.columns ? Number(raw.columns) : null;
+        if (count <= 12 || (cols && cols <= 2 && count <= 16)) {
+          if (rightColBottom + 0.1 < leftColBottom) {
+            isHalfRight = true;
+          } else {
+            isHalfLeft = true;
+          }
+        }
+      }
+    }
 
     let x, y, availW;
     if (isHalfLeft) {
       x = raw.x ?? content.x;
-      y = raw.y ?? (zones.length > 0 ? rowBottom + tpl.gap : content.y);
+      y = raw.y ?? (leftColBottom > content.y ? leftColBottom + tpl.gap : content.y);
       rowTop = y;
       availW = halfW;
-      if (raw.w == null) raw.w = halfW;
     } else if (isHalfRight) {
       x = raw.x ?? r3(content.x + halfW + tpl.gap);
-      y = raw.y ?? rowTop;
+      if (raw.y != null) {
+        y = raw.y;
+      } else if (rightColBottom + 0.1 < leftColBottom) {
+        y = rightColBottom > content.y ? (rightColBottom <= rowTop ? rowTop : rightColBottom + tpl.gap) : rowTop;
+      } else {
+        y = rightColBottom > content.y ? rightColBottom + tpl.gap : content.y;
+      }
       availW = halfW;
-      if (raw.w == null) raw.w = halfW;
     } else {
-      const isFullWidthZone = raw.type === 'fields' || raw.type === 'student_id';
       const inline = Boolean(!isFullWidthZone && raw.inline && prev);
+      const rowStart = Math.max(leftColBottom, rightColBottom);
       x = raw.x ?? (inline ? prev.bbox.x + prev.bbox.w + tpl.gap : content.x);
-      y = raw.y ?? (inline ? prev.bbox.y : rowBottom + (prev ? tpl.gap : 0));
+      y = raw.y ?? (inline ? prev.bbox.y : (rowStart > content.y ? rowStart + tpl.gap : content.y));
       rowTop = y;
       availW = isFullWidthZone ? content.w : (contentRight - x);
     }
 
-    const res = layoutFn(raw, ctx, x, y, availW);
+    const effectiveRaw = (isHalfLeft || isHalfRight) && raw.w == null ? { ...raw, w: halfW } : raw;
+    const res = layoutFn(effectiveRaw, ctx, x, y, availW);
     const bbox = { x: r3(res.bbox.x), y: r3(res.bbox.y), w: r3(res.bbox.w), h: r3(res.bbox.h) };
 
     for (const g of res.groups) {
@@ -614,7 +748,7 @@ export function buildLayout(input) {
     const zone = {
       id: raw.id,
       type: raw.type,
-      label: isTextType ? '' : String(raw.label ?? ''),
+      label: isTextType && (!raw.count || raw.count <= 1) ? '' : String(raw.label ?? ''),
       bbox,
       grids: res.grids,
       groups: res.groups,
@@ -622,7 +756,15 @@ export function buildLayout(input) {
       ...res.extra,
     };
     zones.push(zone);
-    rowBottom = Math.max(rowBottom, bbox.y + bbox.h);
+    if (isHalfLeft) {
+      leftColBottom = bbox.y + bbox.h;
+    } else if (isHalfRight) {
+      rightColBottom = bbox.y + bbox.h;
+    } else {
+      leftColBottom = bbox.y + bbox.h;
+      rightColBottom = bbox.y + bbox.h;
+    }
+    rowBottom = Math.max(leftColBottom, rightColBottom);
     prev = zone;
   }
 

@@ -56,6 +56,14 @@ def _extract_path(file_obj: str | Path | object | None) -> Path | None:
     if isinstance(file_obj, (str, Path)):
         p = Path(file_obj)
         return p if p.exists() else None
+    if isinstance(file_obj, dict):
+        val = file_obj.get("path") or file_obj.get("name")
+        if val:
+            p = Path(val)
+            return p if p.exists() else None
+    if hasattr(file_obj, "path") and file_obj.path:
+        p = Path(file_obj.path)
+        return p if p.exists() else None
     if hasattr(file_obj, "name") and file_obj.name:
         p = Path(file_obj.name)
         return p if p.exists() else None

@@ -17,7 +17,8 @@ test('checker.html has inlined PRESETS and zero fetch() calls for presets', asyn
   // Verify preset selector options
   assert.ok(checkerHtml.includes('<option value="exam-50">BIO 101 Midterm (50 MCQ, A4)</option>'));
   assert.ok(checkerHtml.includes('<option value="exam-100">CHEM 201 Final Exam (100 MCQ, Letter)</option>'));
-  assert.ok(checkerHtml.includes('<option value="quiz-tf">HIST 110 Quiz (20 T/F & Mod T/F, A4)</option>'));
+  assert.ok(checkerHtml.includes('<option value="quiz-tf">HIST 110 Quiz (20 T/F & Mod T/F, Folio)</option>'));
+  assert.ok(checkerHtml.includes('<option value="quiz-bonus">QUIZ 101 (1-10 MCQ + Bonus Identification, A4)</option>'));
   assert.ok(checkerHtml.includes('<option value="custom">Upload Custom Layout (.json)</option>'));
 
   // Extract <script> block and verify PRESETS dictionary
@@ -53,6 +54,7 @@ test('checker.html has inlined PRESETS and zero fetch() calls for presets', asyn
   assert.ok(PRESETS['exam-50'], 'exam-50 preset must exist');
   assert.ok(PRESETS['exam-100'], 'exam-100 preset must exist');
   assert.ok(PRESETS['quiz-tf'], 'quiz-tf preset must exist');
+  assert.ok(PRESETS['quiz-bonus'], 'quiz-bonus preset must exist');
 
   // Verify exam-50: 50 MCQ questions
   const p50 = PRESETS['exam-50'];
@@ -73,6 +75,13 @@ test('checker.html has inlined PRESETS and zero fetch() calls for presets', asyn
   assert.equal(Object.keys(pTf.layout.markers).length, 4);
   assert.equal(pTf.layout.bubbles.length, 40); // 20 items * 2 options
   assert.equal(Object.keys(pTf.key.items).length, 20);
+
+  // Verify quiz-bonus: 10 items (10 MCQ + 1 identification bonus)
+  const pBonus = PRESETS['quiz-bonus'];
+  assert.equal(pBonus.layout.page.paper, 'A4');
+  assert.equal(Object.keys(pBonus.layout.markers).length, 4);
+  assert.equal(pBonus.layout.bubbles.length, 40); // 10 items * 4 options
+  assert.equal(Object.keys(pBonus.key.items).length, 10);
 });
 
 test('parseLayout handles both modern Sheet Builder layout.json and legacy formats', async () => {
@@ -136,7 +145,7 @@ test('parseLayout handles both modern Sheet Builder layout.json and legacy forma
   assert.equal(parsedKey.items['q61'].kind, 'text');
 });
 
-test('Grading and psychometrics simulation for exam-50, exam-100, and quiz-tf presets', async () => {
+test('Grading and psychometrics simulation for exam-50, exam-100, quiz-tf, and quiz-bonus presets', async () => {
   const checkerHtml = await readFile(resolve(root, 'builder/checker.html'), 'utf8');
   const scriptMatch = checkerHtml.match(/<script>([\s\S]*?)<\/script>/);
   const code = scriptMatch[1];
@@ -162,7 +171,7 @@ test('Grading and psychometrics simulation for exam-50, exam-100, and quiz-tf pr
   const PRESETS = vm.runInContext('PRESETS', sandbox);
   const computePsychometrics = vm.runInContext('computePsychometrics', sandbox);
 
-  for (const presetId of ['exam-50', 'exam-100', 'quiz-tf']) {
+  for (const presetId of ['exam-50', 'exam-100', 'quiz-tf', 'quiz-bonus']) {
     const preset = PRESETS[presetId];
     const key = preset.key;
     const layout = preset.layout;

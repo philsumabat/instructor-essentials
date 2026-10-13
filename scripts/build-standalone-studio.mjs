@@ -175,8 +175,8 @@ ${cleanApp}
   if (standaloneHtml.includes('src="js/')) {
     throw new Error('Verification failed: external script tag still present in standalone HTML.');
   }
-  if (!standaloneHtml.includes('bio101-midterm-50') || !standaloneHtml.includes('chem201-final-100') || !standaloneHtml.includes('hist110-quiz-tf')) {
-    throw new Error('Verification failed: embedded sample templates (exam-50, exam-100, quiz-tf) missing from bundle.');
+  if (!standaloneHtml.includes('bio101-midterm-50') || !standaloneHtml.includes('chem201-final-100') || !standaloneHtml.includes('hist110-quiz-tf') || !standaloneHtml.includes('quiz101-bonus-10')) {
+    throw new Error('Verification failed: embedded sample templates (exam-50, exam-100, quiz-tf, quiz-bonus) missing from bundle.');
   }
 
   const outPath = join(builderDir, 'studio.html');

@@ -10,7 +10,7 @@
   "scripts": {
     "dev": "node scripts/dev-server.mjs",
     "export": "node scripts/export-layout.mjs",
-    "export:all": "node scripts/export-layout.mjs builder/templates/exam-50.json && node scripts/export-layout.mjs builder/templates/exam-100.json && node scripts/export-layout.mjs builder/templates/quiz-tf.json",
+    "export:all": "node scripts/export-layout.mjs builder/templates/exam-50.json && node scripts/export-layout.mjs builder/templates/exam-100.json && node scripts/export-layout.mjs builder/templates/quiz-tf.json && node scripts/export-layout.mjs builder/templates/quiz-bonus.json",
     "build:studio": "node scripts/build-standalone-studio.mjs",
     "build:sheet-builder": "node scripts/build-standalone-studio.mjs",
     "checker:ui": "python3 spaces/exam-checker/app.py",

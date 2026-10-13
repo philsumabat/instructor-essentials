@@ -1,0 +1,1010 @@
+{
+  "schema": "omr-layout/1",
+  "generator": "omr-sheet-builder/1.0.0",
+  "templateId": "quiz101-bonus-10",
+  "title": "QUIZ 101 — 10-Item Quiz + Bonus",
+  "units": "mm",
+  "page": {
+    "paper": "A4",
+    "width": 210,
+    "height": 297
+  },
+  "content": {
+    "x": 12,
+    "y": 20,
+    "w": 186,
+    "h": 257
+  },
+  "fiducial": {
+    "type": "aruco",
+    "dictionary": "DICT_4X4_50",
+    "size": 10,
+    "inset": 7,
+    "quietZone": 2
+  },
+  "fiducials": [
+    {
+      "id": 0,
+      "corner": "tl",
+      "x": 7,
+      "y": 7,
+      "size": 10,
+      "center": [
+        12,
+        12
+      ],
+      "corners": [
+        [
+          7,
+          7
+        ],
+        [
+          17,
+          7
+        ],
+        [
+          17,
+          17
+        ],
+        [
+          7,
+          17
+        ]
+      ]
+    },
+    {
+      "id": 1,
+      "corner": "tr",
+      "x": 193,
+      "y": 7,
+      "size": 10,
+      "center": [
+        198,
+        12
+      ],
+      "corners": [
+        [
+          193,
+          7
+        ],
+        [
+          203,
+          7
+        ],
+        [
+          203,
+          17
+        ],
+        [
+          193,
+          17
+        ]
+      ]
+    },
+    {
+      "id": 2,
+      "corner": "br",
+      "x": 193,
+      "y": 280,
+      "size": 10,
+      "center": [
+        198,
+        285
+      ],
+      "corners": [
+        [
+          193,
+          280
+        ],
+        [
+          203,
+          280
+        ],
+        [
+          203,
+          290
+        ],
+        [
+          193,
+          290
+        ]
+      ]
+    },
+    {
+      "id": 3,
+      "corner": "bl",
+      "x": 7,
+      "y": 280,
+      "size": 10,
+      "center": [
+        12,
+        285
+      ],
+      "corners": [
+        [
+          7,
+          280
+        ],
+        [
+          17,
+          280
+        ],
+        [
+          17,
+          290
+        ],
+        [
+          7,
+          290
+        ]
+      ]
+    }
+  ],
+  "bubble": {
+    "diameter": 4.2,
+    "pitchX": 5.6,
+    "pitchY": 5.4,
+    "groupEvery": 5,
+    "groupGap": 1.6,
+    "stroke": 0.25
+  },
+  "typography": {
+    "title": 4.2,
+    "label": 3,
+    "body": 2.8,
+    "bubble": 2.1,
+    "number": 2.6,
+    "small": 2.2
+  },
+  "header": {
+    "title": {
+      "x": 105,
+      "y": 12,
+      "maxWidth": 168
+    },
+    "footer": {
+      "text": "Use a dark pencil or black pen. Fill each bubble completely. Do not fold or staple this sheet. · quiz101-bonus-10",
+      "x": 105,
+      "y": 285,
+      "maxWidth": 168
+    }
+  },
+  "zones": [
+    {
+      "id": "info",
+      "type": "fields",
+      "label": "",
+      "bbox": {
+        "x": 12,
+        "y": 20,
+        "w": 186,
+        "h": 22
+      },
+      "grids": [],
+      "groups": [],
+      "rois": [
+        {
+          "id": "info.name",
+          "key": "name",
+          "label": "Student Name",
+          "role": "name",
+          "x": 32.5,
+          "y": 22.5,
+          "w": 90,
+          "h": 7.5,
+          "charset": "any",
+          "multiline": false,
+          "ocr": true,
+          "graded": false,
+          "points": 0,
+          "digits": 0
+        },
+        {
+          "id": "info.sid",
+          "key": "sid",
+          "label": "Student ID",
+          "role": "student_id",
+          "x": 143.5,
+          "y": 22.5,
+          "w": 57,
+          "h": 7.5,
+          "charset": "digits",
+          "multiline": false,
+          "ocr": true,
+          "graded": false,
+          "points": 0,
+          "digits": 8
+        },
+        {
+          "id": "info.section",
+          "key": "section",
+          "label": "Offer No. & Class Sched",
+          "role": null,
+          "x": 32.5,
+          "y": 32,
+          "w": 78,
+          "h": 7.5,
+          "charset": "any",
+          "multiline": false,
+          "ocr": true,
+          "graded": false,
+          "points": 0,
+          "digits": 0
+        },
+        {
+          "id": "info.date",
+          "key": "date",
+          "label": "Date",
+          "role": null,
+          "x": 124.7,
+          "y": 32,
+          "w": 34.8,
+          "h": 7.5,
+          "charset": "any",
+          "multiline": false,
+          "ocr": true,
+          "graded": false,
+          "points": 0,
+          "digits": 0
+        },
+        {
+          "id": "info.score",
+          "key": "score",
+          "label": "Score",
+          "role": "score",
+          "x": 176.5,
+          "y": 32,
+          "w": 27,
+          "h": 7.5,
+          "charset": "any",
+          "multiline": false,
+          "ocr": false,
+          "graded": false,
+          "points": 0,
+          "digits": 0
+        }
+      ],
+      "rows": [
+        {
+          "label": "Student Name",
+          "x": 14.5,
+          "y": 22.5,
+          "labelW": 18,
+          "h": 7.5,
+          "digits": 0
+        },
+        {
+          "label": "Student ID",
+          "x": 125.5,
+          "y": 22.5,
+          "labelW": 18,
+          "h": 7.5,
+          "digits": 8
+        },
+        {
+          "label": "Offer No. & Class Sched",
+          "x": 14.5,
+          "y": 32,
+          "labelW": 18,
+          "h": 7.5,
+          "digits": 0
+        },
+        {
+          "label": "Date",
+          "x": 113.5,
+          "y": 32,
+          "labelW": 11.2,
+          "h": 7.5,
+          "digits": 0
+        },
+        {
+          "label": "Score",
+          "x": 162.5,
+          "y": 32,
+          "labelW": 14,
+          "h": 7.5,
+          "digits": 0
+        }
+      ],
+      "fieldH": 7.5
+    },
+    {
+      "id": "notes",
+      "type": "instructions",
+      "label": "",
+      "bbox": {
+        "x": 12,
+        "y": 46,
+        "w": 186,
+        "h": 8.76
+      },
+      "grids": [],
+      "groups": [],
+      "rois": [],
+      "text": "Part I (Items 1–10): Fill each bubble completely with a dark pencil or pen.\nPart II (Bonus): Print your identification answer clearly in block capital letters inside the answer box.",
+      "fontSize": 2.6,
+      "lines": 2
+    },
+    {
+      "id": "part1",
+      "type": "mcq",
+      "label": "Part I — Multiple Choice (1–10)",
+      "bbox": {
+        "x": 12,
+        "y": 58.76,
+        "w": 186,
+        "h": 37
+      },
+      "grids": [
+        {
+          "x": 14.5,
+          "y": 66.26,
+          "columns": [
+            7,
+            5.6,
+            5.6,
+            5.6,
+            5.6
+          ],
+          "rows": [
+            5.4,
+            5.4,
+            5.4,
+            5.4,
+            5.4
+          ],
+          "cells": [
+            {
+              "row": 0,
+              "col": 0,
+              "kind": "num",
+              "text": "1"
+            },
+            {
+              "row": 0,
+              "col": 1,
+              "kind": "bubble",
+              "text": "A"
+            },
+            {
+              "row": 0,
+              "col": 2,
+              "kind": "bubble",
+              "text": "B"
+            },
+            {
+              "row": 0,
+              "col": 3,
+              "kind": "bubble",
+              "text": "C"
+            },
+            {
+              "row": 0,
+              "col": 4,
+              "kind": "bubble",
+              "text": "D"
+            },
+            {
+              "row": 1,
+              "col": 0,
+              "kind": "num",
+              "text": "2"
+            },
+            {
+              "row": 1,
+              "col": 1,
+              "kind": "bubble",
+              "text": "A"
+            },
+            {
+              "row": 1,
+              "col": 2,
+              "kind": "bubble",
+              "text": "B"
+            },
+            {
+              "row": 1,
+              "col": 3,
+              "kind": "bubble",
+              "text": "C"
+            },
+            {
+              "row": 1,
+              "col": 4,
+              "kind": "bubble",
+              "text": "D"
+            },
+            {
+              "row": 2,
+              "col": 0,
+              "kind": "num",
+              "text": "3"
+            },
+            {
+              "row": 2,
+              "col": 1,
+              "kind": "bubble",
+              "text": "A"
+            },
+            {
+              "row": 2,
+              "col": 2,
+              "kind": "bubble",
+              "text": "B"
+            },
+            {
+              "row": 2,
+              "col": 3,
+              "kind": "bubble",
+              "text": "C"
+            },
+            {
+              "row": 2,
+              "col": 4,
+              "kind": "bubble",
+              "text": "D"
+            },
+            {
+              "row": 3,
+              "col": 0,
+              "kind": "num",
+              "text": "4"
+            },
+            {
+              "row": 3,
+              "col": 1,
+              "kind": "bubble",
+              "text": "A"
+            },
+            {
+              "row": 3,
+              "col": 2,
+              "kind": "bubble",
+              "text": "B"
+            },
+            {
+              "row": 3,
+              "col": 3,
+              "kind": "bubble",
+              "text": "C"
+            },
+            {
+              "row": 3,
+              "col": 4,
+              "kind": "bubble",
+              "text": "D"
+            },
+            {
+              "row": 4,
+              "col": 0,
+              "kind": "num",
+              "text": "5"
+            },
+            {
+              "row": 4,
+              "col": 1,
+              "kind": "bubble",
+              "text": "A"
+            },
+            {
+              "row": 4,
+              "col": 2,
+              "kind": "bubble",
+              "text": "B"
+            },
+            {
+              "row": 4,
+              "col": 3,
+              "kind": "bubble",
+              "text": "C"
+            },
+            {
+              "row": 4,
+              "col": 4,
+              "kind": "bubble",
+              "text": "D"
+            }
+          ]
+        },
+        {
+          "x": 166.1,
+          "y": 66.26,
+          "columns": [
+            7,
+            5.6,
+            5.6,
+            5.6,
+            5.6
+          ],
+          "rows": [
+            5.4,
+            5.4,
+            5.4,
+            5.4,
+            5.4
+          ],
+          "cells": [
+            {
+              "row": 0,
+              "col": 0,
+              "kind": "num",
+              "text": "6"
+            },
+            {
+              "row": 0,
+              "col": 1,
+              "kind": "bubble",
+              "text": "A"
+            },
+            {
+              "row": 0,
+              "col": 2,
+              "kind": "bubble",
+              "text": "B"
+            },
+            {
+              "row": 0,
+              "col": 3,
+              "kind": "bubble",
+              "text": "C"
+            },
+            {
+              "row": 0,
+              "col": 4,
+              "kind": "bubble",
+              "text": "D"
+            },
+            {
+              "row": 1,
+              "col": 0,
+              "kind": "num",
+              "text": "7"
+            },
+            {
+              "row": 1,
+              "col": 1,
+              "kind": "bubble",
+              "text": "A"
+            },
+            {
+              "row": 1,
+              "col": 2,
+              "kind": "bubble",
+              "text": "B"
+            },
+            {
+              "row": 1,
+              "col": 3,
+              "kind": "bubble",
+              "text": "C"
+            },
+            {
+              "row": 1,
+              "col": 4,
+              "kind": "bubble",
+              "text": "D"
+            },
+            {
+              "row": 2,
+              "col": 0,
+              "kind": "num",
+              "text": "8"
+            },
+            {
+              "row": 2,
+              "col": 1,
+              "kind": "bubble",
+              "text": "A"
+            },
+            {
+              "row": 2,
+              "col": 2,
+              "kind": "bubble",
+              "text": "B"
+            },
+            {
+              "row": 2,
+              "col": 3,
+              "kind": "bubble",
+              "text": "C"
+            },
+            {
+              "row": 2,
+              "col": 4,
+              "kind": "bubble",
+              "text": "D"
+            },
+            {
+              "row": 3,
+              "col": 0,
+              "kind": "num",
+              "text": "9"
+            },
+            {
+              "row": 3,
+              "col": 1,
+              "kind": "bubble",
+              "text": "A"
+            },
+            {
+              "row": 3,
+              "col": 2,
+              "kind": "bubble",
+              "text": "B"
+            },
+            {
+              "row": 3,
+              "col": 3,
+              "kind": "bubble",
+              "text": "C"
+            },
+            {
+              "row": 3,
+              "col": 4,
+              "kind": "bubble",
+              "text": "D"
+            },
+            {
+              "row": 4,
+              "col": 0,
+              "kind": "num",
+              "text": "10"
+            },
+            {
+              "row": 4,
+              "col": 1,
+              "kind": "bubble",
+              "text": "A"
+            },
+            {
+              "row": 4,
+              "col": 2,
+              "kind": "bubble",
+              "text": "B"
+            },
+            {
+              "row": 4,
+              "col": 3,
+              "kind": "bubble",
+              "text": "C"
+            },
+            {
+              "row": 4,
+              "col": 4,
+              "kind": "bubble",
+              "text": "D"
+            }
+          ]
+        }
+      ],
+      "groups": [
+        {
+          "key": "1",
+          "kind": "mcq",
+          "label": "1",
+          "options": [
+            {
+              "value": "A",
+              "cx": 24.3,
+              "cy": 68.96
+            },
+            {
+              "value": "B",
+              "cx": 29.9,
+              "cy": 68.96
+            },
+            {
+              "value": "C",
+              "cx": 35.5,
+              "cy": 68.96
+            },
+            {
+              "value": "D",
+              "cx": 41.1,
+              "cy": 68.96
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "2",
+          "kind": "mcq",
+          "label": "2",
+          "options": [
+            {
+              "value": "A",
+              "cx": 24.3,
+              "cy": 74.36
+            },
+            {
+              "value": "B",
+              "cx": 29.9,
+              "cy": 74.36
+            },
+            {
+              "value": "C",
+              "cx": 35.5,
+              "cy": 74.36
+            },
+            {
+              "value": "D",
+              "cx": 41.1,
+              "cy": 74.36
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "3",
+          "kind": "mcq",
+          "label": "3",
+          "options": [
+            {
+              "value": "A",
+              "cx": 24.3,
+              "cy": 79.76
+            },
+            {
+              "value": "B",
+              "cx": 29.9,
+              "cy": 79.76
+            },
+            {
+              "value": "C",
+              "cx": 35.5,
+              "cy": 79.76
+            },
+            {
+              "value": "D",
+              "cx": 41.1,
+              "cy": 79.76
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "4",
+          "kind": "mcq",
+          "label": "4",
+          "options": [
+            {
+              "value": "A",
+              "cx": 24.3,
+              "cy": 85.16
+            },
+            {
+              "value": "B",
+              "cx": 29.9,
+              "cy": 85.16
+            },
+            {
+              "value": "C",
+              "cx": 35.5,
+              "cy": 85.16
+            },
+            {
+              "value": "D",
+              "cx": 41.1,
+              "cy": 85.16
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "5",
+          "kind": "mcq",
+          "label": "5",
+          "options": [
+            {
+              "value": "A",
+              "cx": 24.3,
+              "cy": 90.56
+            },
+            {
+              "value": "B",
+              "cx": 29.9,
+              "cy": 90.56
+            },
+            {
+              "value": "C",
+              "cx": 35.5,
+              "cy": 90.56
+            },
+            {
+              "value": "D",
+              "cx": 41.1,
+              "cy": 90.56
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "6",
+          "kind": "mcq",
+          "label": "6",
+          "options": [
+            {
+              "value": "A",
+              "cx": 175.9,
+              "cy": 68.96
+            },
+            {
+              "value": "B",
+              "cx": 181.5,
+              "cy": 68.96
+            },
+            {
+              "value": "C",
+              "cx": 187.1,
+              "cy": 68.96
+            },
+            {
+              "value": "D",
+              "cx": 192.7,
+              "cy": 68.96
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "7",
+          "kind": "mcq",
+          "label": "7",
+          "options": [
+            {
+              "value": "A",
+              "cx": 175.9,
+              "cy": 74.36
+            },
+            {
+              "value": "B",
+              "cx": 181.5,
+              "cy": 74.36
+            },
+            {
+              "value": "C",
+              "cx": 187.1,
+              "cy": 74.36
+            },
+            {
+              "value": "D",
+              "cx": 192.7,
+              "cy": 74.36
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "8",
+          "kind": "mcq",
+          "label": "8",
+          "options": [
+            {
+              "value": "A",
+              "cx": 175.9,
+              "cy": 79.76
+            },
+            {
+              "value": "B",
+              "cx": 181.5,
+              "cy": 79.76
+            },
+            {
+              "value": "C",
+              "cx": 187.1,
+              "cy": 79.76
+            },
+            {
+              "value": "D",
+              "cx": 192.7,
+              "cy": 79.76
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "9",
+          "kind": "mcq",
+          "label": "9",
+          "options": [
+            {
+              "value": "A",
+              "cx": 175.9,
+              "cy": 85.16
+            },
+            {
+              "value": "B",
+              "cx": 181.5,
+              "cy": 85.16
+            },
+            {
+              "value": "C",
+              "cx": 187.1,
+              "cy": 85.16
+            },
+            {
+              "value": "D",
+              "cx": 192.7,
+              "cy": 85.16
+            }
+          ],
+          "points": 1
+        },
+        {
+          "key": "10",
+          "kind": "mcq",
+          "label": "10",
+          "options": [
+            {
+              "value": "A",
+              "cx": 175.9,
+              "cy": 90.56
+            },
+            {
+              "value": "B",
+              "cx": 181.5,
+              "cy": 90.56
+            },
+            {
+              "value": "C",
+              "cx": 187.1,
+              "cy": 90.56
+            },
+            {
+              "value": "D",
+              "cx": 192.7,
+              "cy": 90.56
+            }
+          ],
+          "points": 1
+        }
+      ],
+      "rois": [],
+      "choices": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ],
+      "start": 1,
+      "count": 10,
+      "columns": 2,
+      "pointsPerItem": 1
+    },
+    {
+      "id": "bonus",
+      "type": "text",
+      "label": "",
+      "bbox": {
+        "x": 12,
+        "y": 99.76,
+        "w": 186,
+        "h": 28.1
+      },
+      "grids": [],
+      "groups": [],
+      "rois": [
+        {
+          "id": "bonus",
+          "key": "bonus",
+          "label": "Part II — Bonus Identification Question (5 pts)",
+          "role": null,
+          "x": 14.5,
+          "y": 107.36,
+          "w": 181,
+          "h": 18,
+          "charset": "alpha",
+          "multiline": true,
+          "ocr": true,
+          "graded": true,
+          "points": 5
+        }
+      ],
+      "prompt": "Part II — Bonus Identification Question (5 pts)",
+      "points": 5,
+      "isInline": false,
+      "labelW": 0
+    }
+  ],
+  "warnings": []
+}

@@ -1,0 +1,48 @@
+{
+  "id": "quiz101-bonus-10",
+  "title": "QUIZ 101 — 10-Item Quiz + Bonus",
+  "paper": "A4",
+  "bubble": { "diameter": 4.2, "pitchX": 5.6, "pitchY": 5.4 },
+  "zones": [
+    {
+      "type": "fields",
+      "id": "info",
+      "label": "",
+      "w": 186,
+      "fieldHeight": 7.5,
+      "fields": [
+        { "id": "name", "label": "Student Name", "role": "name", "row": 0, "w": 108 },
+        { "id": "sid", "label": "Student ID", "role": "student_id", "digits": 8, "row": 0, "w": 75 },
+        { "id": "section", "label": "Offer No. & Class Sched", "row": 1, "w": 96 },
+        { "id": "date", "label": "Date", "row": 1, "w": 46 },
+        { "id": "score", "label": "Score", "role": "score", "row": 1, "w": 41 }
+      ]
+    },
+    {
+      "type": "instructions",
+      "id": "notes",
+      "w": 186,
+      "fontSize": 2.6,
+      "text": "Part I (Items 1–10): Fill each bubble completely with a dark pencil or pen.\nPart II (Bonus): Print your identification answer clearly in block capital letters inside the answer box."
+    },
+    {
+      "type": "mcq",
+      "id": "part1",
+      "label": "Part I — Multiple Choice (1–10)",
+      "count": 10,
+      "choices": "ABCD",
+      "columns": 2,
+      "pointsPerItem": 1,
+      "w": 186
+    },
+    {
+      "type": "text",
+      "id": "bonus",
+      "label": "Part II — Bonus Identification Question (5 pts)",
+      "w": 186,
+      "boxHeight": 18,
+      "points": 5,
+      "charset": "alpha"
+    }
+  ]
+}

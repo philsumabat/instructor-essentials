@@ -23,6 +23,8 @@ test('standalone studio.html is 100% self-contained with valid IIFE closures and
   assert.ok(html.includes('bio101-midterm-50'), 'exam-50 template must be inlined');
   assert.ok(html.includes('chem201-final-100'), 'exam-100 template must be inlined');
   assert.ok(html.includes('hist110-quiz-tf'), 'quiz-tf template must be inlined');
+  assert.ok(html.includes('quiz101-bonus-10'), 'quiz-bonus template must be inlined');
+  assert.ok(html.includes('<option value="quiz-bonus">QUIZ 101 (1-10 MCQ + Bonus Identification, A4)</option>'), 'Synchronized quiz-bonus preset option present');
 
   // 4. Inlined styles present
   assert.ok(html.includes('.omr-sheet'), 'sheet.css must be inlined');

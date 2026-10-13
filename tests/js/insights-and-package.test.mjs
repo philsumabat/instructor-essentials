@@ -12,11 +12,10 @@ test('Sheet Builder: Exam Package ZIP export & streamlined toolbar', async () =>
   const studioHtml = await readFile(resolve(root, 'builder/studio.html'), 'utf8');
   const appJs = await readFile(resolve(root, 'builder/js/app.js'), 'utf8');
 
-  // Verify header has removed generator & answer key buttons, keeping UI clean
-  assert.ok(!indexHtml.includes('id="btn-generator"'), 'btn-generator removed from index.html header');
+  // Verify header has Generate button and package export, with answer key centralized in Checker Studio
+  assert.ok(indexHtml.includes('id="btn-generator"'), 'btn-generator present in index.html header');
+  assert.ok(indexHtml.includes('<span>Generate</span>'), 'btn-generator labeled Generate in index.html');
   assert.ok(!indexHtml.includes('id="btn-dl-key"'), 'btn-dl-key removed from index.html header');
-  assert.ok(!studioHtml.includes('id="btn-generator"'), 'btn-generator removed from studio.html');
-  assert.ok(!studioHtml.includes('id="btn-dl-key"'), 'btn-dl-key removed from studio.html');
 
   // Verify export package button is present
   assert.ok(indexHtml.includes('id="dl-package"'), 'dl-package button present in index.html');

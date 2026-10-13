@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "grader"
+name = "instructor-essentials"
 version = "1.0.0"
 description = "Optical Mark Recognition and document processing pipeline"
 readme = "README.md"

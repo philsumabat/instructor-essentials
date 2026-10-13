@@ -585,7 +585,9 @@ function renderInspector() {
   if (!zone) {
     els.inspectorContent.innerHTML = `
       <div class="empty-inspector">
-        <div class="empty-inspector__icon">👆</div>
+        <div class="empty-inspector__icon" aria-hidden="true">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/><path d="M13 13l6 6"/></svg>
+        </div>
         <h3 class="empty-inspector__title">No Block Selected</h3>
         <p class="empty-inspector__desc">Click on any section of the exam sheet or choose a block from the <strong>Outline</strong> tab to customize its properties in the Sheet Builder inspector.</p>
       </div>
@@ -597,16 +599,16 @@ function renderInspector() {
   const totalZones = state.template.zones.length;
 
   let formHtml = '';
-  const typeIcons = {
-    student_id: '🪪',
-    fields: '📝',
-    mcq: '🔘',
-    truefalse: '⚖️',
-    modified_tf: '📝',
-    text: '✍️',
-    text_short: '✏️',
-    text_essay: '📄',
-    instructions: 'ℹ️',
+  const ZONE_SVGS = {
+    student_id: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+    fields: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+    mcq: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4" fill="currentColor"/></svg>',
+    truefalse: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>',
+    modified_tf: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>',
+    text: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
+    text_short: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>',
+    text_essay: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
+    instructions: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>',
   };
   const typeNames = {
     student_id: 'Student ID',
@@ -623,17 +625,17 @@ function renderInspector() {
   formHtml += `
     <div class="inspector-header">
       <div class="inspector-header__info">
-        <span class="inspector-header__icon">${typeIcons[zone.type] || '📦'}</span>
+        <span class="inspector-header__icon" aria-hidden="true">${ZONE_SVGS[zone.type] || '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>'}</span>
         <div>
           <h3 class="inspector-header__title">${zone.label || typeNames[zone.type]}</h3>
           <span class="inspector-header__type">${typeNames[zone.type]}</span>
         </div>
       </div>
       <div class="zone-quick-actions">
-        <button type="button" class="btn-zone-action" id="insp-btn-up" title="Move Up" ${idx === 0 ? 'disabled' : ''}>▲</button>
-        <button type="button" class="btn-zone-action" id="insp-btn-down" title="Move Down" ${idx === totalZones - 1 ? 'disabled' : ''}>▼</button>
-        <button type="button" class="btn-zone-action" id="insp-btn-dup" title="Duplicate">⧉</button>
-        <button type="button" class="btn-zone-action is-danger" id="insp-btn-del" title="Delete">🗑</button>
+        <button type="button" class="btn-zone-action" id="insp-btn-up" title="Move Up" ${idx === 0 ? 'disabled' : ''}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m18 15-6-6-6 6"/></svg></button>
+        <button type="button" class="btn-zone-action" id="insp-btn-down" title="Move Down" ${idx === totalZones - 1 ? 'disabled' : ''}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg></button>
+        <button type="button" class="btn-zone-action" id="insp-btn-dup" title="Duplicate"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="13" height="13" x="9" y="9" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
+        <button type="button" class="btn-zone-action is-danger" id="insp-btn-del" title="Delete"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
       </div>
     </div>
   `;
@@ -802,8 +804,8 @@ function renderInspector() {
       <div class="form-group">
         <label class="form-label">Recognition Mode</label>
         <div class="pills-group" id="insp-sid-mode">
-          <button type="button" class="pill-btn ${isShading ? 'is-active' : ''}" data-mode="shading">🔘 Bubble Grid (OMR)</button>
-          <button type="button" class="pill-btn ${!isShading ? 'is-active' : ''}" data-mode="ocr">✍️ Handwritten Digits (OCR)</button>
+          <button type="button" class="pill-btn ${isShading ? 'is-active' : ''}" data-mode="shading">Bubble Grid (OMR)</button>
+          <button type="button" class="pill-btn ${!isShading ? 'is-active' : ''}" data-mode="ocr">Handwritten Digits (OCR)</button>
         </div>
       </div>
     `;
@@ -1178,16 +1180,16 @@ function bindInspectorEvents(zone) {
 // ---- Outline List Rendering ----
 function renderOutline() {
   const zones = state.template?.zones || [];
-  const typeIcons = {
-    student_id: '🪪',
-    fields: '📝',
-    mcq: '🔘',
-    truefalse: '⚖️',
-    modified_tf: '📝',
-    text: '✍️',
-    text_short: '✏️',
-    text_essay: '📄',
-    instructions: 'ℹ️',
+  const ZONE_SVGS = {
+    student_id: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+    fields: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+    mcq: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4" fill="currentColor"/></svg>',
+    truefalse: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>',
+    modified_tf: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>',
+    text: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
+    text_short: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>',
+    text_essay: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
+    instructions: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>',
   };
   const typeNames = {
     student_id: 'Student ID',
@@ -1208,15 +1210,15 @@ function renderOutline() {
       return `
         <div class="outline-item ${isSel ? 'is-selected' : ''}" data-index="${i}" draggable="true">
           <span class="outline-item__grip" title="Drag to reorder">⠿</span>
-          <span style="font-size: 1.1rem;">${typeIcons[z.type] || '📦'}</span>
+          <span class="outline-item__icon" aria-hidden="true">${ZONE_SVGS[z.type] || '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>'}</span>
           <div class="outline-item__info">
             <div class="outline-item__title">${z.label || typeNames[z.type]}</div>
             <div class="outline-item__meta">${typeNames[z.type]}${countMeta ? ` · ${countMeta}` : ''}</div>
           </div>
           <div class="outline-item__actions">
-            <button type="button" class="btn-mini-arrow btn-outline-up" data-index="${i}" title="Move Up" ${i === 0 ? 'disabled' : ''}>▲</button>
-            <button type="button" class="btn-mini-arrow btn-outline-down" data-index="${i}" title="Move Down" ${i === zones.length - 1 ? 'disabled' : ''}>▼</button>
-            <button type="button" class="btn-mini-trash btn-outline-del" data-index="${i}" title="Delete">🗑</button>
+            <button type="button" class="btn-mini-arrow btn-outline-up" data-index="${i}" title="Move Up" ${i === 0 ? 'disabled' : ''}><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m18 15-6-6-6 6"/></svg></button>
+            <button type="button" class="btn-mini-arrow btn-outline-down" data-index="${i}" title="Move Down" ${i === zones.length - 1 ? 'disabled' : ''}><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg></button>
+            <button type="button" class="btn-mini-trash btn-outline-del" data-index="${i}" title="Delete"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
           </div>
         </div>
       `;

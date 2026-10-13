@@ -65,7 +65,7 @@
       <!-- Quick Exam Generator -->
       <button type="button" id="btn-generator" class="btn btn--secondary" title="Quickly generate a custom exam sheet layout">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-        <span>⚡ Generator</span>
+        <span>Generator</span>
       </button>
 
       <!-- Save & Load Exam Builds -->
@@ -89,7 +89,7 @@
       <!-- Switch to Checker Studio -->
       <a href="checker.html" class="btn btn--secondary" title="Open In-Browser Exam Checker">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-        <span>🔍 Checker</span>
+        <span>Checker Studio</span>
       </a>
 
       <!-- Download Answer Key Button -->
@@ -179,7 +179,9 @@
         <div class="palette-grid">
           <!-- Student Info Card (with integrated Student ID digit boxes) -->
           <div class="palette-card" draggable="true" data-type="fields">
-            <div class="palette-card__icon">📝</div>
+            <div class="palette-card__icon" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
             <div class="palette-card__body">
               <h3 class="palette-card__title">Student Info &amp; ID</h3>
               <p class="palette-card__desc">Name, Student ID digit boxes, Score box, Date &amp; Section</p>
@@ -189,7 +191,9 @@
 
           <!-- Multiple Choice Card -->
           <div class="palette-card" draggable="true" data-type="mcq">
-            <div class="palette-card__icon">🔘</div>
+            <div class="palette-card__icon" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4" fill="currentColor"/></svg>
+            </div>
             <div class="palette-card__body">
               <h3 class="palette-card__title">Multiple Choice (MCQ)</h3>
               <p class="palette-card__desc">A–D / A–E bubble questions in 1 to 5 columns</p>
@@ -199,7 +203,9 @@
 
           <!-- Simple True / False Card -->
           <div class="palette-card" draggable="true" data-type="truefalse">
-            <div class="palette-card__icon">⚖️</div>
+            <div class="palette-card__icon" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
+            </div>
             <div class="palette-card__body">
               <h3 class="palette-card__title">Simple True / False</h3>
               <p class="palette-card__desc">Standard T / F choice bubbles</p>
@@ -209,7 +215,9 @@
 
           <!-- Modified True / False Card -->
           <div class="palette-card" draggable="true" data-type="modified_tf">
-            <div class="palette-card__icon">📝</div>
+            <div class="palette-card__icon" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </div>
             <div class="palette-card__body">
               <h3 class="palette-card__title">Modified True / False</h3>
               <p class="palette-card__desc">T / F bubbles + write-in box to correct if false</p>
@@ -219,7 +227,9 @@
 
           <!-- Short Answer Card -->
           <div class="palette-card" draggable="true" data-type="text_short">
-            <div class="palette-card__icon">✏️</div>
+            <div class="palette-card__icon" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
+            </div>
             <div class="palette-card__body">
               <h3 class="palette-card__title">Short Answer</h3>
               <p class="palette-card__desc">Compact single-term / definition write-in box</p>
@@ -229,7 +239,9 @@
 
           <!-- Essay / Long Answer Card -->
           <div class="palette-card" draggable="true" data-type="text_essay">
-            <div class="palette-card__icon">📄</div>
+            <div class="palette-card__icon" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            </div>
             <div class="palette-card__body">
               <h3 class="palette-card__title">Essay / Long Answer</h3>
               <p class="palette-card__desc">Multi-line extended explanation / proof box</p>
@@ -239,7 +251,9 @@
 
           <!-- Instructions Card -->
           <div class="palette-card" draggable="true" data-type="instructions">
-            <div class="palette-card__icon">ℹ️</div>
+            <div class="palette-card__icon" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            </div>
             <div class="palette-card__body">
               <h3 class="palette-card__title">Instructions &amp; Notes</h3>
               <p class="palette-card__desc">Guidelines banner for student directions</p>
@@ -254,7 +268,9 @@
         <div id="inspector-content" class="inspector-form">
           <!-- Populated dynamically by app.js based on selected zone -->
           <div class="empty-inspector">
-            <div class="empty-inspector__icon">👆</div>
+            <div class="empty-inspector__icon" aria-hidden="true">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/><path d="M13 13l6 6"/></svg>
+            </div>
             <h3 class="empty-inspector__title">No Block Selected</h3>
             <p class="empty-inspector__desc">Click on any section of the exam sheet or choose a block from the <strong>Outline</strong> tab to customize its properties.</p>
           </div>

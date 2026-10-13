@@ -1,18 +1,17 @@
-# Engineering Decisions & AI Handoff Specification (`grader`)
+# Engineering Decisions & Architecture Specification (`grader`)
 
-> **Project Name**: `grader`  
+> **Project Name**: `grader` (Instructor Essentials)  
 > **Last Updated**: October 2026  
-> **Intended Audience**: Software Engineers, Computer Vision Researchers, and Future AI Pair Programmers (Gemini, Claude, GPT, or custom autonomous agent teams).
+> **Intended Audience**: Software Engineers, Computer Vision Researchers, and Autonomous AI Pair Programmers.  
+> **Canonical Status**: This is the **single, authoritative decisions document** for the repository.
 
 ---
 
-## 1. Executive Summary & Purpose
+## 1. Executive Summary & Two-Pillar Philosophy
 
-`grader` is an end-to-end, millimeter-accurate Optical Mark Recognition (OMR) and document processing pipeline operating on standard camera photos and flatbed scanner images (JPEG, PNG). 
+`grader` is an end-to-end, zero-cost, millimeter-accurate Optical Mark Recognition (OMR) and document assessment system operating on standard camera photos and flatbed scanner images (JPEG, PNG).
 
-The system solves traditional OMR friction (proprietary scanner hardware, pre-printed lithographic sheets, and fragile pixel-coordinate assumptions) by dividing functionality into two robust pillars:
-1. **`sheet-builder`**: A browser-based visual exam sheet designer, layout engine, and zero-CORS standalone HTML editor generating mathematically exact vector (SVG) and printable (HTML/CSS Grid `@media print`) forms anchored by ArUco fiducials.
-2. **`checker`**: A computer vision OMR grading pipeline, OCR engine, psychometrics analyzer, CLI runner, and cloud web app (Hugging Face Spaces) that rectifies scans regardless of phone angle, rotation skew, or flatbed feeder distortion using homography.
+The system eliminates traditional OMR friction (expensive proprietary hardware, pre-printed lithographic forms, and brittle pixel-coordinate models) by partitioning responsibilities into two robust pillars:
 
 ```mermaid
 flowchart TD
@@ -20,44 +19,74 @@ flowchart TD
         direction TB
         DESIGN["Visual Studio Designer<br/>(builder/studio.html)"] --> ENG["Isomorphic Layout Engine<br/>(builder/js/layout-engine.js)"]
         ENG --> CONTRACT["Coordinate Contract<br/>(layout.json)"]
-        ENG --> PRINT_OUT["Printable Form Sheets<br/>(DOM / SVG)"]
+        ENG --> PRINT_DOM["Printable DOM Sheets<br/>(CSS Grid + @media print)"]
+        ENG --> PRINT_SVG["True-Scale Vector Sheet<br/>(sheet.svg)"]
     end
 
-    PRINT_OUT --> PAPER["Printed Paper Exams<br/>(with ArUco markers)"]
+    PRINT_DOM --> PAPER["Printed Paper Exams<br/>(with ArUco markers)"]
+    PRINT_SVG --> PAPER
     PAPER --> CAPTURE["Captured Scans<br/>(JPEG / PNG)"]
 
     subgraph CHK["Pillar 2: checker"]
         direction TB
-        CAPTURE --> RECT["Perspective Rectification<br/>(omr/vision.py)"]
-        CONTRACT --> RECT
-        RECT --> BUBBLE["Bubble Density Scanning<br/>(Inner Core Sampling)"]
-        RECT --> OCR_ID["Partitioned Digit OCR<br/>(omr/ocr.py)"]
+        CAPTURE --> WARP["Perspective Homography<br/>(omr/vision.py & checker.html)"]
+        CONTRACT --> WARP
+        WARP --> BUBBLE["Adaptive Bubble Density<br/>(Inner-Core Sampling)"]
+        WARP --> OCR_ID["Partitioned Digit OCR<br/>(omr/ocr.py)"]
         ROSTER_CSV["Roster CSV"] --> ROSTER_MATCH["Fault-Tolerant Matcher<br/>(omr/roster.py)"]
         OCR_ID --> ROSTER_MATCH
-        ANSWER_KEY["Answer Key JSON"] --> EVAL["Grading Evaluator<br/>(omr/grading.py)"]
+        ANSWER_KEY["Answer Key JSON"] --> EVAL["Grading Evaluator<br/>(omr/grading.py & checker.html)"]
         BUBBLE --> EVAL
         ROSTER_MATCH --> EVAL
-        EVAL --> RESULTS["Deliverables: Overlays,<br/>Summary JSON & HTML Psychometrics"]
+        EVAL --> EXPORT["Deliverables: Annotated JPEGs, ZIP Batch,<br/>Summary JSON & HTML Psychometrics"]
     end
 ```
+
+1. **`sheet-builder` (Frontend Designer & Layout Engine)**:
+   - Zero-dependency client-side web application.
+   - Fluid drag-and-drop exam designer with live millimeter page preview, property inspector controls, and automated answer-key generator.
+   - Runs in any browser or standalone as a single local file ([`builder/studio.html`](file:///Users/philsumabat/coding-projects/grader/builder/studio.html)) with zero internet connection or server required (zero-CORS).
+   - Hosted with zero backend server on GitHub Pages ([`docs/index.html`](file:///Users/philsumabat/coding-projects/grader/docs/index.html)).
+
+2. **`checker` (Computer Vision OMR Pipeline & Assessment Engine)**:
+   - **Client-Side Checker Studio** ([`builder/checker.html`](file:///Users/philsumabat/coding-projects/grader/builder/checker.html) / [`docs/checker.html`](file:///Users/philsumabat/coding-projects/grader/docs/checker.html)): Standalone in-browser OpenCV-style grading app with 100% inlined homography rectification, bubble density scoring, psychometrics, annotated JPEG downloads, and zero-dependency inlined ZIP export.
+   - **High-Throughput Python Pipeline** (`omr/`): Batch grading CLI runner (`./grader`, `python -m omr`) with PyTesseract OCR, wildcard roster matching, and Jinja2 psychometric reports.
+   - **Cloud Web Application**: Hugging Face Spaces Gradio 4.44.0 app in `spaces/exam-checker/`.
 
 ---
 
 ## 2. Architecture & File Structure
 
-### `sheet-builder` (Module 1: Browser-Based Sheet Designer)
-- `builder/css/app.css` — Builder UI styles, control panel, and floating toolbar styling.
-- `builder/css/sheet.css` — Millimetric CSS Grid rules and `@media print` directives.
-- `builder/index.html` — Interactive modular developer editor with live preview.
-- `builder/studio.html` — Zero-dependency, standalone single-file production studio (zero-CORS).
-- `builder/js/app.js` — UI controller, library state management, and file download actions.
-- `builder/js/aruco.js` — Native OpenCV `DICT_4X4_50` marker bit patterns (IDs 0–3).
-- `builder/js/layout-engine.js` — Isomorphic geometry engine (computes resolved mm coordinates).
-- `builder/js/render-dom.js` — DOM / CSS Grid renderer for physical printing.
-- `builder/js/render-svg.js` — True-scale Scalable Vector Graphic (SVG) generator.
-- `builder/templates/` — Canonical exam templates (`exam-50.json`, `exam-100.json`, `quiz-tf.json`).
+```mermaid
+graph TD
+    ROOT["grader / instructor-essentials"]
+    ROOT --> BUILDER["builder/ (Sheet Builder & Client Checker)"]
+    ROOT --> OMR_PKG["omr/ (Python Computer Vision & CLI)"]
+    ROOT --> DOCS["docs/ (GitHub Pages Production Root)"]
+    ROOT --> DIST["dist/ (Headless Layout & SVG Exports)"]
+    ROOT --> TESTS["tests/ (JavaScript & Python Test Suites)"]
+    ROOT --> SCRIPTS["scripts/ (Bundle & Export Utilities)"]
+```
 
-### `checker` (Modules 2–5: Computer Vision, OCR & Grading Pipeline)
+### `sheet-builder` (Frontend Designer & Renderers)
+- [`builder/css/app.css`](file:///Users/philsumabat/coding-projects/grader/builder/css/app.css) — Builder UI styles, control palette, and floating toolbar styling.
+- [`builder/css/sheet.css`](file:///Users/philsumabat/coding-projects/grader/builder/css/sheet.css) — Millimetric CSS Grid rules and `@media print` directives.
+- [`builder/index.html`](file:///Users/philsumabat/coding-projects/grader/builder/index.html) — Modular developer editor with live preview.
+- [`builder/studio.html`](file:///Users/philsumabat/coding-projects/grader/builder/studio.html) — Zero-dependency, standalone single-file production studio (zero-CORS).
+- [`builder/checker.html`](file:///Users/philsumabat/coding-projects/grader/builder/checker.html) — Standalone in-browser OMR grading studio with JPEG/ZIP export.
+- [`builder/js/app.js`](file:///Users/philsumabat/coding-projects/grader/builder/js/app.js) — UI controller, drag-and-drop state, and library actions.
+- [`builder/js/aruco.js`](file:///Users/philsumabat/coding-projects/grader/builder/js/aruco.js) — Native OpenCV `DICT_4X4_50` marker bit patterns (IDs 0–3).
+- [`builder/js/layout-engine.js`](file:///Users/philsumabat/coding-projects/grader/builder/js/layout-engine.js) — Isomorphic geometry engine (computes resolved mm coordinates).
+- [`builder/js/render-dom.js`](file:///Users/philsumabat/coding-projects/grader/builder/js/render-dom.js) — DOM / CSS Grid renderer for physical printing.
+- [`builder/js/render-svg.js`](file:///Users/philsumabat/coding-projects/grader/builder/js/render-svg.js) — True-scale Scalable Vector Graphic (SVG) generator.
+- [`builder/js/templates.js`](file:///Users/philsumabat/coding-projects/grader/builder/js/templates.js) — Inlined sample templates for offline execution.
+- [`builder/templates/`](file:///Users/philsumabat/coding-projects/grader/builder/templates/) — Canonical exam template definitions:
+  - `exam-50.json` (50 MCQ + T/F + Short Answer, A4)
+  - `exam-100.json` (100 MCQ + 9-digit Student ID, Letter)
+  - `quiz-tf.json` (20 Simple T/F + 10 Modified T/F + Essay, Folio)
+  - `quiz-bonus.json` (10 MCQ + 5 pt Bonus Identification, A4)
+
+### `checker` (Python CV, OCR & Grading Pipeline)
 - `omr/__main__.py` — Entrypoint for `python -m omr` execution.
 - `omr/annotator.py` — Superimposes visual grading feedback (OpenCV derivative JPEGs).
 - `omr/cli.py` — CLI command processor registered as `grader`.
@@ -71,12 +100,12 @@ flowchart TD
 - `omr/vision.py` — ArUco detection, perspective warping, and bubble density scanner.
 - `spaces/exam-checker/` — Turnkey Gradio 4.44.0 cloud web application for Hugging Face Spaces.
 
-### Data & Deliverables
-- `data/` — Reference answer key (`bio101_key.json`), roster (`bio101_roster.csv`), and scans (`scans/`).
-- `dist/` — Headless template exports (`exam-50/`, `exam-100/`, `quiz-tf/`).
-- `output/` — Grading deliverables (`annotated/`, `grades_summary.json`, `item_analysis_report.html`).
-- `scripts/` — Build and export utilities (`build-standalone-studio.mjs`, `export-layout.mjs`, `generate_sample_scans.py`).
-- `tests/` — Automated test suite (`tests/js/` for Node, `tests/test_*.py` for Python).
+### Synchronized Deployment & Test Artifacts
+- [`docs/index.html`](file:///Users/philsumabat/coding-projects/grader/docs/index.html) — Production Sheet Builder served on GitHub Pages.
+- [`docs/checker.html`](file:///Users/philsumabat/coding-projects/grader/docs/checker.html) — Production Checker Studio served on GitHub Pages.
+- `dist/` — Headless template exports (`exam-50/`, `exam-100/`, `quiz-tf/`, `quiz-bonus/`).
+- `tests/js/` — Node.js test suite ([`checker-presets.test.mjs`](file:///Users/philsumabat/coding-projects/grader/tests/js/checker-presets.test.mjs), [`standalone-bundle.test.mjs`](file:///Users/philsumabat/coding-projects/grader/tests/js/standalone-bundle.test.mjs), [`layout.test.mjs`](file:///Users/philsumabat/coding-projects/grader/tests/js/layout.test.mjs)).
+- `tests/test_*.py` — Python test suite covering vision, OCR, grading, psychometrics, and roster matching.
 
 ---
 
@@ -86,133 +115,155 @@ flowchart TD
 The single biggest pitfall in computer vision document processing is coordinate drift between the document generator and the CV analyzer.
 
 **The Solution:**
-- All geometry is defined and resolved strictly in **physical millimeters ($mm$)** inside `builder/js/layout-engine.js`.
+- All geometry is defined and resolved strictly in **physical millimeters ($mm$)** inside [`builder/js/layout-engine.js`](file:///Users/philsumabat/coding-projects/grader/builder/js/layout-engine.js).
 - The engine outputs `layout.json` describing bounding boxes, bubble centers, and ROI boxes with millimeter measurements.
 - The Python pipeline (`omr/layout.py`) ingests `layout.json` and scales all millimeter coordinates by `px_per_mm`:
   $$\text{Target Resolution} = 10.0\,\text{px/mm} \quad (\approx 254\,\text{DPI})$$
-  $$\text{Page Width (A4)} = 210\,\text{mm} \times 10.0 = 2100\,\text{px}$$
-  $$\text{Page Height (A4)} = 297\,\text{mm} \times 10.0 = 2970\,\text{px}$$
-- Because both SVG export, print CSS, and Python CV warping share the exact same `layout.json` source of truth, sampling centers never drift.
+  $$\text{Page Width (A4)} = 210.0\,\text{mm} \times 10.0 = 2100\,\text{px}$$
+  $$\text{Page Height (A4)} = 297.0\,\text{mm} \times 10.0 = 2970\,\text{px}$$
+- Because SVG export, print CSS Grid, and Python CV warping share the exact same `layout.json` source of truth, sampling centers never drift.
 
 ### 3.2 Fiducial Marker Standard (ArUco DICT_4X4_50)
 Instead of relying on fragile circular black dots that can be confused with punch holes or dark markings, `grader` embeds native OpenCV **ArUco markers** from `DICT_4X4_50` at the four corners of the sheet:
-- **Top-Left (ID 0)**: Anchor coordinate $(7\,\text{mm}, 7\,\text{mm})$
-- **Top-Right (ID 1)**: Anchor coordinate $(193\,\text{mm}, 7\,\text{mm})$
-- **Bottom-Right (ID 2)**: Anchor coordinate $(193\,\text{mm}, 280\,\text{mm})$
-- **Bottom-Left (ID 3)**: Anchor coordinate $(7\,\text{mm}, 280\,\text{mm})$
+- **Top-Left (ID 0)**: Inset anchor $(12\,\text{mm}, 12\,\text{mm})$ center
+- **Top-Right (ID 1)**: Inset anchor $(W - 12\,\text{mm}, 12\,\text{mm})$ center
+- **Bottom-Right (ID 2)**: Inset anchor $(W - 12\,\text{mm}, H - 12\,\text{mm})$ center
+- **Bottom-Left (ID 3)**: Inset anchor $(12\,\text{mm}, H - 12\,\text{mm})$ center
 
 **Why this matters:**
-ArUco markers encode 16 bits of error-corrected identity. The detector immediately knows *which* marker is in which corner, resolving arbitrary $90^\circ, 180^\circ, 270^\circ$ scan rotations and flips automatically without needing an orientation guide.
+ArUco markers encode 16 bits of error-corrected identity. The detector immediately knows *which* marker is in which corner, resolving arbitrary $90^\circ, 180^\circ, 270^\circ$ scan rotations and flips automatically without needing a separate orientation guide.
 
 ---
 
-## 4. Key Design Decisions & Evolution Log
+## 4. Supported Layout Zones & Paper Formats
 
-This section records critical decisions made in response to real-world grading requirements and user feedback:
+### 4.1 Zone Types Supported by `layout-engine.js`
 
-### Decision 1: Student ID Number Recognition vs. Shading Matrix
-- **Initial Design**: Standard 10-row bubble matrix where students shaded digits $0$ through $9$ for each column of their Student ID.
-- **User Feedback**: *"just image number recognition no need for shading2x"*
-- **Design Decision**:
-  - Eliminated the 10-row bubble matrix on modern exam sheets.
-  - Added `shading: false` mode to `layoutStudentId` in `builder/js/layout-engine.js`.
-  - When `shading: false`, the layout produces a single row of partitioned write-in boxes (`colW = 6.0mm`, `boxHeight = 7.5mm`) and emits a `TextROI` with `role: "student_id"`, `charset: "digits"`.
-  - In `omr/ocr.py`, implemented `process_partitioned_digits`: the box is segmented cell-by-cell (`col_w = w / digits`), border suppression is applied to remove divider lines, and Tesseract recognizes each digit individually.
-  - In `omr/pipeline.py`, student ID is decoded from OCR when `not layout.sid_groups`.
+| Zone Type | Description | Key Properties |
+| :--- | :--- | :--- |
+| `fields` | Student Information & ID block | `fields: [...]`, integrated `sid` with `digits` (4–14), multi-row grid layout. |
+| `mcq` | Multiple Choice questions | `count`, `start`, `choices` ('ABCD', 'ABCDE', etc.), `columns` (1–5), `pointsPerItem`. |
+| `truefalse` | Simple True / False | `count`, `start`, `choices: ['T', 'F']`, `columns` (1–5), `pointsPerItem`. |
+| `modified_tf` | Modified True / False | `count`, `start`, `choices: ['T', 'F']`, adjacent write-in correction box (`corrWidth` 20–90 mm), `pointsPerItem`. |
+| `student_id` | Dedicated Student ID Grid | Shaded bubble matrix (`shading: true`) or partitioned write-in boxes (`shading: false`). |
+| `text` / `text_short` | Short Answer / Bonus Identification | Compact write-in box (8–25 mm), `points`, `charset` ('any', 'digits', 'alpha'). |
+| `text_essay` | Essay / Long Answer | Multi-line write-in box (25–120 mm), `points`, `charset` ('any'). |
+| `instructions` | Instructions & Guidelines | `text`, `fontSize` (2.4, 2.8, 3.2 mm). |
+
+### 4.2 Standard Paper Sizes
+
+| Paper Name | Dimensions (mm) | Dimensions (inches) |
+| :--- | :--- | :--- |
+| **A4** | $210.0 \times 297.0$ | $8.27 \times 11.69$ |
+| **US Letter** | $215.9 \times 279.4$ | $8.50 \times 11.00$ |
+| **Folio / F4** | $215.9 \times 330.2$ | $8.50 \times 13.00$ |
+| **Half-A4 / A5** | $148.5 \times 210.0$ | $5.85 \times 8.27$ |
+| **Half-Letter** | $139.7 \times 215.9$ | $5.50 \times 8.50$ |
+| **Half-Folio** | $165.1 \times 215.9$ | $6.50 \times 8.50$ |
+
+---
+
+## 5. UI Controls, Steppers & Saved Exam Builds
+
+- **Strict Constraint**: **Zero range sliders (`<input type="range">`) in the inspector forms**.
+- All numeric controls use explicit stepper inputs:
+  - Decrement button: `[−]` (`.stepper-btn`)
+  - Numeric input: `<input type="number" class="stepper-input">`
+  - Increment button: `[+]` (`.stepper-btn`)
+- Applied to: question counts, student ID digits, box heights, points per item, and correction box widths.
+- **Saved Exam Builds Storage**: Browser `localStorage` key `'sheet-builder:saved_builds'` (with backwards-compatible migration from `'grader:saved_builds'`).
+
+---
+
+## 6. Synchronized Presets & Client-Side Checker Studio
+
+### 6.1 Unified Preset Catalog
+Both **Sheet Builder Studio** ([`builder/index.html`](file:///Users/philsumabat/coding-projects/grader/builder/index.html)) and **Checker Studio** ([`builder/checker.html`](file:///Users/philsumabat/coding-projects/grader/builder/checker.html)) share identical, synchronized preset identifiers and display names:
+
+```mermaid
+flowchart LR
+    subgraph Presets["100% Synchronized Presets (Zero fetch() Calls)"]
+        P1["exam-50: BIO 101 Midterm (50 MCQ, A4)"]
+        P2["exam-100: CHEM 201 Final Exam (100 MCQ, Letter)"]
+        P3["quiz-tf: HIST 110 Quiz (20 T/F & Mod T/F, Folio)"]
+        P4["quiz-bonus: QUIZ 101 (1-10 MCQ + Bonus Identification, A4)"]
+    end
+```
+
+### 6.2 Zero-Dependency Client-Side Checker Studio
+- **Self-Contained Engine**: Runs directly in the browser with zero web server, zero backend, and zero CORS errors.
+- **Inlined Preset Data**: Complete layout geometry, ArUco fiducials, bubble centroids, and answer keys are inlined into `const PRESETS = { ... }`.
+- **Text Item Handling**: Handwritten identification questions (`keyItem.kind === 'text'`) are gracefully bypassed during automated bubble OMR scanning to prevent coordinate crashes, while retaining points in keys and reports.
+- **Annotated Graded Sheet Export**:
+  - `btn-download-sheet-jpeg`: Renders grading overlays (green checks, red crosses, student ID, and score badge) on an HTML5 canvas and exports true-resolution JPEG.
+  - `btn-export-zip`: Uses an inlined, zero-dependency ZIP archive generator (`createZip`) to bundle all graded sheets into a single `.zip` file.
+
+---
+
+## 7. Key Engineering Decisions Log
+
+### Decision 1: Partitioned Handwritten Student ID vs. Bubble Matrix
+- **Problem**: 10-row bubble matrices consume massive vertical space and confuse younger students.
+- **Decision**: Added `shading: false` mode creating partitioned write-in boxes (`colW = 6.0mm`, `boxHeight = 7.5mm`). In `omr/ocr.py`, cell-by-cell segmentation removes dividers and uses PyTesseract PSM 8/10.
 
 ### Decision 2: Student Information Field Compression
-- **Initial Design**: Stacked vertical text boxes consuming 40–50mm of vertical sheet space.
-- **User Feedback**: *"this could be compressed"*
-- **Design Decision**:
-  - Rewrote `layoutFields` in `builder/js/layout-engine.js` to support explicit multi-field row placement via `{ row: 0, w: 76 }`, `{ row: 0, w: 44 }`, etc.
-  - Consolidated student metadata into a tight 2-row layout:
-    - Row 0: `Name` ($76\,\text{mm}$) and `Score` ($44\,\text{mm}$)
-    - Row 1: `Section` ($58\,\text{mm}$) and `Date` ($62\,\text{mm}$)
-  - Total vertical footprint reduced to just $27\,\text{mm}$.
+- **Problem**: Stacked vertical boxes wasted 40–50mm of vertical sheet space.
+- **Decision**: Consolidated metadata into a tight 2-line layout (Line 1: Name & Student ID; Line 2: Offer No. & Class Sched, Date, Score box) reducing footprint to ~27mm.
 
 ### Decision 3: Dedicated Score Box vs. Obtrusive Top Banner
-- **Initial Design**: The annotator stamped a large semi-transparent executive banner spanning across the top margin of the sheet.
-- **User Feedback**: *"too big. maybe add score field beside name?"*
-- **Design Decision**:
-  - Added a dedicated `Score` box with `role: "score"` located in Row 0 beside the student's `Name` field.
-  - Updated `ExamAnnotator` (`omr/annotator.py`): if `layout.score_roi` exists, it skips the large top banner and renders the score (`Score: 58.0/64.0`), percentage (`90.6%`), and status stamp (`PASS` / `REVIEW`) directly inside the printed Score box with a soft green/red tint.
+- **Problem**: Large semi-transparent top banners obscured exam headers.
+- **Decision**: Added a dedicated `Score` box with `role: "score"`. The annotator renders the score, percentage, and status stamp directly inside the printed Score box.
 
 ### Decision 4: Written Answer Box Height Reduction
-- **Initial Design**: Written response boxes had heights of 16–20mm, leaving insufficient room on A4 paper for 60 questions.
-- **User Feedback**: *"the fields are too big"*
-- **Design Decision**:
-  - Reduced `boxHeight` default and template settings to $7.5 - 8.0\,\text{mm}$, perfectly sized for single-line printed handwritten terms (e.g., "MITOCHONDRIA", "TRNA") while saving ~25mm of vertical space.
+- **Problem**: Tall response boxes left insufficient room on A4 paper for 60 questions.
+- **Decision**: Standardized `boxHeight` for short-answer terms to $7.5 - 8.0\,\text{mm}$, saving ~25mm of vertical space.
 
 ### Decision 5: Elimination of Question Sentences on Answer Sheets
-- **Initial Design**: Printed full question sentences inside the zone headers.
-- **User Feedback**: *"no need to add questions in the exam sheet"*
-- **Design Decision**:
-  - Cleaned answer sheet templates to contain only question numbers (e.g. `61. [     ]`, `62. [     ]`).
-  - Question prompts are maintained separately in exam booklets or slides, keeping the answer sheet strictly as an OMR/OCR response form.
+- **Problem**: Long question sentences caused unpredictable wrapping and layout overflow.
+- **Decision**: Answer sheets contain only item numbers and bubble/write-in response regions; question text is maintained separately in exam booklets.
+
+### Decision 6: Side-by-Side Module Layout
+- **Decision**: Added `layout: 'half-left'` / `layout: 'half-right'` allowing distinct modules (e.g. Simple T/F and Modified T/F) to sit side-by-side with exact 50% millimeter bounds.
+
+### Decision 7: Stepper Controls for Points Per Item
+- **Decision**: Explicit stepper inputs control `pointsPerItem` across MCQ, True/False, and Modified True/False modules, dynamically propagating to exported answer keys.
+
+### Decision 8: Consolidated 2-Line Header Block
+- **Decision**: Upper line contains `Student Name` and `Student ID`; lower line contains consolidated `Offer No. & Class Sched`, `Date`, and dedicated `Score` box.
+
+### Decision 9: Dual Cloud Deployment (GitHub Pages & Hugging Face Spaces)
+- **Decision**: Zero-server hosting on GitHub Pages for `sheet-builder` (and client-side `checker`), plus a turnkey Gradio 4.44.0 app on Hugging Face Spaces for the Python pipeline.
+
+### Decision 10: Two-Pillar Architecture Branding (`sheet-builder` & `checker`)
+- **Decision**: Explicit separation of responsibilities into `sheet-builder` (document designer & layout engine) and `checker` (computer vision OMR grading & psychometrics).
+
+### Decision 11: Strict Mermaid-Only Diagrams Standard
+- **Decision**: All architectural, sequence, and workflow diagrams must use clean Mermaid syntax. Text-art, pseudo-graphic lines, and Unicode box-drawing characters are strictly forbidden to ensure cross-platform rendering consistency.
+
+### Decision 12: Standing Multi-Agent Mandate
+- **Decision**: Reaffirmed the policy to decompose complex engineering initiatives across specialized autonomous subagents.
+
+### Decision 13: Browser-Based Standalone Checker Studio
+- **Decision**: Built [`builder/checker.html`](file:///Users/philsumabat/coding-projects/grader/builder/checker.html) to enable client-side grading with zero server dependencies, using inlined homography and bubble density sampling.
+
+### Decision 14: Synchronized Preset Catalog Across Studios
+- **Decision**: Synchronized the preset dropdown options between Sheet Builder and Checker Studio to share identical keys, labels, and inlined data.
+
+### Decision 15: Introduction of the 10-Item Quiz with Bonus Identification (`quiz-bonus`)
+- **Decision**: Added `quiz-bonus` preset (A4, 2-line header, 10 MCQ items at 1 pt each, and 1 handwritten Bonus Identification question at 5 pts). Automated bubble grading bypasses the text zone without errors.
+
+### Decision 16: Zero-Dependency JPEG & ZIP Graded Sheet Export
+- **Decision**: Implemented client-side JPEG rendering of annotated sheets and an inlined, zero-dependency ZIP archive generator (`createZip`) in Checker Studio for 1-click batch downloads.
+
+### Decision 17: Header Sub-Badge Cleanup
+- **Decision**: Removed obsolete subtitle badges (`"OMR Exam Designer & Layout Engine"` and `"Client-Side OMR Grading & Psychometrics"`) to keep headers clean, focused, and uncluttered.
+
+### Decision 18: Single Authoritative Decisions File Standard
+- **Decision**: Consolidated all documentation into this single `DECISIONS.md` file at repository root and eliminated duplicate files (`docs/ARCHITECTURE_AND_DECISIONS.md`) to guarantee a single source of truth.
 
 ---
 
-## 5. Computer Vision & Recognition Algorithms (`checker`)
-
-### 5.1 Sheet Rectification (`omr/vision.py` $\rightarrow$ `SheetWarper`)
-1. **Detection**: OpenCV `aruco.ArucoDetector` detects markers from `cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)`.
-2. **Coordinate Association**: Detected markers with IDs 0, 1, 2, 3 are mapped to their known physical centers:
-   $$P_{\text{src}} = [C_0, C_1, C_2, C_3] \quad \longrightarrow \quad P_{\text{dst}} = [C_{0,\text{ideal}}, C_{1,\text{ideal}}, C_{2,\text{ideal}}, C_{3,\text{ideal}}]$$
-3. **Homography Warping**: Computes perspective transform matrix $H$ via RANSAC:
-   $$\mathbf{x}_{\text{dst}} \sim H \mathbf{x}_{\text{src}}$$
-   `cv2.warpPerspective` rectifies the scanned image to $(W, H)$ at $10.0\,\text{px/mm}$.
-4. **Fallback**: If one corner is obscured (only 3 markers detected), an Affine transform matrix $M_{2\times 3}$ is computed from the 3 visible markers.
-
-### 5.2 Bubble Fill Discrimination (`omr/vision.py` $\rightarrow$ `BubbleScanner`)
-1. **Adaptive Thresholding**:
-   $$\text{Binary}(x, y) = \begin{cases} 255 & \text{if } I(x, y) < T_{\text{local}}(x, y) - C \\ 0 & \text{otherwise} \end{cases}$$
-   where $T_{\text{local}}$ is a Gaussian-weighted neighborhood mean ($block=25$, $C=7$). Inverted so graphite/ink marks are white (255) on black (0).
-2. **Subpixel Center Snapping**: For each expected bubble center $(c_x, c_y)$, contours within a $1.2\times$ search window are detected. If an elliptical contour matches expected diameter ($\pm 35\%$), the center is shifted to the contour centroid $(\bar{x}, \bar{y})$ to absorb mechanical printing offsets.
-3. **Inner-Core Sampling**: To eliminate optical interference from the printed black bubble outline, only the inner core of the bubble is measured:
-   $$r_{\text{inner}} = 0.72 \times r_{\text{nominal}}$$
-   $$\text{Density} = \frac{\sum_{(x, y) \in \text{Core}} \text{Binary}(x, y)}{255 \times \pi r_{\text{inner}}^2}$$
-4. **Thresholds**:
-   - $\text{Density} \ge 0.44 \implies \text{Marked (Filled)}$
-   - $\text{Density} < 0.22 \implies \text{Empty (Blank)}$
-   - In between: delta check against the second-highest option in the group ($\Delta \ge 0.16$).
-
-### 5.3 OCR & Partitioned Digit Extraction (`omr/ocr.py`)
-1. **Border Inset**: The bounding box outline is suppressed by cropping with a $1.1\,\text{mm}$ inset.
-2. **Cell-by-Cell Partitioning**: For Student ID, the ROI is divided into $N$ equal horizontal columns:
-   $$\text{Cell}_i = [x_1 + i \cdot w/N + \delta, \, x_1 + (i+1) \cdot w/N - \delta]$$
-3. **Padding & Mode Selection**:
-   - Each cell is given a $10\,\text{px}$ white border (`cv2.copyMakeBorder`).
-   - Tesseract runs in **PSM 8** (single word mode) with fallback to **PSM 10** (single character mode) with `-c tessedit_char_whitelist=0123456789`.
-   - Any cell that fails to resolve a digit emits a positional wildcard placeholder `?`.
-
-### 5.4 Multi-Tier Roster Matching (`omr/roster.py`)
-Decoded student IDs are matched against enrolled students in `data/bio101_roster.csv` using a 4-tier cascade:
-1. **Tier 1 (Exact)**: Direct hash lookup.
-2. **Tier 2 (Zero-Normalized)**: Strips leading zeros (`0010482901` $\rightarrow$ `10482901`).
-3. **Tier 3 (Unused Column Trimming)**: Trims unused leading/trailing columns on standardized sheets.
-4. **Tier 4 (Positional Wildcard + 1-Digit Hamming Recovery)**:
-   - When digits are unreadable (`?`), converts to regex: `^.048290.$`.
-   - If regex yields a single enrolled student, assigns `inferred`.
-   - If minor OCR noise occurs (e.g. `1` misread as `3`), the engine counts character mismatches across known positions. If $\text{mismatches} \le 1$ and known matches $\ge 2$, it recovers the student record unambiguously.
-
----
-
-## 6. Psychometric Formulas (`omr/report.py`)
-
-The batch processing pipeline computes standard psychometrics across the exam cohort:
-
-| Metric | Formula | Interpretation |
-| :--- | :--- | :--- |
-| **Facility Index ($P$)** | $P = \frac{\bar{X}_i}{X_{\max, i}}$ | Item difficulty ($0.0 \le P \le 1.0$). $P > 0.85$ is easy; $P < 0.30$ is hard. |
-| **Kelly's Discrimination ($D$)** | $D = \frac{\bar{X}_{\text{top 27\%}} - \bar{X}_{\text{bottom 27\%}}}{X_{\max, i}}$ | Discriminative power ($D \ge 0.30$ indicates high quality; $D < 0.15$ indicates poor item). |
-| **Point-Biserial Correlation ($r_{pbis}$)** | $r_{pbis} = \frac{\bar{X}_{\text{correct}} - \bar{X}_{\text{total}}}{S_{\text{total}}} \sqrt{\frac{p}{1 - p}}$ | Correlation between answering item correctly and high overall performance. |
-| **Cronbach's Alpha ($\alpha$)** | $\alpha = \frac{K}{K - 1} \left(1 - \frac{\sum_{i=1}^K \sigma_i^2}{\sigma_{\text{total}}^2}\right)$ | Internal consistency / reliability of the exam instrument. |
-
----
-
-## 7. Multi-Agent Development Guide for Future AI Models
-
-When contributing to `grader`, tasks must be parallelized across specialized subagents using this division of responsibilities:
+## 8. Multi-Agent Development Mandate
 
 ```mermaid
 flowchart TD
@@ -224,43 +275,37 @@ flowchart TD
     ORCH --> A5["Agent Epsilon<br/>(Deployment: GitHub Pages & HF Spaces)"]
 ```
 
-### Agent Roles:
-1. **Agent Alpha (Sheet Geometry & Layout Engine — `sheet-builder`)**
-   - **Scope**: `builder/js/layout-engine.js`, `builder/js/render-dom.js`, `builder/js/render-svg.js`, `builder/css/sheet.css`.
-   - **Key Invariants**: Maintain millimeter precision. Zero external runtime npm dependencies (vanilla modern ES modules). Never break `layout.json` schema compatibility.
-2. **Agent Beta (Computer Vision & Geometry Rectification — `checker`)**
-   - **Scope**: `omr/vision.py`, `omr/simulator.py`, `omr/layout.py`.
-   - **Key Invariants**: Preserve ArUco `DICT_4X4_50` detection and RANSAC homography. Verify sampling radius math ($r_{\text{inner}} = 0.72 \times r_{\text{nominal}}$).
-3. **Agent Gamma (OCR & Handwriting Recognition — `checker`)**
-   - **Scope**: `omr/ocr.py`, `omr/roster.py`, `omr/grading.py`.
-   - **Key Invariants**: Maintain border margin suppression ($1.1\,\text{mm}$ inset), cell-by-cell digit segmentation, and difflib Levenshtein ratio tolerance ($\ge 0.85$) for written text.
-4. **Agent Delta (Psychometrics & Deliverables — `checker`)**
-   - **Scope**: `omr/report.py`, `omr/annotator.py`, Jinja2 templates.
-   - **Key Invariants**: Respect `layout.score_roi` for stamping scores directly into the form. Ensure all psychometric metrics ($P, D, r_{pbis}, \alpha$) compute valid values without division-by-zero on homogeneous cohorts.
-5. **Agent Epsilon (Deployment & Cloud Systems)**
-   - **Scope**: `.github/workflows/deploy-pages.yml`, `spaces/exam-checker/app.py`, deployment documentation.
-   - **Key Invariants**: Ensure GitHub Pages remains zero-server and Hugging Face Spaces Gradio app installs Debian OCR dependencies cleanly.
+> [!IMPORTANT]
+> **Standing Mandate**: **Always use multiple agents whenever needed and possible for this project.**
+> Subagents must be invoked to parallelize tasks across specialized boundaries:
+> - **Frontend/Studio Geometry (`sheet-builder`)**: `layout-engine.js`, `render-dom.js`, `render-svg.js`, CSS.
+> - **Computer Vision & Grading (`checker`)**: `omr/vision.py`, `omr/ocr.py`, `omr/grading.py`.
+> - **Deployment & Cloud Systems**: GitHub Pages workflows, Hugging Face Spaces Gradio apps.
+> - **Quality Assurance**: Automated regression verification (`npm test`, `pytest`).
 
 ---
 
-## 8. Verification & Test Commands
+## 9. Verification & Test Commands
 
 Every change to the codebase must pass both JavaScript layout tests and Python unit/integration tests:
 
 ```bash
-# 1. Run JavaScript layout engine tests
+# 1. Run JavaScript layout engine & bundle tests
 npm test
 
-# 2. Export all templates to dist/
+# 2. Re-bundle standalone studio and synchronize docs/ for GitHub Pages
+npm run build:studio
+
+# 3. Export all template layouts and SVGs to dist/
 npm run export:all
 
-# 3. Run Python pytest suite
+# 4. Run Python OpenCV/OMR test suite
 PYTHONPATH=. .venv/bin/pytest -v
 
-# 4. Synthesize 10 sample scans
+# 5. Synthesize 10 sample scans
 PYTHONPATH=. .venv/bin/python scripts/generate_sample_scans.py
 
-# 5. Execute full batch grading pipeline
+# 6. Execute full batch grading pipeline
 PYTHONPATH=. .venv/bin/python -m omr \
   --layout dist/exam-50/layout.json \
   --key data/bio101_key.json \
@@ -268,63 +313,3 @@ PYTHONPATH=. .venv/bin/python -m omr \
   --scans "data/scans/*.jpg" \
   --out output/
 ```
-
----
-
-## 9. Visual Drag-and-Drop Exam Sheet Studio (`sheet-builder` 2.0)
-
-### 9.1 Motivation & Teacher-Centric UX
-Non-technical educators, proctors, and test administrators should never be forced to edit raw JSON files or manually write nested coordinate blocks. `sheet-builder` transforms the client-side tool into a full WYSIWYG studio with zero runtime npm dependencies:
-1. **Visual Component Palette**:
-   - Draggable cards representing exam components: Student ID Matrix (`student_id`), Student Information (`fields`), Multiple Choice (`mcq`), True / False (`truefalse`), Written Answer (`text`), and Instructions (`instructions`).
-   - Cards support native HTML5 drag-and-drop onto the sheet canvas as well as instant one-click `+ Add` placement.
-2. **Interactive Sheet Canvas**:
-   - Live bounding-box hover indicators and blue selection rings (`#2563eb`).
-   - Floating quick-action toolbars directly on selected zones: Move Up, Move Down, Duplicate, and Delete.
-   - Real-time drop indicator line with position calculation mapping cursor coordinates to nearest zone boundaries.
-3. **Reactive Form-Based Property Inspector**:
-   - Immediate parameterization without raw JSON:
-     - Question count steppers ($1..100$).
-     - Choice options (A–D, A–E, A–C, T/F, custom).
-     - Auto or explicit column layout ($1..5$ columns).
-     - Student ID digits ($4..14$) with segmented toggle between Bubble Grid (OMR) and Handwritten Digits (OCR).
-     - Checkbox matrix for student info fields (Name, Score Box, Section, Date, Signature).
-     - Written answer box height ($8..45\,\text{mm}$), points, and character set restrictions.
-4. **Automated Answer Key Generation**:
-   - One-click **"Answer Key"** button extracts all gradable items from the active layout and generates a valid `answer_key.json` pre-populated with correct format specifications (compatible with `omr.grading.AnswerKey`).
-5. **Print & Layout Invariant Preservation**:
-   - All interactive UI chrome (floating toolbars, drag grips, drop indicators, sidebar, canvas controls) use `.app-chrome` or `@media print { display: none !important; }`.
-   - Physical printouts via `@media print` remain 100% millimeter-accurate, distortion-free, and anchored by ArUco fiducials.
-
----
-
-## 10. Multi-Agent Development Mandate & Evolution (October 2026)
-
-### 10.1 Standing Agent Reminder
-> **CRITICAL ARCHITECTURAL DIRECTIVE**:
-> **Always use multiple agents whenever needed and possible for this project.**
-> Tasks should be partitioned into autonomous subagents handling:
-> 1. Frontend studio geometries, SVG/DOM renderers, CSS (`sheet-builder`).
-> 2. OpenCV computer vision, ArUco alignment, Tesseract OCR (`checker`).
-> 3. Cloud deployment integrations (GitHub Pages, Hugging Face Spaces).
-> 4. Test suites and psychometric analysis.
-
-### 10.2 Recent Evolutions Log:
-- **Decision 6: Side-by-Side Module Drag-and-Drop Capability**:
-  - In addition to column layout *inside* modules, added side-by-side placement for distinct modules on the sheet (`layout: 'half-left'` / `layout: 'half-right'`).
-  - Mathematical 50% split maintains exact millimeter bounds without CSS float/flex distortion.
-- **Decision 7: Points Per Item Stepper**:
-  - Added explicit stepper controls for `pointsPerItem` across MCQ, True/False, and Modified True/False modules.
-  - Tightly coupled with pre-filled `answer_key.json` export and live studio score counters.
-- **Decision 8: Consolidated 2-Line Header Block**:
-  - Upper Line: `Student Name` and `Student ID` (with cell-by-cell partitioned digits).
-  - Lower Line: Single consolidated `Offer No. & Class Sched` field, `Date`, and dedicated `Score` box.
-- **Decision 9: Cloud Deployments (GitHub Pages & Hugging Face Spaces)**:
-  - Automated GitHub Actions deployment via `.github/workflows/deploy-pages.yml` and 1-click `/docs` hosting for `sheet-builder`.
-  - Turnkey Hugging Face Space Gradio app in `spaces/exam-checker/` for cloud-hosted `checker` evaluation.
-- **Decision 10: Two-Pillar Architecture Branding (`sheet-builder` & `checker`)**:
-  - Formally partitioned the repository into two named pillars: `sheet-builder` for frontend document layout and zero-CORS editing; and `checker` for computer vision OMR grading, OCR, psychometrics, CLI, and Gradio cloud app.
-- **Decision 11: Strict Mermaid-Only Diagrams Standard**:
-  - Mandated that all architectural, sequence, deployment, and dataflow diagrams must use clean, valid Mermaid code blocks (```mermaid). All text-art, pseudo-graphic lines, arrows, and Unicode box-drawing characters are strictly forbidden to prevent font and layout rendering defects across platforms and markdown viewers.
-- **Decision 12: Multi-Agent Development Mandate Reiteration**:
-  - Reaffirmed the standing mandate to decompose complex engineering initiatives across specialized subagents with clear domain boundaries.

@@ -2,7 +2,7 @@
   "schema": "omr-layout/1",
   "generator": "omr-sheet-builder/1.0.0",
   "templateId": "chem201-final-100",
-  "title": "CHEM 201 — Final Examination",
+  "title": "Final Examination (100 MCQ)",
   "units": "mm",
   "page": {
     "paper": "Letter",

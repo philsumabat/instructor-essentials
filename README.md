@@ -6,6 +6,12 @@ Grader is architected into two clearly defined components:
 1. **`sheet-builder`**: The browser-based visual exam sheet designer, layout engine, and zero-CORS standalone HTML editor.
 2. **`checker`**: The computer vision OMR grading pipeline, OCR engine, psychometrics analyzer, CLI runner, and cloud web app (Hugging Face Spaces).
 
+## Project Perspective
+
+Grader is led by an instructor and shaped by practical classroom needs. The maintainer is not presenting themself as a software engineering, computer vision, OCR, or psychometrics expert. Technical methods and assessment interpretations in this project are implementation choices and areas for continued validation; they should not be read as expert-certified conclusions. The goal is to build a useful, free tool and make its assumptions and limitations understandable.
+
+For AI coding agents and contributors, start with [`AGENTS.md`](AGENTS.md). It links to the [prioritized roadmap](ROADMAP.md), [engineering decisions and detailed architecture](DECISIONS.md), and this project overview. The current architecture overview lives in this README and the detailed specification is in `DECISIONS.md`.
+
 ---
 
 ## Architecture Overview

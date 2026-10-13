@@ -1,6 +1,6 @@
 {
   "id": "chem201-final-100",
-  "title": "CHEM 201 — Final Examination",
+  "title": "Final Examination (100 MCQ)",
   "paper": "Letter",
   "bubble": { "diameter": 4.0, "pitchX": 5.4, "pitchY": 5.0, "groupEvery": 5, "groupGap": 1.4 },
   "zones": [

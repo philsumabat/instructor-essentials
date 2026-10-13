@@ -2,7 +2,7 @@
   "schema": "omr-layout/1",
   "generator": "omr-sheet-builder/1.0.0",
   "templateId": "quiz101-bonus-10",
-  "title": "QUIZ 101 — 10-Item Quiz + Bonus",
+  "title": "10-Item Quiz + Bonus Identification",
   "units": "mm",
   "page": {
     "paper": "A4",

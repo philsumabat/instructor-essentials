@@ -1454,9 +1454,161 @@ dialog.modal-dialog::backdrop {
   margin: 0;
 }
 
-.empty-library .empty-sub {
-  margin-top: 0.35rem;
+/* ==========================================================================
+   Exam Generator Dialog
+   ========================================================================== */
+.modal-generator {
+  width: min(720px, 94vw);
+  max-height: 88vh;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 0;
+  background: var(--panel);
+  color: var(--text);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+}
+
+.modal-generator::backdrop {
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(2px);
+}
+
+.modal-generator__body {
+  padding: 1.25rem 1.5rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  max-height: calc(88vh - 125px);
+}
+
+.gen-fieldset {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.15rem;
+  background: var(--panel-alt);
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.gen-legend {
+  font-weight: 700;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--accent);
+  padding: 0 0.35rem;
+}
+
+.gen-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.85rem;
+}
+
+.gen-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.gen-field--span-2 {
+  grid-column: span 2;
+}
+
+.gen-label {
   font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.gen-input, .gen-select {
+  padding: 0.45rem 0.65rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--text);
+  font-size: 0.84rem;
+  font-family: inherit;
+  transition: border-color 0.15s ease;
+}
+
+.gen-input:focus, .gen-select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.gen-input--sm, .gen-select--sm {
+  padding: 0.25rem 0.45rem;
+  font-size: 0.78rem;
+  width: auto;
+}
+
+.gen-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.84rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.gen-sections-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.gen-section-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 0.65rem 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  transition: border-color 0.15s ease;
+}
+
+.gen-section-card:hover {
+  border-color: var(--border-focus);
+}
+
+.gen-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.gen-badge {
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 0.15rem 0.45rem;
+  border-radius: var(--radius-full);
+  background: var(--accent-light);
+  color: var(--accent);
+}
+
+.gen-section-body {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+  padding-left: 1.5rem;
+}
+
+.gen-field-inline {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.gen-field-inline input[type="number"] {
+  width: 55px;
 }
 
 /* ==========================================================================

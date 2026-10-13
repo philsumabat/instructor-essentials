@@ -5,7 +5,7 @@
 export const SAMPLE_TEMPLATES = {
   'exam-50': {
     id: 'bio101-midterm-50',
-    title: 'BIO 101 — Midterm Examination',
+    title: 'Midterm Examination (50 MCQ + T/F + Short Answer)',
     paper: 'A4',
     bubble: { diameter: 4.2, pitchX: 5.6, pitchY: 5.4 },
     zones: [
@@ -73,7 +73,7 @@ export const SAMPLE_TEMPLATES = {
 
   'exam-100': {
     id: 'chem201-final-100',
-    title: 'CHEM 201 — Final Examination',
+    title: 'Final Examination (100 MCQ)',
     paper: 'Letter',
     bubble: { diameter: 4.0, pitchX: 5.4, pitchY: 5.0, groupEvery: 5, groupGap: 1.4 },
     zones: [
@@ -111,7 +111,7 @@ export const SAMPLE_TEMPLATES = {
 
   'quiz-tf': {
     id: 'hist110-quiz-tf',
-    title: 'HIST 110 — Quiz 3 (True / False & Short Answer)',
+    title: 'Quiz (True / False & Short Answer)',
     paper: 'Folio',
     zones: [
       {
@@ -171,7 +171,7 @@ export const SAMPLE_TEMPLATES = {
 
   'quiz-bonus': {
     id: 'quiz101-bonus-10',
-    title: 'QUIZ 101 — 10-Item Quiz + Bonus',
+    title: '10-Item Quiz + Bonus Identification',
     paper: 'A4',
     bubble: { diameter: 4.2, pitchX: 5.6, pitchY: 5.4 },
     zones: [

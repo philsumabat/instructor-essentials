@@ -5,6 +5,8 @@
 > **Intended Audience**: Software Engineers, Computer Vision Researchers, and Autonomous AI Pair Programmers.  
 > **Canonical Status**: This is the **single, authoritative decisions document** for the repository.
 
+> **Project perspective:** This is an instructor-led project. The maintainer brings classroom experience and knows the practical needs the tool should address, but does not claim specialist expertise in software engineering, computer vision, OCR, or psychometrics. The architecture and decisions below describe the current implementation and its rationale; they are not a claim that every method is the only or academically validated approach. Explain assumptions in plain language and validate engine or assessment-related claims against evidence where possible. See [`AGENTS.md`](AGENTS.md) for guidance to AI coding agents and [`ROADMAP.md`](ROADMAP.md) for proposed improvements.
+
 ---
 
 ## 1. Executive Summary & Two-Pillar Philosophy
@@ -183,10 +185,10 @@ Both **Sheet Builder Studio** ([`builder/index.html`](file:///Users/philsumabat/
 ```mermaid
 flowchart LR
     subgraph Presets["100% Synchronized Presets (Zero fetch() Calls)"]
-        P1["exam-50: BIO 101 Midterm (50 MCQ, A4)"]
-        P2["exam-100: CHEM 201 Final Exam (100 MCQ, Letter)"]
-        P3["quiz-tf: HIST 110 Quiz (20 T/F & Mod T/F, Folio)"]
-        P4["quiz-bonus: QUIZ 101 (1-10 MCQ + Bonus Identification, A4)"]
+        P1["exam-50: 50 MCQ + T/F + Short Answer (A4)"]
+        P2["exam-100: 100-Item MCQ (Letter)"]
+        P3["quiz-tf: 20 T/F & Mod T/F (Folio)"]
+        P4["quiz-bonus: 10 MCQ + Bonus Identification (A4)"]
     end
 ```
 
@@ -258,8 +260,17 @@ flowchart LR
 ### Decision 17: Header Sub-Badge Cleanup
 - **Decision**: Removed obsolete subtitle badges (`"OMR Exam Designer & Layout Engine"` and `"Client-Side OMR Grading & Psychometrics"`) to keep headers clean, focused, and uncluttered.
 
-### Decision 18: Single Authoritative Decisions File Standard
-- **Decision**: Consolidated all documentation into this single `DECISIONS.md` file at repository root and eliminated duplicate files (`docs/ARCHITECTURE_AND_DECISIONS.md`) to guarantee a single source of truth.
+### Decision 19: Exam Generator Tool in Sheet Builder
+- **Decision**: Added a 1-click interactive Exam Generator modal (`#modal-generator`) to Sheet Builder. Instructors can customize paper size, Student ID format (partitioned OCR box vs. 10-row OMR bubble grid), instructions banner, and toggle individual exam sections (MCQ, True/False, Modified T/F, Short Answer / Identification, and Essay) with custom item counts and point weights. Generates complete, millimeter-precise OMR templates directly into the visual canvas.
+
+### Decision 20: Checker Studio Streamlined Layout & Dedicated Answer Key Management
+- **Decision**: Redesigned Checker Studio sidebar into unnumbered, focused cards (`Exam Scans`, `Layout`, `Answer Key`, `Grading Settings`, `Export Reports`).
+- **Decision**: Created a prominent, dedicated Answer Key section displaying active key statistics, custom JSON upload, an in-browser Answer Key Editor modal (`#modal-key-editor`) for quick corrections, and a 1-click JSON template generator. Added Layout export buttons (`Export Layout` and `Export Sheet`).
+- **Decision**: Streamlined the results navigation into strictly three analytical tabs: `Summary`, `Student Roster`, and `Item Analysis`.
+- **Decision**: Standardized student sheet inspection under the exclusive button name `"Sheet Inspector"`, opening an interactive visual modal (`#modal-viewer`) with student selection, single sheet JPEG download, and 1-click batch ZIP export (`Download All (ZIP)`).
+
+### Decision 21: Subject-Agnostic Synchronized Preset Catalog
+- **Decision**: Standardized all preset identifiers and display labels across Sheet Builder and Checker Studio to clean, subject-agnostic format names: `50 MCQ + T/F + Short Answer (A4)`, `100-Item MCQ (Letter)`, `20 T/F & Mod T/F (Folio)`, and `10 MCQ + Bonus Identification (A4)`.
 
 ---
 

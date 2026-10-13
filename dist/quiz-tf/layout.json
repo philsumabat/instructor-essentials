@@ -2,7 +2,7 @@
   "schema": "omr-layout/1",
   "generator": "omr-sheet-builder/1.0.0",
   "templateId": "hist110-quiz-tf",
-  "title": "HIST 110 — Quiz 3 (True / False & Short Answer)",
+  "title": "Quiz (True / False & Short Answer)",
   "units": "mm",
   "page": {
     "paper": "Folio",

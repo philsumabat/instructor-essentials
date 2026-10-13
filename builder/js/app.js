@@ -35,63 +35,95 @@ const state = {
 };
 
 // ---- DOM Elements ----
-const els = {
-  examTitle: $('#exam-title-input'),
-  paperSelect: $('#paper-select'),
-  paperBtns: $$('.segmented-btn[data-paper]'),
-  samplePreset: $('#sample-preset'),
-  btnSaveBuild: $('#btn-save-build'),
-  btnLibrary: $('#btn-library'),
-  modalLibrary: $('#modal-library'),
-  btnCloseLibrary: $('#btn-close-library'),
-  btnModalClose: $('#btn-modal-close'),
-  savedBuildsList: $('#saved-builds-list'),
-  btnImportFileTrigger: $('#btn-import-file-trigger'),
-  overlay: $('#overlay'),
-  btnDlKey: $('#btn-dl-key'),
-  btnPrint: $('#btn-print'),
-  btnExportToggle: $('#btn-export-toggle'),
-  exportMenu: $('#export-dropdown-content'),
-  buttons: {
-    svg: $('#dl-svg'),
-    html: $('#dl-html'),
-    layout: $('#dl-layout'),
-    template: $('#dl-template'),
-  },
-  // Tab navigation
-  tabBtns: $$('.studio-tab-btn'),
-  tabPanels: {
-    palette: $('#panel-palette'),
-    inspector: $('#panel-inspector'),
-    outline: $('#panel-outline'),
-  },
-  // Palette & Outline & Inspector
-  paletteCards: $$('.palette-card'),
-  inspectorContent: $('#inspector-content'),
-  outlineList: $('#outline-list'),
-  // Stats
-  statQuestions: $('#stat-questions'),
-  statPoints: $('#stat-points'),
-  statIdDigits: $('#stat-id-digits'),
-  statFill: $('#stat-fill'),
-  statFillBar: $('#stat-fill-bar-inner'),
-  paperBadge: $('#paper-badge'),
-  // Canvas
-  preview: $('#preview'),
-  frame: $('#frame'),
-  pageRule: $('#page-rule'),
-  zoomLabel: $('#zoom-label'),
-  btnZoomIn: $('#btn-zoom-in'),
-  btnZoomOut: $('#btn-zoom-out'),
-  btnZoomFit: $('#btn-zoom-fit'),
-  btnZoomReset: $('#btn-zoom-reset'),
-  renderModeBtns: $$('.render-mode-btn'),
-  // Advanced Drawer
-  fileInput: $('#template-file-input'),
-  rawJson: $('#raw-json-textarea'),
-  jsonStatus: $('#json-status'),
-  warningsList: $('#warnings-list'),
-};
+const els = {};
+
+function initElements() {
+  Object.assign(els, {
+    examTitle: $('#exam-title-input'),
+    paperSelect: $('#paper-select'),
+    paperBtns: $$('.segmented-btn[data-paper]'),
+    samplePreset: $('#sample-preset'),
+    btnSaveBuild: $('#btn-save-build'),
+    btnLibrary: $('#btn-library'),
+    modalLibrary: $('#modal-library'),
+    btnCloseLibrary: $('#btn-close-library'),
+    btnModalClose: $('#btn-modal-close'),
+    savedBuildsList: $('#saved-builds-list'),
+    btnImportFileTrigger: $('#btn-import-file-trigger'),
+    overlay: $('#overlay'),
+    btnDlKey: $('#btn-dl-key'),
+    btnPrint: $('#btn-print'),
+    btnExportToggle: $('#btn-export-toggle'),
+    exportMenu: $('#export-dropdown-content'),
+    buttons: {
+      svg: $('#dl-svg'),
+      html: $('#dl-html'),
+      layout: $('#dl-layout'),
+      template: $('#dl-template'),
+    },
+    // Generator Dialog
+    btnGenerator: $('#btn-generator'),
+    modalGenerator: $('#modal-generator'),
+    btnCloseGenerator: $('#btn-close-generator'),
+    btnCancelGenerator: $('#btn-cancel-generator'),
+    btnGenerateExam: $('#btn-generate-exam'),
+    genTitle: $('#gen-exam-title'),
+    genPaper: $('#gen-paper-size'),
+    genSidMode: $('#gen-sid-mode'),
+    genInstructions: $('#gen-instructions'),
+    genMcqEnabled: $('#gen-mcq-enabled'),
+    genMcqCount: $('#gen-mcq-count'),
+    genMcqChoices: $('#gen-mcq-choices'),
+    genMcqCols: $('#gen-mcq-cols'),
+    genMcqPts: $('#gen-mcq-pts'),
+    genTfEnabled: $('#gen-tf-enabled'),
+    genTfCount: $('#gen-tf-count'),
+    genTfCols: $('#gen-tf-cols'),
+    genTfPts: $('#gen-tf-pts'),
+    genModtfEnabled: $('#gen-modtf-enabled'),
+    genModtfCount: $('#gen-modtf-count'),
+    genModtfPts: $('#gen-modtf-pts'),
+    genSaEnabled: $('#gen-sa-enabled'),
+    genSaCount: $('#gen-sa-count'),
+    genSaPts: $('#gen-sa-pts'),
+    genEssayEnabled: $('#gen-essay-enabled'),
+    genEssayCount: $('#gen-essay-count'),
+    genEssayPts: $('#gen-essay-pts'),
+    // Tab navigation
+    tabBtns: $$('.studio-tab-btn'),
+    tabPanels: {
+      palette: $('#panel-palette'),
+      inspector: $('#panel-inspector'),
+      outline: $('#panel-outline'),
+    },
+    // Palette & Outline & Inspector
+    paletteCards: $$('.palette-card'),
+    inspectorContent: $('#inspector-content'),
+    outlineList: $('#outline-list'),
+    // Stats
+    statQuestions: $('#stat-questions'),
+    statPoints: $('#stat-points'),
+    statIdDigits: $('#stat-id-digits'),
+    statFill: $('#stat-fill'),
+    statFillBar: $('#stat-fill-bar-inner'),
+    paperBadge: $('#paper-badge'),
+    // Canvas
+    preview: $('#preview'),
+    frame: $('#frame'),
+    pageRule: $('#page-rule'),
+    zoomLabel: $('#zoom-label'),
+    btnZoomIn: $('#btn-zoom-in'),
+    btnZoomOut: $('#btn-zoom-out'),
+    btnZoomFit: $('#btn-zoom-fit'),
+    btnZoomReset: $('#btn-zoom-reset'),
+    renderModeBtns: $$('.render-mode-btn'),
+    // Advanced Drawer
+    fileInput: $('#template-file-input'),
+    rawJson: $('#raw-json-textarea'),
+    jsonStatus: $('#json-status'),
+    warningsList: $('#warnings-list'),
+  });
+}
 
 // ---- File Download Utility ----
 function download(filename, content, type) {
@@ -1533,12 +1565,216 @@ function renderSavedBuildsList() {
   });
 }
 
+// ---- Exam Generator Logic ----
+function generateExamFromGeneratorModal() {
+  const title = (els.genTitle?.value || '').trim() || 'General Examination';
+  const paper = els.genPaper?.value || 'A4';
+  const sidMode = els.genSidMode?.value || 'fields';
+  const includeInstructions = els.genInstructions ? els.genInstructions.checked : true;
+
+  const paperSpec = PAPER_SIZES[paper] || PAPER_SIZES['A4'];
+  const availW = Math.round((paperSpec.width - 24) * 10) / 10; // 12mm margins each side
+
+  const zones = [];
+
+  // 1. Student ID & Header
+  if (sidMode === 'grid') {
+    zones.push({
+      type: 'student_id',
+      id: uid('sid'),
+      label: 'Student ID',
+      digits: 8,
+      rows: 10,
+      startDigit: 0,
+      w: Math.min(availW, 64),
+    });
+    zones.push({
+      type: 'fields',
+      id: uid('info'),
+      label: '',
+      w: availW,
+      fieldHeight: 7.5,
+      fields: [
+        { id: 'name', label: 'Student Name', role: 'name', row: 0, w: Math.max(80, availW - 45) },
+        { id: 'score', label: 'Score', role: 'score', row: 0, w: 40 },
+        { id: 'section', label: 'Section / Course', row: 1, w: Math.floor(availW * 0.6) },
+        { id: 'date', label: 'Date', row: 1, w: Math.max(30, availW - Math.floor(availW * 0.6) - 5) },
+      ],
+    });
+  } else {
+    zones.push({
+      type: 'fields',
+      id: uid('info'),
+      label: '',
+      w: availW,
+      fieldHeight: 7.5,
+      fields: [
+        { id: 'name', label: 'Student Name', role: 'name', row: 0, w: Math.floor(availW * 0.58) },
+        { id: 'sid', label: 'Student ID', role: 'student_id', digits: 8, row: 0, w: Math.max(60, availW - Math.floor(availW * 0.58) - 5) },
+        { id: 'section', label: 'Section / Course', row: 1, w: Math.floor(availW * 0.5) },
+        { id: 'date', label: 'Date', row: 1, w: Math.floor(availW * 0.25) },
+        { id: 'score', label: 'Score', role: 'score', row: 1, w: Math.max(30, availW - Math.floor(availW * 0.75) - 5) },
+      ],
+    });
+  }
+
+  // 2. Instructions Banner
+  if (includeInstructions) {
+    zones.push({
+      type: 'instructions',
+      id: uid('notes'),
+      w: availW,
+      fontSize: 2.8,
+      text: 'Read all instructions carefully. Shade bubbles completely using a dark #2 pencil or black pen. For write-in sections, print clearly inside the boxes.',
+    });
+  }
+
+  // 3. Exam Sections
+  let partNumber = 1;
+  const toRoman = (n) => ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'][n - 1] || String(n);
+  let currentQ = 1;
+
+  // MCQ
+  if (els.genMcqEnabled?.checked) {
+    const count = Math.max(1, parseInt(els.genMcqCount?.value || '30', 10));
+    const choices = els.genMcqChoices?.value || 'ABCD';
+    const colsVal = els.genMcqCols?.value || 'auto';
+    const cols = colsVal === 'auto' ? (count <= 10 ? 1 : count <= 30 ? 2 : count <= 60 ? 3 : 4) : parseInt(colsVal, 10);
+    const pts = Math.max(1, parseFloat(els.genMcqPts?.value || '1'));
+
+    zones.push({
+      type: 'mcq',
+      id: uid('mcq'),
+      label: `Part ${toRoman(partNumber++)} — Multiple Choice`,
+      count,
+      start: currentQ,
+      choices,
+      columns: cols,
+      pointsPerItem: pts,
+      w: availW,
+    });
+    currentQ += count;
+  }
+
+  // True / False
+  if (els.genTfEnabled?.checked) {
+    const count = Math.max(1, parseInt(els.genTfCount?.value || '10', 10));
+    const colsVal = els.genTfCols?.value || 'auto';
+    const cols = colsVal === 'auto' ? (count <= 10 ? 2 : count <= 25 ? 3 : 4) : parseInt(colsVal, 10);
+    const pts = Math.max(1, parseFloat(els.genTfPts?.value || '1'));
+
+    zones.push({
+      type: 'truefalse',
+      id: uid('tf'),
+      label: `Part ${toRoman(partNumber++)} — True or False`,
+      count,
+      start: currentQ,
+      choices: ['T', 'F'],
+      columns: cols,
+      pointsPerItem: pts,
+      w: availW,
+    });
+    currentQ += count;
+  }
+
+  // Modified True / False
+  if (els.genModtfEnabled?.checked) {
+    const count = Math.max(1, parseInt(els.genModtfCount?.value || '5', 10));
+    const pts = Math.max(1, parseFloat(els.genModtfPts?.value || '2'));
+
+    zones.push({
+      type: 'modified_tf',
+      id: uid('modtf'),
+      label: `Part ${toRoman(partNumber++)} — Modified True / False (Write correction if False)`,
+      count,
+      start: currentQ,
+      choices: ['T', 'F'],
+      corrWidth: Math.min(60, Math.floor(availW * 0.42)),
+      columns: 1,
+      pointsPerItem: pts,
+      w: availW,
+    });
+    currentQ += count;
+  }
+
+  // Short Answer / Identification
+  if (els.genSaEnabled?.checked) {
+    const count = Math.max(1, parseInt(els.genSaCount?.value || '3', 10));
+    const pts = Math.max(1, parseFloat(els.genSaPts?.value || '2'));
+    const roman = toRoman(partNumber++);
+
+    for (let i = 0; i < count; i++) {
+      zones.push({
+        type: 'text_short',
+        id: uid('sa'),
+        label: `Part ${roman} — Q${currentQ}. Short Answer / Identification (${pts} pts)`,
+        w: availW,
+        boxHeight: 14,
+        points: pts,
+        charset: 'any',
+      });
+      currentQ++;
+    }
+  }
+
+  // Essay
+  if (els.genEssayEnabled?.checked) {
+    const count = Math.max(1, parseInt(els.genEssayCount?.value || '1', 10));
+    const pts = Math.max(1, parseFloat(els.genEssayPts?.value || '5'));
+    const roman = toRoman(partNumber++);
+
+    for (let i = 0; i < count; i++) {
+      zones.push({
+        type: 'text_essay',
+        id: uid('essay'),
+        label: `Part ${roman} — Q${currentQ}. Essay / Discussion (${pts} pts)`,
+        w: availW,
+        boxHeight: 38,
+        points: pts,
+        charset: 'any',
+      });
+      currentQ++;
+    }
+  }
+
+  if (zones.length <= (includeInstructions ? 2 : 1)) {
+    alert('Please enable at least one exam section (MCQ, True/False, Short Answer, or Essay).');
+    return;
+  }
+
+  const generatedTemplate = {
+    id: `exam-${Date.now().toString(36).slice(-6)}`,
+    title,
+    paper,
+    bubble: { diameter: 4.2, pitchX: 5.6, pitchY: 5.4 },
+    zones,
+  };
+
+  loadTemplate(generatedTemplate);
+  els.modalGenerator?.close();
+}
+
 // ---- Event Listeners Setup ----
 function initEvents() {
   // Global title
-  els.examTitle.addEventListener('input', () => {
+  els.examTitle?.addEventListener('input', () => {
     state.template.title = els.examTitle.value;
     update();
+  });
+
+  // Generator modal events
+  els.btnGenerator?.addEventListener('click', () => {
+    if (els.modalGenerator?.showModal) {
+      els.modalGenerator.showModal();
+    }
+  });
+  els.btnCloseGenerator?.addEventListener('click', () => els.modalGenerator?.close());
+  els.btnCancelGenerator?.addEventListener('click', () => els.modalGenerator?.close());
+  els.modalGenerator?.addEventListener('click', (e) => {
+    if (e.target === els.modalGenerator) els.modalGenerator.close();
+  });
+  els.btnGenerateExam?.addEventListener('click', () => {
+    generateExamFromGeneratorModal();
   });
 
   // Paper size dropdown (#paper-select)
@@ -1800,8 +2036,17 @@ function initEvents() {
   }).observe(els.preview);
 }
 
-// ---- Boot ----
+// ---- Boot Guard & Initialization ----
+function onReady(fn) {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', fn, { once: true });
+  } else {
+    queueMicrotask(fn);
+  }
+}
+
 async function init() {
+  initElements();
   initEvents();
 
   const saved = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY);
@@ -1819,4 +2064,4 @@ async function init() {
   await loadSample('exam-50');
 }
 
-init();
+onReady(init);

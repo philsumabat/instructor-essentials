@@ -2,7 +2,7 @@
   "schema": "omr-layout/1",
   "generator": "omr-sheet-builder/1.0.0",
   "templateId": "bio101-midterm-50",
-  "title": "BIO 101 — Midterm Examination",
+  "title": "Midterm Examination (50 MCQ + T/F + Short Answer)",
   "units": "mm",
   "page": {
     "paper": "A4",

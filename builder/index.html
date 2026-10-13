@@ -7,7 +7,6 @@
   <link rel="stylesheet" href="css/sheet.css">
   <link rel="stylesheet" href="css/app.css">
   <style id="page-rule">@page { size: A4; margin: 0; }</style>
-  <script type="module" src="js/app.js"></script>
 </head>
 <body>
   <!-- Top Navigation Bar -->
@@ -55,13 +54,19 @@
       <div class="preset-dropdown">
         <select id="sample-preset" aria-label="Exam presets">
           <option value="" disabled selected>Presets...</option>
-          <option value="exam-50">BIO 101 Midterm (50 MCQ, A4)</option>
-          <option value="exam-100">CHEM 201 Final Exam (100 MCQ, Letter)</option>
-          <option value="quiz-tf">HIST 110 Quiz (20 T/F & Mod T/F, Folio)</option>
-          <option value="quiz-bonus">QUIZ 101 (1-10 MCQ + Bonus Identification, A4)</option>
+          <option value="exam-50">50 MCQ + T/F + Short Answer (A4)</option>
+          <option value="exam-100">100-Item MCQ (Letter)</option>
+          <option value="quiz-tf">20 T/F &amp; Mod T/F (Folio)</option>
+          <option value="quiz-bonus">10 MCQ + Bonus Identification (A4)</option>
           <option value="blank">Blank Sheet</option>
         </select>
       </div>
+
+      <!-- Quick Exam Generator -->
+      <button type="button" id="btn-generator" class="btn btn--secondary" title="Quickly generate a custom exam sheet layout">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        <span>⚡ Generator</span>
+      </button>
 
       <!-- Save & Load Exam Builds -->
       <button type="button" id="btn-save-build" class="btn btn--secondary" title="Save current exam build to browser library">
@@ -331,5 +336,207 @@
       </div>
     </div>
   </dialog>
+
+  <!-- Exam Generator Modal Dialog -->
+  <dialog class="modal-dialog modal-dialog--generator app-chrome" id="modal-generator">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div>
+          <h2 class="modal-title">✨ Exam Sheet Generator</h2>
+          <p class="modal-desc">Configure sections to assemble a millimeter-accurate OMR exam sheet instantly.</p>
+        </div>
+        <button type="button" class="btn-close-modal" id="btn-close-generator" aria-label="Close">✕</button>
+      </div>
+
+      <div class="modal-body" style="display: flex; flex-direction: column; gap: 1rem; max-height: 70vh; overflow-y: auto;">
+        <!-- 1. Document & Header Settings -->
+        <fieldset class="gen-fieldset">
+          <legend class="gen-legend">1. Document &amp; Student Header</legend>
+          <div class="gen-form-grid">
+            <div class="gen-field gen-field--span-2">
+              <label class="gen-label" for="gen-exam-title">Exam Title</label>
+              <input type="text" id="gen-exam-title" class="gen-input" value="MIDTERM EXAMINATION" placeholder="e.g. GENERAL ASSESSMENT">
+            </div>
+            <div class="gen-field">
+              <label class="gen-label" for="gen-paper">Paper Size</label>
+              <select id="gen-paper" class="gen-select">
+                <option value="A4" selected>A4 (210 × 297 mm)</option>
+                <option value="Letter">Letter (215.9 × 279.4 mm)</option>
+                <option value="Folio">Folio (215.9 × 330.2 mm)</option>
+              </select>
+            </div>
+            <div class="gen-field">
+              <label class="gen-label" for="gen-sid-digits">Student ID Digits</label>
+              <input type="number" id="gen-sid-digits" class="gen-input" value="8" min="4" max="15">
+            </div>
+            <div class="gen-field gen-field--span-2">
+              <label class="gen-label" for="gen-sid-mode">Student ID Format</label>
+              <select id="gen-sid-mode" class="gen-select">
+                <option value="fields" selected>Standard 2-Line Header Box (Partitioned OCR Digits)</option>
+                <option value="grid">Dedicated 10-Row Bubble Grid (OMR Shading)</option>
+              </select>
+            </div>
+            <div class="gen-field gen-field--span-2">
+              <label class="gen-checkbox-label">
+                <input type="checkbox" id="gen-instructions" checked>
+                <span>Include Standard Student Instructions Banner</span>
+              </label>
+            </div>
+          </div>
+        </fieldset>
+
+        <!-- 2. Dynamic Section Builder -->
+        <fieldset class="gen-fieldset">
+          <legend class="gen-legend">2. Exam Sections</legend>
+          <div class="gen-sections-list">
+
+            <!-- Multiple Choice (MCQ) -->
+            <div class="gen-section-card">
+              <div class="gen-section-header">
+                <label class="gen-checkbox-label">
+                  <input type="checkbox" id="gen-mcq-enabled" checked>
+                  <strong>Part I — Multiple Choice (MCQ)</strong>
+                </label>
+                <span class="gen-badge">Bubble Grid</span>
+              </div>
+              <div class="gen-section-body" id="gen-mcq-settings">
+                <div class="gen-field-inline">
+                  <label>Items:</label>
+                  <input type="number" id="gen-mcq-count" class="gen-input gen-input--sm" value="30" min="1" max="100">
+                </div>
+                <div class="gen-field-inline">
+                  <label>Choices:</label>
+                  <select id="gen-mcq-choices" class="gen-select gen-select--sm">
+                    <option value="ABCD" selected>A–D (4)</option>
+                    <option value="ABCDE">A–E (5)</option>
+                  </select>
+                </div>
+                <div class="gen-field-inline">
+                  <label>Columns:</label>
+                  <select id="gen-mcq-cols" class="gen-select gen-select--sm">
+                    <option value="auto" selected>Auto</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                  </select>
+                </div>
+                <div class="gen-field-inline">
+                  <label>Pts/Item:</label>
+                  <input type="number" id="gen-mcq-pts" class="gen-input gen-input--sm" value="1" min="1" max="10">
+                </div>
+              </div>
+            </div>
+
+            <!-- Simple True / False -->
+            <div class="gen-section-card">
+              <div class="gen-section-header">
+                <label class="gen-checkbox-label">
+                  <input type="checkbox" id="gen-tf-enabled" checked>
+                  <strong>Part II — Simple True / False</strong>
+                </label>
+                <span class="gen-badge">T / F Bubbles</span>
+              </div>
+              <div class="gen-section-body" id="gen-tf-settings">
+                <div class="gen-field-inline">
+                  <label>Items:</label>
+                  <input type="number" id="gen-tf-count" class="gen-input gen-input--sm" value="10" min="1" max="50">
+                </div>
+                <div class="gen-field-inline">
+                  <label>Columns:</label>
+                  <select id="gen-tf-cols" class="gen-select gen-select--sm">
+                    <option value="auto" selected>Auto</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                  </select>
+                </div>
+                <div class="gen-field-inline">
+                  <label>Pts/Item:</label>
+                  <input type="number" id="gen-tf-pts" class="gen-input gen-input--sm" value="1" min="1" max="10">
+                </div>
+              </div>
+            </div>
+
+            <!-- Modified True / False -->
+            <div class="gen-section-card">
+              <div class="gen-section-header">
+                <label class="gen-checkbox-label">
+                  <input type="checkbox" id="gen-modtf-enabled">
+                  <strong>Part III — Modified True / False</strong>
+                </label>
+                <span class="gen-badge">T / F + Write-in</span>
+              </div>
+              <div class="gen-section-body" id="gen-modtf-settings">
+                <div class="gen-field-inline">
+                  <label>Items:</label>
+                  <input type="number" id="gen-modtf-count" class="gen-input gen-input--sm" value="5" min="1" max="25">
+                </div>
+                <div class="gen-field-inline">
+                  <label>Pts/Item:</label>
+                  <input type="number" id="gen-modtf-pts" class="gen-input gen-input--sm" value="2" min="1" max="10">
+                </div>
+              </div>
+            </div>
+
+            <!-- Short Answer / Identification -->
+            <div class="gen-section-card">
+              <div class="gen-section-header">
+                <label class="gen-checkbox-label">
+                  <input type="checkbox" id="gen-sa-enabled">
+                  <strong>Part IV — Short Answer / Identification</strong>
+                </label>
+                <span class="gen-badge">Write-in OCR</span>
+              </div>
+              <div class="gen-section-body" id="gen-sa-settings">
+                <div class="gen-field-inline">
+                  <label>Questions:</label>
+                  <input type="number" id="gen-sa-count" class="gen-input gen-input--sm" value="3" min="1" max="20">
+                </div>
+                <div class="gen-field-inline">
+                  <label>Pts/Question:</label>
+                  <input type="number" id="gen-sa-pts" class="gen-input gen-input--sm" value="2" min="1" max="10">
+                </div>
+              </div>
+            </div>
+
+            <!-- Essay / Discussion -->
+            <div class="gen-section-card">
+              <div class="gen-section-header">
+                <label class="gen-checkbox-label">
+                  <input type="checkbox" id="gen-essay-enabled">
+                  <strong>Part V — Essay / Discussion</strong>
+                </label>
+                <span class="gen-badge">Multi-Line Box</span>
+              </div>
+              <div class="gen-section-body" id="gen-essay-settings">
+                <div class="gen-field-inline">
+                  <label>Questions:</label>
+                  <input type="number" id="gen-essay-count" class="gen-input gen-input--sm" value="1" min="1" max="5">
+                </div>
+                <div class="gen-field-inline">
+                  <label>Pts/Question:</label>
+                  <input type="number" id="gen-essay-pts" class="gen-input gen-input--sm" value="5" min="1" max="50">
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </fieldset>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" id="btn-cancel-generator" class="btn btn--secondary">Cancel</button>
+        <button type="button" id="btn-generate-exam" class="btn btn--primary">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m5 12 5 5L20 7"/></svg>
+          <span>Generate Exam Sheet</span>
+        </button>
+      </div>
+    </div>
+  </dialog>
+
+  <script type="module" src="js/app.js"></script>
 </body>
 </html>

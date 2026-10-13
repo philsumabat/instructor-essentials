@@ -15,10 +15,10 @@ test('checker.html has inlined PRESETS and zero fetch() calls for presets', asyn
   assert.ok(!checkerHtml.includes('fetchLayout'), 'Must not have fetchLayout fallback function');
 
   // Verify preset selector options
-  assert.ok(checkerHtml.includes('<option value="exam-50">BIO 101 Midterm (50 MCQ, A4)</option>'));
-  assert.ok(checkerHtml.includes('<option value="exam-100">CHEM 201 Final Exam (100 MCQ, Letter)</option>'));
-  assert.ok(checkerHtml.includes('<option value="quiz-tf">HIST 110 Quiz (20 T/F & Mod T/F, Folio)</option>'));
-  assert.ok(checkerHtml.includes('<option value="quiz-bonus">QUIZ 101 (1-10 MCQ + Bonus Identification, A4)</option>'));
+  assert.ok(checkerHtml.includes('<option value="exam-50">50 MCQ + T/F + Short Answer (A4)</option>'));
+  assert.ok(checkerHtml.includes('<option value="exam-100">100-Item MCQ (Letter)</option>'));
+  assert.ok(checkerHtml.includes('<option value="quiz-tf">20 T/F &amp; Mod T/F (Folio)</option>'));
+  assert.ok(checkerHtml.includes('<option value="quiz-bonus">10 MCQ + Bonus Identification (A4)</option>'));
   assert.ok(checkerHtml.includes('<option value="custom">Upload Custom Layout (.json)</option>'));
 
   // Extract <script> block and verify PRESETS dictionary

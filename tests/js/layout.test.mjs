@@ -28,7 +28,7 @@ test('layout engine builds 50-item exam accurately', async () => {
   const svg = renderSVG(layout);
   assert.match(svg, /<svg xmlns="http:\/\/www.w3.org\/2000\/svg"/);
   assert.match(svg, /data-aruco-id="0"/);
-  assert.match(svg, /BIO 101/);
+  assert.match(svg, /Midterm Examination/);
 
   // Check HTML output
   const html = renderStandaloneHTML(layout, '/* test css */');

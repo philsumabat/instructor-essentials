@@ -144,3 +144,75 @@ test('Checker Studio: Direct Layout/Package upload & Psychometric Insights', asy
   assert.ok(hardInsight.includes('Reteach'), 'Must recommend reteaching for very difficult items');
   assert.ok(hardInsight.includes('Strong Separator'), 'Must note strong discrimination');
 });
+
+test('Checker Studio: Symmetrical upload boxes for Key & Roster with CSV template generation', async () => {
+  const checkerHtml = await readFile(resolve(root, 'builder/checker.html'), 'utf8');
+
+  // Verify Answer Key card structure
+  assert.ok(checkerHtml.includes('id="card-key-quick"'), 'card-key-quick present');
+  assert.ok(checkerHtml.includes('id="key-dropzone"'), 'key-dropzone present');
+  assert.ok(checkerHtml.includes('id="input-key-scan"'), 'input-key-scan present');
+  assert.ok(checkerHtml.includes('id="btn-edit-key"'), 'btn-edit-key present');
+  assert.ok(checkerHtml.includes('id="btn-download-key-template"'), 'btn-download-key-template present');
+  assert.ok(checkerHtml.includes('id="key-status-box"'), 'key-status-box present');
+  assert.ok(checkerHtml.includes('id="btn-clear-key"'), 'btn-clear-key present');
+
+  // Verify Student Roster card structure
+  assert.ok(checkerHtml.includes('id="card-roster-quick"'), 'card-roster-quick present');
+  assert.ok(checkerHtml.includes('id="roster-dropzone"'), 'roster-dropzone present');
+  assert.ok(checkerHtml.includes('id="input-roster-direct"'), 'input-roster-direct present');
+  assert.ok(checkerHtml.includes('id="btn-download-roster-template"'), 'btn-download-roster-template present');
+  assert.ok(checkerHtml.includes('id="roster-status-box"'), 'roster-status-box present');
+  assert.ok(checkerHtml.includes('id="btn-clear-roster"'), 'btn-clear-roster present');
+
+  // Verify Starter Presets and Export Sheet are completely removed from Checker Studio
+  assert.ok(!checkerHtml.includes('id="preset-selector"'), 'preset-selector removed');
+  assert.ok(!checkerHtml.includes('id="btn-export-sheet"'), 'btn-export-sheet removed');
+  assert.ok(!checkerHtml.includes('id="btn-export-layout-json"'), 'btn-export-layout-json removed');
+  assert.ok(!checkerHtml.includes('id="advanced-layout-key-toggle"'), 'advanced-layout-key-toggle removed');
+
+  // Sandbox test: template download and upload functions
+  const scriptMatch = checkerHtml.match(/<script>([\s\S]*?)<\/script>/);
+  assert.ok(scriptMatch, 'Script block must be present');
+
+  let downloadedFile = null;
+  const mockEls = {};
+  const sandbox = {
+    document: {
+      getElementById: (id) => mockEls[id] || (mockEls[id] = { addEventListener: () => {}, style: {}, classList: { add: () => {}, remove: () => {} } }),
+      querySelectorAll: () => [],
+      querySelector: () => ({ textContent: '' }),
+      createElement: () => ({ getContext: () => ({}), addEventListener: () => {} }),
+      body: { classList: { add: () => {}, remove: () => {} }, appendChild: () => {} }
+    },
+    window: {},
+    console,
+    Uint8Array,
+    Uint32Array,
+    DataView,
+    TextEncoder,
+    TextDecoder,
+    Date,
+    Blob: typeof Blob !== 'undefined' ? Blob : class { constructor(parts) { this.parts = parts; } },
+    URL: { createObjectURL: () => 'blob:mock', revokeObjectURL: () => {} },
+    alert: () => {},
+    Image: class {},
+    FileReader: class {}
+  };
+  sandbox.window = sandbox;
+
+  const script = new vm.Script(scriptMatch[1]);
+  const ctx = vm.createContext(sandbox);
+  script.runInContext(ctx);
+
+  // Hook downloadFile after script runs
+  ctx.downloadFile = (name, content) => { downloadedFile = { name, content }; };
+
+  const downloadRosterTemplateCSV = vm.runInContext('downloadRosterTemplateCSV', ctx);
+  assert.equal(typeof downloadRosterTemplateCSV, 'function');
+  downloadRosterTemplateCSV();
+  assert.ok(downloadedFile, 'Roster CSV template must be downloaded');
+  assert.equal(downloadedFile.name, 'student_roster_template.csv');
+  assert.ok(downloadedFile.content.includes('Student ID,Student Name'));
+  assert.ok(downloadedFile.content.includes('10482901,Alice Walker'));
+});

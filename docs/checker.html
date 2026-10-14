@@ -288,6 +288,10 @@
       transition: all 0.2s ease;
     }
 
+    .dropzone--compact {
+      padding: 0.85rem 0.65rem;
+    }
+
     .dropzone:hover, .dropzone.is-dragover {
       border-color: var(--accent);
       background: var(--accent-light);
@@ -1353,7 +1357,7 @@
         
         <!-- Empty / Unloaded State -->
         <div id="layout-empty-state" style="display: flex; flex-direction: column; gap: 0.5rem;">
-          <div id="layout-dropzone" style="border: 2px dashed var(--border); border-radius: var(--radius-sm); padding: 0.85rem 0.65rem; text-align: center; background: var(--panel); cursor: pointer; transition: all 0.15s ease;" title="Drag &amp; drop layout.json or exam package .zip here, or click to upload">
+          <div id="layout-dropzone" class="dropzone dropzone--compact" title="Drag &amp; drop layout.json or exam package .zip here, or click to upload">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin: 0 auto 0.35rem auto; color: var(--accent); display: block;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
             <div style="font-weight: 700; font-size: 0.82rem; color: var(--text);">Drop Exam Layout Here</div>
             <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.15rem;">or click to upload (.json / .zip)</div>
@@ -1380,8 +1384,80 @@
         </div>
       </div>
 
+      <!-- Answer Key Selection -->
+      <div class="section-card" id="card-key-quick">
+        <h2 class="section-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 3-9.5 9.5"/><path d="m15.5 7.5 3 3M18 5l2 2"/></svg><span>Answer Key</span></h2>
+        
+        <!-- Empty / Unloaded State -->
+        <div id="key-empty-state" style="display: flex; flex-direction: column; gap: 0.5rem;">
+          <div id="key-dropzone" class="dropzone dropzone--compact" title="Drag &amp; drop filled master sheet scan, answer key JSON, or CSV here, or click to upload">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin: 0 auto 0.35rem auto; color: var(--accent); display: block;"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            <div style="font-weight: 700; font-size: 0.82rem; color: var(--text);">Drop Answer Key Scan or File</div>
+            <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.15rem;">or click to upload scan, .json, or .csv</div>
+            <input type="file" id="input-key-scan" accept="image/*,.json,.csv" style="display: none;">
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem;">
+            <button type="button" id="btn-edit-key" class="btn btn--secondary btn--sm" style="justify-content: center; gap: 0.35rem;" title="View or edit answer key values in visual editor">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              <span>Edit Key</span>
+            </button>
+            <button type="button" id="btn-download-key-template" class="btn btn--secondary btn--sm" style="justify-content: center; gap: 0.35rem;" title="Download answer key CSV template for active layout">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              <span>Key Template</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Loaded State -->
+        <div id="key-status-box" style="display: none; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.55rem 0.65rem; font-size: 0.78rem;">
+          <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 0.5rem;">
+            <div style="flex: 1; min-width: 0;">
+              <div style="font-weight: 700; color: var(--accent); margin-bottom: 0.15rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" id="key-title-display">Active Answer Key</div>
+              <div style="color: var(--text-muted); font-size: 0.72rem;" id="key-stats-display">—</div>
+            </div>
+            <div style="display: flex; gap: 0.25rem; flex-shrink: 0;">
+              <button type="button" id="btn-status-edit-key" class="btn btn--secondary btn-xs" title="Edit answer key values">Edit</button>
+              <button type="button" id="btn-clear-key" class="btn btn--secondary btn-xs is-danger" title="Unload active answer key">✕</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Student Roster Selection -->
+      <div class="section-card" id="card-roster-quick">
+        <h2 class="section-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Student Roster</span></h2>
+        
+        <!-- Empty / Unloaded State -->
+        <div id="roster-empty-state" style="display: flex; flex-direction: column; gap: 0.5rem;">
+          <div id="roster-dropzone" class="dropzone dropzone--compact" title="Drag &amp; drop student roster .csv here, or click to upload">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin: 0 auto 0.35rem auto; color: var(--accent); display: block;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            <div style="font-weight: 700; font-size: 0.82rem; color: var(--text);">Drop Student Roster CSV</div>
+            <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.15rem;">or click to upload (Student ID, Name)</div>
+            <input type="file" id="input-roster-direct" accept=".csv" style="display: none;">
+          </div>
+          <button type="button" id="btn-download-roster-template" class="btn btn--secondary btn--sm" style="width: 100%; justify-content: center; gap: 0.45rem;" title="Download sample roster CSV template">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span>Roster Template (CSV)</span>
+          </button>
+        </div>
+
+        <!-- Loaded State -->
+        <div id="roster-status-box" style="display: none; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.55rem 0.65rem; font-size: 0.78rem;">
+          <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 0.5rem;">
+            <div style="flex: 1; min-width: 0;">
+              <div style="font-weight: 700; color: var(--accent); margin-bottom: 0.15rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" id="roster-title-display">Student Roster Loaded</div>
+              <div style="color: var(--text-muted); font-size: 0.72rem;" id="roster-stats-display">—</div>
+            </div>
+            <div style="display: flex; gap: 0.25rem; flex-shrink: 0;">
+              <button type="button" id="btn-change-roster" class="btn btn--secondary btn-xs" title="Change roster CSV">Change</button>
+              <button type="button" id="btn-clear-roster" class="btn btn--secondary btn-xs is-danger" title="Unload active roster">✕</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Exam Scans Section -->
-      <div class="section-card">
+      <div class="section-card" id="card-scans-quick">
         <h2 class="section-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span>Exam Scans</span></h2>
         <div class="dropzone" id="dropzone-scans">
           <div class="dropzone__icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m16 16-4-4-4 4"/></svg></div>
@@ -1406,81 +1482,6 @@
           </button>
         </div>
       </div>
-
-      <!-- Advanced Layout & Key Options Collapsible -->
-      <details id="advanced-layout-key-toggle" class="sidebar-collapsible">
-        <summary class="sidebar-collapsible__summary">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-          <span>⚙ Advanced Layout &amp; Key Options</span>
-        </summary>
-        <div class="sidebar-collapsible__content">
-          <!-- Layout Section -->
-          <div class="section-card">
-            <h2 class="section-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18M9 21V9"/></svg><span>Starter Presets</span></h2>
-            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-              <select id="preset-selector" style="padding: 0.4rem; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-size: 0.82rem;">
-                <option value="exam-50">50 MCQ + T/F + Short Answer (A4)</option>
-                <option value="exam-100">100-Item MCQ (Letter)</option>
-                <option value="quiz-tf">20 T/F &amp; Mod T/F (Folio)</option>
-                <option value="quiz-bonus">10 MCQ + Bonus Identification (A4)</option>
-                <option value="custom">Upload Custom Layout (.json)</option>
-              </select>
-            </div>
-
-            <div id="custom-files-box" style="display: none; flex-direction: column; gap: 0.5rem;">
-              <label style="font-size: 0.75rem; color: var(--text-muted);">Layout JSON (from Sheet Builder):</label>
-              <input type="file" id="input-layout" accept=".json" style="font-size: 0.75rem;">
-
-              <label style="font-size: 0.75rem; color: var(--text-muted);">Roster CSV (Optional):</label>
-              <input type="file" id="input-roster" accept=".csv" style="font-size: 0.75rem;">
-            </div>
-
-            <div style="display: flex; flex-direction: column; gap: 0.4rem; margin-top: 0.35rem;">
-              <label class="btn btn--secondary btn--sm" style="cursor: pointer; justify-content: center;" title="Upload custom student roster CSV (ID & Name)">
-                <span>Upload Roster (.csv)</span>
-                <input type="file" id="input-roster-direct" accept=".csv" style="display: none;">
-              </label>
-              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem;">
-                <button type="button" id="btn-export-layout-json" class="btn btn--secondary btn--sm" title="Download active layout geometry JSON (ArUco & bubble coordinates)">
-                  <span>Export Layout</span>
-                </button>
-                <button type="button" id="btn-export-sheet" class="btn btn--secondary btn--sm" title="Download clean printable sheet image">
-                  <span>Export Sheet</span>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Answer Key Section -->
-          <div class="section-card">
-            <h2 class="section-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 3-9.5 9.5"/><path d="m15.5 7.5 3 3M18 5l2 2"/></svg><span>Answer Key</span></h2>
-            <div id="key-status-box" style="background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.5rem 0.65rem; font-size: 0.78rem;">
-              <div style="font-weight: 600; color: var(--accent); margin-bottom: 0.15rem;" id="key-title-display">Active Answer Key</div>
-              <div style="color: var(--text-muted); font-size: 0.72rem;" id="key-stats-display">50 Questions • 60 Points</div>
-            </div>
-
-            <div style="display: flex; flex-direction: column; gap: 0.4rem;">
-              <label class="btn btn--accent btn--sm" style="cursor: pointer; justify-content: center; gap: 0.4rem;" title="Photograph or scan a filled master exam sheet to automatically decode as answer key">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-                <span>Scan Sheet as Answer Key</span>
-                <input type="file" id="input-key-scan" accept="image/*" style="display: none;">
-              </label>
-              <label class="btn btn--secondary btn--sm" style="cursor: pointer; justify-content: center;" title="Upload custom answer key (.json)">
-                <span>Upload Answer Key</span>
-                <input type="file" id="input-key" accept=".json" style="display: none;">
-              </label>
-              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem;">
-                <button type="button" id="btn-edit-key" class="btn btn--secondary btn--sm" title="View or edit answer key values in modal">
-                  <span>Edit Key</span>
-                </button>
-                <button type="button" id="btn-download-key-template" class="btn btn--secondary btn--sm" title="Download JSON template for the active layout">
-                  <span>Template</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </details>
 
       <!-- Grading Settings Section -->
       <div class="section-card card--grading-settings">
@@ -2535,9 +2536,6 @@
           }
         }
 
-        $('preset-selector').value = 'custom';
-        $('custom-files-box').style.display = 'none';
-
         updateLayoutDisplay(rawJson.title || sourceName);
         updateKeyDisplay();
         validatePreflightKeyLayout();
@@ -2650,31 +2648,57 @@
     // Helper: Ensure Active Layout & Key Loaded
     function ensureActiveLayout() {
       if (!state.layout || !state.key) {
-        const selVal = $('preset-selector')?.value;
-        if (selVal && PRESETS[selVal]) {
-          state.layout = PRESETS[selVal].layout;
-          state.key = PRESETS[selVal].key;
-          state.roster = PRESETS[selVal].roster || SAMPLE_ROSTER;
+        state.layout = PRESETS['exam-50'].layout;
+        state.key = PRESETS['exam-50'].key;
+        if (!state.roster || state.roster.length === 0) {
+          state.roster = SAMPLE_ROSTER;
         }
       }
     }
 
-    // Update Active Answer Key Status Box
+    // Update Active Answer Key Status Box & Dropzone State
     function updateKeyDisplay() {
+      const emptyStateEl = $('key-empty-state');
+      const statusBoxEl = $('key-status-box');
       const titleEl = $('key-title-display');
       const statsEl = $('key-stats-display');
+
       if (!state.key) {
+        if (emptyStateEl) emptyStateEl.style.display = 'flex';
+        if (statusBoxEl) statusBoxEl.style.display = 'none';
         if (titleEl) titleEl.textContent = 'No Answer Key';
         if (statsEl) statsEl.textContent = 'Choose layout or saved build';
         validatePreflightKeyLayout();
         return;
       }
+      if (emptyStateEl) emptyStateEl.style.display = 'none';
+      if (statusBoxEl) statusBoxEl.style.display = 'block';
+
       if (titleEl) titleEl.textContent = state.key.title || 'Active Answer Key';
       const items = Object.values(state.key.items || {});
       const qCount = items.length;
       const totalPts = items.reduce((sum, it) => sum + (it.points || 1), 0);
       if (statsEl) statsEl.textContent = `${qCount} Questions • ${totalPts} Points`;
       validatePreflightKeyLayout();
+    }
+
+    // Update Student Roster Status Box & Dropzone State
+    function updateRosterDisplay() {
+      const emptyStateEl = $('roster-empty-state');
+      const statusBoxEl = $('roster-status-box');
+      const titleEl = $('roster-title-display');
+      const statsEl = $('roster-stats-display');
+
+      if (!state.roster || state.roster.length === 0) {
+        if (emptyStateEl) emptyStateEl.style.display = 'flex';
+        if (statusBoxEl) statusBoxEl.style.display = 'none';
+        return;
+      }
+      if (emptyStateEl) emptyStateEl.style.display = 'none';
+      if (statusBoxEl) statusBoxEl.style.display = 'block';
+
+      if (titleEl) titleEl.textContent = 'Student Roster Loaded';
+      if (statsEl) statsEl.textContent = `${state.roster.length} Students`;
     }
 
     // Preflight Mismatch Validation between Key and Layout
@@ -3106,59 +3130,32 @@
       }
     }
 
-    // Export Layout JSON
-    $('btn-export-layout-json').onclick = () => {
+    // Download Key Template CSV matching active layout
+    function downloadKeyTemplateCSV() {
       ensureActiveLayout();
       if (!state.layout) {
-        alert('Please select a preset layout or upload a custom layout first.');
+        alert('Please choose or upload an exam layout first.');
         return;
       }
-      const filename = `${(state.layout.title || 'exam_layout').toLowerCase().replace(/[^a-z0-9_-]+/g, '_')}.layout.json`;
-      downloadFile(filename, JSON.stringify(state.layout, null, 2), 'application/json');
-    };
-
-    // Export Blank Sheet Image (PNG)
-    $('btn-export-sheet').onclick = () => {
-      ensureActiveLayout();
-      if (!state.layout) {
-        alert('Please select a preset layout or upload a custom layout first.');
-        return;
-      }
-      const offscreen = document.createElement('canvas');
-      drawBlankSheet(state.layout, offscreen);
-      offscreen.toBlob((blob) => {
-        const filename = `${(state.layout.title || 'exam_sheet').toLowerCase().replace(/[^a-z0-9_-]+/g, '_')}.png`;
-        downloadFile(filename, blob, 'image/png');
-      }, 'image/png');
-    };
-
-    // Download Key Template JSON
-    $('btn-download-key-template').onclick = () => {
-      ensureActiveLayout();
-      if (!state.layout) {
-        alert('Please select a preset layout or upload a custom layout first.');
-        return;
-      }
-      const items = {};
       const seen = new Set();
+      const rows = ['Item #,Answer,Points'];
       for (const b of (state.layout.bubbles || [])) {
         if (b.item && !b.item.startsWith('sid[') && !seen.has(b.item)) {
           seen.add(b.item);
-          items[b.item] = {
-            kind: 'mcq',
-            answer: 'A',
-            points: 1
-          };
+          const isTF = (b.choice === 'T' || b.choice === 'F');
+          rows.push(`${b.item},${isTF ? 'T' : 'A'},1`);
         }
       }
-      const tpl = {
-        title: (state.layout.title || 'Exam') + ' Answer Key',
-        templateId: state.layout.id || 'exam-key',
-        items
-      };
-      const filename = `${(state.layout.title || 'exam_key').toLowerCase().replace(/[^a-z0-9_-]+/g, '_')}_template.json`;
-      downloadFile(filename, JSON.stringify(tpl, null, 2), 'application/json');
-    };
+      const csvContent = rows.join('\n') + '\n';
+      const filename = `${(state.layout.title || 'exam_key').toLowerCase().replace(/[^a-z0-9_-]+/g, '_')}_template.csv`;
+      downloadFile(filename, csvContent, 'text/csv');
+    }
+
+    // Download Sample Student Roster Template CSV
+    function downloadRosterTemplateCSV() {
+      const csvContent = 'Student ID,Student Name\n10482901,Alice Walker\n10482902,Benjamin Carter\n10482903,Chloe Davis\n10482904,David Evans\n10482905,Elena Foster\n10482906,Fiona Green\n10482907,George Harris\n10482908,Hannah Ibarra\n10482909,Ian Johnson\n10482910,Julia Kim\n';
+      downloadFile('student_roster_template.csv', csvContent, 'text/csv');
+    }
 
     // ---- Interactive Visual Answer Key Editor (Parity with Sheet Builder) ----
     const currentModalKey = { items: {}, passScore: 0 };
@@ -3618,113 +3615,118 @@
       if (e.target === $('modal-key-editor')) $('modal-key-editor').close();
     };
 
-    // Preset / Custom Layout Switcher
-    $('preset-selector').onchange = (e) => {
-      const val = e.target.value;
-      if (val === 'custom') {
-        $('custom-files-box').style.display = 'flex';
-      } else {
-        $('custom-files-box').style.display = 'none';
-        if (PRESETS[val]) {
-          state.layout = PRESETS[val].layout;
-          state.key = PRESETS[val].key;
-          state.roster = PRESETS[val].roster || SAMPLE_ROSTER;
-          updateKeyDisplay();
-          updateLayoutDisplay(PRESETS[val].name);
-        }
-      }
-    };
-
-    // Custom File Upload & Saved Builds Handlers
-    $('input-layout-direct')?.addEventListener('change', (e) => {
-      handleLayoutUpload(e.target.files[0]);
-    });
-
-    $('btn-open-saved-builds')?.addEventListener('click', openSavedBuildsPicker);
-    $('btn-change-layout')?.addEventListener('click', openSavedBuildsPicker);
-    $('btn-clear-layout')?.addEventListener('click', () => {
-      state.layout = null;
-      state.key = null;
-      updateLayoutDisplay();
-      updateKeyDisplay();
-    });
-
-    const layoutDropzone = $('layout-dropzone');
-    if (layoutDropzone) {
-      layoutDropzone.onclick = () => $('input-layout-direct')?.click();
-      layoutDropzone.ondragover = (e) => { e.preventDefault(); layoutDropzone.style.borderColor = 'var(--accent)'; };
-      layoutDropzone.ondragleave = () => { layoutDropzone.style.borderColor = 'var(--border)'; };
-      layoutDropzone.ondrop = (e) => {
-        e.preventDefault();
-        layoutDropzone.style.borderColor = 'var(--border)';
-        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-          handleLayoutUpload(e.dataTransfer.files[0]);
-        }
-      };
-    }
-
-    $('btn-close-saved-builds')?.addEventListener('click', () => $('modal-saved-builds-picker')?.close());
-    $('btn-cancel-saved-builds')?.addEventListener('click', () => $('modal-saved-builds-picker')?.close());
-    $('modal-saved-builds-picker')?.addEventListener('click', (e) => {
-      if (e.target === $('modal-saved-builds-picker')) $('modal-saved-builds-picker').close();
-    });
-
-    $('input-layout').onchange = (e) => {
-      handleLayoutUpload(e.target.files[0]);
-    };
-
-    $('input-key').onchange = (e) => {
-      const file = e.target.files[0];
+    // Answer Key Upload Handler (Image Scan, JSON, or CSV)
+    function handleAnswerKeyUpload(file) {
       if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (evt) => {
-        try {
-          const json = JSON.parse(evt.target.result);
-          state.key = parseAnswerKey(json);
-          updateKeyDisplay();
-          alert(`Loaded custom answer key: ${Object.keys(state.key.items).length} items.`);
-          if (state.scans.length > 0) {
-            $('btn-grade-now').click();
-          }
-        } catch (err) {
-          alert("Error parsing answer key JSON: " + err.message);
-        }
-      };
-      reader.readAsText(file);
-    };
+      const fname = file.name.toLowerCase();
 
-    $('input-key-scan').onchange = (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      ensureActiveLayout();
-      if (!state.layout) {
-        alert("Please choose a preset layout or upload a layout JSON first so question bubbles can be located.");
+      // Case 1: Master Answer Key Scan Image
+      if (file.type.startsWith('image/') || fname.endsWith('.jpg') || fname.endsWith('.jpeg') || fname.endsWith('.png') || fname.endsWith('.webp')) {
+        ensureActiveLayout();
+        if (!state.layout) {
+          alert("Please upload or choose an exam layout first so question bubbles can be located on the scanned answer sheet.");
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          const img = new Image();
+          img.onload = () => {
+            try {
+              const decodedKey = decodeMasterKeyFromScan(img, state.layout);
+              state.key = decodedKey;
+              updateKeyDisplay();
+              validatePreflightKeyLayout();
+              const count = Object.keys(decodedKey.items).length;
+              alert(`✔ Master Answer Key Decoded!\n\nRecognized ${count} question answers from "${file.name}".\n\nYou can click 'Edit Key' to verify or adjust point values.`);
+              if (state.scans.length > 0) {
+                $('btn-grade-now').click();
+              }
+            } catch (err) {
+              alert("Error decoding answer key from scanned sheet: " + err.message);
+            }
+          };
+          img.onerror = () => alert("Could not load image file.");
+          img.src = evt.target.result;
+        };
+        reader.readAsDataURL(file);
         return;
       }
-      const reader = new FileReader();
-      reader.onload = (evt) => {
-        const img = new Image();
-        img.onload = () => {
+
+      // Case 2: JSON file
+      if (fname.endsWith('.json')) {
+        const reader = new FileReader();
+        reader.onload = (evt) => {
           try {
-            const decodedKey = decodeMasterKeyFromScan(img, state.layout);
-            state.key = decodedKey;
+            const json = JSON.parse(evt.target.result);
+            state.key = parseAnswerKey(json);
             updateKeyDisplay();
             validatePreflightKeyLayout();
-            const count = Object.keys(decodedKey.items).length;
-            alert(`✔ Master Answer Key Decoded!\n\nRecognized ${count} question answers from "${file.name}".\n\nYou can click 'Edit Key' to verify or adjust point values.`);
+            alert(`Loaded custom answer key: ${Object.keys(state.key.items).length} items.`);
             if (state.scans.length > 0) {
               $('btn-grade-now').click();
             }
           } catch (err) {
-            alert("Error decoding answer key from scanned sheet: " + err.message);
+            alert("Error parsing answer key JSON: " + err.message);
           }
         };
-        img.onerror = () => alert("Could not load image file.");
-        img.src = evt.target.result;
-      };
-      reader.readAsDataURL(file);
-    };
+        reader.readAsText(file);
+        return;
+      }
 
+      // Case 3: CSV file
+      if (fname.endsWith('.csv')) {
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          try {
+            const lines = evt.target.result.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+            if (lines.length < 2) throw new Error("CSV file is empty or missing headers.");
+            const header = parseCSVLine(lines[0]).map(h => h.toLowerCase().trim());
+            const itemCol = header.findIndex(h => h.includes('item') || h.includes('question') || h.includes('#'));
+            const ansCol = header.findIndex(h => h.includes('answer') || h.includes('key'));
+            const ptsCol = header.findIndex(h => h.includes('point') || h.includes('pts') || h.includes('score'));
+
+            const items = {};
+            for (let i = 1; i < lines.length; i++) {
+              const row = parseCSVLine(lines[i]);
+              if (row.length === 0) continue;
+              const itNum = itemCol !== -1 ? row[itemCol].trim() : String(i);
+              const ans = ansCol !== -1 ? row[ansCol].trim() : (row[1]?.trim() || '');
+              const pts = ptsCol !== -1 ? parseFloat(row[ptsCol]) : 1;
+              if (itNum && ans) {
+                const isTF = (ans === 'T' || ans === 'F' || ans.toLowerCase() === 'true' || ans.toLowerCase() === 'false');
+                items[itNum] = {
+                  answer: ans,
+                  points: isNaN(pts) ? 1 : pts,
+                  kind: isTF ? 'tf' : 'mcq'
+                };
+              }
+            }
+            if (Object.keys(items).length === 0) throw new Error("No valid question items found in CSV.");
+            state.key = {
+              title: file.name.replace(/\.[^/.]+$/, "") + " Answer Key",
+              templateId: 'custom-csv',
+              total_points: Object.values(items).reduce((s, it) => s + (it.points || 1), 0),
+              pass_score: Math.round(Object.values(items).reduce((s, it) => s + (it.points || 1), 0) * 0.6),
+              items
+            };
+            updateKeyDisplay();
+            validatePreflightKeyLayout();
+            alert(`Loaded CSV answer key: ${Object.keys(items).length} items.`);
+            if (state.scans.length > 0) {
+              $('btn-grade-now').click();
+            }
+          } catch (err) {
+            alert("Error parsing answer key CSV: " + err.message);
+          }
+        };
+        reader.readAsText(file);
+        return;
+      }
+
+      alert("Unsupported file format. Please upload an answer sheet image (JPG, PNG), answer key .json, or key .csv.");
+    }
+
+    // Student Roster Upload Handler
     function handleRosterUpload(file) {
       if (!file) return;
       const reader = new FileReader();
@@ -3736,6 +3738,7 @@
             return;
           }
           state.roster = parsed;
+          updateRosterDisplay();
           // Immediately re-match student names if grades already exist
           if (state.results && state.results.grades) {
             state.results.grades.forEach(g => {
@@ -3752,10 +3755,70 @@
       reader.readAsText(file);
     }
 
-    $('input-roster').onchange = (e) => handleRosterUpload(e.target.files[0]);
-    if ($('input-roster-direct')) {
-      $('input-roster-direct').onchange = (e) => handleRosterUpload(e.target.files[0]);
+    // Helper: Setup Drag & Drop and File Input on a Card Dropzone
+    function setupCardDropzone(dropzoneEl, inputEl, handler) {
+      if (!dropzoneEl || !inputEl) return;
+      dropzoneEl.onclick = () => inputEl.click();
+      dropzoneEl.ondragover = (e) => {
+        e.preventDefault();
+        dropzoneEl.classList.add('is-dragover');
+      };
+      dropzoneEl.ondragleave = () => {
+        dropzoneEl.classList.remove('is-dragover');
+      };
+      dropzoneEl.ondrop = (e) => {
+        e.preventDefault();
+        dropzoneEl.classList.remove('is-dragover');
+        if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]) {
+          handler(e.dataTransfer.files[0]);
+        }
+      };
+      inputEl.onchange = (e) => {
+        if (e.target.files && e.target.files[0]) {
+          handler(e.target.files[0]);
+        }
+      };
     }
+
+    // Initialize Card Dropzones
+    setupCardDropzone($('layout-dropzone'), $('input-layout-direct'), handleLayoutUpload);
+    setupCardDropzone($('key-dropzone'), $('input-key-scan'), handleAnswerKeyUpload);
+    setupCardDropzone($('roster-dropzone'), $('input-roster-direct'), handleRosterUpload);
+
+    // Layout Actions
+    $('btn-open-saved-builds')?.addEventListener('click', openSavedBuildsPicker);
+    $('btn-change-layout')?.addEventListener('click', openSavedBuildsPicker);
+    $('btn-clear-layout')?.addEventListener('click', () => {
+      state.layout = null;
+      state.key = null;
+      updateLayoutDisplay();
+      updateKeyDisplay();
+      validatePreflightKeyLayout();
+    });
+
+    // Answer Key Actions
+    $('btn-edit-key')?.addEventListener('click', openAnswerKeyModal);
+    $('btn-status-edit-key')?.addEventListener('click', openAnswerKeyModal);
+    $('btn-download-key-template')?.addEventListener('click', downloadKeyTemplateCSV);
+    $('btn-clear-key')?.addEventListener('click', () => {
+      state.key = null;
+      updateKeyDisplay();
+      validatePreflightKeyLayout();
+    });
+
+    // Student Roster Actions
+    $('btn-download-roster-template')?.addEventListener('click', downloadRosterTemplateCSV);
+    $('btn-change-roster')?.addEventListener('click', () => $('input-roster-direct')?.click());
+    $('btn-clear-roster')?.addEventListener('click', () => {
+      state.roster = [];
+      updateRosterDisplay();
+    });
+
+    $('btn-close-saved-builds')?.addEventListener('click', () => $('modal-saved-builds-picker')?.close());
+    $('btn-cancel-saved-builds')?.addEventListener('click', () => $('modal-saved-builds-picker')?.close());
+    $('modal-saved-builds-picker')?.addEventListener('click', (e) => {
+      if (e.target === $('modal-saved-builds-picker')) $('modal-saved-builds-picker').close();
+    });
 
     // Window references for testability and debugging
     window.PRESETS = PRESETS;
@@ -4264,21 +4327,19 @@
 
     // 1-Click Sample Test
     $('btn-sample-grade').onclick = async () => {
-      const activePresetKey = $('preset-selector').value;
-      if (activePresetKey !== 'custom' && PRESETS[activePresetKey]) {
-        state.layout = PRESETS[activePresetKey].layout;
-        state.key = PRESETS[activePresetKey].key;
-        state.roster = PRESETS[activePresetKey].roster || SAMPLE_ROSTER;
-        updateLayoutDisplay(PRESETS[activePresetKey].name);
+      if (!state.layout || !state.key) {
+        state.layout = PRESETS['exam-50'].layout;
+        state.key = PRESETS['exam-50'].key;
+        state.roster = SAMPLE_ROSTER;
+        updateLayoutDisplay(PRESETS['exam-50'].name);
       } else {
-        if (!state.layout || !state.key) {
-          state.layout = PRESETS['exam-50'].layout;
-          state.key = PRESETS['exam-50'].key;
+        if (!state.roster || state.roster.length === 0) {
           state.roster = SAMPLE_ROSTER;
         }
-        updateLayoutDisplay(PRESETS['exam-50'].name);
+        updateLayoutDisplay(state.layout.title || 'Active Layout');
       }
       updateKeyDisplay();
+      updateRosterDisplay();
 
       const pxPerMm = 4.0;
       const targetW = Math.round((state.layout.page.width || 210) * pxPerMm);
@@ -5543,6 +5604,7 @@
     window.computePsychometrics = computePsychometrics;
     window.processExamScan = processExamScan;
     window.updateKeyDisplay = updateKeyDisplay;
+    window.updateRosterDisplay = updateRosterDisplay;
     window.validatePreflightKeyLayout = validatePreflightKeyLayout;
     window.renderBellCurve = renderBellCurve;
 
@@ -5560,6 +5622,7 @@
     // Initial boot display
     updateLayoutDisplay();
     updateKeyDisplay();
+    updateRosterDisplay();
   </script>
 </body>
 </html>

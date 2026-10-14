@@ -14,13 +14,6 @@ test('checker.html has inlined PRESETS and zero fetch() calls for presets', asyn
   assert.ok(!checkerHtml.includes('fetch("dist/'), 'Must not call fetch for dist layouts');
   assert.ok(!checkerHtml.includes('fetchLayout'), 'Must not have fetchLayout fallback function');
 
-  // Verify preset selector options
-  assert.ok(checkerHtml.includes('<option value="exam-50">50 MCQ + T/F + Short Answer (A4)</option>'));
-  assert.ok(checkerHtml.includes('<option value="exam-100">100-Item MCQ (Letter)</option>'));
-  assert.ok(checkerHtml.includes('<option value="quiz-tf">20 T/F &amp; Mod T/F (Folio)</option>'));
-  assert.ok(checkerHtml.includes('<option value="quiz-bonus">10 MCQ + Bonus Identification (A4)</option>'));
-  assert.ok(checkerHtml.includes('<option value="custom">Upload Custom Layout (.json)</option>'));
-
   // Extract <script> block and verify PRESETS dictionary
   const scriptMatch = checkerHtml.match(/<script>([\s\S]*?)<\/script>/);
   assert.ok(scriptMatch, 'Script block must be present');
@@ -493,16 +486,18 @@ test('checker.html is rebranded to Instructor Essentials in title, meta tags, an
   assert.ok(checkerHtml.includes('<h1 class="app-brand__title">Instructor Essentials</h1>'), 'Brand heading must be Instructor Essentials');
 });
 
-test('checker.html implements progressive disclosure in sidebar, discreet collapsible toggle, and prominent results export bar', async () => {
+test('checker.html implements progressive disclosure in sidebar, modular upload cards, and prominent results export bar', async () => {
   const checkerHtml = await readFile(resolve(root, 'builder/checker.html'), 'utf8');
 
   // Sidebar initial buttons
   assert.ok(checkerHtml.includes('id="btn-sidebar-grade"'), 'Sidebar Grade Scans button present');
   assert.ok(checkerHtml.includes('id="btn-sidebar-sample"'), 'Sidebar 1-Click Sample Test button present');
 
-  // Discreet collapsible toggle in sidebar
-  assert.ok(checkerHtml.includes('id="advanced-layout-key-toggle"'), 'Advanced layout & key collapsible toggle present');
-  assert.ok(checkerHtml.includes('⚙ Advanced Layout &amp; Key Options'), 'Collapsible toggle label present');
+  // Modular upload cards in sidebar
+  assert.ok(checkerHtml.includes('id="card-layout-quick"'), 'Exam layout card present');
+  assert.ok(checkerHtml.includes('id="card-key-quick"'), 'Answer key card present');
+  assert.ok(checkerHtml.includes('id="card-roster-quick"'), 'Student roster card present');
+  assert.ok(checkerHtml.includes('id="card-scans-quick"'), 'Exam scans card present');
 
   // Class modifiers for progressive disclosure
   assert.ok(checkerHtml.includes('card--grading-settings'), 'Grading settings card has progressive disclosure class');

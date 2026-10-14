@@ -61,9 +61,10 @@ test('Checker Studio: Direct Layout/Package upload & Psychometric Insights', asy
   assert.ok(checkerHtml.includes('accept=".json,.zip"'), 'Layout upload accepts .json and .zip');
   assert.ok(docsCheckerHtml.includes('id="card-layout-quick"'), 'Quick layout card present in docs/checker.html');
 
-  // 2. Psychometric reference guide and insights column
+  // 2. Psychometric reference guide and insights / signals column
   assert.ok(checkerHtml.includes('id="card-psychometric-guide"'), 'Psychometric guide card present in Tab 3');
-  assert.ok(checkerHtml.includes('Insights &amp; Classroom Action'), 'Insights column header in item table');
+  assert.ok(checkerHtml.includes('Signals &amp; Actions') || checkerHtml.includes('Insights &amp; Classroom Action'), 'Signals & Actions column header in item table');
+  assert.ok(checkerHtml.includes('Dead Options (0%)'), 'Dead Options column header in item table');
   assert.ok(checkerHtml.includes('id="analysis-stat-alpha-sub"'), 'Alpha subtitle metric card present');
 
   // 3. Test script functions in sandbox

@@ -1062,6 +1062,75 @@
       white-space: nowrap;
     }
 
+    /* Item Analysis Diagnostics & Dead Distractor Badges */
+    .badge-dead-opt {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(139, 92, 246, 0.12);
+      color: #8b5cf6;
+      border: 1px solid rgba(139, 92, 246, 0.35);
+      font-weight: 700;
+      font-size: 0.72rem;
+      min-width: 20px;
+      height: 20px;
+      padding: 0 4px;
+      border-radius: 4px;
+      margin: 1px;
+    }
+    .sig-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+      white-space: nowrap;
+      margin: 1px;
+    }
+    .sig-badge--miskey {
+      background: rgba(239, 68, 68, 0.14);
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      font-weight: 700;
+    }
+    .sig-badge--low {
+      background: rgba(245, 158, 11, 0.14);
+      color: #f59e0b;
+      border: 1px solid rgba(245, 158, 11, 0.35);
+    }
+    .sig-badge--strong {
+      background: rgba(16, 185, 129, 0.14);
+      color: #10b981;
+      border: 1px solid rgba(16, 185, 129, 0.35);
+    }
+    .sig-badge--hard {
+      background: rgba(249, 115, 22, 0.14);
+      color: #f97316;
+      border: 1px solid rgba(249, 115, 22, 0.35);
+    }
+    .sig-badge--easy {
+      background: rgba(59, 130, 246, 0.14);
+      color: #3b82f6;
+      border: 1px solid rgba(59, 130, 246, 0.35);
+    }
+    .sig-badge--misconception {
+      background: rgba(236, 72, 153, 0.14);
+      color: #ec4899;
+      border: 1px solid rgba(236, 72, 153, 0.35);
+    }
+    .sig-badge--optimal {
+      background: rgba(16, 185, 129, 0.08);
+      color: #10b981;
+      border: 1px solid rgba(16, 185, 129, 0.25);
+    }
+    .sig-badge--dead {
+      background: rgba(139, 92, 246, 0.12);
+      color: #8b5cf6;
+      border: 1px solid rgba(139, 92, 246, 0.35);
+    }
+
     /* Visual Answer Key Editor styles (Parity with Sheet Builder) */
     .key-toolbar-strip {
       display: flex;
@@ -1281,15 +1350,34 @@
       <!-- Exam Layout Selection -->
       <div class="section-card" id="card-layout-quick">
         <h2 class="section-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18M9 21V9"/></svg><span>Exam Layout</span></h2>
-        <div id="layout-status-box" style="background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.5rem 0.65rem; font-size: 0.78rem; margin-bottom: 0.5rem;">
-          <div style="font-weight: 600; color: var(--accent); margin-bottom: 0.15rem;" id="layout-title-display">50 MCQ + T/F + Short Answer</div>
-          <div style="color: var(--text-muted); font-size: 0.72rem;" id="layout-stats-display">A4 • 50 Questions (270 Bubbles)</div>
+        
+        <!-- Empty / Unloaded State -->
+        <div id="layout-empty-state" style="display: flex; flex-direction: column; gap: 0.5rem;">
+          <div id="layout-dropzone" style="border: 2px dashed var(--border); border-radius: var(--radius-sm); padding: 0.85rem 0.65rem; text-align: center; background: var(--panel); cursor: pointer; transition: all 0.15s ease;" title="Drag &amp; drop layout.json or exam package .zip here, or click to upload">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin: 0 auto 0.35rem auto; color: var(--accent); display: block;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <div style="font-weight: 700; font-size: 0.82rem; color: var(--text);">Drop Exam Layout Here</div>
+            <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.15rem;">or click to upload (.json / .zip)</div>
+            <input type="file" id="input-layout-direct" accept=".json,.zip" style="display: none;">
+          </div>
+          <button type="button" id="btn-open-saved-builds" class="btn btn--secondary btn--sm" style="width: 100%; justify-content: center; gap: 0.45rem;" title="Choose from exam layouts saved in Sheet Builder">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6 6h10M6 10h10"/></svg>
+            <span>Choose from Saved Builds</span>
+          </button>
         </div>
-        <label class="btn btn--primary btn--sm" style="cursor: pointer; justify-content: center; gap: 0.45rem; width: 100%;" title="Upload layout.json or exam package (.zip) exported from Sheet Builder">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-          <span>Upload Sheet Builder Layout</span>
-          <input type="file" id="input-layout-direct" accept=".json,.zip" style="display: none;">
-        </label>
+
+        <!-- Loaded State -->
+        <div id="layout-status-box" style="display: none; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.55rem 0.65rem; font-size: 0.78rem;">
+          <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 0.5rem;">
+            <div style="flex: 1; min-width: 0;">
+              <div style="font-weight: 700; color: var(--accent); margin-bottom: 0.15rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" id="layout-title-display">Exam Layout</div>
+              <div style="color: var(--text-muted); font-size: 0.72rem;" id="layout-stats-display">—</div>
+            </div>
+            <div style="display: flex; gap: 0.25rem; flex-shrink: 0;">
+              <button type="button" id="btn-change-layout" class="btn btn--secondary btn-xs" title="Change or replace exam layout">Change</button>
+              <button type="button" id="btn-clear-layout" class="btn btn--secondary btn-xs is-danger" title="Unload active layout">✕</button>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Exam Scans Section -->
@@ -1328,9 +1416,8 @@
         <div class="sidebar-collapsible__content">
           <!-- Layout Section -->
           <div class="section-card">
-            <h2 class="section-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18M9 21V9"/></svg><span>Layout</span></h2>
+            <h2 class="section-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18M9 21V9"/></svg><span>Starter Presets</span></h2>
             <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-              <label style="font-size: 0.78rem; font-weight: 600;">Active Layout Template:</label>
               <select id="preset-selector" style="padding: 0.4rem; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-size: 0.82rem;">
                 <option value="exam-50">50 MCQ + T/F + Short Answer (A4)</option>
                 <option value="exam-100">100-Item MCQ (Letter)</option>
@@ -1703,12 +1790,18 @@
 
         <!-- Flagged Questions Callout Card -->
         <div id="analysis-review-box" class="section-card" style="margin-bottom: 1.25rem; display: none; background: color-mix(in srgb, var(--warning) 8%, var(--panel)); border: 1px solid color-mix(in srgb, var(--warning) 30%, var(--border));">
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.65rem;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.65rem; flex-wrap: wrap; gap: 0.5rem;">
             <div style="display: flex; align-items: center; gap: 0.5rem; font-weight: 700; color: var(--warning);">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-              <span>Questions Flagged for Instructor Review</span>
+              <span>Questions Flagged</span>
             </div>
-            <span id="analysis-review-count-badge" class="badge-review">0 Flagged</span>
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span id="analysis-review-count-badge" class="badge-review">0 Flagged</span>
+              <button type="button" class="btn btn--secondary btn-xs" onclick="openAnswerKeyModal();" style="display: inline-flex; align-items: center; gap: 0.35rem;" title="Review and edit answer key items or point values">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                <span>Edit Key</span>
+              </button>
+            </div>
           </div>
           <div id="analysis-review-items-list" style="display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.8rem;">
             <!-- Populated dynamically -->
@@ -1756,13 +1849,13 @@
         </div>
 
         <!-- Psychometric Reference & Actionable Insights Guide -->
-        <details class="section-card" id="card-psychometric-guide" style="margin-bottom: 1.25rem; background: var(--panel-alt); border: 1px solid var(--border);">
+        <details class="section-card" id="card-psychometric-guide" open style="margin-bottom: 1.25rem; background: var(--panel-alt); border: 1px solid var(--border);">
           <summary style="cursor: pointer; font-weight: 700; font-size: 0.86rem; color: var(--text); display: flex; align-items: center; justify-content: space-between;">
             <div style="display: flex; align-items: center; gap: 0.5rem;">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
-              <span>Psychometric Reference: How to Interpret These Indices &amp; Take Action</span>
+              <span>Psychometric Interpretation Guide</span>
             </div>
-            <span style="font-size: 0.75rem; color: var(--accent); font-weight: 600;">View Guidelines &amp; Actions ▼</span>
+            <span style="font-size: 0.75rem; color: var(--accent); font-weight: 600;">Hide Guidelines ▲</span>
           </summary>
           <div style="margin-top: 0.85rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 0.85rem; font-size: 0.78rem; line-height: 1.5; color: var(--text);">
             <div style="background: var(--panel); border: 1px solid var(--border); padding: 0.75rem; border-radius: var(--radius-sm);">
@@ -1819,6 +1912,20 @@
               </ul>
             </div>
           </div>
+
+          <!-- Academic & Psychometric References -->
+          <div style="margin-top: 0.85rem; padding-top: 0.75rem; border-top: 1px solid var(--border); font-size: 0.72rem; color: var(--text-muted); line-height: 1.5;">
+            <div style="font-weight: 700; color: var(--text); margin-bottom: 0.35rem; display: flex; align-items: center; gap: 0.35rem;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/></svg>
+              <span>Academic &amp; Psychometric References</span>
+            </div>
+            <ul style="margin: 0; padding-left: 1.1rem;">
+              <li><strong>Ebel, R. L. (1979).</strong> <em>Essentials of Educational Measurement</em> (3rd ed.). Prentice-Hall. (Difficulty and point-biserial discrimination criteria: $r_{pbis} \ge 0.40$ excellent, $0.20\text{–}0.39$ acceptable, $<0.20$ marginal, $<0.00$ miskeyed).</li>
+              <li><strong>Cronbach, L. J. (1951).</strong> Coefficient alpha and the internal structure of tests. <em>Psychometrika</em>, 16(3), 297–334. (Internal consistency test reliability $\alpha$).</li>
+              <li><strong>Haladyna, T. M., &amp; Downing, S. M. (1993).</strong> How to build a better multiple-choice test item. <em>Applied Measurement in Education</em>, 6(3), 241–261. (Distractor efficiency and non-functioning option criteria).</li>
+              <li><strong>Kuder, G. F., &amp; Richardson, M. W. (1937).</strong> The theory of the estimation of test reliability. <em>Psychometrika</em>, 2(3), 151–160. (Formula 20 / KR-20 dichotomous reliability formulation).</li>
+            </ul>
+          </div>
         </details>
 
         <!-- Filter bar for Item Table -->
@@ -1830,6 +1937,46 @@
             <button type="button" class="btn btn--secondary btn-xs" data-filter="hard">Hardest (P &lt; 50%)</button>
             <button type="button" class="btn btn--secondary btn-xs" data-filter="disc">Low Disc (r &lt; 0.20)</button>
           </div>
+        </div>
+
+        <!-- Signal & Symbol Legend Strip -->
+        <div class="symbol-legend-strip" style="background: var(--panel-alt); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.55rem 0.75rem; margin-bottom: 0.75rem; display: flex; flex-wrap: wrap; gap: 0.85rem; align-items: center; font-size: 0.72rem;">
+          <span style="font-weight: 700; color: var(--text); display: inline-flex; align-items: center; gap: 0.3rem;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+            Signal Legend:
+          </span>
+          <span style="display: inline-flex; align-items: center; gap: 0.3rem;">
+            <span class="sig-badge sig-badge--miskey">🚨 Miskey</span>
+            <span style="color: var(--text-muted);">Check key ($r < 0$)</span>
+          </span>
+          <span style="display: inline-flex; align-items: center; gap: 0.3rem;">
+            <span class="sig-badge sig-badge--low">⚠️ Low Disc</span>
+            <span style="color: var(--text-muted);">$r < 0.20$ (weak)</span>
+          </span>
+          <span style="display: inline-flex; align-items: center; gap: 0.3rem;">
+            <span class="sig-badge sig-badge--strong">🎯 Strong</span>
+            <span style="color: var(--text-muted);">$r \ge 0.35$ (high)</span>
+          </span>
+          <span style="display: inline-flex; align-items: center; gap: 0.3rem;">
+            <span class="sig-badge sig-badge--hard">📉 Hard</span>
+            <span style="color: var(--text-muted);">$P < 25\%$ (reteach)</span>
+          </span>
+          <span style="display: inline-flex; align-items: center; gap: 0.3rem;">
+            <span class="sig-badge sig-badge--easy">📈 Easy</span>
+            <span style="color: var(--text-muted);">$P > 85\%$ (mastery)</span>
+          </span>
+          <span style="display: inline-flex; align-items: center; gap: 0.3rem;">
+            <span class="sig-badge sig-badge--misconception">💡 Misconception</span>
+            <span style="color: var(--text-muted);">Popular distractor</span>
+          </span>
+          <span style="display: inline-flex; align-items: center; gap: 0.3rem;">
+            <span class="badge-dead-opt">X</span>
+            <span style="color: var(--text-muted);">Dead Option (0%)</span>
+          </span>
+          <span style="display: inline-flex; align-items: center; gap: 0.3rem;">
+            <span class="sig-badge sig-badge--optimal">✨ Optimal</span>
+            <span style="color: var(--text-muted);">Balanced item</span>
+          </span>
         </div>
 
         <!-- Comprehensive Item Table -->
@@ -1847,8 +1994,8 @@
                 <th id="th-d3" style="min-width: 50px;">C</th>
                 <th id="th-d4" style="min-width: 50px;">D</th>
                 <th id="th-d5" style="min-width: 50px;">E</th>
-                <th style="min-width: 130px;">Diagnostic Status</th>
-                <th style="min-width: 260px;">Insights &amp; Classroom Action</th>
+                <th style="min-width: 120px;">Dead Options (0%)</th>
+                <th style="min-width: 180px;">Signals &amp; Actions</th>
               </tr>
             </thead>
             <tbody id="tbody-items">
@@ -1970,6 +2117,26 @@
     </div>
   </dialog>
 
+  <!-- Modal: Saved Builds Picker -->
+  <dialog id="modal-saved-builds-picker" style="border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 0; background: var(--panel); color: var(--text); max-width: 620px; width: 95vw; box-shadow: var(--shadow-xl); overflow: hidden;">
+    <div style="display: flex; flex-direction: column; max-height: 85vh;">
+      <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.85rem 1.25rem; border-bottom: 1px solid var(--border); background: var(--panel-header);">
+        <h3 style="margin: 0; font-size: 1rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6 6h10M6 10h10"/></svg>
+          <span>Choose Saved Exam Build</span>
+        </h3>
+        <button type="button" id="btn-close-saved-builds" class="btn-step" style="width: 28px; height: 28px; border-radius: var(--radius-sm); font-size: 1rem;">✕</button>
+      </div>
+      <div id="saved-builds-modal-body" style="padding: 1.25rem; overflow-y: auto; flex: 1;">
+        <!-- Populated dynamically from localStorage -->
+      </div>
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 1.25rem; border-top: 1px solid var(--border); background: var(--panel-alt);">
+        <span style="font-size: 0.75rem; color: var(--text-muted);">Saved exam sheets in Sheet Builder</span>
+        <button type="button" id="btn-cancel-saved-builds" class="btn btn--secondary btn--sm">Close</button>
+      </div>
+    </div>
+  </dialog>
+
   <!-- Embedded Sample Data & Client-Side Engine -->
   <script>
     // ---- Inlined Compact Presets ----
@@ -1982,9 +2149,9 @@
     // ---- Application State ----
     const state = {
       scans: [], // { file, img, name }
-      layout: PRESETS["exam-50"].layout,
-      key: PRESETS["exam-50"].key,
-      roster: SAMPLE_ROSTER,
+      layout: null,
+      key: null,
+      roster: null,
       results: null, // { grades, psychometrics }
       selectedStudentIdx: 0,
       activeTab: "summary",
@@ -2241,8 +2408,86 @@
       return files;
     }
 
+    function getSavedBuilds() {
+      try {
+        const raw = localStorage.getItem('sheet-builder:saved_builds') || localStorage.getItem('grader:saved_builds');
+        return raw ? JSON.parse(raw) : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function openSavedBuildsPicker() {
+      const modal = $('modal-saved-builds-picker');
+      const body = $('saved-builds-modal-body');
+      if (!modal || !body) return;
+
+      const builds = getSavedBuilds();
+      if (builds.length === 0) {
+        body.innerHTML = `
+          <div style="text-align: center; padding: 2.5rem 1rem; color: var(--text-muted);">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin: 0 auto 0.75rem auto; opacity: 0.5; display: block;"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/></svg>
+            <div style="font-weight: 700; font-size: 0.95rem; color: var(--text); margin-bottom: 0.35rem;">No Saved Builds Found</div>
+            <p style="font-size: 0.8rem; margin: 0 auto 1.25rem auto; max-width: 360px;">Design and save an exam sheet in Sheet Builder first, or drag and drop a <code>.layout.json</code> file or exam package <code>.zip</code> directly onto the dropzone.</p>
+            <button type="button" class="btn btn--secondary btn--sm" onclick="$('input-layout-direct').click(); $('modal-saved-builds-picker').close();">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              <span>Upload Layout File Instead</span>
+            </button>
+          </div>
+        `;
+      } else {
+        body.innerHTML = `
+          <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+            ${builds.map((b, idx) => {
+              const dateStr = b.timestamp ? new Date(b.timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+              const qCount = b.questionCount ?? (b.layout?.bubbles ? new Set(b.layout.bubbles.filter(bb => bb.item && !bb.item.startsWith('sid[')).map(bb => bb.item)).size : 0);
+              return `
+                <div style="background: var(--panel-alt); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.75rem 1rem; display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;">
+                  <div style="flex: 1; min-width: 0;">
+                    <div style="font-weight: 700; font-size: 0.88rem; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${b.title || 'Untitled Exam'}</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                      <span>${b.paper || 'A4'}</span>
+                      <span>•</span>
+                      <span>${qCount} Questions</span>
+                      ${dateStr ? `<span>•</span><span>${dateStr}</span>` : ''}
+                    </div>
+                  </div>
+                  <button type="button" class="btn btn--primary btn--sm" onclick="loadSavedBuildByIndex(${idx})" style="white-space: nowrap; flex-shrink: 0;">
+                    <span>Load Layout</span>
+                  </button>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        `;
+      }
+
+      modal.showModal();
+    }
+
+    function loadSavedBuildByIndex(idx) {
+      const builds = getSavedBuilds();
+      const build = builds[idx];
+      if (!build) return;
+
+      const targetJson = build.layout || build.template || build;
+      applyLoadedLayout(targetJson, build.title);
+      $('modal-saved-builds-picker')?.close();
+    }
+    window.openSavedBuildsPicker = openSavedBuildsPicker;
+    window.loadSavedBuildByIndex = loadSavedBuildByIndex;
+
     function updateLayoutDisplay(name) {
-      if (!state.layout) return;
+      const emptyStateEl = $('layout-empty-state');
+      const statusBoxEl = $('layout-status-box');
+      if (!state.layout) {
+        if (emptyStateEl) emptyStateEl.style.display = 'flex';
+        if (statusBoxEl) statusBoxEl.style.display = 'none';
+        return;
+      }
+      if (emptyStateEl) emptyStateEl.style.display = 'none';
+      if (statusBoxEl) statusBoxEl.style.display = 'block';
+
       const titleEl = $('layout-title-display');
       const statsEl = $('layout-stats-display');
       const qSet = new Set((state.layout.bubbles || []).filter(b => b.item && !b.item.startsWith('sid[')).map(b => b.item));
@@ -2405,8 +2650,8 @@
     // Helper: Ensure Active Layout & Key Loaded
     function ensureActiveLayout() {
       if (!state.layout || !state.key) {
-        const selVal = $('preset-selector').value;
-        if (PRESETS[selVal]) {
+        const selVal = $('preset-selector')?.value;
+        if (selVal && PRESETS[selVal]) {
           state.layout = PRESETS[selVal].layout;
           state.key = PRESETS[selVal].key;
           state.roster = PRESETS[selVal].roster || SAMPLE_ROSTER;
@@ -2416,10 +2661,14 @@
 
     // Update Active Answer Key Status Box
     function updateKeyDisplay() {
-      ensureActiveLayout();
-      if (!state.key) return;
       const titleEl = $('key-title-display');
       const statsEl = $('key-stats-display');
+      if (!state.key) {
+        if (titleEl) titleEl.textContent = 'No Answer Key';
+        if (statsEl) statsEl.textContent = 'Choose layout or saved build';
+        validatePreflightKeyLayout();
+        return;
+      }
       if (titleEl) titleEl.textContent = state.key.title || 'Active Answer Key';
       const items = Object.values(state.key.items || {});
       const qCount = items.length;
@@ -3386,9 +3635,38 @@
       }
     };
 
-    // Custom File Upload Handlers
+    // Custom File Upload & Saved Builds Handlers
     $('input-layout-direct')?.addEventListener('change', (e) => {
       handleLayoutUpload(e.target.files[0]);
+    });
+
+    $('btn-open-saved-builds')?.addEventListener('click', openSavedBuildsPicker);
+    $('btn-change-layout')?.addEventListener('click', openSavedBuildsPicker);
+    $('btn-clear-layout')?.addEventListener('click', () => {
+      state.layout = null;
+      state.key = null;
+      updateLayoutDisplay();
+      updateKeyDisplay();
+    });
+
+    const layoutDropzone = $('layout-dropzone');
+    if (layoutDropzone) {
+      layoutDropzone.onclick = () => $('input-layout-direct')?.click();
+      layoutDropzone.ondragover = (e) => { e.preventDefault(); layoutDropzone.style.borderColor = 'var(--accent)'; };
+      layoutDropzone.ondragleave = () => { layoutDropzone.style.borderColor = 'var(--border)'; };
+      layoutDropzone.ondrop = (e) => {
+        e.preventDefault();
+        layoutDropzone.style.borderColor = 'var(--border)';
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+          handleLayoutUpload(e.dataTransfer.files[0]);
+        }
+      };
+    }
+
+    $('btn-close-saved-builds')?.addEventListener('click', () => $('modal-saved-builds-picker')?.close());
+    $('btn-cancel-saved-builds')?.addEventListener('click', () => $('modal-saved-builds-picker')?.close());
+    $('modal-saved-builds-picker')?.addEventListener('click', (e) => {
+      if (e.target === $('modal-saved-builds-picker')) $('modal-saved-builds-picker').close();
     });
 
     $('input-layout').onchange = (e) => {
@@ -3956,15 +4234,8 @@
 
       // Ensure layout and key are active
       if (!state.layout || !state.key) {
-        const selVal = $('preset-selector').value;
-        if (PRESETS[selVal]) {
-          state.layout = PRESETS[selVal].layout;
-          state.key = PRESETS[selVal].key;
-          state.roster = PRESETS[selVal].roster || SAMPLE_ROSTER;
-        } else {
-          alert("Please upload a custom layout and answer key JSON first.");
-          return;
-        }
+        alert("Please drop an exam layout or choose one from saved builds before grading.");
+        return;
       }
 
       validatePreflightKeyLayout();
@@ -3998,13 +4269,16 @@
         state.layout = PRESETS[activePresetKey].layout;
         state.key = PRESETS[activePresetKey].key;
         state.roster = PRESETS[activePresetKey].roster || SAMPLE_ROSTER;
+        updateLayoutDisplay(PRESETS[activePresetKey].name);
       } else {
         if (!state.layout || !state.key) {
           state.layout = PRESETS['exam-50'].layout;
           state.key = PRESETS['exam-50'].key;
           state.roster = SAMPLE_ROSTER;
         }
+        updateLayoutDisplay(PRESETS['exam-50'].name);
       }
+      updateKeyDisplay();
 
       const pxPerMm = 4.0;
       const targetW = Math.round((state.layout.page.width || 210) * pxPerMm);
@@ -4352,7 +4626,6 @@
                 <span style="color: var(--text-muted); font-size: 0.75rem; margin-right: 0.5rem;">[P = ${(f.item.difficulty * 100).toFixed(1)}%, r = ${f.item.discrimination.toFixed(2)}]</span>
                 <div style="margin-top: 0.25rem; color: var(--text); font-size: 0.78rem; line-height: 1.4;">${f.reasons.join(' • ')}</div>
               </div>
-              <button type="button" class="btn btn--secondary btn-xs" onclick="openAnswerKeyModal();" style="white-space: nowrap; flex-shrink: 0;">Check Key</button>
             </div>
           `).join('');
         } else {
@@ -4437,6 +4710,71 @@
       return actions.join('<br>');
     }
 
+    function getDeadDistractors(item, keyItem) {
+      const isItemTF = (keyItem && (keyItem.kind === 'tf' || keyItem.kind === 'modified_tf')) || item.correctAnswer === 'T' || item.correctAnswer === 'F';
+      const options = isItemTF ? ['T', 'F'] : ['A', 'B', 'C', 'D', 'E'];
+      const dead = [];
+      for (const opt of options) {
+        if (opt !== item.correctAnswer) {
+          const cnt = item.distractors[opt] || 0;
+          if (cnt === 0 && !isItemTF) {
+            dead.push(opt);
+          }
+        }
+      }
+      return dead;
+    }
+
+    function generateItemSignals(item, keyItem, totalStudents) {
+      const r = item.discrimination;
+      const p = item.difficulty;
+      const isItemTF = (keyItem && (keyItem.kind === 'tf' || keyItem.kind === 'modified_tf')) || item.correctAnswer === 'T' || item.correctAnswer === 'F';
+      const options = isItemTF ? ['T', 'F'] : ['A', 'B', 'C', 'D', 'E'];
+
+      let topDistractor = null;
+      let topDistractorCount = 0;
+      for (const opt of options) {
+        if (opt !== item.correctAnswer) {
+          const cnt = item.distractors[opt] || 0;
+          if (cnt > topDistractorCount) {
+            topDistractorCount = cnt;
+            topDistractor = opt;
+          }
+        }
+      }
+
+      const badges = [];
+
+      // Discrimination Signal
+      if (r < 0) {
+        badges.push(`<span class="sig-badge sig-badge--miskey" title="🚨 Miskey Alert: Negative discrimination (r = ${r.toFixed(2)}). Low-scorers scored higher than high-scorers. Check answer key.">🚨 Miskey</span>`);
+      } else if (r < 0.20) {
+        badges.push(`<span class="sig-badge sig-badge--low" title="⚠️ Weak Discrimination (r = ${r.toFixed(2)}): Fails to differentiate mastery.">⚠️ Low Disc</span>`);
+      } else if (r >= 0.35) {
+        badges.push(`<span class="sig-badge sig-badge--strong" title="🎯 Strong Separator (r = ${r.toFixed(2)}): Effectively differentiates mastery.">🎯 Strong</span>`);
+      }
+
+      // Difficulty Signal
+      if (p < 0.25) {
+        badges.push(`<span class="sig-badge sig-badge--hard" title="📉 Reteach: High difficulty (${(p * 100).toFixed(0)}% correct). Review topic in class.">📉 Hard (${(p * 100).toFixed(0)}%)</span>`);
+      } else if (p > 0.85) {
+        badges.push(`<span class="sig-badge sig-badge--easy" title="📈 Foundational: High mastery (${(p * 100).toFixed(0)}% correct).">📈 Easy (${(p * 100).toFixed(0)}%)</span>`);
+      }
+
+      // Common Misconception Distractor Signal
+      if (topDistractor && topDistractorCount >= Math.max(3, Math.round(totalStudents * 0.25))) {
+        const pct = totalStudents > 0 ? Math.round((topDistractorCount / totalStudents) * 100) : 0;
+        badges.push(`<span class="sig-badge sig-badge--misconception" title="💡 Popular Misconception: ${pct}% of students selected option ${topDistractor}.">💡 Opt ${topDistractor} (${pct}%)</span>`);
+      }
+
+      // Optimal Item Fallback
+      if (badges.length === 0) {
+        badges.push(`<span class="sig-badge sig-badge--optimal" title="✨ Optimal Item: Balanced difficulty and healthy discrimination.">✨ Optimal</span>`);
+      }
+
+      return badges.join(' ');
+    }
+
     // Render Filtered and Sorted Item Analysis Table
     function renderItemAnalysisTable(psychometrics) {
       if (!psychometrics || !psychometrics.itemStats) return;
@@ -4489,7 +4827,7 @@
 
       $('tbody-items').innerHTML = keys.map(k => {
         const item = psychometrics.itemStats[k];
-        const keyItem = state.key.items[k] || {};
+        const keyItem = state.key ? (state.key.items[k] || {}) : {};
         const isItemTF = (keyItem.kind === 'tf' || keyItem.kind === 'modified_tf' || item.correctAnswer === 'T' || item.correctAnswer === 'F');
 
         let d1, d2, d3, d4, d5;
@@ -4507,18 +4845,13 @@
           d5 = item.distractors.E || 0;
         }
 
-        let diagBadge = '<span style="color: var(--success); font-weight: 600; font-size: 0.76rem;">● Optimal</span>';
-        if (item.discrimination < 0) {
-          diagBadge = '<span style="color: var(--danger); font-weight: 700; font-size: 0.76rem;">⚠️ Negative Disc</span>';
-        } else if (item.discrimination < 0.20) {
-          diagBadge = '<span style="color: var(--warning); font-weight: 600; font-size: 0.76rem;">⚠️ Low Disc</span>';
-        } else if (item.difficulty < 0.20) {
-          diagBadge = '<span style="color: var(--danger); font-weight: 600; font-size: 0.76rem;">● Very Hard</span>';
-        } else if (item.difficulty > 0.85) {
-          diagBadge = '<span style="color: var(--primary); font-weight: 600; font-size: 0.76rem;">● Very Easy</span>';
+        const deadList = getDeadDistractors(item, keyItem);
+        let deadHtml = `<span style="color: var(--text-muted); font-size: 0.72rem;">None</span>`;
+        if (deadList.length > 0) {
+          deadHtml = deadList.map(opt => `<span class="badge-dead-opt" title="Option ${opt} was selected by 0 students.">${opt}</span>`).join(' ');
         }
 
-        const insightHtml = generateItemInsights(item, keyItem, totalStudents);
+        const signalsHtml = generateItemSignals(item, keyItem, totalStudents);
 
         return `
           <tr>
@@ -4534,8 +4867,8 @@
             <td>${d3}</td>
             <td>${d4}</td>
             <td>${d5}</td>
-            <td>${diagBadge}</td>
-            <td style="font-size: 0.76rem; line-height: 1.45;">${insightHtml}</td>
+            <td>${deadHtml}</td>
+            <td>${signalsHtml}</td>
           </tr>
         `;
       }).join('');
@@ -5049,6 +5382,15 @@
     th, td { border: 1px solid #e2e8f0; padding: 8px 10px; text-align: left; }
     th { background: #f1f5f9; font-weight: 700; color: #475569; }
     code { font-family: monospace; font-weight: 700; }
+    .badge-dead-opt { display: inline-flex; align-items: center; justify-content: center; background: rgba(139, 92, 246, 0.12); color: #8b5cf6; border: 1px solid rgba(139, 92, 246, 0.35); font-weight: 700; font-size: 0.72rem; min-width: 20px; height: 20px; padding: 0 4px; border-radius: 4px; margin: 1px; }
+    .sig-badge { display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.72rem; font-weight: 600; padding: 0.15rem 0.45rem; border-radius: 4px; white-space: nowrap; margin: 1px; }
+    .sig-badge--miskey { background: rgba(239, 68, 68, 0.14); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.35); font-weight: 700; }
+    .sig-badge--low { background: rgba(245, 158, 11, 0.14); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.35); }
+    .sig-badge--strong { background: rgba(16, 185, 129, 0.14); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.35); }
+    .sig-badge--hard { background: rgba(249, 115, 22, 0.14); color: #f97316; border: 1px solid rgba(249, 115, 22, 0.35); }
+    .sig-badge--easy { background: rgba(59, 130, 246, 0.14); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.35); }
+    .sig-badge--misconception { background: rgba(236, 72, 153, 0.14); color: #ec4899; border: 1px solid rgba(236, 72, 153, 0.35); }
+    .sig-badge--optimal { background: rgba(16, 185, 129, 0.08); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.25); }
     @media print {
       body { padding: 0.5cm; max-width: 100%; }
       .chart-card { break-inside: avoid; }
@@ -5093,7 +5435,7 @@
   </div>
 
   <div class="card" style="margin-bottom: 2rem;">
-    <h2 style="margin: 0 0 0.85rem 0; font-size: 1.05rem; font-weight: 700;">Psychometric Reference: How to Interpret These Indices &amp; Take Action</h2>
+    <h2 style="margin: 0 0 0.85rem 0; font-size: 1.05rem; font-weight: 700;">Psychometric Interpretation Guide</h2>
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; font-size: 12px; line-height: 1.5;">
       <div>
         <strong style="color: #10b981;">Difficulty Index (P):</strong> Proportion correct (0%–100%).
@@ -5126,30 +5468,39 @@
         </ul>
       </div>
     </div>
+    <div style="margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid #e2e8f0; font-size: 11px; color: #64748b; line-height: 1.5;">
+      <strong style="color: #334155;">Academic &amp; Psychometric References:</strong>
+      <ul style="margin: 0.25rem 0 0 0; padding-left: 1.1rem;">
+        <li>Ebel, R. L. (1979). <em>Essentials of Educational Measurement</em> (3rd ed.). Prentice-Hall. (Difficulty &amp; discrimination $r_{pbis} \ge 0.20$ criteria).</li>
+        <li>Cronbach, L. J. (1951). Coefficient alpha and the internal structure of tests. <em>Psychometrika</em>, 16(3), 297–334. (Internal consistency reliability $\alpha$).</li>
+        <li>Haladyna, T. M., &amp; Downing, S. M. (1993). How to build a better multiple-choice test item. <em>Applied Measurement in Education</em>, 6(3), 241–261. (Distractor functioning).</li>
+        <li>Kuder, G. F., &amp; Richardson, M. W. (1937). The theory of the estimation of test reliability. <em>Psychometrika</em>, 2(3), 151–160. (Formula 20 / KR-20 reliability).</li>
+      </ul>
+    </div>
   </div>
 
   <div class="chart-card">
-    <h2>Detailed Item Statistics &amp; Distractor Frequencies</h2>
+    <h2>Detailed Item Statistics &amp; Distractor Analysis</h2>
     <table>
       <thead>
         <tr>
           <th>Item</th><th>Key</th><th>Pts</th><th>Difficulty (P)</th><th>Discrimination (r_pbis)</th>
-          <th>A / T</th><th>B / F</th><th>C</th><th>D</th><th>E</th><th>Status</th><th>Insights &amp; Classroom Action</th>
+          <th>A / T</th><th>B / F</th><th>C</th><th>D</th><th>E</th><th>Dead Options (0%)</th><th>Signals &amp; Actions</th>
         </tr>
       </thead>
       <tbody>
         ${itemKeys.map(k => {
           const item = psychometrics.itemStats[k];
-          const keyItem = state.key.items[k] || {};
+          const keyItem = state.key ? (state.key.items[k] || {}) : {};
           const isItemTF = (keyItem.kind === 'tf' || keyItem.kind === 'modified_tf' || item.correctAnswer === 'T' || item.correctAnswer === 'F');
 
-          let diagBadgeText = '<span style="color: #10b981; font-weight: 600;">Optimal</span>';
-          if (item.discrimination < 0) diagBadgeText = '<span style="color: #ef4444; font-weight: 700;">⚠️ Negative Disc</span>';
-          else if (item.discrimination < 0.20) diagBadgeText = '<span style="color: #f59e0b; font-weight: 600;">⚠️ Low Disc</span>';
-          else if (item.difficulty < 0.20) diagBadgeText = '<span style="color: #ef4444; font-weight: 600;">Very Hard</span>';
-          else if (item.difficulty > 0.85) diagBadgeText = '<span style="color: #3b82f6; font-weight: 600;">Very Easy</span>';
+          const deadList = getDeadDistractors(item, keyItem);
+          let deadHtml = '<span style="color: #94a3b8; font-size: 11px;">None</span>';
+          if (deadList.length > 0) {
+            deadHtml = deadList.map(opt => `<span class="badge-dead-opt">${opt}</span>`).join(' ');
+          }
 
-          const insightHtml = generateItemInsights(item, keyItem, grades.length);
+          const signalsHtml = generateItemSignals(item, keyItem, grades.length);
 
           return `
             <tr>
@@ -5163,8 +5514,8 @@
               <td>${isItemTF ? '—' : (item.distractors.C || 0)}</td>
               <td>${isItemTF ? '—' : (item.distractors.D || 0)}</td>
               <td>${isItemTF ? '—' : (item.distractors.E || 0)}</td>
-              <td>${diagBadgeText}</td>
-              <td style="font-size: 11px; line-height: 1.4;">${insightHtml}</td>
+              <td>${deadHtml}</td>
+              <td>${signalsHtml}</td>
             </tr>
           `;
         }).join('')}
@@ -5207,6 +5558,7 @@
     $('btn-empty-upload')?.addEventListener('click', () => $('input-scans').click());
 
     // Initial boot display
+    updateLayoutDisplay();
     updateKeyDisplay();
   </script>
 </body>

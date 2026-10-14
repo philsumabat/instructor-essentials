@@ -2827,6 +2827,7 @@ function initEvents() {
       questionCount: stats.questions,
       timestamp: Date.now(),
       template: JSON.parse(JSON.stringify(state.template)),
+      layout: state.layout ? JSON.parse(JSON.stringify(state.layout)) : null,
     };
     saveBuildToLibrary(entry);
 

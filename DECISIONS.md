@@ -350,6 +350,13 @@ flowchart LR
 - **Preflight Key Discrepancy Alert & 1-Click Auto-Sync**: Added real-time discrepancy detection in Sheet Builder's Answer Key Editor. If sheet questions are unkeyed or key items are orphaned, an alert banner (`#key-discrepancy-banner`) notifies the instructor and provides a 1-click "Auto-Sync with Sheet" button that provisions default keys for all unkeyed sheet questions.
 - **Student Review Flags**: In `processExamScan`, automatically identifies sheets requiring instructor attention by evaluating blank responses, multiple bubble marks on single-choice items, and unmatched student IDs against the loaded roster. Flags these students in Tab 2 (Student Roster) with an amber `Needs Review` badge (`.badge-review`) with tooltip details, and displays an explanation notice in the Sheet Inspector preview pane.
 
+### Decision 32: Filterable Review Queue & Audit Resolution
+- **Roster Toolbar Filter Group**: Added a dedicated toolbar above the Student Roster table with segmented filter pills for `All Students (X)`, `Needs Review (Y)`, and `Clean / Verified (Z)` (`#roster-review-filters`). When flagged scans exist ($Y > 0$), the `Needs Review` filter pill adopts a prominent amber warning accent (`.badge-review--active`).
+- **Review Stepper Navigation**: Embedded sequential queue navigation controls (`Prev`, `Next`, and position badge e.g., `"1 of 2"`) in the Sheet Inspector preview header. Instructors can step through flagged scans directly in the side preview pane without returning to the table.
+- **Audit Flag Resolution (`resolveReviewFlag`)**: Added a 1-click `"Mark as Reviewed"` action to the inspector review alert banner. Resolving a sheet sets `needsReview = false` and `manuallyReviewed = true`, updates real-time queue counts, changes the table badge to a green `✓ Reviewed` badge (`.badge-reviewed`), and automatically advances to the next remaining flagged student in review queue mode. Added a reversible `"Re-open Flag"` control.
+- **Summary Tab Review Callout (`#summary-review-callout`)**: Integrated an amber alert banner above the Summary preview in Tab 1 that appears whenever flagged scans are detected, providing an immediate `"Open Review Queue →"` button that switches tabs, activates the `needs-review` filter, and selects the first flagged sheet.
+- **Filtered Row Index Mapping**: Implemented `data-orig-idx` on roster table rows, ensuring student selection, sorting, and `.is-selected` active highlights map accurately to `state.results.grades` regardless of whether the table is in a filtered or sorted view.
+
 ---
 
 ## 8. Multi-Agent Development Mandate

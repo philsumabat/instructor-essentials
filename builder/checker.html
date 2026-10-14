@@ -213,6 +213,15 @@
       border-color: var(--border-focus);
       color: var(--text);
     }
+    .btn--secondary.is-active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+      box-shadow: 0 2px 6px -1px rgba(37, 99, 235, 0.4);
+    }
+    .btn--secondary.is-active * {
+      color: #fff !important;
+    }
 
     .btn--accent {
       background: var(--accent-light);
@@ -1065,6 +1074,25 @@
       border: 1px solid currentColor;
       white-space: nowrap;
     }
+    .badge-reviewed {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 0.15rem 0.45rem;
+      border-radius: var(--radius-full);
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      background: var(--success-light);
+      color: var(--success);
+      border: 1px solid currentColor;
+      white-space: nowrap;
+    }
+    .badge-review--active {
+      box-shadow: 0 0 0 2px rgba(217, 119, 6, 0.25);
+      border-color: var(--warning) !important;
+    }
 
     /* Item Analysis Diagnostics & Dead Distractor Badges */
     .badge-dead-opt {
@@ -1750,6 +1778,22 @@
           <div id="dist-bell-curve-narrative" style="margin-top: 0.75rem;"></div>
         </div>
 
+        <!-- Review Callout Banner for Flagged Scans (P2 Review Queue) -->
+        <div id="summary-review-callout" style="display: none; background: var(--warning-light); border: 1px solid var(--warning); border-radius: var(--radius-md); padding: 0.75rem 1rem; margin-top: 1.25rem; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
+          <div style="display: flex; align-items: center; gap: 0.65rem;">
+            <div style="width: 28px; height: 28px; border-radius: var(--radius-sm); background: var(--warning); color: #fff; display: grid; place-items: center; flex-shrink: 0;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </div>
+            <div>
+              <div style="font-weight: 700; font-size: 0.88rem; color: var(--text);" id="summary-review-callout-title">⚠️ 0 students need review (e.g. blank responses or unverified IDs).</div>
+              <div style="font-size: 0.76rem; color: var(--text-muted);" id="summary-review-callout-sub">Some sheets have blank responses, multiple marks, or unverified IDs.</div>
+            </div>
+          </div>
+          <button type="button" class="btn btn--secondary btn-xs" id="btn-open-review-queue" style="background: var(--panel); border-color: var(--warning); color: var(--warning); font-weight: 700;" onclick="openReviewQueue();">
+            <span>Open Review Queue →</span>
+          </button>
+        </div>
+
         <div style="margin-top: 1.25rem;" class="table-container">
           <table id="table-summary-preview">
             <thead>
@@ -1778,6 +1822,35 @@
         <div class="roster-split-layout">
           <!-- Left side: Roster Table -->
           <div class="roster-table-col">
+            <!-- Roster Header & Filter Toolbar -->
+            <div class="roster-toolbar" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
+              <div style="display: flex; align-items: center; gap: 0.55rem;">
+                <h3 style="margin: 0; font-size: 0.96rem; font-weight: 700; color: var(--text);">Student Roster</h3>
+                <span id="roster-total-count" class="badge" style="font-size: 0.72rem; padding: 0.15rem 0.5rem; background: var(--panel-alt); border: 1px solid var(--border); border-radius: var(--radius-full); font-weight: 600; color: var(--text-muted);">0 students</span>
+                <span id="roster-count-badge" style="display: none;">0 students</span>
+              </div>
+              <div style="display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap;" id="roster-review-filters">
+                <button type="button" class="btn btn--secondary btn-xs is-active" data-filter="all" id="filter-roster-all" title="Show all graded student sheets">
+                  <span>All Students</span>
+                  <span class="filter-count count-pill" id="count-roster-all" style="margin-left: 0.25rem; font-weight: 700;">(0)</span>
+                </button>
+                <button type="button" class="btn btn--secondary btn-xs" data-filter="needs-review" id="filter-roster-review" title="Filter to sheets flagged with blanks, multiple marks, or unverified IDs">
+                  <span style="display: inline-flex; align-items: center; gap: 0.25rem; color: var(--warning);">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    Needs Review
+                  </span>
+                  <span class="filter-count count-pill count-pill--warning" id="count-roster-review" style="margin-left: 0.25rem; font-weight: 700;">(0)</span>
+                </button>
+                <button type="button" class="btn btn--secondary btn-xs" data-filter="clean" id="filter-roster-clean" title="Filter to sheets with unambiguous reads and verified IDs">
+                  <span style="display: inline-flex; align-items: center; gap: 0.25rem; color: var(--success);">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                    Clean / Verified
+                  </span>
+                  <span class="filter-count count-pill count-pill--clean" id="count-roster-clean" style="margin-left: 0.25rem; font-weight: 700;">(0)</span>
+                </button>
+              </div>
+            </div>
+
             <div class="table-container">
               <table>
                 <thead>
@@ -1815,7 +1888,17 @@
                     <span id="roster-badge-review" class="badge-review" style="display: none;"></span>
                   </div>
                 </div>
-                <div class="roster-preview-actions">
+                <div class="roster-preview-actions" style="display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;">
+                  <!-- Review Queue Stepper -->
+                  <div class="roster-preview-stepper" style="display: inline-flex; align-items: center; gap: 0.25rem; background: var(--panel-alt); padding: 2px 4px; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+                    <button type="button" id="btn-roster-prev" class="btn btn--secondary btn-xs" style="padding: 0.2rem 0.45rem; line-height: 1;" title="Previous student in filtered roster" disabled>
+                      <span>← Prev</span>
+                    </button>
+                    <span id="roster-queue-stepper-label" style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted); padding: 0 0.3rem; min-width: 48px; text-align: center; font-variant-numeric: tabular-nums;">Student 0 of 0</span>
+                    <button type="button" id="btn-roster-next" class="btn btn--secondary btn-xs" style="padding: 0.2rem 0.45rem; line-height: 1;" title="Next student in filtered roster" disabled>
+                      <span>Next →</span>
+                    </button>
+                  </div>
                   <button type="button" id="btn-roster-download-jpeg" class="btn btn--secondary btn--sm" disabled title="Download current student's graded sheet as JPEG">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
                     <span>Download Sheet (JPEG)</span>
@@ -2362,6 +2445,7 @@
       selectedStudentIdx: 0,
       activeTab: "summary",
       rosterSort: { col: null, dir: 'asc' },
+      rosterFilter: 'all', // 'all' | 'needs-review' | 'clean'
       summarySort: { col: null, dir: 'asc' },
       itemAnalysisFilter: 'all',
       itemAnalysisSort: { col: 'item', dir: 'asc' }
@@ -2378,7 +2462,7 @@
 
     function switchTab(tabName) {
       const btn = document.querySelector(`.tab-btn[data-tab="${tabName}"]`);
-      if (btn) btn.click();
+      if (btn && typeof btn.click === 'function') btn.click();
     }
     window.switchTab = switchTab;
 
@@ -4963,34 +5047,179 @@
           <td><button type="button" class="btn btn--secondary btn--sm" onclick="event.stopPropagation(); inspectStudent(${idx}); switchTab('roster');">Sheet Inspector</button></td>
         </tr>
       `).join('');
+      updateSummaryReviewCallout();
     }
+
+    // Roster Review Queue Helpers (P2 Roadmap)
+    function getFilteredRosterGrades() {
+      if (!state.results || !state.results.grades) return [];
+      const filter = state.rosterFilter || 'all';
+      if (filter === 'needs-review') {
+        return state.results.grades.filter(g => g.reviewFlags && g.reviewFlags.needsReview);
+      }
+      if (filter === 'clean') {
+        return state.results.grades.filter(g => !g.reviewFlags || !g.reviewFlags.needsReview);
+      }
+      return state.results.grades;
+    }
+
+    function updateRosterFilterCounts() {
+      if (!state.results || !state.results.grades) return;
+      const allGrades = state.results.grades;
+      const totalCount = allGrades.length;
+      const reviewCount = allGrades.filter(g => g.reviewFlags && g.reviewFlags.needsReview).length;
+      const cleanCount = totalCount - reviewCount;
+
+      if ($('count-roster-all')) $('count-roster-all').textContent = `(${totalCount})`;
+      if ($('count-roster-review')) $('count-roster-review').textContent = `(${reviewCount})`;
+      if ($('count-roster-clean')) $('count-roster-clean').textContent = `(${cleanCount})`;
+      if ($('roster-count-badge')) $('roster-count-badge').textContent = `${totalCount} student${totalCount === 1 ? '' : 's'}`;
+      if ($('roster-total-count')) $('roster-total-count').textContent = `${totalCount} student${totalCount === 1 ? '' : 's'}`;
+
+      const reviewBtn = $('filter-roster-review');
+      if (reviewBtn) {
+        if (reviewCount > 0) {
+          reviewBtn.classList.add('badge-review--active');
+          reviewBtn.classList.add('has-unreviewed');
+        } else {
+          reviewBtn.classList.remove('badge-review--active');
+          reviewBtn.classList.remove('has-unreviewed');
+        }
+      }
+    }
+
+    function updateSummaryReviewCallout() {
+      const callout = $('summary-review-callout');
+      if (!callout) return;
+      if (!state.results || !state.results.grades) {
+        callout.style.display = 'none';
+        return;
+      }
+      const flaggedCount = state.results.grades.filter(g => g.reviewFlags && g.reviewFlags.needsReview).length;
+      if (flaggedCount > 0) {
+        callout.style.display = 'flex';
+        const msg = `⚠️ ${flaggedCount} student${flaggedCount > 1 ? 's' : ''} need review (${flaggedCount} Exam Sheet${flaggedCount > 1 ? 's' : ''} Need Review: e.g. blank responses or unverified IDs).`;
+        const titleEl = $('summary-review-callout-title');
+        if (titleEl) {
+          titleEl.textContent = msg;
+        }
+        const subEl = $('summary-review-callout-sub');
+        if (subEl) {
+          subEl.textContent = `${flaggedCount} sheet${flaggedCount > 1 ? 's have' : ' has'} blank responses, multiple marks, or unverified IDs.`;
+        }
+      } else {
+        callout.style.display = 'none';
+      }
+    }
+
+    function openReviewQueue() {
+      state.rosterFilter = 'needs-review';
+      $$('#roster-review-filters button').forEach(b => {
+        b.classList.toggle('is-active', b.dataset.filter === 'needs-review');
+      });
+      switchTab('roster');
+      renderRosterTable();
+      const firstFlagged = state.results?.grades?.findIndex(g => g.reviewFlags && g.reviewFlags.needsReview);
+      if (firstFlagged !== -1 && firstFlagged != null) {
+        inspectStudent(firstFlagged);
+      } else {
+        inspectStudent(0);
+      }
+    }
+    window.openReviewQueue = openReviewQueue;
+
+    function setRosterFilter(filter) {
+      state.rosterFilter = filter;
+      $$('#roster-review-filters button').forEach(b => {
+        b.classList.toggle('is-active', b.dataset.filter === filter);
+      });
+      renderRosterTable();
+      const filtered = getFilteredRosterGrades();
+      const curGrade = state.results?.grades?.[state.selectedStudentIdx];
+      if (!curGrade || !filtered.includes(curGrade)) {
+        if (filtered.length > 0) {
+          inspectStudent(state.results.grades.indexOf(filtered[0]));
+        } else {
+          inspectStudent(null);
+        }
+      } else {
+        inspectStudent(state.selectedStudentIdx);
+      }
+    }
+    window.setRosterFilter = setRosterFilter;
 
     // Render Roster Table
     function renderRosterTable() {
       if (!state.results || !state.results.grades) return;
       const { grades, passThreshold } = state.results;
-      $('tbody-roster').innerHTML = grades.map((g, idx) => `
-        <tr onclick="inspectStudent(${idx})" data-idx="${idx}" class="${state.selectedStudentIdx === idx ? 'is-selected' : ''}">
-          <td><code>${g.examId}</code></td>
-          <td><strong>${g.studentId}</strong></td>
-          <td>
-            <div style="display: flex; align-items: center; gap: 0.45rem; flex-wrap: wrap;">
-              <span>${g.studentName}</span>
-              ${g.reviewFlags && g.reviewFlags.needsReview ? `
-                <span class="badge-review" title="${g.reviewFlags.reasons.join('; ')}">
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                  <span>Needs Review</span>
-                </span>
-              ` : ''}
-            </div>
-          </td>
-          <td>${g.rawScore.toFixed(1)}</td>
-          <td>${g.maxScore.toFixed(1)}</td>
-          <td><strong>${g.percentage.toFixed(1)}%</strong></td>
-          <td><span class="${g.percentage >= passThreshold ? 'badge-pass' : 'badge-fail'}">${g.percentage >= passThreshold ? 'PASS' : 'FAIL'}</span></td>
-          <td><button type="button" class="btn btn--secondary btn--sm" onclick="event.stopPropagation(); inspectStudent(${idx})">Sheet Inspector</button></td>
-        </tr>
-      `).join('');
+      updateRosterFilterCounts();
+
+      const filter = state.rosterFilter || 'all';
+      const filteredGrades = getFilteredRosterGrades();
+
+      // If active student is not in the filtered list, auto-select the first one
+      if (filteredGrades.length > 0) {
+        const curGrade = grades[state.selectedStudentIdx];
+        if (!filteredGrades.includes(curGrade)) {
+          state.selectedStudentIdx = grades.indexOf(filteredGrades[0]);
+        }
+      }
+
+      const tbody = $('tbody-roster');
+      if (!tbody) return;
+
+      if (filteredGrades.length === 0) {
+        let emptyMsg = "No student grades available.";
+        if (filter === 'needs-review') {
+          emptyMsg = `<div style="padding: 1.5rem; text-align: center; color: var(--success); font-weight: 600;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 0.35rem; display: inline-block;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            <div>✓ All exam sheets are clean and verified! No scans require manual review.</div>
+          </div>`;
+        } else if (filter === 'clean') {
+          emptyMsg = `<div style="padding: 1.5rem; text-align: center; color: var(--text-muted);">No unflagged sheets.</div>`;
+        }
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 2rem; color: var(--text-muted);">${emptyMsg}</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filteredGrades.map(g => {
+        const origIdx = grades.indexOf(g);
+        const isSelected = state.selectedStudentIdx === origIdx;
+        const needsReview = g.reviewFlags && g.reviewFlags.needsReview;
+        const manuallyReviewed = g.reviewFlags && g.reviewFlags.manuallyReviewed && !needsReview;
+
+        let reviewBadgeHtml = '';
+        if (needsReview) {
+          reviewBadgeHtml = `
+            <span class="badge-review" title="${(g.reviewFlags.reasons || []).join('; ')}">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              <span>Needs Review</span>
+            </span>
+          `;
+        } else if (manuallyReviewed) {
+          reviewBadgeHtml = `
+            <span class="badge-reviewed" title="Manually verified by instructor">✓ Reviewed</span>
+          `;
+        }
+
+        return `
+          <tr onclick="inspectStudent(${origIdx})" data-idx="${origIdx}" data-orig-idx="${origIdx}" class="${isSelected ? 'is-selected' : ''}">
+            <td><code>${g.examId}</code></td>
+            <td><strong>${g.studentId}</strong></td>
+            <td>
+              <div style="display: flex; align-items: center; gap: 0.45rem; flex-wrap: wrap;">
+                <span>${g.studentName}</span>
+                ${reviewBadgeHtml}
+              </div>
+            </td>
+            <td>${g.rawScore.toFixed(1)}</td>
+            <td>${g.maxScore.toFixed(1)}</td>
+            <td><strong>${g.percentage.toFixed(1)}%</strong></td>
+            <td><span class="${g.percentage >= passThreshold ? 'badge-pass' : 'badge-fail'}">${g.percentage >= passThreshold ? 'PASS' : 'FAIL'}</span></td>
+            <td><button type="button" class="btn btn--secondary btn--sm" onclick="event.stopPropagation(); inspectStudent(${origIdx})">Sheet Inspector</button></td>
+          </tr>
+        `;
+      }).join('');
     }
 
     // Sorting Helper
@@ -5105,6 +5334,39 @@
           }
         };
       });
+
+      // Roster Review Queue Filters
+      $$('#roster-review-filters button').forEach(btn => {
+        btn.onclick = () => {
+          setRosterFilter(btn.dataset.filter);
+        };
+      });
+
+      // Stepper Navigation Buttons
+      if ($('btn-roster-prev')) {
+        $('btn-roster-prev').onclick = () => {
+          const filtered = getFilteredRosterGrades();
+          if (filtered.length === 0) return;
+          const curGrade = state.results?.grades?.[state.selectedStudentIdx];
+          const curPos = filtered.indexOf(curGrade);
+          if (curPos > 0) {
+            const targetGrade = filtered[curPos - 1];
+            inspectStudent(state.results.grades.indexOf(targetGrade));
+          }
+        };
+      }
+      if ($('btn-roster-next')) {
+        $('btn-roster-next').onclick = () => {
+          const filtered = getFilteredRosterGrades();
+          if (filtered.length === 0) return;
+          const curGrade = state.results?.grades?.[state.selectedStudentIdx];
+          const curPos = filtered.indexOf(curGrade);
+          if (curPos !== -1 && curPos < filtered.length - 1) {
+            const targetGrade = filtered[curPos + 1];
+            inspectStudent(state.results.grades.indexOf(targetGrade));
+          }
+        };
+      }
     }
 
     // Render Comprehensive Item Analysis Dashboard (Metrics, Flagged Questions, SVG Charts)
@@ -5786,6 +6048,9 @@
     function renderRosterPreview(idx) {
       const reviewBadgeEl = $('roster-badge-review');
       const reviewAlertEl = $('roster-review-alert');
+      const stepperLabel = $('roster-queue-stepper-label');
+      const prevBtn = $('btn-roster-prev');
+      const nextBtn = $('btn-roster-next');
 
       if (!state.results || !state.results.grades || !state.results.grades[idx]) {
         if ($('roster-student-badge')) $('roster-student-badge').style.display = 'none';
@@ -5793,6 +6058,9 @@
         if (reviewAlertEl) reviewAlertEl.style.display = 'none';
         if ($('btn-roster-download-jpeg')) $('btn-roster-download-jpeg').disabled = true;
         if ($('btn-roster-expand-modal')) $('btn-roster-expand-modal').disabled = true;
+        if (prevBtn) prevBtn.disabled = true;
+        if (nextBtn) nextBtn.disabled = true;
+        if (stepperLabel) stepperLabel.textContent = '—';
         if ($('roster-preview-empty')) $('roster-preview-empty').style.display = 'flex';
         const canvas = $('roster-preview-canvas') || $('roster-inspector-canvas');
         if (canvas) canvas.style.display = 'none';
@@ -5803,6 +6071,19 @@
       const passThreshold = (state.results && state.results.passThreshold != null) ? state.results.passThreshold : 60;
       const isPass = grade.percentage >= passThreshold;
 
+      // Update Review Queue Stepper (shows position in current view)
+      const filtered = getFilteredRosterGrades();
+      const curPos = filtered.indexOf(grade);
+      if (curPos !== -1 && filtered.length > 0) {
+        if (stepperLabel) stepperLabel.textContent = `Student ${curPos + 1} of ${filtered.length}`;
+        if (prevBtn) prevBtn.disabled = curPos <= 0;
+        if (nextBtn) nextBtn.disabled = curPos >= filtered.length - 1;
+      } else {
+        if (stepperLabel) stepperLabel.textContent = '—';
+        if (prevBtn) prevBtn.disabled = true;
+        if (nextBtn) nextBtn.disabled = true;
+      }
+
       if ($('roster-student-badge')) $('roster-student-badge').style.display = 'inline-flex';
       if ($('roster-badge-name')) $('roster-badge-name').textContent = `${grade.studentName} (${grade.studentId})`;
       if ($('roster-badge-score')) {
@@ -5810,15 +6091,57 @@
         $('roster-badge-score').className = isPass ? 'badge-pass' : 'badge-fail';
       }
 
-      if (grade.reviewFlags && grade.reviewFlags.needsReview) {
+      const needsReview = grade.reviewFlags && grade.reviewFlags.needsReview;
+      const manuallyReviewed = grade.reviewFlags && grade.reviewFlags.manuallyReviewed && !needsReview;
+
+      if (needsReview) {
         if (reviewBadgeEl) {
           reviewBadgeEl.style.display = 'inline-flex';
+          reviewBadgeEl.className = 'badge-review';
           reviewBadgeEl.textContent = 'Needs Review';
-          reviewBadgeEl.title = grade.reviewFlags.reasons.join('; ');
+          reviewBadgeEl.title = (grade.reviewFlags.reasons || []).join('; ');
         }
         if (reviewAlertEl) {
-          reviewAlertEl.style.display = 'block';
-          reviewAlertEl.innerHTML = `<strong>⚠️ Needs Review:</strong> ${grade.reviewFlags.reasons.join(' • ')}`;
+          reviewAlertEl.style.display = 'flex';
+          reviewAlertEl.style.justifyContent = 'space-between';
+          reviewAlertEl.style.alignItems = 'center';
+          reviewAlertEl.style.gap = '0.5rem';
+          reviewAlertEl.style.background = 'var(--warning-light)';
+          reviewAlertEl.style.border = '1px solid var(--warning)';
+          reviewAlertEl.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 0.4rem; flex: 1;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--warning); flex-shrink: 0;"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              <span><strong>⚠️ Needs Review:</strong> ${(grade.reviewFlags.reasons || []).join(' • ')}</span>
+            </div>
+            <button type="button" class="btn btn--secondary btn-xs" id="btn-resolve-review-flag" onclick="resolveReviewFlag(${idx});" style="background: var(--panel); flex-shrink: 0;" title="Confirm machine read or instructor override and mark this sheet as verified">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--success);"><polyline points="20 6 9 17 4 12"/></svg>
+              <span>✓ Mark as Reviewed</span>
+            </button>
+          `;
+        }
+      } else if (manuallyReviewed) {
+        if (reviewBadgeEl) {
+          reviewBadgeEl.style.display = 'inline-flex';
+          reviewBadgeEl.className = 'badge-reviewed';
+          reviewBadgeEl.textContent = '✓ Reviewed';
+          reviewBadgeEl.title = `Manually verified by instructor (${(grade.reviewFlags.reasons || []).join(' • ')})`;
+        }
+        if (reviewAlertEl) {
+          reviewAlertEl.style.display = 'flex';
+          reviewAlertEl.style.justifyContent = 'space-between';
+          reviewAlertEl.style.alignItems = 'center';
+          reviewAlertEl.style.gap = '0.5rem';
+          reviewAlertEl.style.background = 'var(--success-light)';
+          reviewAlertEl.style.border = '1px solid var(--success)';
+          reviewAlertEl.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 0.4rem; flex: 1; color: var(--success);">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><polyline points="20 6 9 17 4 12"/></svg>
+              <span style="color: var(--text);"><strong>✓ Manually Reviewed and Verified</strong></span>
+            </div>
+            <button type="button" class="btn btn--secondary btn-xs" onclick="reopenReviewFlag(${idx});" style="background: var(--panel); flex-shrink: 0; font-size: 0.7rem;" title="Flag this sheet for review again">
+              <span>Re-open Flag</span>
+            </button>
+          `;
         }
       } else {
         if (reviewBadgeEl) reviewBadgeEl.style.display = 'none';
@@ -5836,15 +6159,67 @@
       }
     }
 
-    window.inspectStudent = (idxOrId) => {
+    function resolveReviewFlag(idx) {
+      if (!state.results || !state.results.grades || !state.results.grades[idx]) return;
+      const grade = state.results.grades[idx];
+      if (!grade.reviewFlags) grade.reviewFlags = { reasons: [] };
+      grade.reviewFlags.needsReview = false;
+      grade.reviewFlags.manuallyReviewed = true;
+
+      renderRosterTable();
+      renderSummaryTable();
+      updateSummaryReviewCallout();
+
+      // If currently filtering by 'needs-review', advance to next flagged student, or update empty state if none remain
+      if (state.rosterFilter === 'needs-review') {
+        const remaining = state.results.grades.filter(g => g.reviewFlags && g.reviewFlags.needsReview);
+        if (remaining.length > 0) {
+          const nextRemaining = remaining.find(g => state.results.grades.indexOf(g) > idx) || remaining[0];
+          inspectStudent(state.results.grades.indexOf(nextRemaining));
+        } else {
+          inspectStudent(null);
+        }
+      } else {
+        inspectStudent(idx);
+      }
+    }
+    window.resolveReviewFlag = resolveReviewFlag;
+
+    function reopenReviewFlag(idx) {
+      if (!state.results || !state.results.grades || !state.results.grades[idx]) return;
+      const grade = state.results.grades[idx];
+      if (!grade.reviewFlags) return;
+      grade.reviewFlags.needsReview = true;
+      grade.reviewFlags.manuallyReviewed = false;
+
+      renderRosterTable();
+      renderSummaryTable();
+      updateSummaryReviewCallout();
+      inspectStudent(idx);
+    }
+    window.reopenReviewFlag = reopenReviewFlag;
+
+    function inspectStudent(idxOrId) {
       if (!state.results || !state.results.grades) return;
+      if (idxOrId == null) {
+        state.selectedStudentIdx = null;
+        $$('#tbody-roster tr').forEach(r => r.classList.remove('is-selected'));
+        $$('#tbody-summary tr').forEach(r => r.classList.remove('is-selected'));
+        renderRosterPreview(null);
+        return;
+      }
       let idx = typeof idxOrId === 'number' ? idxOrId : state.results.grades.findIndex(g => g.studentId === String(idxOrId) || g.examId === String(idxOrId));
-      if (idx === -1 || !state.results.grades[idx]) return;
+      if (idx === -1 || !state.results.grades[idx]) {
+        state.selectedStudentIdx = null;
+        renderRosterPreview(null);
+        return;
+      }
       state.selectedStudentIdx = idx;
 
       const rows = $$('#tbody-roster tr');
       rows.forEach((row, rIdx) => {
-        if (rIdx === idx) {
+        const rowIdx = row.dataset.origIdx != null ? Number(row.dataset.origIdx) : (row.dataset.idx != null ? Number(row.dataset.idx) : rIdx);
+        if (rowIdx === idx) {
           row.classList.add('is-selected');
           try { row.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (_) {}
         } else {
@@ -5866,7 +6241,8 @@
       renderViewerSheet();
 
       renderRosterPreview(idx);
-    };
+    }
+    window.inspectStudent = inspectStudent;
 
     if ($('btn-roster-download-jpeg')) {
       $('btn-roster-download-jpeg').onclick = () => {
@@ -5903,6 +6279,35 @@
     };
     if ($('btn-viewer-download-zip')) {
       $('btn-viewer-download-zip').onclick = () => $('btn-export-zip').click();
+    }
+
+    // Initialize Roster Review Queue Filters and Stepper
+    $$('#roster-review-filters button').forEach(btn => {
+      btn.onclick = () => setRosterFilter(btn.dataset.filter);
+    });
+    if ($('btn-roster-prev')) {
+      $('btn-roster-prev').onclick = () => {
+        const filtered = getFilteredRosterGrades();
+        if (filtered.length === 0) return;
+        const curGrade = state.results?.grades?.[state.selectedStudentIdx];
+        const curPos = filtered.indexOf(curGrade);
+        if (curPos > 0) {
+          const targetGrade = filtered[curPos - 1];
+          inspectStudent(state.results.grades.indexOf(targetGrade));
+        }
+      };
+    }
+    if ($('btn-roster-next')) {
+      $('btn-roster-next').onclick = () => {
+        const filtered = getFilteredRosterGrades();
+        if (filtered.length === 0) return;
+        const curGrade = state.results?.grades?.[state.selectedStudentIdx];
+        const curPos = filtered.indexOf(curGrade);
+        if (curPos !== -1 && curPos < filtered.length - 1) {
+          const targetGrade = filtered[curPos + 1];
+          inspectStudent(state.results.grades.indexOf(targetGrade));
+        }
+      };
     }
 
     // Draw Graded and Annotated Sheet onto any HTMLCanvasElement
@@ -6595,6 +7000,13 @@
     window.updateRosterDisplay = updateRosterDisplay;
     window.validatePreflightKeyLayout = validatePreflightKeyLayout;
     window.renderBellCurve = renderBellCurve;
+    window.renderRosterTable = renderRosterTable;
+    window.getFilteredRosterGrades = getFilteredRosterGrades;
+    window.updateRosterFilterCounts = updateRosterFilterCounts;
+    window.updateSummaryReviewCallout = updateSummaryReviewCallout;
+    window.openReviewQueue = openReviewQueue;
+    window.resolveReviewFlag = resolveReviewFlag;
+    window.reopenReviewFlag = reopenReviewFlag;
 
     // Sidebar & Results Export button listeners
     $('btn-sidebar-grade')?.addEventListener('click', () => $('btn-grade-now').click());

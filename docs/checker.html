@@ -720,6 +720,27 @@
       image-rendering: crisp-edges;
     }
 
+    .roster-preview-stepper-footer {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.65rem 1rem;
+      background: var(--panel-header);
+      border-top: 1px solid var(--border);
+    }
+
+    .viewer-footer-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.65rem 1.25rem;
+      border-top: 1px solid var(--border);
+      background: var(--panel-header);
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+
     /* Table Column Sorting */
     th.sortable {
       cursor: pointer;
@@ -1889,16 +1910,6 @@
                   </div>
                 </div>
                 <div class="roster-preview-actions" style="display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;">
-                  <!-- Review Queue Stepper -->
-                  <div class="roster-preview-stepper" style="display: inline-flex; align-items: center; gap: 0.25rem; background: var(--panel-alt); padding: 2px 4px; border-radius: var(--radius-sm); border: 1px solid var(--border);">
-                    <button type="button" id="btn-roster-prev" class="btn btn--secondary btn-xs" style="padding: 0.2rem 0.45rem; line-height: 1;" title="Previous student in filtered roster" disabled>
-                      <span>← Prev</span>
-                    </button>
-                    <span id="roster-queue-stepper-label" style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted); padding: 0 0.3rem; min-width: 48px; text-align: center; font-variant-numeric: tabular-nums;">Student 0 of 0</span>
-                    <button type="button" id="btn-roster-next" class="btn btn--secondary btn-xs" style="padding: 0.2rem 0.45rem; line-height: 1;" title="Next student in filtered roster" disabled>
-                      <span>Next →</span>
-                    </button>
-                  </div>
                   <button type="button" id="btn-roster-download-jpeg" class="btn btn--secondary btn--sm" disabled title="Download current student's graded sheet as JPEG">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
                     <span>Download Sheet (JPEG)</span>
@@ -1929,6 +1940,21 @@
                 <!-- Accessible via #roster-preview-canvas and legacy alias -->
                 <canvas id="roster-preview-canvas" width="800" height="1131" style="display: none; max-width: 100%; height: auto;"></canvas>
                 <!-- id="roster-inspector-canvas" -->
+              </div>
+
+              <!-- Stepper Navigation Controls (Below the inspected sheet) -->
+              <div class="roster-preview-stepper-footer">
+                <div class="roster-preview-stepper" style="display: inline-flex; align-items: center; gap: 0.35rem; background: var(--panel-alt); padding: 3px 6px; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+                  <button type="button" id="btn-roster-prev" class="btn btn--secondary btn-xs" style="padding: 0.25rem 0.6rem; line-height: 1.2;" title="Previous student in filtered roster" disabled>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+                    <span>Prev</span>
+                  </button>
+                  <span id="roster-queue-stepper-label" style="font-size: 0.76rem; font-weight: 700; color: var(--text-muted); padding: 0 0.5rem; min-width: 60px; text-align: center; font-variant-numeric: tabular-nums;">Student 0 of 0</span>
+                  <button type="button" id="btn-roster-next" class="btn btn--secondary btn-xs" style="padding: 0.25rem 0.6rem; line-height: 1.2;" title="Next student in filtered roster" disabled>
+                    <span>Next</span>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -2324,6 +2350,29 @@
 
       <div class="canvas-container" style="flex: 1; overflow: auto; padding: 1rem; background: #262a30; min-height: 480px;">
         <canvas id="viewer-canvas" width="800" height="1131"></canvas>
+      </div>
+
+      <!-- Stepper Navigation Controls (Below the inspected sheet in Full View) -->
+      <div class="viewer-footer-bar">
+        <div style="display: flex; align-items: center; gap: 0.5rem; min-width: 140px;">
+          <span id="viewer-badge-review" class="badge-review" style="display: none;"></span>
+        </div>
+        <div class="viewer-stepper-wrap" style="display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+          <div class="viewer-stepper" style="display: inline-flex; align-items: center; gap: 0.35rem; background: var(--panel-alt); padding: 3px 6px; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+            <button type="button" id="btn-viewer-prev" class="btn btn--secondary btn-xs" style="padding: 0.25rem 0.6rem; line-height: 1.2;" title="Previous student in filtered roster" disabled>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+              <span>Prev</span>
+            </button>
+            <span id="viewer-queue-stepper-label" style="font-size: 0.76rem; font-weight: 700; color: var(--text-muted); padding: 0 0.5rem; min-width: 60px; text-align: center; font-variant-numeric: tabular-nums;">Student 0 of 0</span>
+            <button type="button" id="btn-viewer-next" class="btn btn--secondary btn-xs" style="padding: 0.25rem 0.6rem; line-height: 1.2;" title="Next student in filtered roster" disabled>
+              <span>Next</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+        </div>
+        <div style="font-size: 0.74rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.4rem; justify-content: flex-end; min-width: 140px;">
+          <span>Keys: <kbd style="padding: 1px 5px; border: 1px solid var(--border); border-radius: 3px; font-size: 0.68rem; background: var(--panel);">←</kbd> <kbd style="padding: 1px 5px; border: 1px solid var(--border); border-radius: 3px; font-size: 0.68rem; background: var(--panel);">→</kbd></span>
+        </div>
       </div>
     </div>
   </dialog>
@@ -5148,6 +5197,45 @@
     }
     window.setRosterFilter = setRosterFilter;
 
+    function stepFilteredRoster(delta) {
+      const filtered = getFilteredRosterGrades();
+      if (!filtered || filtered.length === 0) return;
+      const curGrade = state.results?.grades?.[state.selectedStudentIdx];
+      const curPos = curGrade ? filtered.indexOf(curGrade) : -1;
+      const targetPos = curPos + delta;
+      if (targetPos >= 0 && targetPos < filtered.length) {
+        const targetGrade = filtered[targetPos];
+        inspectStudent(state.results.grades.indexOf(targetGrade));
+      }
+    }
+    window.stepFilteredRoster = stepFilteredRoster;
+
+    function updateStepperControls(grade) {
+      const filtered = getFilteredRosterGrades();
+      const curPos = grade ? filtered.indexOf(grade) : -1;
+      const isValid = curPos !== -1 && filtered.length > 0;
+      const labelText = isValid ? `Student ${curPos + 1} of ${filtered.length}` : (filtered.length > 0 ? `0 of ${filtered.length}` : '—');
+      const canPrev = isValid && curPos > 0;
+      const canNext = isValid && curPos < filtered.length - 1;
+
+      // Side Preview Stepper (below inspected sheet in roster)
+      const rosterLabel = $('roster-queue-stepper-label');
+      const rosterPrev = $('btn-roster-prev');
+      const rosterNext = $('btn-roster-next');
+      if (rosterLabel) rosterLabel.textContent = labelText;
+      if (rosterPrev) rosterPrev.disabled = !canPrev;
+      if (rosterNext) rosterNext.disabled = !canNext;
+
+      // Full View Modal Stepper (below inspected sheet in modal)
+      const viewerLabel = $('viewer-queue-stepper-label');
+      const viewerPrev = $('btn-viewer-prev');
+      const viewerNext = $('btn-viewer-next');
+      if (viewerLabel) viewerLabel.textContent = labelText;
+      if (viewerPrev) viewerPrev.disabled = !canPrev;
+      if (viewerNext) viewerNext.disabled = !canNext;
+    }
+    window.updateStepperControls = updateStepperControls;
+
     // Render Roster Table
     function renderRosterTable() {
       if (!state.results || !state.results.grades) return;
@@ -5342,31 +5430,11 @@
         };
       });
 
-      // Stepper Navigation Buttons
-      if ($('btn-roster-prev')) {
-        $('btn-roster-prev').onclick = () => {
-          const filtered = getFilteredRosterGrades();
-          if (filtered.length === 0) return;
-          const curGrade = state.results?.grades?.[state.selectedStudentIdx];
-          const curPos = filtered.indexOf(curGrade);
-          if (curPos > 0) {
-            const targetGrade = filtered[curPos - 1];
-            inspectStudent(state.results.grades.indexOf(targetGrade));
-          }
-        };
-      }
-      if ($('btn-roster-next')) {
-        $('btn-roster-next').onclick = () => {
-          const filtered = getFilteredRosterGrades();
-          if (filtered.length === 0) return;
-          const curGrade = state.results?.grades?.[state.selectedStudentIdx];
-          const curPos = filtered.indexOf(curGrade);
-          if (curPos !== -1 && curPos < filtered.length - 1) {
-            const targetGrade = filtered[curPos + 1];
-            inspectStudent(state.results.grades.indexOf(targetGrade));
-          }
-        };
-      }
+      // Stepper Navigation Buttons (Side Preview and Full View Modal)
+      if ($('btn-roster-prev')) $('btn-roster-prev').onclick = () => stepFilteredRoster(-1);
+      if ($('btn-roster-next')) $('btn-roster-next').onclick = () => stepFilteredRoster(1);
+      if ($('btn-viewer-prev')) $('btn-viewer-prev').onclick = () => stepFilteredRoster(-1);
+      if ($('btn-viewer-next')) $('btn-viewer-next').onclick = () => stepFilteredRoster(1);
     }
 
     // Render Comprehensive Item Analysis Dashboard (Metrics, Flagged Questions, SVG Charts)
@@ -6048,9 +6116,6 @@
     function renderRosterPreview(idx) {
       const reviewBadgeEl = $('roster-badge-review');
       const reviewAlertEl = $('roster-review-alert');
-      const stepperLabel = $('roster-queue-stepper-label');
-      const prevBtn = $('btn-roster-prev');
-      const nextBtn = $('btn-roster-next');
 
       if (!state.results || !state.results.grades || !state.results.grades[idx]) {
         if ($('roster-student-badge')) $('roster-student-badge').style.display = 'none';
@@ -6058,9 +6123,7 @@
         if (reviewAlertEl) reviewAlertEl.style.display = 'none';
         if ($('btn-roster-download-jpeg')) $('btn-roster-download-jpeg').disabled = true;
         if ($('btn-roster-expand-modal')) $('btn-roster-expand-modal').disabled = true;
-        if (prevBtn) prevBtn.disabled = true;
-        if (nextBtn) nextBtn.disabled = true;
-        if (stepperLabel) stepperLabel.textContent = '—';
+        updateStepperControls(null);
         if ($('roster-preview-empty')) $('roster-preview-empty').style.display = 'flex';
         const canvas = $('roster-preview-canvas') || $('roster-inspector-canvas');
         if (canvas) canvas.style.display = 'none';
@@ -6072,17 +6135,7 @@
       const isPass = grade.percentage >= passThreshold;
 
       // Update Review Queue Stepper (shows position in current view)
-      const filtered = getFilteredRosterGrades();
-      const curPos = filtered.indexOf(grade);
-      if (curPos !== -1 && filtered.length > 0) {
-        if (stepperLabel) stepperLabel.textContent = `Student ${curPos + 1} of ${filtered.length}`;
-        if (prevBtn) prevBtn.disabled = curPos <= 0;
-        if (nextBtn) nextBtn.disabled = curPos >= filtered.length - 1;
-      } else {
-        if (stepperLabel) stepperLabel.textContent = '—';
-        if (prevBtn) prevBtn.disabled = true;
-        if (nextBtn) nextBtn.disabled = true;
-      }
+      updateStepperControls(grade);
 
       if ($('roster-student-badge')) $('roster-student-badge').style.display = 'inline-flex';
       if ($('roster-badge-name')) $('roster-badge-name').textContent = `${grade.studentName} (${grade.studentId})`;
@@ -6285,29 +6338,28 @@
     $$('#roster-review-filters button').forEach(btn => {
       btn.onclick = () => setRosterFilter(btn.dataset.filter);
     });
-    if ($('btn-roster-prev')) {
-      $('btn-roster-prev').onclick = () => {
-        const filtered = getFilteredRosterGrades();
-        if (filtered.length === 0) return;
-        const curGrade = state.results?.grades?.[state.selectedStudentIdx];
-        const curPos = filtered.indexOf(curGrade);
-        if (curPos > 0) {
-          const targetGrade = filtered[curPos - 1];
-          inspectStudent(state.results.grades.indexOf(targetGrade));
+    if ($('btn-roster-prev')) $('btn-roster-prev').onclick = () => stepFilteredRoster(-1);
+    if ($('btn-roster-next')) $('btn-roster-next').onclick = () => stepFilteredRoster(1);
+    if ($('btn-viewer-prev')) $('btn-viewer-prev').onclick = () => stepFilteredRoster(-1);
+    if ($('btn-viewer-next')) $('btn-viewer-next').onclick = () => stepFilteredRoster(1);
+
+    // Keyboard navigation in Full View Inspector Modal
+    if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
+      window.addEventListener('keydown', (e) => {
+        const modal = $('modal-viewer');
+        if (modal && modal.open) {
+          if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA')) {
+            return;
+          }
+          if (e.key === 'ArrowLeft' && $('btn-viewer-prev') && !$('btn-viewer-prev').disabled) {
+            e.preventDefault();
+            stepFilteredRoster(-1);
+          } else if (e.key === 'ArrowRight' && $('btn-viewer-next') && !$('btn-viewer-next').disabled) {
+            e.preventDefault();
+            stepFilteredRoster(1);
+          }
         }
-      };
-    }
-    if ($('btn-roster-next')) {
-      $('btn-roster-next').onclick = () => {
-        const filtered = getFilteredRosterGrades();
-        if (filtered.length === 0) return;
-        const curGrade = state.results?.grades?.[state.selectedStudentIdx];
-        const curPos = filtered.indexOf(curGrade);
-        if (curPos !== -1 && curPos < filtered.length - 1) {
-          const targetGrade = filtered[curPos + 1];
-          inspectStudent(state.results.grades.indexOf(targetGrade));
-        }
-      };
+      });
     }
 
     // Draw Graded and Annotated Sheet onto any HTMLCanvasElement
@@ -6372,7 +6424,10 @@
 
     // Render Canvas with Overlay in Viewer
     function renderViewerSheet() {
-      if (!state.results || !state.results.grades || !state.results.grades[state.selectedStudentIdx]) return;
+      if (!state.results || !state.results.grades || !state.results.grades[state.selectedStudentIdx]) {
+        updateStepperControls(null);
+        return;
+      }
       const grade = state.results.grades[state.selectedStudentIdx];
       const canvas = $('viewer-canvas');
       drawGradeOnCanvas(grade, canvas);
@@ -6382,6 +6437,23 @@
       if ($('viewer-student-select')) {
         $('viewer-student-select').value = state.selectedStudentIdx;
       }
+      const viewerBadgeReview = $('viewer-badge-review');
+      if (viewerBadgeReview) {
+        if (grade.reviewFlags && grade.reviewFlags.needsReview) {
+          viewerBadgeReview.style.display = 'inline-flex';
+          viewerBadgeReview.className = 'badge-review';
+          viewerBadgeReview.textContent = '⚠️ Needs Review';
+          viewerBadgeReview.title = (grade.reviewFlags.reasons || []).join('; ');
+        } else if (grade.reviewFlags && grade.reviewFlags.manuallyReviewed) {
+          viewerBadgeReview.style.display = 'inline-flex';
+          viewerBadgeReview.className = 'badge-reviewed';
+          viewerBadgeReview.textContent = '✓ Reviewed';
+          viewerBadgeReview.title = 'Manually verified by instructor';
+        } else {
+          viewerBadgeReview.style.display = 'none';
+        }
+      }
+      updateStepperControls(grade);
     }
 
     // Download Graded Sheet (JPEG)

@@ -27,10 +27,15 @@ test('Review Queue DOM Structure: toolbar, filter pills, stepper, callouts, and 
   assert.ok(checkerHtml.includes('id="count-roster-clean"'), '#count-roster-clean present');
   assert.ok(checkerHtml.includes('id="roster-count-badge"'), '#roster-count-badge present');
 
-  // 4. Stepper controls in preview header
+  // 4. Stepper controls in side preview footer and full view modal
   assert.ok(checkerHtml.includes('id="btn-roster-prev"'), '#btn-roster-prev button present');
   assert.ok(checkerHtml.includes('id="btn-roster-next"'), '#btn-roster-next button present');
   assert.ok(checkerHtml.includes('id="roster-queue-stepper-label"'), '#roster-queue-stepper-label present');
+  assert.ok(checkerHtml.includes('id="btn-viewer-prev"'), '#btn-viewer-prev button present');
+  assert.ok(checkerHtml.includes('id="btn-viewer-next"'), '#btn-viewer-next button present');
+  assert.ok(checkerHtml.includes('id="viewer-queue-stepper-label"'), '#viewer-queue-stepper-label present');
+  assert.ok(checkerHtml.includes('.roster-preview-stepper-footer'), '.roster-preview-stepper-footer CSS class present');
+  assert.ok(checkerHtml.includes('.viewer-footer-bar'), '.viewer-footer-bar CSS class present');
 
   // 5. CSS classes for badges and active filter
   assert.ok(checkerHtml.includes('.badge-reviewed'), '.badge-reviewed CSS class present');
@@ -222,5 +227,67 @@ test('Review Queue State & Engine: filtering, count badges, flag resolution, and
   state.rosterFilter = 'all';
   renderRosterTable();
   assert.ok(elements['tbody-roster'].innerHTML.includes('No student grades available.'), 'All filter empty state message');
+
+  // 9. Test Synchronized Stepper Navigation (Side Pane & Full View Modal)
+  const stepFilteredRoster = vm.runInContext('stepFilteredRoster', sandbox);
+  const setRosterFilter = vm.runInContext('setRosterFilter', sandbox);
+  const inspectStudent = vm.runInContext('inspectStudent', sandbox);
+
+  // Restore grades
+  state.results.grades = [
+    { studentId: 'S1', studentName: 'Student 1', rawScore: 40, maxScore: 50, percentage: 80, reviewFlags: { needsReview: false } },
+    { studentId: 'S2', studentName: 'Student 2', rawScore: 30, maxScore: 50, percentage: 60, reviewFlags: { needsReview: true, reasons: ['Blank'] } },
+    { studentId: 'S3', studentName: 'Student 3', rawScore: 20, maxScore: 50, percentage: 40, reviewFlags: { needsReview: true, reasons: ['ID'] } }
+  ];
+
+  state.rosterFilter = 'all';
+  inspectStudent(0);
+  assert.equal(elements['roster-queue-stepper-label'].textContent, 'Student 1 of 3');
+  assert.equal(elements['viewer-queue-stepper-label'].textContent, 'Student 1 of 3');
+  assert.equal(elements['btn-roster-prev'].disabled, true);
+  assert.equal(elements['btn-viewer-prev'].disabled, true);
+  assert.equal(elements['btn-roster-next'].disabled, false);
+  assert.equal(elements['btn-viewer-next'].disabled, false);
+
+  // Advance to student 2
+  stepFilteredRoster(1);
+  assert.equal(state.selectedStudentIdx, 1);
+  assert.equal(elements['roster-queue-stepper-label'].textContent, 'Student 2 of 3');
+  assert.equal(elements['viewer-queue-stepper-label'].textContent, 'Student 2 of 3');
+  assert.equal(elements['btn-roster-prev'].disabled, false);
+  assert.equal(elements['btn-viewer-prev'].disabled, false);
+  assert.equal(elements['btn-roster-next'].disabled, false);
+  assert.equal(elements['btn-viewer-next'].disabled, false);
+
+  // Advance to student 3 (last student in cohort)
+  stepFilteredRoster(1);
+  assert.equal(state.selectedStudentIdx, 2);
+  assert.equal(elements['roster-queue-stepper-label'].textContent, 'Student 3 of 3');
+  assert.equal(elements['viewer-queue-stepper-label'].textContent, 'Student 3 of 3');
+  assert.equal(elements['btn-roster-prev'].disabled, false);
+  assert.equal(elements['btn-viewer-prev'].disabled, false);
+  assert.equal(elements['btn-roster-next'].disabled, true);
+  assert.equal(elements['btn-viewer-next'].disabled, true);
+
+  // Select unflagged student 0, then filter by 'needs-review' (2 flagged students: S2 and S3)
+  inspectStudent(0);
+  setRosterFilter('needs-review');
+  assert.equal(state.selectedStudentIdx, 1);
+  assert.equal(elements['roster-queue-stepper-label'].textContent, 'Student 1 of 2');
+  assert.equal(elements['viewer-queue-stepper-label'].textContent, 'Student 1 of 2');
+  assert.equal(elements['btn-roster-prev'].disabled, true);
+  assert.equal(elements['btn-viewer-prev'].disabled, true);
+  assert.equal(elements['btn-roster-next'].disabled, false);
+  assert.equal(elements['btn-viewer-next'].disabled, false);
+
+  // Step next in review queue -> S3 (origIdx 2)
+  stepFilteredRoster(1);
+  assert.equal(state.selectedStudentIdx, 2);
+  assert.equal(elements['roster-queue-stepper-label'].textContent, 'Student 2 of 2');
+  assert.equal(elements['viewer-queue-stepper-label'].textContent, 'Student 2 of 2');
+  assert.equal(elements['btn-roster-prev'].disabled, false);
+  assert.equal(elements['btn-viewer-prev'].disabled, false);
+  assert.equal(elements['btn-roster-next'].disabled, true);
+  assert.equal(elements['btn-viewer-next'].disabled, true);
 });
 

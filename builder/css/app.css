@@ -2460,6 +2460,18 @@ dialog.modal-dialog--answer-key {
   text-align: center;
 }
 
+.key-bloom-select {
+  padding: 0.15rem 0.35rem;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xs);
+  background: var(--panel);
+  color: var(--text);
+  cursor: pointer;
+}
+
 .key-text-input {
   flex: 1;
   padding: 0.25rem 0.45rem;

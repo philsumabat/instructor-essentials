@@ -96,6 +96,7 @@ function initElements() {
     keyFileImport: $('#key-file-import'),
     keyItemsContainer: $('#key-items-container'),
     btnKeyDownload: $('#btn-key-download'),
+    btnKeyDownloadCsv: $('#btn-key-download-csv'),
     btnKeySaveApply: $('#btn-key-save-apply'),
     // Tab navigation
     tabBtns: $$('.studio-tab-btn'),
@@ -1707,6 +1708,29 @@ function closeModal(modalEl) {
   modalEl.removeAttribute('open');
 }
 
+// ---- Bloom's Taxonomy Cognitive Domain Utilities [Anderson & Krathwohl, 2001] ----
+const BLOOM_LEVELS = ['Remember', 'Understand', 'Apply', 'Analyze', 'Evaluate', 'Create'];
+
+function normalizeBloom(val) {
+  if (!val || typeof val !== 'string') return 'Remember';
+  const clean = val.trim().toLowerCase();
+  if (clean.startsWith('rem') || clean.startsWith('rec') || clean === 'knowledge' || clean === '1') return 'Remember';
+  if (clean.startsWith('und') || clean.startsWith('com') || clean === 'comprehension' || clean === '2') return 'Understand';
+  if (clean.startsWith('app') || clean === 'application' || clean === '3') return 'Apply';
+  if (clean.startsWith('ana') || clean === 'analysis' || clean === '4') return 'Analyze';
+  if (clean.startsWith('eva') || clean === 'evaluation' || clean === '5') return 'Evaluate';
+  if (clean.startsWith('cre') || clean.startsWith('syn') || clean === 'synthesis' || clean === 'creation' || clean === '6') return 'Create';
+  return 'Remember';
+}
+
+function defaultBloomFor(k) {
+  const num = parseInt(k, 10);
+  if (!isNaN(num) && num > 0) {
+    return BLOOM_LEVELS[(num - 1) % BLOOM_LEVELS.length];
+  }
+  return 'Remember';
+}
+
 // ---- Interactive Answer Key Editor UI ----
 const currentAnswerKey = {
   items: {},
@@ -1717,8 +1741,14 @@ function getActiveAnswerKeyPayload() {
   const layout = state.layout;
   if (!layout) return null;
   let totalPoints = 0;
-  for (const item of Object.values(currentAnswerKey.items)) {
+  const itemsPayload = {};
+  for (const [key, item] of Object.entries(currentAnswerKey.items)) {
     totalPoints += Number(item.points || 1);
+    itemsPayload[key] = {
+      ...item,
+      points: Number(item.points || 1),
+      bloom: item.bloom || defaultBloomFor(key),
+    };
   }
   return {
     title: `${layout.title || 'Exam'} Answer Key`,
@@ -1726,7 +1756,7 @@ function getActiveAnswerKeyPayload() {
     exam_id: layout.templateId,
     total_points: totalPoints,
     pass_score: currentAnswerKey.passScore ?? Math.round(totalPoints * 0.6),
-    items: currentAnswerKey.items,
+    items: itemsPayload,
   };
 }
 
@@ -1734,6 +1764,23 @@ function downloadCurrentAnswerKey() {
   const payload = getActiveAnswerKeyPayload();
   if (!payload) return;
   download(`${state.layout?.templateId || 'exam'}-answer-key.json`, `${JSON.stringify(payload, null, 2)}\n`, 'application/json');
+}
+
+function downloadCurrentAnswerKeyCSV() {
+  const rows = ['Item #,Answer,Points,Bloom'];
+  const sortedKeys = Object.keys(currentAnswerKey.items).sort((a, b) => {
+    const na = Number(a), nb = Number(b);
+    if (!isNaN(na) && !isNaN(nb)) return na - nb;
+    return a.localeCompare(b);
+  });
+  for (const k of sortedKeys) {
+    const it = currentAnswerKey.items[k];
+    const ans = String(it.answer || '');
+    const formattedAns = ans.includes(',') || ans.includes('"') ? `"${ans.replace(/"/g, '""')}"` : ans;
+    rows.push(`${k},${formattedAns},${it.points ?? 1},${it.bloom || defaultBloomFor(k)}`);
+  }
+  const baseId = state.layout?.templateId || 'exam';
+  download(`${baseId}-answer-key.csv`, rows.join('\n') + '\n', 'text/csv');
 }
 
 function openAnswerKeyModal() {
@@ -1754,10 +1801,12 @@ function openAnswerKeyModal() {
       const existingPts = typeof existing === 'object' && existing !== null && existing.points !== undefined
         ? Number(existing.points)
         : null;
+      const existingBloom = typeof existing === 'object' && existing !== null ? existing.bloom : null;
 
       currentAnswerKey.items[g.key] = {
         answer: existingAns ?? defaultAns,
         points: existingPts ?? Number(g.points || 1),
+        bloom: normalizeBloom(existingBloom || defaultBloomFor(g.key)),
         kind: g.kind,
         options: g.options.map((o) => o.value),
         label: g.label || g.key,
@@ -1776,10 +1825,12 @@ function openAnswerKeyModal() {
       const existingPts = typeof existing === 'object' && existing !== null && existing.points !== undefined
         ? Number(existing.points)
         : null;
+      const existingBloom = typeof existing === 'object' && existing !== null ? existing.bloom : null;
 
       currentAnswerKey.items[roi.key] = {
         answer: existingAns ?? defaultAns,
         points: existingPts ?? Number(roi.points || 1),
+        bloom: normalizeBloom(existingBloom || defaultBloomFor(roi.key)),
         kind: 'text',
         rubric: roi.charset === 'digits' ? 'exact' : 'case_insensitive',
         label: roi.label || roi.key,
@@ -1893,18 +1944,26 @@ function renderAnswerKeyModalContent() {
       if (!item) continue;
       const opts = item.options || ['A', 'B', 'C', 'D'];
       const currentAns = String(item.answer || '');
+      const currentBloom = item.bloom || defaultBloomFor(g.key);
 
       html += `
         <div class="key-item-cell" data-key="${g.key}">
-          <span class="key-item-num">${g.key}.</span>
-          <div class="key-bubbles-row">
-            ${opts
-              .map((opt) => `
-                <button type="button" class="key-bubble-btn ${currentAns === opt ? 'is-active' : ''}" data-key="${g.key}" data-val="${opt}">${opt}</button>
-              `)
-              .join('')}
+          <div style="display: flex; align-items: center; gap: 0.4rem;">
+            <span class="key-item-num">${g.key}.</span>
+            <div class="key-bubbles-row">
+              ${opts
+                .map((opt) => `
+                  <button type="button" class="key-bubble-btn ${currentAns === opt ? 'is-active' : ''}" data-key="${g.key}" data-val="${opt}">${opt}</button>
+                `)
+                .join('')}
+            </div>
           </div>
-          <input type="number" class="key-pts-input" data-key="${g.key}" value="${item.points}" min="1" max="50" title="Points">
+          <div style="display: flex; align-items: center; gap: 0.35rem;">
+            <select class="key-bloom-select" data-key="${g.key}" title="Bloom's Cognitive Level">
+              ${BLOOM_LEVELS.map((lvl) => `<option value="${lvl}" ${currentBloom === lvl ? 'selected' : ''}>${lvl}</option>`).join('')}
+            </select>
+            <input type="number" class="key-pts-input" data-key="${g.key}" value="${item.points}" min="0.5" max="50" step="0.5" title="Points" style="width: 48px;">
+          </div>
         </div>
       `;
     }
@@ -1913,12 +1972,16 @@ function renderAnswerKeyModalContent() {
       const item = currentAnswerKey.items[roi.key];
       if (!item) continue;
       const ansVal = Array.isArray(item.answer) ? item.answer.join(', ') : String(item.answer || '');
+      const currentBloom = item.bloom || defaultBloomFor(roi.key);
 
       html += `
-        <div class="key-item-cell" data-key="${roi.key}" style="grid-column: 1 / -1; display: flex; gap: 0.5rem;">
+        <div class="key-item-cell" data-key="${roi.key}" style="grid-column: 1 / -1; display: flex; gap: 0.5rem; align-items: center;">
           <span class="key-item-num">${safeEscapeHTML(item.label || roi.key)}:</span>
           <input type="text" class="key-text-input" data-key="${roi.key}" value="${safeEscapeHTML(ansVal)}" placeholder="Accepted answer">
-          <input type="number" class="key-pts-input" data-key="${roi.key}" value="${item.points}" min="1" max="50" title="Points">
+          <select class="key-bloom-select" data-key="${roi.key}" title="Bloom's Cognitive Level">
+            ${BLOOM_LEVELS.map((lvl) => `<option value="${lvl}" ${currentBloom === lvl ? 'selected' : ''}>${lvl}</option>`).join('')}
+          </select>
+          <input type="number" class="key-pts-input" data-key="${roi.key}" value="${item.points}" min="0.5" max="50" step="0.5" title="Points" style="width: 48px;">
         </div>
       `;
     }
@@ -1943,11 +2006,21 @@ function renderAnswerKeyModalContent() {
     });
   });
 
+  // Bind Bloom selectors
+  els.keyItemsContainer.querySelectorAll('.key-bloom-select').forEach((sel) => {
+    sel.addEventListener('change', () => {
+      const k = sel.dataset.key;
+      if (currentAnswerKey.items[k]) {
+        currentAnswerKey.items[k].bloom = sel.value;
+      }
+    });
+  });
+
   // Bind points input changes
   els.keyItemsContainer.querySelectorAll('.key-pts-input').forEach((input) => {
     input.addEventListener('input', () => {
       const k = input.dataset.key;
-      const pts = Math.max(1, parseFloat(input.value) || 1);
+      const pts = Math.max(0.5, parseFloat(input.value) || 1);
       if (currentAnswerKey.items[k]) {
         currentAnswerKey.items[k].points = pts;
         let newTotal = 0;
@@ -1978,6 +2051,7 @@ function renderAnswerKeyModalContent() {
         currentAnswerKey.items[k] = {
           answer: meta.options ? meta.options[0] : 'Answer',
           points: 1,
+          bloom: defaultBloomFor(k),
           kind: meta.kind,
           options: meta.options,
           label: meta.label || k,
@@ -2992,24 +3066,123 @@ function initEvents() {
   });
 
   els.btnKeyDownload?.addEventListener('click', downloadCurrentAnswerKey);
+  els.btnKeyDownloadCsv?.addEventListener('click', downloadCurrentAnswerKeyCSV);
+
+  function parseCSVLine(line) {
+    const result = [];
+    let cur = '';
+    let inQuotes = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (ch === '"') {
+        if (inQuotes && line[i + 1] === '"') {
+          cur += '"';
+          i++;
+        } else {
+          inQuotes = !inQuotes;
+        }
+      } else if (ch === ',' && !inQuotes) {
+        result.push(cur.trim());
+        cur = '';
+      } else {
+        cur += ch;
+      }
+    }
+    result.push(cur.trim());
+    return result;
+  }
+
+  function parseKeyCSV(csvText) {
+    const lines = csvText.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+    if (lines.length < 2) throw new Error('CSV file is empty or missing headers.');
+    const header = parseCSVLine(lines[0]).map((h) => h.toLowerCase().trim().replace(/^["']|["']$/g, ''));
+    const itemCol = header.findIndex((h) => h.includes('item') || h.includes('question') || h.includes('#'));
+    const ansCol = header.findIndex((h) => h.includes('answer') || h.includes('key'));
+    const ptsCol = header.findIndex((h) => h.includes('point') || h.includes('pts') || h.includes('score'));
+    const bloomCol = header.findIndex((h) => h.includes('bloom') || h.includes('cognitive') || h.includes('taxonomy') || h.includes('level'));
+
+    const items = {};
+    for (let i = 1; i < lines.length; i++) {
+      const row = parseCSVLine(lines[i]);
+      if (row.length === 0) continue;
+      const itNum = itemCol !== -1 ? row[itemCol]?.trim() : String(i);
+      let ans = ansCol !== -1 ? row[ansCol]?.trim() : (row[1]?.trim() || '');
+      const pts = ptsCol !== -1 ? parseFloat(row[ptsCol]) : 1;
+      const rawBloom = bloomCol !== -1 ? row[bloomCol]?.trim() : (row[3]?.trim() || null);
+      const bloom = rawBloom ? normalizeBloom(rawBloom) : defaultBloomFor(itNum);
+
+      if (itNum && ans !== undefined && ans !== '') {
+        let normAns = ans.trim();
+        const upper = normAns.toUpperCase();
+        if (upper === 'TRUE') normAns = 'T';
+        else if (upper === 'FALSE') normAns = 'F';
+        else if (/^[A-Za-z]$/.test(normAns)) normAns = upper;
+
+        const isTF = normAns === 'T' || normAns === 'F';
+        items[itNum] = {
+          answer: normAns,
+          points: isNaN(pts) ? 1 : pts,
+          kind: isTF ? 'tf' : 'mcq',
+          bloom,
+        };
+      }
+    }
+    return items;
+  }
 
   els.keyFileImport?.addEventListener('change', async () => {
     const file = els.keyFileImport.files?.[0];
     if (!file) return;
     try {
-      const parsed = JSON.parse(await file.text());
-      if (parsed && typeof parsed.items === 'object') {
-        for (const [k, v] of Object.entries(parsed.items)) {
+      const text = await file.text();
+      const fname = file.name.toLowerCase();
+      if (fname.endsWith('.csv')) {
+        const importedItems = parseKeyCSV(text);
+        if (Object.keys(importedItems).length === 0) {
+          throw new Error('No valid question answers found in imported CSV.');
+        }
+        for (const [k, v] of Object.entries(importedItems)) {
           if (currentAnswerKey.items[k]) {
-            currentAnswerKey.items[k].answer = typeof v === 'object' && v.answer !== undefined ? v.answer : v;
-            if (typeof v === 'object' && v.points) currentAnswerKey.items[k].points = v.points;
+            currentAnswerKey.items[k].answer = v.answer;
+            if (v.points !== undefined) currentAnswerKey.items[k].points = v.points;
+            if (v.bloom) currentAnswerKey.items[k].bloom = v.bloom;
+          } else {
+            currentAnswerKey.items[k] = {
+              answer: v.answer,
+              points: v.points ?? 1,
+              bloom: v.bloom || defaultBloomFor(k),
+              kind: v.kind || 'mcq',
+              options: ['A', 'B', 'C', 'D'],
+              label: k,
+            };
           }
         }
-        if (parsed.pass_score !== undefined) currentAnswerKey.passScore = parsed.pass_score;
         renderAnswerKeyModalContent();
+      } else {
+        const parsed = JSON.parse(text);
+        if (parsed && typeof parsed.items === 'object') {
+          for (const [k, v] of Object.entries(parsed.items)) {
+            if (currentAnswerKey.items[k]) {
+              currentAnswerKey.items[k].answer = typeof v === 'object' && v.answer !== undefined ? v.answer : v;
+              if (typeof v === 'object' && v.points) currentAnswerKey.items[k].points = v.points;
+              if (typeof v === 'object' && v.bloom) currentAnswerKey.items[k].bloom = normalizeBloom(v.bloom);
+            } else if (typeof v === 'object') {
+              currentAnswerKey.items[k] = {
+                answer: v.answer ?? '',
+                points: v.points ?? 1,
+                bloom: normalizeBloom(v.bloom || defaultBloomFor(k)),
+                kind: v.kind || 'mcq',
+                options: v.options || ['A', 'B', 'C', 'D'],
+                label: v.label || k,
+              };
+            }
+          }
+          if (parsed.pass_score !== undefined) currentAnswerKey.passScore = parsed.pass_score;
+          renderAnswerKeyModalContent();
+        }
       }
     } catch (err) {
-      alert(`Invalid Answer Key JSON: ${err.message}`);
+      alert(`Invalid Answer Key: ${err.message}`);
     } finally {
       els.keyFileImport.value = '';
     }
@@ -3041,6 +3214,28 @@ function initEvents() {
     const svgStr = renderSVG(state.layout);
     const htmlStr = renderStandaloneHTML(state.layout, await getSheetCss());
     const templateJson = state.template ? `${JSON.stringify(state.template, null, 2)}\n` : layoutJson;
+
+    const keyRows = ['Item #,Answer,Points,Bloom'];
+    const activeKeyItems = currentAnswerKey.items || {};
+    const keyKeys = Object.keys(activeKeyItems);
+    const sortedKeyItems = keyKeys.length > 0
+      ? keyKeys.sort((a, b) => {
+          const na = Number(a), nb = Number(b);
+          if (!isNaN(na) && !isNaN(nb)) return na - nb;
+          return a.localeCompare(b);
+        })
+      : allGroups(state.layout).filter((g) => g.kind === 'mcq' || g.kind === 'tf').map((g) => String(g.key));
+
+    for (const k of sortedKeyItems) {
+      const it = activeKeyItems[k];
+      const ans = it ? String(it.answer || '') : 'A';
+      const pts = it ? (it.points ?? 1) : 1;
+      const bloom = it ? (it.bloom || defaultBloomFor(k)) : defaultBloomFor(k);
+      const formattedAns = ans.includes(',') || ans.includes('"') ? `"${ans.replace(/"/g, '""')}"` : ans;
+      keyRows.push(`${k},${formattedAns},${pts},${bloom}`);
+    }
+    const keyCsv = keyRows.join('\n') + '\n';
+
     const readme = `EXAM PACKAGE: ${state.layout.title || baseId}
 Generated by Instructor Essentials — Sheet Builder
 
@@ -3055,6 +3250,10 @@ CONTENTS:
 
 3. template.json
    - The editable Sheet Builder blueprint. Load this back into Sheet Builder to edit questions or layout anytime.
+
+4. answer_key_template.csv
+   - Pre-populated answer key CSV template with Item #, Answer, Points, and Bloom's Taxonomy cognitive levels.
+   - Upload directly into Checker Studio (checker.html) to grade completed exams!
 `;
 
     const enc = new TextEncoder();
@@ -3063,6 +3262,7 @@ CONTENTS:
       { name: 'exam_sheet.svg', data: enc.encode(svgStr) },
       { name: 'exam_sheet.html', data: enc.encode(htmlStr) },
       { name: 'template.json', data: enc.encode(templateJson) },
+      { name: 'answer_key_template.csv', data: enc.encode(keyCsv) },
       { name: 'README.txt', data: enc.encode(readme) },
       { name: `${baseId}.layout.json`, data: enc.encode(layoutJson) },
     ];

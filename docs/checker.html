@@ -1135,6 +1135,95 @@
       border: 1px solid rgba(139, 92, 246, 0.35);
     }
 
+    /* Bloom's Taxonomy Badges */
+    .badge-bloom {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+      white-space: nowrap;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .badge-bloom--rem { background: rgba(59, 130, 246, 0.14); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.35); }
+    .badge-bloom--und { background: rgba(16, 185, 129, 0.14); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.35); }
+    .badge-bloom--app { background: rgba(245, 158, 11, 0.14); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.35); }
+    .badge-bloom--ana { background: rgba(168, 85, 247, 0.14); color: #a855f7; border: 1px solid rgba(168, 85, 247, 0.35); }
+    .badge-bloom--eva { background: rgba(236, 72, 153, 0.14); color: #ec4899; border: 1px solid rgba(236, 72, 153, 0.35); }
+    .badge-bloom--cre { background: rgba(239, 68, 68, 0.14); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.35); }
+
+    /* Top Performing Students Rank Badges */
+    .rank-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      font-size: 0.72rem;
+      font-weight: 800;
+      line-height: 1;
+    }
+    .rank-badge--1 { background: #fbbf24; color: #78350f; box-shadow: 0 0 8px rgba(251, 191, 36, 0.4); }
+    .rank-badge--2 { background: #94a3b8; color: #0f172a; }
+    .rank-badge--3 { background: #d97706; color: #fff; }
+    .rank-badge--other { background: var(--panel-alt); color: var(--text-muted); border: 1px solid var(--border); }
+
+    /* Interactive Chart Tooltip & Row Highlights */
+    .chart-scroll-wrap {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      position: relative;
+    }
+    .chart-bar-group {
+      cursor: pointer;
+      outline: none;
+      transition: opacity 0.15s ease;
+    }
+    .chart-bar-group:hover rect,
+    .chart-bar-group:focus rect {
+      filter: brightness(1.22);
+      opacity: 0.95;
+    }
+    .chart-tooltip {
+      position: absolute;
+      pointer-events: none;
+      background: rgba(15, 23, 42, 0.96);
+      color: #f8fafc;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: var(--radius-sm);
+      padding: 0.55rem 0.85rem;
+      font-size: 0.76rem;
+      line-height: 1.45;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      display: none;
+      backdrop-filter: blur(8px);
+      white-space: nowrap;
+    }
+    tr.is-row-highlight {
+      animation: highlight-pulse 1.8s ease;
+    }
+    @keyframes highlight-pulse {
+      0% { background-color: rgba(14, 165, 233, 0.35); }
+      100% { background-color: transparent; }
+    }
+    .key-bloom-select {
+      padding: 0.15rem 0.35rem;
+      font: inherit;
+      font-size: 0.72rem;
+      font-weight: 600;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xs);
+      background: var(--panel);
+      color: var(--text);
+      cursor: pointer;
+    }
+
     /* Visual Answer Key Editor styles (Parity with Sheet Builder) */
     .key-toolbar-strip {
       display: flex;
@@ -1763,29 +1852,119 @@
         </div>
       </div>
 
-      <!-- Tab 3: Item Analysis -->
+      <!-- Tab 3: Item Analysis & Psychometrics Dashboard -->
       <div id="tab-items" class="tab-pane" style="display: none;">
+        <!-- Dashboard Header & Export Toolbar -->
+        <div class="dashboard-header-bar" style="display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1.25rem; flex-wrap: wrap;">
+          <div>
+            <h2 style="margin: 0; font-size: 1.2rem; font-weight: 800; color: var(--text); display: flex; align-items: center; gap: 0.5rem;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+              <span>Item Analysis &amp; Psychometrics Dashboard</span>
+            </h2>
+            <p style="margin: 0.25rem 0 0; font-size: 0.78rem; color: var(--text-muted);">
+              Psychometric item diagnostics, Bloom's cognitive domain balance, and cohort mastery.
+            </p>
+          </div>
+          <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+            <button type="button" id="btn-tab-export-html" class="btn btn--primary btn--sm" style="display: inline-flex; align-items: center; gap: 0.4rem;" title="Download complete standalone HTML assessment dashboard">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              <span>Export HTML Dashboard</span>
+            </button>
+            <button type="button" id="btn-tab-export-csv" class="btn btn--secondary btn--sm" style="display: inline-flex; align-items: center; gap: 0.4rem;" title="Export grade summary and item metrics as CSV">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+              <span>Export CSV</span>
+            </button>
+            <button type="button" id="btn-tab-edit-key" class="btn btn--secondary btn--sm" style="display: inline-flex; align-items: center; gap: 0.4rem;" title="Edit answer key and Bloom cognitive levels">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+              <span>Edit Key</span>
+            </button>
+          </div>
+        </div>
+
         <!-- Top Metrics Grid -->
-        <div class="metrics-grid" style="grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); margin-bottom: 1.25rem;">
+        <div class="metrics-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); margin-bottom: 1.25rem;">
           <div class="metric-card">
             <span class="metric-card__label">Average Difficulty (P̄)</span>
             <span class="metric-card__value" id="analysis-stat-diff">—</span>
-            <span class="metric-card__sub" id="analysis-stat-diff-sub">Optimal target: 50%–85%</span>
+            <span class="metric-card__sub" id="analysis-stat-diff-sub">Optimal target: 50%–85% [Ebel, 1979]</span>
           </div>
           <div class="metric-card">
             <span class="metric-card__label">Average Discrimination (r̄_pbis)</span>
             <span class="metric-card__value" id="analysis-stat-disc">—</span>
-            <span class="metric-card__sub" id="analysis-stat-disc-sub">Target: ≥ 0.20</span>
+            <span class="metric-card__sub" id="analysis-stat-disc-sub">Target: ≥ 0.20 [Ebel, 1979]</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-card__label">High-Quality Items</span>
+            <span class="metric-card__value" id="analysis-stat-quality" style="color: var(--success);">0</span>
+            <span class="metric-card__sub" id="analysis-stat-quality-sub">r ≥ 0.30 &amp; optimal difficulty</span>
           </div>
           <div class="metric-card">
             <span class="metric-card__label">Items Needing Review</span>
             <span class="metric-card__value" id="analysis-stat-flagged" style="color: var(--warning);">0</span>
-            <span class="metric-card__sub" id="analysis-stat-flagged-sub">Low discrimination or extreme difficulty</span>
+            <span class="metric-card__sub" id="analysis-stat-flagged-sub">Low disc or extreme difficulty</span>
           </div>
           <div class="metric-card">
             <span class="metric-card__label">Reliability (Cronbach's α)</span>
             <span class="metric-card__value" id="analysis-stat-alpha">—</span>
-            <span class="metric-card__sub" id="analysis-stat-alpha-sub">Internal test consistency</span>
+            <span class="metric-card__sub" id="analysis-stat-alpha-sub">Internal consistency [Cronbach, 1951]</span>
+          </div>
+        </div>
+
+        <!-- Top Performing Students Section Card -->
+        <div class="section-card" id="card-top-students" style="margin-bottom: 1.25rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
+            <div style="font-weight: 700; font-size: 0.92rem; color: var(--text); display: flex; align-items: center; gap: 0.45rem;">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color: #fbbf24;"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg>
+              <span>Top Performing Students (Cohort Leaders)</span>
+            </div>
+            <span style="font-size: 0.74rem; color: var(--text-muted);" id="top-students-sub">Ranked by overall score</span>
+          </div>
+          <div class="table-container" style="max-height: 280px; overflow-y: auto;">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 50px;">Rank</th>
+                  <th>Student Name</th>
+                  <th>Student ID</th>
+                  <th>Raw Score</th>
+                  <th>Percentage</th>
+                  <th>Percentile Rank</th>
+                  <th style="text-align: right; width: 120px;">Inspect</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-top-students">
+                <tr><td colspan="7" style="text-align: center; padding: 1.5rem; color: var(--text-muted);">Run grading to display top cohort performers.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Bloom's Taxonomy Cognitive Distribution Card -->
+        <div class="section-card" id="card-blooms-taxonomy" style="margin-bottom: 1.25rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
+            <div>
+              <div style="font-weight: 700; font-size: 0.92rem; color: var(--text); display: flex; align-items: center; gap: 0.45rem;">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a9 9 0 0 1 9 9c0 3.6-2.4 6.6-6 8.2V21a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1v-1.8C5.4 17.6 3 14.6 3 11a9 9 0 0 1 9-9z"/><path d="M9 22h6"/></svg>
+                <span>Bloom's Taxonomy Cognitive Distribution</span>
+              </div>
+              <div style="font-size: 0.74rem; color: var(--text-muted); margin-top: 2px;">
+                Assessment balance across lower-order and higher-order cognitive domains [Anderson &amp; Krathwohl, 2001; Bloom et al., 1956].
+              </div>
+            </div>
+            <div style="display: flex; gap: 0.35rem; flex-wrap: wrap;">
+              <span class="badge-bloom badge-bloom--rem">Remember</span>
+              <span class="badge-bloom badge-bloom--und">Understand</span>
+              <span class="badge-bloom badge-bloom--app">Apply</span>
+              <span class="badge-bloom badge-bloom--ana">Analyze</span>
+              <span class="badge-bloom badge-bloom--eva">Evaluate</span>
+              <span class="badge-bloom badge-bloom--cre">Create</span>
+            </div>
+          </div>
+          <div id="chart-blooms-container" class="chart-scroll-wrap" style="margin-bottom: 0.85rem; min-height: 120px;">
+            <!-- Rendered SVG Bloom Distribution Chart -->
+          </div>
+          <div id="blooms-summary-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.65rem;">
+            <!-- Populated dynamically -->
           </div>
         </div>
 
@@ -1816,7 +1995,7 @@
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
               <div style="font-weight: 700; font-size: 0.88rem; color: var(--text); display: flex; align-items: center; gap: 0.4rem;">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v-6M6 20V10M18 20V4"/></svg>
-                <span>Item Difficulty Index (P)</span>
+                <span>Item Difficulty Index (P) [Ebel, 1979]</span>
               </div>
               <div style="display: flex; gap: 0.65rem; font-size: 0.72rem;">
                 <span style="display: inline-flex; align-items: center; gap: 0.25rem;"><span style="width: 8px; height: 8px; border-radius: 2px; background: #10b981;"></span> Ideal (50–85%)</span>
@@ -1825,8 +2004,10 @@
                 <span style="display: inline-flex; align-items: center; gap: 0.25rem;"><span style="width: 8px; height: 8px; border-radius: 2px; background: #ef4444;"></span> Very Hard (&lt;20%)</span>
               </div>
             </div>
-            <div id="chart-item-difficulty-container" style="width: 100%; min-height: 220px; overflow-x: auto;">
-              <!-- Rendered SVG Difficulty Chart -->
+            <div class="chart-scroll-wrap">
+              <div id="chart-item-difficulty-container" style="width: 100%; min-height: 220px;">
+                <!-- Rendered SVG Difficulty Chart -->
+              </div>
             </div>
           </div>
 
@@ -1835,7 +2016,7 @@
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
               <div style="font-weight: 700; font-size: 0.88rem; color: var(--text); display: flex; align-items: center; gap: 0.4rem;">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 14.14 14.14"/></svg>
-                <span>Item Discrimination (r_pbis)</span>
+                <span>Item Discrimination (r_pbis) [Ebel, 1979]</span>
               </div>
               <div style="display: flex; gap: 0.65rem; font-size: 0.72rem;">
                 <span style="display: inline-flex; align-items: center; gap: 0.25rem;"><span style="width: 8px; height: 8px; border-radius: 2px; background: #10b981;"></span> Strong (≥0.30)</span>
@@ -1843,8 +2024,10 @@
                 <span style="display: inline-flex; align-items: center; gap: 0.25rem;"><span style="width: 8px; height: 8px; border-radius: 2px; background: #ef4444;"></span> Review (&lt;0.20)</span>
               </div>
             </div>
-            <div id="chart-item-discrimination-container" style="width: 100%; min-height: 220px; overflow-x: auto;">
-              <!-- Rendered SVG Discrimination Chart -->
+            <div class="chart-scroll-wrap">
+              <div id="chart-item-discrimination-container" style="width: 100%; min-height: 220px;">
+                <!-- Rendered SVG Discrimination Chart -->
+              </div>
             </div>
           </div>
         </div>
@@ -1858,85 +2041,80 @@
             </div>
             <span style="font-size: 0.75rem; color: var(--accent); font-weight: 600;">Hide Guidelines ▲</span>
           </summary>
-          <div style="margin-top: 0.85rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 0.85rem; font-size: 0.78rem; line-height: 1.5; color: var(--text);">
+          <div style="margin-top: 0.85rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0.85rem; font-size: 0.78rem; line-height: 1.5; color: var(--text);">
             <div style="background: var(--panel); border: 1px solid var(--border); padding: 0.75rem; border-radius: var(--radius-sm);">
               <div style="font-weight: 700; color: #10b981; margin-bottom: 0.35rem; display: flex; align-items: center; gap: 0.35rem;">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20v-6M6 20V10M18 20V4"/></svg>
-                <span>Difficulty Index (P)</span>
+                <span>Difficulty Index (P) [Ebel, 1979]</span>
               </div>
               <div><strong>Definition:</strong> Proportion of students answering correctly (0% to 100%).</div>
               <ul style="margin: 0.35rem 0 0 0; padding-left: 1.1rem; color: var(--text-muted);">
-                <li><strong style="color: #10b981;">50%–85% (Optimal Zone):</strong> Maximizes measurement accuracy and assessment spread.</li>
+                <li><strong style="color: #10b981;">50%–85% (Optimal Zone):</strong> Maximizes measurement accuracy and assessment spread [Ebel, 1979].</li>
                 <li><strong style="color: #3b82f6;">&gt;85% (Easy):</strong> Prerequisite/confidence check; low differentiation.</li>
                 <li><strong style="color: #f59e0b;">20%–49% (Hard):</strong> High rigor; effectively separates top achievers.</li>
-                <li><strong style="color: #ef4444;">&lt;20% (Very Hard):</strong> Flagged. Check for confusing wording, unaddressed content, or wrong key.</li>
+                <li><strong style="color: #ef4444;">&lt;20% (Very Hard):</strong> Flagged. Check for confusing wording, unaddressed content, or wrong key [Ebel, 1979].</li>
               </ul>
             </div>
 
             <div style="background: var(--panel); border: 1px solid var(--border); padding: 0.75rem; border-radius: var(--radius-sm);">
               <div style="font-weight: 700; color: #0284c7; margin-bottom: 0.35rem; display: flex; align-items: center; gap: 0.35rem;">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 14.14 14.14"/></svg>
-                <span>Discrimination Index (r_pbis)</span>
+                <span>Discrimination Index (r_pbis) [Ebel, 1979]</span>
               </div>
               <div><strong>Definition:</strong> Point-biserial correlation between item score and total score.</div>
               <ul style="margin: 0.35rem 0 0 0; padding-left: 1.1rem; color: var(--text-muted);">
-                <li><strong style="color: #10b981;">≥0.30 (Strong):</strong> Excellent item. High-scorers get it right; low-scorers miss it.</li>
+                <li><strong style="color: #10b981;">≥0.30 (Strong):</strong> Excellent item. High-scorers get it right; low-scorers miss it [Ebel, 1979].</li>
                 <li><strong style="color: #3b82f6;">0.20–0.29 (Acceptable):</strong> Standard discriminating power.</li>
                 <li><strong style="color: #f59e0b;">0.00–0.19 (Weak):</strong> Fails to clearly separate mastery levels.</li>
-                <li><strong style="color: #ef4444;">&lt;0.00 (Critical!):</strong> Negative discrimination. Low-scorers scored higher than high-scorers. <em>Check answer key first!</em></li>
+                <li><strong style="color: #ef4444;">&lt;0.00 (Critical!):</strong> Negative discrimination. Low-scorers scored higher than high-scorers. <em>Check answer key first!</em> [Ebel, 1979].</li>
               </ul>
             </div>
 
             <div style="background: var(--panel); border: 1px solid var(--border); padding: 0.75rem; border-radius: var(--radius-sm);">
               <div style="font-weight: 700; color: #8b5cf6; margin-bottom: 0.35rem; display: flex; align-items: center; gap: 0.35rem;">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
-                <span>Distractor Efficiency</span>
+                <span>Distractor Efficiency [Haladyna, 1993]</span>
               </div>
               <div><strong>Definition:</strong> How students distribute across incorrect options.</div>
               <ul style="margin: 0.35rem 0 0 0; padding-left: 1.1rem; color: var(--text-muted);">
-                <li><strong>Dead Distractor (0%):</strong> No student picked it. Replace with a plausible alternative in future exams.</li>
+                <li><strong>Dead Distractor (0%):</strong> No student picked it. Replace with plausible distractor [Haladyna &amp; Downing, 1993].</li>
                 <li><strong>Functional Distractor:</strong> Attracts low-scorers while high-scorers avoid it.</li>
-                <li><strong>Attractive Misconception:</strong> If chosen heavily by top students, indicates a misleading stem or widespread misconception.</li>
+                <li><strong>Attractive Misconception:</strong> If chosen heavily by cohort (&gt;25%), indicates a misleading stem or widespread misconception.</li>
               </ul>
             </div>
 
             <div style="background: var(--panel); border: 1px solid var(--border); padding: 0.75rem; border-radius: var(--radius-sm);">
               <div style="font-weight: 700; color: #ec4899; margin-bottom: 0.35rem; display: flex; align-items: center; gap: 0.35rem;">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                <span>Cronbach's Alpha (α) / KR-20</span>
+                <span>Reliability (α / KR-20) [Cronbach, 1951]</span>
               </div>
-              <div><strong>Definition:</strong> Internal consistency reliability of the exam (0.0 to 1.0).</div>
+              <div><strong>Definition:</strong> Internal consistency reliability of the exam (0.0 to 1.0) [Cronbach, 1951; Kuder &amp; Richardson, 1937].</div>
               <ul style="margin: 0.35rem 0 0 0; padding-left: 1.1rem; color: var(--text-muted);">
-                <li><strong style="color: #10b981;">≥0.80 (High):</strong> Reliable for critical/summative decisions.</li>
+                <li><strong style="color: #10b981;">≥0.80 (High):</strong> Reliable for critical summative decisions [Cronbach, 1951].</li>
                 <li><strong style="color: #3b82f6;">0.70–0.79 (Good):</strong> Standard benchmark for classroom unit exams.</li>
-                <li><strong style="color: #f59e0b;">&lt;0.70 (Moderate):</strong> Increase item count or remove negative-discrimination items.</li>
+                <li><strong style="color: #f59e0b;">&lt;0.70 (Moderate):</strong> Increase item count or revise low/negative discrimination items.</li>
               </ul>
             </div>
-          </div>
-
-          <!-- Academic & Psychometric References -->
-          <div style="margin-top: 0.85rem; padding-top: 0.75rem; border-top: 1px solid var(--border); font-size: 0.72rem; color: var(--text-muted); line-height: 1.5;">
-            <div style="font-weight: 700; color: var(--text); margin-bottom: 0.35rem; display: flex; align-items: center; gap: 0.35rem;">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/></svg>
-              <span>Academic &amp; Psychometric References</span>
-            </div>
-            <ul style="margin: 0; padding-left: 1.1rem;">
-              <li><strong>Ebel, R. L. (1979).</strong> <em>Essentials of Educational Measurement</em> (3rd ed.). Prentice-Hall. (Difficulty and point-biserial discrimination criteria: $r_{pbis} \ge 0.40$ excellent, $0.20\text{–}0.39$ acceptable, $<0.20$ marginal, $<0.00$ miskeyed).</li>
-              <li><strong>Cronbach, L. J. (1951).</strong> Coefficient alpha and the internal structure of tests. <em>Psychometrika</em>, 16(3), 297–334. (Internal consistency test reliability $\alpha$).</li>
-              <li><strong>Haladyna, T. M., &amp; Downing, S. M. (1993).</strong> How to build a better multiple-choice test item. <em>Applied Measurement in Education</em>, 6(3), 241–261. (Distractor efficiency and non-functioning option criteria).</li>
-              <li><strong>Kuder, G. F., &amp; Richardson, M. W. (1937).</strong> The theory of the estimation of test reliability. <em>Psychometrika</em>, 2(3), 151–160. (Formula 20 / KR-20 dichotomous reliability formulation).</li>
-            </ul>
           </div>
         </details>
 
         <!-- Filter bar for Item Table -->
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
           <h3 style="margin: 0; font-size: 0.92rem; font-weight: 700; color: var(--text);">Detailed Item Statistics &amp; Distractor Analysis</h3>
-          <div style="display: flex; gap: 0.4rem;" id="item-analysis-filters">
+          <div style="display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap;" id="item-analysis-filters">
             <button type="button" class="btn btn--secondary btn-xs is-active" data-filter="all">All Items</button>
             <button type="button" class="btn btn--secondary btn-xs" data-filter="review">Flagged Only</button>
             <button type="button" class="btn btn--secondary btn-xs" data-filter="hard">Hardest (P &lt; 50%)</button>
             <button type="button" class="btn btn--secondary btn-xs" data-filter="disc">Low Disc (r &lt; 0.20)</button>
+            <select id="select-bloom-filter" class="btn btn--secondary btn-xs" style="padding: 0.2rem 0.4rem; cursor: pointer;" title="Filter questions by Bloom's Taxonomy Level">
+              <option value="">All Bloom Levels</option>
+              <option value="Remember">Remember</option>
+              <option value="Understand">Understand</option>
+              <option value="Apply">Apply</option>
+              <option value="Analyze">Analyze</option>
+              <option value="Evaluate">Evaluate</option>
+              <option value="Create">Create</option>
+            </select>
           </div>
         </div>
 
@@ -1985,28 +2163,49 @@
           <table>
             <thead>
               <tr>
-                <th class="sortable" data-sort="item" style="width: 70px;">Item #</th>
-                <th style="width: 80px;">Key</th>
-                <th class="sortable" data-sort="pts" style="width: 60px;">Pts</th>
-                <th class="sortable" data-sort="difficulty" style="min-width: 130px;">Difficulty (P)</th>
-                <th class="sortable" data-sort="discrimination" style="min-width: 140px;">Discrimination (r_pbis)</th>
-                <th id="th-d1" style="min-width: 50px;">A</th>
-                <th id="th-d2" style="min-width: 50px;">B</th>
-                <th id="th-d3" style="min-width: 50px;">C</th>
-                <th id="th-d4" style="min-width: 50px;">D</th>
-                <th id="th-d5" style="min-width: 50px;">E</th>
-                <th style="min-width: 120px;">Dead Options (0%)</th>
-                <th style="min-width: 180px;">Signals &amp; Actions</th>
+                <th class="sortable" data-sort="item" style="width: 65px;">Item #</th>
+                <th style="width: 65px;">Key</th>
+                <th class="sortable" data-sort="pts" style="width: 55px;">Pts</th>
+                <th class="sortable" data-sort="bloom" style="width: 100px;">Bloom Level</th>
+                <th class="sortable" data-sort="difficulty" style="min-width: 120px;">Difficulty (P)</th>
+                <th class="sortable" data-sort="discrimination" style="min-width: 130px;">Discrimination (r_pbis)</th>
+                <th id="th-d1" style="min-width: 45px;">A</th>
+                <th id="th-d2" style="min-width: 45px;">B</th>
+                <th id="th-d3" style="min-width: 45px;">C</th>
+                <th id="th-d4" style="min-width: 45px;">D</th>
+                <th id="th-d5" style="min-width: 45px;">E</th>
+                <th style="min-width: 110px;">Dead Options (0%)</th>
+                <th style="min-width: 170px;">Signals &amp; Actions</th>
               </tr>
             </thead>
             <tbody id="tbody-items">
-              <tr><td colspan="12" style="text-align: center; padding: 2rem; color: var(--text-muted);">Run grading to generate item discrimination and difficulty statistics.</td></tr>
+              <tr><td colspan="13" style="text-align: center; padding: 2rem; color: var(--text-muted);">Run grading to generate item discrimination and difficulty statistics.</td></tr>
             </tbody>
           </table>
         </div>
+
+        <!-- Dedicated Academic & Psychometric References Section -->
+        <section id="references" class="section-card" style="margin-top: 1.5rem; background: var(--panel-alt); border: 1px solid var(--border); padding: 1.15rem 1.4rem; border-radius: var(--radius-md);">
+          <div style="font-weight: 700; font-size: 0.9rem; color: var(--text); margin-bottom: 0.65rem; display: flex; align-items: center; gap: 0.45rem;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/></svg>
+            <span>Academic &amp; Psychometric References</span>
+          </div>
+          <ul style="margin: 0; padding-left: 1.25rem; font-size: 0.74rem; color: var(--text-muted); line-height: 1.6;">
+            <li><strong>Anderson, L. W., &amp; Krathwohl, D. R. (Eds.). (2001).</strong> <em>A Taxonomy for Learning, Teaching, and Assessing: A Revision of Bloom's Taxonomy of Educational Objectives</em>. Longman.</li>
+            <li><strong>Bloom, B. S., Engelhart, M. D., Furst, E. J., Hill, W. H., &amp; Krathwohl, D. R. (1956).</strong> <em>Taxonomy of Educational Objectives: The Classification of Educational Goals. Handbook I: Cognitive Domain</em>. David McKay Company.</li>
+            <li><strong>Cronbach, L. J. (1951).</strong> Coefficient alpha and the internal structure of tests. <em>Psychometrika</em>, 16(3), 297–334. https://doi.org/10.1007/BF02310555</li>
+            <li><strong>Ebel, R. L. (1979).</strong> <em>Essentials of Educational Measurement</em> (3rd ed.). Prentice-Hall. (Difficulty index and point-biserial discrimination criteria).</li>
+            <li><strong>Haladyna, T. M., &amp; Downing, S. M. (1993).</strong> How to build a better multiple-choice test item. <em>Applied Measurement in Education</em>, 6(3), 241–261. https://doi.org/10.1207/s15324818ame0603_3</li>
+            <li><strong>Krathwohl, D. R. (2002).</strong> A revision of Bloom's taxonomy: An overview. <em>Theory Into Practice</em>, 41(4), 212–218. https://doi.org/10.1207/s15430421tip4104_2</li>
+            <li><strong>Kuder, G. F., &amp; Richardson, M. W. (1937).</strong> The theory of the estimation of test reliability. <em>Psychometrika</em>, 2(3), 151–160. https://doi.org/10.1207/s15430421tip4104_2</li>
+          </ul>
+        </section>
       </div>
     </main>
   </div>
+
+  <!-- Floating Tooltip for Interactive Charts -->
+  <div id="chart-floating-tooltip" class="chart-tooltip"></div>
 
   <!-- Modal: Sheet Inspector -->
   <dialog id="modal-viewer" style="border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 0; background: var(--panel); color: var(--text); max-width: 95vw; max-height: 95vh; width: 900px; box-shadow: var(--shadow-xl); overflow: hidden;">
@@ -2085,9 +2284,9 @@
           <button type="button" id="btn-key-fill-t" class="btn btn--secondary btn-xs" title="Set all True/False answers to True">All T</button>
           <button type="button" id="btn-key-random" class="btn btn--secondary btn-xs" title="Quickly generate a sample key for testing">Sample Key</button>
           <button type="button" id="btn-key-clear" class="btn btn--secondary btn-xs" style="color: var(--danger);" title="Clear all answers">Clear</button>
-          <label class="btn btn--secondary btn-xs" style="cursor: pointer;" title="Import answer key JSON file">
+          <label class="btn btn--secondary btn-xs" style="cursor: pointer;" title="Import answer key JSON or CSV file">
             <span>Import Key</span>
-            <input type="file" id="key-file-import" accept=".json" style="display: none;">
+            <input type="file" id="key-file-import" accept=".json,.csv" style="display: none;">
           </label>
           <button type="button" id="btn-key-modal-scan" class="btn btn--secondary btn-xs" title="Scan a filled answer key sheet">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:2px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="m9 15 2 2 4-4"/></svg>
@@ -2103,10 +2302,16 @@
 
       <!-- Modal Footer -->
       <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 1.25rem; border-top: 1px solid var(--border); background: var(--panel-header);">
-        <button type="button" id="btn-key-download" class="btn btn--secondary btn--sm" title="Download answer key JSON">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          <span>Download Key (.json)</span>
-        </button>
+        <div style="display: flex; gap: 0.5rem; align-items: center;">
+          <button type="button" id="btn-key-download" class="btn btn--secondary btn--sm" title="Download answer key JSON">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span>Download Key (.json)</span>
+          </button>
+          <button type="button" id="btn-key-download-csv" class="btn btn--secondary btn--sm" title="Download answer key CSV with Bloom's Taxonomy">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            <span>Download Key (.csv)</span>
+          </button>
+        </div>
         <div style="display: flex; gap: 0.5rem;">
           <button type="button" id="btn-cancel-key-editor" class="btn btn--secondary btn--sm">Cancel</button>
           <button type="button" id="btn-save-key-editor" class="btn btn--primary btn--sm">
@@ -2331,28 +2536,56 @@
       };
     }
 
+    // ---- Bloom's Taxonomy Cognitive Domain Utilities [Anderson & Krathwohl, 2001] ----
+    const BLOOM_LEVELS = ['Remember', 'Understand', 'Apply', 'Analyze', 'Evaluate', 'Create'];
+
+    function normalizeBloom(val) {
+      if (!val || typeof val !== 'string') return 'Remember';
+      const clean = val.trim().toLowerCase();
+      if (clean.startsWith('rem') || clean.startsWith('rec') || clean === 'knowledge' || clean === '1') return 'Remember';
+      if (clean.startsWith('und') || clean.startsWith('com') || clean === 'comprehension' || clean === '2') return 'Understand';
+      if (clean.startsWith('app') || clean === 'application' || clean === '3') return 'Apply';
+      if (clean.startsWith('ana') || clean === 'analysis' || clean === '4') return 'Analyze';
+      if (clean.startsWith('eva') || clean === 'evaluation' || clean === '5') return 'Evaluate';
+      if (clean.startsWith('cre') || clean.startsWith('syn') || clean === 'synthesis' || clean === 'creation' || clean === '6') return 'Create';
+      return 'Remember';
+    }
+
+    function defaultBloomFor(k) {
+      const num = parseInt(k, 10);
+      if (!isNaN(num) && num > 0) {
+        return BLOOM_LEVELS[(num - 1) % BLOOM_LEVELS.length];
+      }
+      return 'Remember';
+    }
+
     function parseAnswerKey(raw) {
       if (!raw) return null;
       const items = {};
       if (raw.items && typeof raw.items === 'object') {
         for (const [k, v] of Object.entries(raw.items)) {
           if (typeof v === 'string') {
-            items[String(k)] = { answer: v, points: 1.0, kind: "mcq" };
+            items[String(k)] = { answer: v, points: 1.0, kind: "mcq", bloom: defaultBloomFor(k) };
           } else if (v && typeof v === 'object') {
             const ans = Array.isArray(v.answer) ? v.answer[0] : (v.answer ?? v.correct);
+            const rawBloom = v.bloom || v.level || v.cognitiveLevel;
             items[String(k)] = {
               answer: String(ans || ""),
               points: Number(v.points ?? 1.0),
-              kind: v.kind || "mcq"
+              kind: v.kind || "mcq",
+              bloom: normalizeBloom(rawBloom || defaultBloomFor(k))
             };
           }
         }
       } else if (Array.isArray(raw)) {
         raw.forEach((item, idx) => {
-          items[String(idx + 1)] = {
+          const k = String(idx + 1);
+          const rawBloom = typeof item === 'object' ? (item.bloom || item.level) : null;
+          items[k] = {
             answer: typeof item === 'object' ? String(item.answer || item.correct) : String(item),
             points: typeof item === 'object' ? Number(item.points || 1.0) : 1.0,
-            kind: typeof item === 'object' ? (item.kind || "mcq") : "mcq"
+            kind: typeof item === 'object' ? (item.kind || "mcq") : "mcq",
+            bloom: normalizeBloom(rawBloom || defaultBloomFor(k))
           };
         });
       }
@@ -2814,8 +3047,10 @@
       const barW = Math.max(4, (plotW / 10) - 3);
       for (let i = 0; i < 10; i++) {
         const binStart = i * 10;
+        const binEnd = binStart + 10;
         const binCenter = binStart + 5;
         const count = bins[i];
+        const pct = n > 0 ? ((count / n) * 100).toFixed(1) : '0.0';
         const bx = xCoord(binStart) + 1.5;
         const bh = count > 0 ? (count / maxBin) * (plotH * 0.72) : 0;
         const by = baseY - bh;
@@ -2823,10 +3058,13 @@
         const fill = isPass ? 'rgba(16, 185, 129, 0.35)' : 'rgba(244, 63, 94, 0.35)';
         const stroke = isPass ? 'rgba(16, 185, 129, 0.75)' : 'rgba(244, 63, 94, 0.75)';
 
-        barsSvg += `<rect x="${bx.toFixed(1)}" y="${by.toFixed(1)}" width="${barW.toFixed(1)}" height="${bh.toFixed(1)}" fill="${fill}" stroke="${stroke}" stroke-width="1" rx="2" />`;
-        if (count > 0) {
-          barsSvg += `<text x="${(bx + barW / 2).toFixed(1)}" y="${(by - 4).toFixed(1)}" text-anchor="middle" font-size="10" font-weight="600" fill="#888">${count}</text>`;
-        }
+        barsSvg += `
+          <g class="chart-bar-group" data-type="bin" data-bin="${binStart}%–${binEnd}%" data-count="${count}" data-pct="${pct}" data-status="${isPass ? 'Pass' : 'Fail'}" tabindex="0">
+            <title>Score Range: ${binStart}%–${binEnd}%&#10;Students: ${count} (${pct}% of class)&#10;Status: ${isPass ? 'Passing' : 'Failing'}</title>
+            <rect x="${bx.toFixed(1)}" y="${by.toFixed(1)}" width="${barW.toFixed(1)}" height="${bh.toFixed(1)}" fill="${fill}" stroke="${stroke}" stroke-width="1" rx="2" />
+            ${count > 0 ? `<text x="${(bx + barW / 2).toFixed(1)}" y="${(by - 4).toFixed(1)}" text-anchor="middle" font-size="10" font-weight="600" fill="#888">${count}</text>` : ''}
+          </g>
+        `;
       }
 
       // Gaussian Bell Curve points
@@ -2938,6 +3176,90 @@
       }
     }
 
+    // Generate SVG Bloom's Taxonomy Cognitive Distribution Chart
+    function getBloomDistributionChartSVG(bloomStats, totalItems) {
+      if (!bloomStats) return '<svg width="100%" height="80"><text x="50%" y="50%" text-anchor="middle" fill="#888">No cognitive taxonomy data</text></svg>';
+      const levels = [
+        { name: 'Remember', abbr: 'REM', color: '#3b82f6' },
+        { name: 'Understand', abbr: 'UND', color: '#10b981' },
+        { name: 'Apply', abbr: 'APP', color: '#f59e0b' },
+        { name: 'Analyze', abbr: 'ANA', color: '#a855f7' },
+        { name: 'Evaluate', abbr: 'EVA', color: '#ec4899' },
+        { name: 'Create', abbr: 'CRE', color: '#ef4444' }
+      ];
+
+      const svgW = 760;
+      const svgH = 175;
+      const padL = 45;
+      const padR = 30;
+      const padT = 24;
+      const padB = 30;
+      const plotW = svgW - padL - padR; // 685
+      const plotH = svgH - padT - padB; // 121
+      const baseY = padT + plotH; // 145
+
+      const groupW = plotW / levels.length;
+      const barW = Math.min(26, (groupW - 20) / 2);
+
+      let guideSvg = '';
+      [0, 25, 50, 75, 100].forEach(pct => {
+        const y = baseY - (pct / 100) * plotH;
+        guideSvg += `<line x1="${padL}" y1="${y.toFixed(1)}" x2="${(padL + plotW).toFixed(1)}" y2="${y.toFixed(1)}" stroke="#333842" stroke-width="0.75" stroke-dasharray="2 3" />`;
+        guideSvg += `<text x="${padL - 6}" y="${(y + 3).toFixed(1)}" text-anchor="end" font-size="9" fill="#888">${pct}%</text>`;
+      });
+      guideSvg += `<line x1="${padL}" y1="${baseY}" x2="${(padL + plotW).toFixed(1)}" y2="${baseY}" stroke="#555" stroke-width="1.2" />`;
+
+      // Legend
+      guideSvg += `
+        <g transform="translate(${padL + plotW - 210}, 14)">
+          <rect x="0" y="0" width="10" height="8" rx="2" fill="#0284c7" />
+          <text x="14" y="8" font-size="8.5" fill="#aaa">% of Exam Items</text>
+          <rect x="105" y="0" width="10" height="8" rx="2" fill="#10b981" />
+          <text x="119" y="8" font-size="8.5" fill="#aaa">Class Mastery %</text>
+        </g>
+      `;
+
+      let barsSvg = '';
+      levels.forEach((lvl, idx) => {
+        const bs = bloomStats[lvl.name] || { itemCount: 0, totalPoints: 0, masteryPct: 0, avgDifficulty: 0, avgDiscrimination: 0 };
+        const itemPct = totalItems > 0 ? (bs.itemCount / totalItems) * 100 : 0;
+        const masteryPct = Math.max(0, Math.min(100, bs.masteryPct || 0));
+
+        const gx = padL + idx * groupW + (groupW / 2);
+
+        // Bar 1: Item proportion %
+        const bh1 = bs.itemCount > 0 ? Math.max(2, (itemPct / 100) * plotH) : 0;
+        const bx1 = gx - barW - 2;
+        const by1 = baseY - bh1;
+
+        // Bar 2: Student Mastery %
+        const bh2 = bs.itemCount > 0 ? Math.max(2, (masteryPct / 100) * plotH) : 0;
+        const bx2 = gx + 2;
+        const by2 = baseY - bh2;
+
+        barsSvg += `
+          <g class="chart-bar-group" data-bloom="${lvl.name}" data-count="${bs.itemCount}" data-pts="${bs.totalPoints}" data-mastery="${masteryPct.toFixed(1)}" data-type="bloom" tabindex="0">
+            <title>${lvl.name} (${lvl.abbr})&#10;Questions: ${bs.itemCount} (${itemPct.toFixed(1)}% of exam)&#10;Total Points: ${bs.totalPoints}&#10;Cohort Mastery: ${masteryPct.toFixed(1)}%&#10;Avg Difficulty: ${(bs.avgDifficulty * 100).toFixed(1)}%&#10;Avg Discrimination: ${bs.avgDiscrimination.toFixed(2)}</title>
+            <rect x="${bx1.toFixed(1)}" y="${by1.toFixed(1)}" width="${barW.toFixed(1)}" height="${bh1.toFixed(1)}" fill="${lvl.color}" opacity="0.65" rx="2" />
+            <rect x="${bx2.toFixed(1)}" y="${by2.toFixed(1)}" width="${barW.toFixed(1)}" height="${bh2.toFixed(1)}" fill="${lvl.color}" opacity="0.95" rx="2" />
+            <text x="${gx.toFixed(1)}" y="${baseY + 14}" text-anchor="middle" font-size="9" font-weight="700" fill="${lvl.color}">${lvl.abbr}</text>
+            <text x="${gx.toFixed(1)}" y="${baseY + 24}" text-anchor="middle" font-size="7.5" fill="#888">${lvl.name}</text>
+            ${bs.itemCount > 0 ? `
+              <text x="${(bx1 + barW / 2).toFixed(1)}" y="${Math.max(padT + 9, by1 - 3).toFixed(1)}" text-anchor="middle" font-size="7.5" fill="#aaa">${Math.round(itemPct)}%</text>
+              <text x="${(bx2 + barW / 2).toFixed(1)}" y="${Math.max(padT + 9, by2 - 3).toFixed(1)}" text-anchor="middle" font-size="7.5" fill="#34d399" font-weight="700">${Math.round(masteryPct)}%</text>
+            ` : ''}
+          </g>
+        `;
+      });
+
+      return `
+        <svg viewBox="0 0 ${svgW} ${svgH}" width="100%" height="${svgH}" style="min-width: 100%; height: auto; max-height: 200px; display: block;" role="img" aria-label="Bloom's Taxonomy Cognitive Distribution Chart">
+          ${guideSvg}
+          ${barsSvg}
+        </svg>
+      `;
+    }
+
     // Generate SVG Item Difficulty Bar Chart (Vector graphics for DOM & HTML export)
     function getItemDifficultyChartSVG(itemStats) {
       if (!itemStats) return '<svg width="100%" height="80"><text x="50%" y="50%" text-anchor="middle" fill="#888">No item statistics</text></svg>';
@@ -2965,7 +3287,7 @@
       const y85 = baseY - (0.85 * plotH);
       const y50 = baseY - (0.50 * plotH);
       guideSvg += `<rect x="${padL}" y="${y85.toFixed(1)}" width="${plotW}" height="${(y50 - y85).toFixed(1)}" fill="rgba(16, 185, 129, 0.08)" />`;
-      guideSvg += `<text x="${padL + plotW - 6}" y="${(y85 + 12).toFixed(1)}" text-anchor="end" font-size="9" fill="#10b981" font-weight="600">Optimal Band (50%–85%)</text>`;
+      guideSvg += `<text x="${padL + plotW - 6}" y="${(y85 + 12).toFixed(1)}" text-anchor="end" font-size="9" fill="#10b981" font-weight="600">Optimal Band (50%–85%) [Ebel, 1979]</text>`;
 
       [0, 0.25, 0.50, 0.75, 0.85, 1.0].forEach(level => {
         const y = baseY - (level * plotH);
@@ -2983,6 +3305,7 @@
         const bh = p * plotH;
         const bx = padL + idx * barStep + 4;
         const by = baseY - bh;
+        const bloom = item.bloom || defaultBloomFor(k);
 
         let fill = '#10b981';
         if (p < 0.20) fill = '#ef4444';
@@ -2990,17 +3313,18 @@
         else if (p > 0.85) fill = '#3b82f6';
 
         barsSvg += `
-          <g class="chart-bar-group" data-item="${k}">
-            <title>Item #${k} (Key: ${item.correctAnswer}): Difficulty P = ${(p * 100).toFixed(1)}%</title>
-            <rect x="${bx.toFixed(1)}" y="${by.toFixed(1)}" width="${barW}" height="${bh.toFixed(1)}" fill="${fill}" rx="2" />
+          <g class="chart-bar-group" data-item="${k}" data-type="diff" data-key="${item.correctAnswer}" data-diff="${(p * 100).toFixed(1)}" data-disc="${item.discrimination.toFixed(3)}" data-bloom="${bloom}" tabindex="0">
+            <title>Item #${k} (Key: ${item.correctAnswer})&#10;Bloom: ${bloom}&#10;Difficulty: ${(p * 100).toFixed(1)}%&#10;Discrimination: ${item.discrimination.toFixed(3)}</title>
+            <rect x="${bx.toFixed(1)}" y="${by.toFixed(1)}" width="${barW}" height="${Math.max(2, bh).toFixed(1)}" fill="${fill}" rx="2" />
             <text x="${(bx + barW / 2).toFixed(1)}" y="${baseY + 14}" text-anchor="middle" font-size="9" fill="#888">${k}</text>
-            <text x="${(bx + barW / 2).toFixed(1)}" y="${(by - 3).toFixed(1)}" text-anchor="middle" font-size="8" fill="#aaa" font-weight="600">${Math.round(p * 100)}%</text>
+            ${n <= 25 || idx % 5 === 0 ? `<text x="${(bx + barW / 2).toFixed(1)}" y="${Math.max(padT + 11, by - 3).toFixed(1)}" text-anchor="middle" font-size="8" fill="#aaa" font-weight="600">${Math.round(p * 100)}%</text>` : ''}
           </g>
         `;
       });
 
+      const styleDiff = n <= 25 ? 'width: 100%; max-width: 100%; height: auto; display: block;' : `min-width: ${Math.min(svgW, 600)}px; width: ${svgW}px; max-width: none; height: auto; display: block;`;
       return `
-        <svg viewBox="0 0 ${svgW} ${svgH}" width="${svgW}" height="${svgH}" style="min-width: 100%; height: auto; display: block;" role="img" aria-label="Item Difficulty Bar Chart">
+        <svg viewBox="0 0 ${svgW} ${svgH}" width="100%" height="${svgH}" style="${styleDiff}" role="img" aria-label="Item Difficulty Bar Chart">
           ${guideSvg}
           ${barsSvg}
         </svg>
@@ -3045,7 +3369,7 @@
 
       guideSvg += `<line x1="${padL}" y1="${yZero.toFixed(1)}" x2="${(padL + plotW).toFixed(1)}" y2="${yZero.toFixed(1)}" stroke="#666" stroke-width="1.2" />`;
       guideSvg += `<line x1="${padL}" y1="${yCutoff.toFixed(1)}" x2="${(padL + plotW).toFixed(1)}" y2="${yCutoff.toFixed(1)}" stroke="#f59e0b" stroke-width="1.2" stroke-dasharray="3 3" />`;
-      guideSvg += `<text x="${padL + plotW - 6}" y="${(yCutoff - 4).toFixed(1)}" text-anchor="end" font-size="9" fill="#f59e0b" font-weight="600">Cutoff: 0.20</text>`;
+      guideSvg += `<text x="${padL + plotW - 6}" y="${(yCutoff - 4).toFixed(1)}" text-anchor="end" font-size="9" fill="#f59e0b" font-weight="600">Cutoff: 0.20 [Ebel, 1979]</text>`;
       guideSvg += `<line x1="${padL}" y1="${yGood.toFixed(1)}" x2="${(padL + plotW).toFixed(1)}" y2="${yGood.toFixed(1)}" stroke="#10b981" stroke-width="1" stroke-dasharray="3 3" />`;
       guideSvg += `<text x="${padL + plotW - 6}" y="${(yGood - 4).toFixed(1)}" text-anchor="end" font-size="9" fill="#10b981" font-weight="600">Good: 0.30</text>`;
 
@@ -3058,23 +3382,28 @@
         const yVal = getY(r);
         const bh = Math.abs(yVal - yZero);
         const by = r >= 0 ? yVal : yZero;
+        const bloom = item.bloom || defaultBloomFor(k);
 
         let fill = '#10b981';
         if (r < 0.20) fill = '#ef4444';
         else if (r < 0.30) fill = '#3b82f6';
 
+        // Collision-free number label: when r < 0, place label at yZero - 3 so it never collides with item label below baseY
+        const labelY = Math.max(padT + 11, by - 3);
+
         barsSvg += `
-          <g class="chart-bar-group" data-item="${k}">
-            <title>Item #${k} (Key: ${item.correctAnswer}): Discrimination r_pbis = ${r.toFixed(3)}</title>
+          <g class="chart-bar-group" data-item="${k}" data-type="disc" data-key="${item.correctAnswer}" data-diff="${(item.difficulty * 100).toFixed(1)}" data-disc="${r.toFixed(3)}" data-bloom="${bloom}" tabindex="0">
+            <title>Item #${k} (Key: ${item.correctAnswer})&#10;Bloom: ${bloom}&#10;Discrimination: ${r.toFixed(3)}&#10;Difficulty: ${(item.difficulty * 100).toFixed(1)}%</title>
             <rect x="${bx.toFixed(1)}" y="${by.toFixed(1)}" width="${barW}" height="${Math.max(2, bh).toFixed(1)}" fill="${fill}" rx="2" />
             <text x="${(bx + barW / 2).toFixed(1)}" y="${padT + plotH + 14}" text-anchor="middle" font-size="9" fill="#888">${k}</text>
-            <text x="${(bx + barW / 2).toFixed(1)}" y="${(r >= 0 ? by - 3 : by + bh + 9).toFixed(1)}" text-anchor="middle" font-size="8" fill="#aaa" font-weight="600">${r.toFixed(2)}</text>
+            ${n <= 25 || idx % 5 === 0 ? `<text x="${(bx + barW / 2).toFixed(1)}" y="${labelY.toFixed(1)}" text-anchor="middle" font-size="8" fill="#aaa" font-weight="600">${r.toFixed(2)}</text>` : ''}
           </g>
         `;
       });
 
+      const styleDisc = n <= 25 ? 'width: 100%; max-width: 100%; height: auto; display: block;' : `min-width: ${Math.min(svgW, 600)}px; width: ${svgW}px; max-width: none; height: auto; display: block;`;
       return `
-        <svg viewBox="0 0 ${svgW} ${svgH}" width="${svgW}" height="${svgH}" style="min-width: 100%; height: auto; display: block;" role="img" aria-label="Item Discrimination Chart">
+        <svg viewBox="0 0 ${svgW} ${svgH}" width="100%" height="${svgH}" style="${styleDisc}" role="img" aria-label="Item Discrimination Chart">
           ${guideSvg}
           ${barsSvg}
         </svg>
@@ -3138,14 +3467,56 @@
         return;
       }
       const seen = new Set();
-      const rows = ['Item #,Answer,Points'];
-      for (const b of (state.layout.bubbles || [])) {
-        if (b.item && !b.item.startsWith('sid[') && !seen.has(b.item)) {
-          seen.add(b.item);
-          const isTF = (b.choice === 'T' || b.choice === 'F');
-          rows.push(`${b.item},${isTF ? 'T' : 'A'},1`);
+      const rows = ['Item #,Answer,Points,Bloom'];
+
+      // 1. If layout has zones with groups and graded rois (from Sheet Builder)
+      if (Array.isArray(state.layout.zones) && state.layout.zones.length > 0) {
+        for (const zone of state.layout.zones) {
+          for (const g of (zone.groups || []).filter(g => g.kind === 'mcq' || g.kind === 'tf')) {
+            const k = String(g.key);
+            if (!seen.has(k)) {
+              seen.add(k);
+              const isTF = g.kind === 'tf';
+              const defaultAns = (g.options && g.options[0]?.value) || (isTF ? 'T' : 'A');
+              const keyItem = state.key?.items?.[k];
+              const ans = keyItem?.answer || defaultAns;
+              const pts = keyItem?.points ?? Number(g.points || 1);
+              const bloom = keyItem?.bloom || defaultBloomFor(k);
+              rows.push(`${k},${ans},${pts},${bloom}`);
+            }
+          }
+          for (const r of (zone.rois || []).filter(r => r.graded)) {
+            const k = String(r.key);
+            if (!seen.has(k)) {
+              seen.add(k);
+              const defaultAns = r.role === 'correction' ? 'Correction' : 'Sample Answer';
+              const keyItem = state.key?.items?.[k];
+              const ans = keyItem?.answer || defaultAns;
+              const pts = keyItem?.points ?? Number(r.points || 1);
+              const bloom = keyItem?.bloom || defaultBloomFor(k);
+              const formattedAns = ans.includes(',') || ans.includes('"') ? `"${ans.replace(/"/g, '""')}"` : ans;
+              rows.push(`${k},${formattedAns},${pts},${bloom}`);
+            }
+          }
         }
       }
+
+      // 2. Fallback for bubble-only layouts
+      if (seen.size === 0) {
+        for (const b of (state.layout.bubbles || [])) {
+          if (b.item && !b.item.startsWith('sid[') && !seen.has(b.item)) {
+            seen.add(b.item);
+            const isTF = (b.choice === 'T' || b.choice === 'F');
+            const defaultAns = isTF ? 'T' : (b.choice || 'A');
+            const keyItem = state.key?.items?.[b.item];
+            const ans = keyItem?.answer || defaultAns;
+            const pts = keyItem?.points ?? 1;
+            const bloom = keyItem?.bloom || defaultBloomFor(b.item);
+            rows.push(`${b.item},${ans},${pts},${bloom}`);
+          }
+        }
+      }
+
       const csvContent = rows.join('\n') + '\n';
       const filename = `${(state.layout.title || 'exam_key').toLowerCase().replace(/[^a-z0-9_-]+/g, '_')}_template.csv`;
       downloadFile(filename, csvContent, 'text/csv');
@@ -3183,10 +3554,14 @@
             const existingPts = typeof existing === 'object' && existing !== null && existing.points !== undefined
               ? Number(existing.points)
               : null;
+            const existingBloom = typeof existing === 'object' && existing !== null && existing.bloom
+              ? normalizeBloom(existing.bloom)
+              : null;
 
             currentModalKey.items[k] = {
               answer: existingAns ?? defaultAns,
               points: existingPts ?? Number(g.points || 1),
+              bloom: existingBloom || defaultBloomFor(k),
               kind: g.kind,
               options: (g.options || []).map(o => typeof o === 'object' ? (o.value || 'A') : o),
               label: g.label || k,
@@ -3204,10 +3579,14 @@
             const existingPts = typeof existing === 'object' && existing !== null && existing.points !== undefined
               ? Number(existing.points)
               : null;
+            const existingBloom = typeof existing === 'object' && existing !== null && existing.bloom
+              ? normalizeBloom(existing.bloom)
+              : null;
 
             currentModalKey.items[k] = {
               answer: existingAns ?? defaultAns,
               points: existingPts ?? Number(r.points || 1),
+              bloom: existingBloom || defaultBloomFor(k),
               kind: 'text',
               label: r.label || k,
               zoneLabel: zone.label || zone.type?.toUpperCase() || 'Handwriting / Short Answer',
@@ -3254,6 +3633,9 @@
           const existingPts = typeof existing === 'object' && existing !== null && existing.points !== undefined
             ? Number(existing.points)
             : 1;
+          const existingBloom = typeof existing === 'object' && existing !== null && existing.bloom
+            ? normalizeBloom(existing.bloom)
+            : null;
 
           const sectionNum = Math.floor(i / 25) + 1;
           const sectionStart = (sectionNum - 1) * 25 + 1;
@@ -3263,6 +3645,7 @@
           currentModalKey.items[k] = {
             answer: existingAns ?? defaultAns,
             points: existingPts ?? 1,
+            bloom: existingBloom || defaultBloomFor(k),
             kind: isTF ? 'tf' : 'mcq',
             options: opts,
             label: k,
@@ -3379,26 +3762,37 @@
           const k = item.k;
           const currentAns = String(item.answer || '');
           const pts = item.points ?? 1;
+          const currentBloom = item.bloom || defaultBloomFor(k);
 
           if (item.kind === 'text') {
             html += `
-              <div class="key-item-cell" data-key="${k}" style="grid-column: 1 / -1; display: flex; gap: 0.5rem;">
+              <div class="key-item-cell" data-key="${k}" style="grid-column: 1 / -1; display: flex; gap: 0.5rem; align-items: center;">
                 <span class="key-item-num">${item.label || k}:</span>
-                <input type="text" class="key-text-input" data-key="${k}" value="${currentAns}" placeholder="Accepted answer">
-                <input type="number" class="key-pts-input" data-key="${k}" value="${pts}" min="0.5" max="50" step="0.5" title="Points">
+                <input type="text" class="key-text-input" data-key="${k}" value="${currentAns}" placeholder="Accepted answer" style="flex: 1;">
+                <select class="key-bloom-select" data-key="${k}" title="Bloom's Cognitive Level">
+                  ${BLOOM_LEVELS.map(lvl => `<option value="${lvl}" ${currentBloom === lvl ? 'selected' : ''}>${lvl}</option>`).join('')}
+                </select>
+                <input type="number" class="key-pts-input" data-key="${k}" value="${pts}" min="0.5" max="50" step="0.5" title="Points" style="width: 50px;">
               </div>
             `;
           } else {
             const opts = item.options || ['A', 'B', 'C', 'D'];
             html += `
               <div class="key-item-cell" data-key="${k}">
-                <span class="key-item-num">${k}.</span>
-                <div class="key-bubbles-row">
-                  ${opts.map(opt => `
-                    <button type="button" class="key-bubble-btn ${currentAns === opt ? 'is-active' : ''}" data-key="${k}" data-val="${opt}">${opt}</button>
-                  `).join('')}
+                <div style="display: flex; align-items: center; gap: 0.4rem;">
+                  <span class="key-item-num">${k}.</span>
+                  <div class="key-bubbles-row">
+                    ${opts.map(opt => `
+                      <button type="button" class="key-bubble-btn ${currentAns === opt ? 'is-active' : ''}" data-key="${k}" data-val="${opt}">${opt}</button>
+                    `).join('')}
+                  </div>
                 </div>
-                <input type="number" class="key-pts-input" data-key="${k}" value="${pts}" min="0.5" max="50" step="0.5" title="Points">
+                <div style="display: flex; align-items: center; gap: 0.35rem;">
+                  <select class="key-bloom-select" data-key="${k}" title="Bloom's Cognitive Level">
+                    ${BLOOM_LEVELS.map(lvl => `<option value="${lvl}" ${currentBloom === lvl ? 'selected' : ''}>${lvl}</option>`).join('')}
+                  </select>
+                  <input type="number" class="key-pts-input" data-key="${k}" value="${pts}" min="0.5" max="50" step="0.5" title="Points" style="width: 48px;">
+                </div>
               </div>
             `;
           }
@@ -3424,6 +3818,16 @@
               cell.querySelectorAll('.key-bubble-btn').forEach(b => b.classList.remove('is-active'));
               btn.classList.add('is-active');
             }
+          }
+        };
+      });
+
+      // Event listener: Bloom selectors
+      container.querySelectorAll('.key-bloom-select').forEach(sel => {
+        sel.onchange = () => {
+          const k = sel.dataset.key;
+          if (currentModalKey.items[k]) {
+            currentModalKey.items[k].bloom = sel.value;
           }
         };
       });
@@ -3463,6 +3867,7 @@
             currentModalKey.items[k] = {
               answer: 'A',
               points: 1,
+              bloom: defaultBloomFor(k),
               kind: 'mcq',
               options: ['A', 'B', 'C', 'D'],
               label: k,
@@ -3511,38 +3916,92 @@
       renderAnswerKeyModalContent();
     });
 
+    // Helper to parse CSV Answer Key into normalized items
+    function parseKeyCSV(csvText) {
+      const lines = csvText.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+      if (lines.length < 2) throw new Error("CSV file is empty or missing headers.");
+      const header = parseCSVLine(lines[0]).map(h => h.toLowerCase().trim().replace(/^["']|["']$/g, ''));
+      const itemCol = header.findIndex(h => h.includes('item') || h.includes('question') || h.includes('#'));
+      const ansCol = header.findIndex(h => h.includes('answer') || h.includes('key'));
+      const ptsCol = header.findIndex(h => h.includes('point') || h.includes('pts') || h.includes('score'));
+      const bloomCol = header.findIndex(h => h.includes('bloom') || h.includes('cognitive') || h.includes('taxonomy') || h.includes('level'));
+
+      const items = {};
+      for (let i = 1; i < lines.length; i++) {
+        const row = parseCSVLine(lines[i]);
+        if (row.length === 0) continue;
+        const itNum = itemCol !== -1 ? row[itemCol]?.trim() : String(i);
+        let ans = ansCol !== -1 ? row[ansCol]?.trim() : (row[1]?.trim() || '');
+        const pts = ptsCol !== -1 ? parseFloat(row[ptsCol]) : 1;
+        const rawBloom = bloomCol !== -1 ? row[bloomCol]?.trim() : (row[3]?.trim() || null);
+        const bloom = rawBloom ? normalizeBloom(rawBloom) : defaultBloomFor(itNum);
+
+        if (itNum && ans !== undefined && ans !== '') {
+          let normAns = ans.trim();
+          const upper = normAns.toUpperCase();
+          if (upper === 'TRUE') normAns = 'T';
+          else if (upper === 'FALSE') normAns = 'F';
+          else if (/^[A-Za-z]$/.test(normAns)) normAns = upper;
+
+          const isTF = (normAns === 'T' || normAns === 'F');
+          items[itNum] = {
+            answer: normAns,
+            points: isNaN(pts) ? 1 : pts,
+            kind: isTF ? 'tf' : 'mcq',
+            bloom: bloom
+          };
+        }
+      }
+      return items;
+    }
+
     $('key-file-import')?.addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (!file) return;
+      const fname = file.name.toLowerCase();
       const reader = new FileReader();
       reader.onload = (evt) => {
         try {
-          const json = JSON.parse(evt.target.result);
-          const parsed = parseAnswerKey(json);
-          if (parsed && parsed.items) {
-            for (const [k, v] of Object.entries(parsed.items)) {
-              if (currentModalKey.items[k]) {
-                currentModalKey.items[k].answer = v.answer;
-                if (v.points !== undefined) currentModalKey.items[k].points = v.points;
-              } else {
-                currentModalKey.items[k] = {
-                  answer: v.answer,
-                  points: v.points ?? 1,
-                  kind: v.kind || 'mcq',
-                  options: ['A', 'B', 'C', 'D'],
-                  label: k,
-                  zoneLabel: 'Questions',
-                  zoneCols: 3
-                };
-              }
-            }
-            if (json.pass_score !== undefined) {
-              currentModalKey.passScore = Number(json.pass_score);
-            }
-            renderAnswerKeyModalContent();
+          let importedItems = {};
+          let passScore = null;
+          if (fname.endsWith('.csv')) {
+            importedItems = parseKeyCSV(evt.target.result);
+          } else {
+            const json = JSON.parse(evt.target.result);
+            const parsed = parseAnswerKey(json);
+            importedItems = parsed?.items || {};
+            if (json.pass_score !== undefined) passScore = Number(json.pass_score);
           }
+
+          if (Object.keys(importedItems).length === 0) {
+            throw new Error("No valid question answers found in imported file.");
+          }
+
+          for (const [k, v] of Object.entries(importedItems)) {
+            if (currentModalKey.items[k]) {
+              currentModalKey.items[k].answer = v.answer;
+              if (v.points !== undefined) currentModalKey.items[k].points = v.points;
+              if (v.bloom) currentModalKey.items[k].bloom = normalizeBloom(v.bloom) || currentModalKey.items[k].bloom;
+            } else {
+              currentModalKey.items[k] = {
+                answer: v.answer,
+                points: v.points ?? 1,
+                bloom: normalizeBloom(v.bloom) || defaultBloomFor(k),
+                kind: v.kind || 'mcq',
+                options: ['A', 'B', 'C', 'D'],
+                label: k,
+                zoneLabel: 'Questions',
+                zoneCols: 3
+              };
+            }
+          }
+          if (passScore !== null) {
+            currentModalKey.passScore = passScore;
+          }
+          renderAnswerKeyModalContent();
+          alert(`Successfully imported ${Object.keys(importedItems).length} items from ${file.name}`);
         } catch (err) {
-          alert("Error parsing answer key JSON: " + err.message);
+          alert("Error parsing answer key file: " + err.message);
         }
       };
       reader.readAsText(file);
@@ -3565,7 +4024,8 @@
         itemsPayload[k] = {
           kind: it.kind,
           answer: it.answer,
-          points: Number(it.points || 1)
+          points: Number(it.points || 1),
+          bloom: it.bloom || defaultBloomFor(k)
         };
       }
       const payload = {
@@ -3579,6 +4039,23 @@
       downloadFile(filename, JSON.stringify(payload, null, 2), 'application/json');
     });
 
+    $('btn-key-download-csv')?.addEventListener('click', () => {
+      const rows = ['Item #,Answer,Points,Bloom'];
+      const sortedKeys = Object.keys(currentModalKey.items).sort((a, b) => {
+        const na = Number(a), nb = Number(b);
+        if (!isNaN(na) && !isNaN(nb)) return na - nb;
+        return a.localeCompare(b);
+      });
+      for (const k of sortedKeys) {
+        const it = currentModalKey.items[k];
+        const ans = String(it.answer || '');
+        const formattedAns = ans.includes(',') || ans.includes('"') ? `"${ans.replace(/"/g, '""')}"` : ans;
+        rows.push(`${k},${formattedAns},${it.points ?? 1},${it.bloom || defaultBloomFor(k)}`);
+      }
+      const filename = `${(state.layout?.title || 'exam_key').toLowerCase().replace(/[^a-z0-9_-]+/g, '_')}.csv`;
+      downloadFile(filename, rows.join('\n') + '\n', 'text/csv');
+    });
+
     $('btn-save-key-editor')?.addEventListener('click', () => {
       let totalPts = 0;
       const itemsPayload = {};
@@ -3587,7 +4064,8 @@
         itemsPayload[k] = {
           kind: it.kind,
           answer: it.answer,
-          points: Number(it.points || 1)
+          points: Number(it.points || 1),
+          bloom: it.bloom || defaultBloomFor(k)
         };
       }
 
@@ -3678,29 +4156,7 @@
         const reader = new FileReader();
         reader.onload = (evt) => {
           try {
-            const lines = evt.target.result.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-            if (lines.length < 2) throw new Error("CSV file is empty or missing headers.");
-            const header = parseCSVLine(lines[0]).map(h => h.toLowerCase().trim());
-            const itemCol = header.findIndex(h => h.includes('item') || h.includes('question') || h.includes('#'));
-            const ansCol = header.findIndex(h => h.includes('answer') || h.includes('key'));
-            const ptsCol = header.findIndex(h => h.includes('point') || h.includes('pts') || h.includes('score'));
-
-            const items = {};
-            for (let i = 1; i < lines.length; i++) {
-              const row = parseCSVLine(lines[i]);
-              if (row.length === 0) continue;
-              const itNum = itemCol !== -1 ? row[itemCol].trim() : String(i);
-              const ans = ansCol !== -1 ? row[ansCol].trim() : (row[1]?.trim() || '');
-              const pts = ptsCol !== -1 ? parseFloat(row[ptsCol]) : 1;
-              if (itNum && ans) {
-                const isTF = (ans === 'T' || ans === 'F' || ans.toLowerCase() === 'true' || ans.toLowerCase() === 'false');
-                items[itNum] = {
-                  answer: ans,
-                  points: isNaN(pts) ? 1 : pts,
-                  kind: isTF ? 'tf' : 'mcq'
-                };
-              }
-            }
+            const items = parseKeyCSV(evt.target.result);
             if (Object.keys(items).length === 0) throw new Error("No valid question items found in CSV.");
             state.key = {
               title: file.name.replace(/\.[^/.]+$/, "") + " Answer Key",
@@ -4210,7 +4666,7 @@
       };
     }
 
-    // Psychometric Analysis (Cronbach's Alpha, Item Difficulty P, Discrimination r_pbis)
+    // Psychometric Analysis (Cronbach's Alpha, Item Difficulty P, Discrimination r_pbis, Bloom Stats)
     function computePsychometrics(grades, key) {
       const n = grades.length;
       if (n === 0) return null;
@@ -4228,6 +4684,7 @@
       // Item statistics
       const itemStats = {};
       let sumItemVar = 0;
+      let highQualityCount = 0;
       const itemKeys = Object.keys(key.items).filter(k => key.items[k].kind !== 'text').sort((a, b) => {
         const na = Number(a), nb = Number(b);
         if (!isNaN(na) && !isNaN(nb)) return na - nb;
@@ -4235,6 +4692,7 @@
       });
 
       for (const itemNum of itemKeys) {
+        const keyItem = key.items[itemNum];
         const itemGrades = grades.map(g => g.gradedItems[itemNum] ? g.gradedItems[itemNum].pointsAwarded : 0);
         const correctCount = grades.filter(g => g.gradedItems[itemNum] && g.gradedItems[itemNum].isCorrect).length;
         const pValue = correctCount / n; // Difficulty index
@@ -4260,9 +4718,17 @@
           rPbis = ((meanCorrect - meanWrong) / stdDev) * Math.sqrt((correctCount * (n - correctCount)) / (n * n));
         }
 
+        const bloom = keyItem.bloom || defaultBloomFor(itemNum);
+
+        // High quality item: r >= 0.30 and difficulty between 0.30 and 0.85 (Ebel, 1979)
+        if (rPbis >= 0.30 && pValue >= 0.30 && pValue <= 0.85) {
+          highQualityCount++;
+        }
+
         itemStats[itemNum] = {
-          correctAnswer: key.items[itemNum].answer,
-          points: key.items[itemNum].points || 1.0,
+          correctAnswer: keyItem.answer,
+          points: keyItem.points || 1.0,
+          bloom,
           difficulty: pValue,
           discrimination: rPbis,
           distractors: choices
@@ -4277,6 +4743,52 @@
         alpha = Math.max(0, Math.min(1.0, alpha));
       }
 
+      // Bloom taxonomy breakdown statistics
+      const bloomStats = {};
+      for (const level of BLOOM_LEVELS) {
+        bloomStats[level] = {
+          level,
+          itemCount: 0,
+          totalPoints: 0,
+          items: [],
+          avgDifficulty: 0,
+          avgDiscrimination: 0,
+          masteryPct: 0
+        };
+      }
+
+      for (const itemNum of itemKeys) {
+        const it = itemStats[itemNum];
+        const lvl = it.bloom;
+        if (!bloomStats[lvl]) {
+          bloomStats[lvl] = { level: lvl, itemCount: 0, totalPoints: 0, items: [], avgDifficulty: 0, avgDiscrimination: 0, masteryPct: 0 };
+        }
+        bloomStats[lvl].itemCount++;
+        bloomStats[lvl].totalPoints += it.points;
+        bloomStats[lvl].items.push(itemNum);
+      }
+
+      for (const level of BLOOM_LEVELS) {
+        const b = bloomStats[level];
+        if (b.itemCount > 0) {
+          const sumDiff = b.items.reduce((acc, k) => acc + itemStats[k].difficulty, 0);
+          const sumDisc = b.items.reduce((acc, k) => acc + itemStats[k].discrimination, 0);
+          b.avgDifficulty = sumDiff / b.itemCount;
+          b.avgDiscrimination = sumDisc / b.itemCount;
+
+          let totalEarned = 0;
+          for (const g of grades) {
+            for (const itemK of b.items) {
+              if (g.gradedItems[itemK]) {
+                totalEarned += g.gradedItems[itemK].pointsAwarded || 0;
+              }
+            }
+          }
+          const maxPossible = b.totalPoints * n;
+          b.masteryPct = maxPossible > 0 ? (totalEarned / maxPossible) * 100 : 0;
+        }
+      }
+
       return {
         count: n,
         totalPossible,
@@ -4284,6 +4796,8 @@
         median,
         stdDev,
         cronbachAlpha: alpha,
+        highQualityCount,
+        bloomStats,
         itemStats
       };
     }
@@ -4647,6 +5161,7 @@
 
       if ($('analysis-stat-diff')) $('analysis-stat-diff').textContent = `${avgDiff.toFixed(1)}%`;
       if ($('analysis-stat-disc')) $('analysis-stat-disc').textContent = avgDisc.toFixed(3);
+      if ($('analysis-stat-quality')) $('analysis-stat-quality').textContent = String(psychometrics.highQualityCount ?? 0);
       if ($('analysis-stat-flagged')) $('analysis-stat-flagged').textContent = String(flaggedItems.length);
       if ($('analysis-stat-alpha')) $('analysis-stat-alpha').textContent = psychometrics.cronbachAlpha.toFixed(3);
 
@@ -4671,7 +5186,74 @@
         else $('analysis-stat-alpha-sub').textContent = 'Moderate internal consistency';
       }
 
-      // 2. Render Flagged Questions Callout Card
+      // 2. Render Top Performing Students (Cohort Leaders)
+      const topStudentsTbody = $('tbody-top-students');
+      if (topStudentsTbody && state.results && state.results.grades) {
+        const grades = state.results.grades;
+        const totalN = grades.length;
+        if (totalN > 0) {
+          const sortedStudents = grades.map((g, origIdx) => ({ ...g, origIdx }))
+            .sort((a, b) => b.rawScore - a.rawScore || (a.studentName || '').localeCompare(b.studentName || ''));
+          const maxDisplay = Math.min(10, sortedStudents.length);
+          const topList = sortedStudents.slice(0, maxDisplay);
+
+          topStudentsTbody.innerHTML = topList.map((s, idx) => {
+            // Standard competition ranking (1224 ranking): rank is 1 + number of strictly higher scores
+            const rank = 1 + grades.filter(g => g.rawScore > s.rawScore).length;
+            const rankBadgeClass = rank === 1 ? 'rank-badge--1' : (rank === 2 ? 'rank-badge--2' : (rank === 3 ? 'rank-badge--3' : 'rank-badge--other'));
+            const countStrictlyLower = grades.filter(g => g.rawScore < s.rawScore).length;
+            const countEqual = grades.filter(g => g.rawScore === s.rawScore).length;
+            const percentileRank = ((countStrictlyLower + 0.5 * countEqual) / totalN) * 100;
+
+            return `
+              <tr>
+                <td><span class="rank-badge ${rankBadgeClass}">#${rank}</span></td>
+                <td><strong>${s.studentName || 'Student'}</strong></td>
+                <td><code>${s.studentId || '—'}</code></td>
+                <td>${s.rawScore.toFixed(1)} / ${s.maxScore.toFixed(1)}</td>
+                <td><span style="font-weight: 700; color: ${s.percentage >= 80 ? 'var(--success)' : 'var(--text)'};">${s.percentage.toFixed(1)}%</span></td>
+                <td><span style="font-weight: 600; color: var(--accent);">${percentileRank.toFixed(1)}th</span></td>
+                <td style="text-align: right;">
+                  <button type="button" class="btn btn--secondary btn-xs" onclick="inspectStudent(${s.origIdx}); switchTab('roster');" title="Open student sheet in Inspector">Inspect</button>
+                </td>
+              </tr>
+            `;
+          }).join('');
+        } else {
+          topStudentsTbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 1.5rem; color: var(--text-muted);">Run grading to display top cohort performers.</td></tr>`;
+        }
+      }
+
+      // 3. Render Bloom's Taxonomy Cognitive Distribution
+      const bloomContainer = $('chart-blooms-container');
+      if (bloomContainer && psychometrics.bloomStats) {
+        bloomContainer.innerHTML = getBloomDistributionChartSVG(psychometrics.bloomStats, nItems);
+      }
+      const bloomGrid = $('blooms-summary-grid');
+      if (bloomGrid && psychometrics.bloomStats) {
+        bloomGrid.innerHTML = BLOOM_LEVELS.map(lvl => {
+          const bs = psychometrics.bloomStats[lvl] || { itemCount: 0, totalPoints: 0, masteryPct: 0, avgDifficulty: 0, avgDiscrimination: 0 };
+          const abbr = lvl.slice(0, 3).toLowerCase();
+          return `
+            <div style="background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.65rem 0.75rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+                <span class="badge-bloom badge-bloom--${abbr}">${lvl}</span>
+                <span style="font-size: 0.72rem; color: var(--text-muted); font-variant-numeric: tabular-nums;">${bs.itemCount} item${bs.itemCount === 1 ? '' : 's'} (${bs.totalPoints} pts)</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: baseline; margin-top: 0.35rem;">
+                <span style="font-size: 0.74rem; color: var(--text-muted);">Cohort Mastery</span>
+                <span style="font-weight: 700; font-size: 0.88rem; font-variant-numeric: tabular-nums; color: ${bs.masteryPct >= 70 ? 'var(--success)' : (bs.masteryPct < 50 && bs.itemCount > 0 ? 'var(--danger)' : 'var(--text)')};">${bs.masteryPct.toFixed(1)}%</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted); margin-top: 0.25rem; font-variant-numeric: tabular-nums;">
+                <span>Diff: ${(bs.avgDifficulty * 100).toFixed(0)}%</span>
+                <span>Disc: ${bs.avgDiscrimination.toFixed(2)}</span>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // 4. Render Flagged Questions Callout Card
       const reviewBox = $('analysis-review-box');
       const reviewBadge = $('analysis-review-count-badge');
       const reviewList = $('analysis-review-items-list');
@@ -4694,7 +5276,7 @@
         }
       }
 
-      // 3. Render SVG Charts
+      // 5. Render SVG Charts
       if ($('chart-item-difficulty-container')) {
         $('chart-item-difficulty-container').innerHTML = getItemDifficultyChartSVG(itemStats);
       }
@@ -4702,7 +5284,24 @@
         $('chart-item-discrimination-container').innerHTML = getItemDiscriminationChartSVG(itemStats);
       }
 
-      // 4. Update Header Labels for Pure TF vs MCQ
+      // 6. Header Toolbar Button Listeners & Filter Listeners
+      $('btn-tab-export-html')?.addEventListener('click', () => $('btn-export-html').click());
+      $('btn-tab-export-csv')?.addEventListener('click', () => exportItemAnalysisCSV());
+      $('btn-tab-edit-key')?.addEventListener('click', () => openAnswerKeyModal());
+
+      const selectBloom = $('select-bloom-filter');
+      if (selectBloom && !selectBloom.dataset.bound) {
+        selectBloom.dataset.bound = 'true';
+        selectBloom.addEventListener('change', (e) => {
+          state.itemAnalysisBloomFilter = e.target.value;
+          renderItemAnalysisTable(psychometrics);
+        });
+      }
+
+      // 7. Attach Interactive Floating Tooltip & Click-to-Highlight handlers
+      attachChartInteractivity();
+
+      // 8. Update Header Labels for Pure TF vs MCQ
       const allTF = Object.values(state.key.items).every(it => it.kind === 'tf' || it.kind === 'modified_tf' || it.answer === 'T' || it.answer === 'F');
       const hasTF = Object.values(state.key.items).some(it => it.kind === 'tf' || it.kind === 'modified_tf' || it.answer === 'T' || it.answer === 'F');
 
@@ -4714,6 +5313,172 @@
 
       state._flaggedItems = flaggedItems;
       renderItemAnalysisTable(psychometrics);
+    }
+
+    // Export Comprehensive Item Analysis & Bloom's Taxonomy CSV
+    function exportItemAnalysisCSV() {
+      if (!state.results || !state.results.psychometrics) {
+        alert('Please run grading first to export psychometric analysis.');
+        return;
+      }
+      const psych = state.results.psychometrics;
+      const key = state.key;
+      const totalStudents = state.results.grades?.length || 0;
+      const itemKeys = Object.keys(psych.itemStats).sort((a, b) => {
+        const na = Number(a), nb = Number(b);
+        if (!isNaN(na) && !isNaN(nb)) return na - nb;
+        return a.localeCompare(b);
+      });
+
+      const csvRows = [];
+      csvRows.push("# Bloom's Taxonomy Cognitive Distribution Summary");
+      csvRows.push('Bloom Level,Item Count,% of Exam,Total Points,Avg Difficulty (P),Avg Discrimination (r),Cohort Mastery %');
+      for (const lvl of BLOOM_LEVELS) {
+        const bs = psych.bloomStats?.[lvl] || { itemCount: 0, totalPoints: 0, avgDifficulty: 0, avgDiscrimination: 0, masteryPct: 0 };
+        const pctExam = itemKeys.length > 0 ? ((bs.itemCount / itemKeys.length) * 100).toFixed(1) + '%' : '0.0%';
+        csvRows.push([
+          lvl,
+          bs.itemCount,
+          pctExam,
+          bs.totalPoints,
+          (bs.avgDifficulty * 100).toFixed(1) + '%',
+          bs.avgDiscrimination.toFixed(3),
+          bs.masteryPct.toFixed(1) + '%'
+        ].join(','));
+      }
+
+      csvRows.push('');
+      csvRows.push('# Item Analysis & Psychometric Diagnostics');
+      csvRows.push('Item #,Answer,Points,Bloom Level,Difficulty (P),Discrimination (r_pbis),A / T,B / F,C,D,E,Dead Options,Signals & Actions');
+      for (const k of itemKeys) {
+        const it = psych.itemStats[k];
+        const keyItem = key?.items?.[k] || {};
+        const isTF = (keyItem.kind === 'tf' || keyItem.kind === 'modified_tf' || it.correctAnswer === 'T' || it.correctAnswer === 'F');
+        const d1 = isTF ? (it.distractors.T || 0) : (it.distractors.A || 0);
+        const d2 = isTF ? (it.distractors.F || 0) : (it.distractors.B || 0);
+        const d3 = isTF ? '—' : (it.distractors.C || 0);
+        const d4 = isTF ? '—' : (it.distractors.D || 0);
+        const d5 = isTF ? '—' : (it.distractors.E || 0);
+        const dead = getDeadDistractors(it, keyItem).join(' ') || 'None';
+        const actions = generateItemInsights(it, keyItem, totalStudents).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+
+        csvRows.push([
+          k,
+          `"${it.correctAnswer}"`,
+          it.points,
+          it.bloom || defaultBloomFor(k),
+          (it.difficulty * 100).toFixed(1) + '%',
+          it.discrimination.toFixed(3),
+          d1, d2, d3, d4, d5,
+          `"${dead}"`,
+          `"${actions.replace(/"/g, '""')}"`
+        ].join(','));
+      }
+
+      const filename = `${(state.layout?.title || 'assessment').toLowerCase().replace(/[^a-z0-9_-]+/g, '_')}_item_analysis_blooms.csv`;
+      downloadFile(filename, csvRows.join('\n') + '\n', 'text/csv');
+    }
+
+    // Attach Interactive Tooltip and Click-to-Highlight Handlers to Chart Elements
+    function attachChartInteractivity() {
+      const tooltip = $('chart-floating-tooltip');
+      if (!tooltip) return;
+
+      $$('#tab-items .chart-bar-group, #distribution-card .chart-bar-group').forEach(group => {
+        const showTooltip = (e) => {
+          const type = group.dataset.type;
+          let text = '';
+          if (type === 'bin') {
+            const bin = group.dataset.bin;
+            const count = group.dataset.count;
+            const pct = group.dataset.pct;
+            const status = group.dataset.status;
+            text = `<strong>Score Range: ${bin}</strong><br>Students: <strong>${count}</strong> (${pct}% of class)<br>Status: <strong style="color: ${status === 'Pass' ? 'var(--success)' : 'var(--danger)'};">${status}ing</strong>`;
+          } else if (type === 'bloom') {
+            const bloom = group.dataset.bloom;
+            const count = group.dataset.count;
+            const pts = group.dataset.pts;
+            const mastery = group.dataset.mastery;
+            text = `<strong>${bloom}</strong> (${count} items, ${pts} pts)<br>Cohort Mastery: <strong>${mastery}%</strong><br><span style="font-size: 0.7rem; color: #94a3b8;">Click to filter question table</span>`;
+          } else {
+            const item = group.dataset.item;
+            const key = group.dataset.key;
+            const diff = group.dataset.diff;
+            const disc = group.dataset.disc;
+            const bloom = group.dataset.bloom;
+            text = `<strong>Item #${item}</strong> (Key: <code>${key}</code>)<br>Bloom: <strong>${bloom}</strong><br>Difficulty: <strong>${diff}%</strong><br>Discrimination: <strong>${disc}</strong><br><span style="font-size: 0.7rem; color: #94a3b8;">Click to highlight in table</span>`;
+          }
+          tooltip.innerHTML = text;
+          tooltip.style.display = 'block';
+          positionTooltip(e);
+        };
+
+        const positionTooltip = (e) => {
+          const tooltipW = tooltip.offsetWidth || 180;
+          const tooltipH = tooltip.offsetHeight || 60;
+          const clientX = e.clientX;
+          const clientY = e.clientY;
+          const left = Math.min(window.innerWidth - tooltipW - 12, Math.max(12, clientX + 12));
+          let top = clientY + 14;
+          if (top + tooltipH > window.innerHeight - 10) {
+            top = Math.max(10, clientY - tooltipH - 10);
+          }
+          tooltip.style.left = `${left}px`;
+          tooltip.style.top = `${top}px`;
+        };
+
+        group.onmouseenter = showTooltip;
+        group.onmousemove = positionTooltip;
+        group.onmouseleave = () => { tooltip.style.display = 'none'; };
+
+        const handleActivate = () => {
+          const type = group.dataset.type;
+          if (type === 'bloom') {
+            const bloom = group.dataset.bloom;
+            const select = $('select-bloom-filter');
+            if (select) {
+              select.value = bloom;
+              state.itemAnalysisBloomFilter = bloom;
+              if (state.results && state.results.psychometrics) {
+                renderItemAnalysisTable(state.results.psychometrics);
+              }
+            }
+          } else {
+            const item = group.dataset.item;
+            if (item) {
+              let targetRow = document.getElementById(`row-item-${item}`);
+              if (!targetRow) {
+                // If filtered out, reset filters so row is visible
+                state.itemAnalysisFilter = 'all';
+                state.itemAnalysisBloomFilter = '';
+                const select = $('select-bloom-filter');
+                if (select) select.value = '';
+                $$('#item-analysis-filters button').forEach(b => {
+                  b.classList.toggle('is-active', b.dataset.filter === 'all');
+                });
+                if (state.results && state.results.psychometrics) {
+                  renderItemAnalysisTable(state.results.psychometrics);
+                }
+                targetRow = document.getElementById(`row-item-${item}`);
+              }
+              if (targetRow) {
+                targetRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                targetRow.classList.remove('is-row-highlight');
+                void targetRow.offsetWidth;
+                targetRow.classList.add('is-row-highlight');
+              }
+            }
+          }
+        };
+
+        group.onclick = handleActivate;
+        group.onkeydown = (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleActivate();
+          }
+        };
+      });
     }
 
     // Generate actionable, pedagogical insights for an item based on difficulty, discrimination, and distractor patterns
@@ -4841,6 +5606,7 @@
       if (!psychometrics || !psychometrics.itemStats) return;
       const flaggedSet = new Set((state._flaggedItems || []).map(f => f.key));
       const filter = state.itemAnalysisFilter || 'all';
+      const bloomFilter = state.itemAnalysisBloomFilter || '';
       const sort = state.itemAnalysisSort || { col: 'item', dir: 'asc' };
 
       let keys = Object.keys(psychometrics.itemStats);
@@ -4852,6 +5618,10 @@
         keys = keys.filter(k => psychometrics.itemStats[k].difficulty < 0.50);
       } else if (filter === 'disc') {
         keys = keys.filter(k => psychometrics.itemStats[k].discrimination < 0.20);
+      }
+
+      if (bloomFilter) {
+        keys = keys.filter(k => (psychometrics.itemStats[k].bloom || '').toLowerCase() === bloomFilter.toLowerCase());
       }
 
       // Sorting
@@ -4866,6 +5636,10 @@
         } else if (sort.col === 'discrimination') {
           valA = psychometrics.itemStats[a].discrimination;
           valB = psychometrics.itemStats[b].discrimination;
+        } else if (sort.col === 'bloom') {
+          valA = psychometrics.itemStats[a].bloom || '';
+          valB = psychometrics.itemStats[b].bloom || '';
+          return sort.dir === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
         } else {
           // item #
           valA = Number(a);
@@ -4880,7 +5654,7 @@
       });
 
       if (keys.length === 0) {
-        $('tbody-items').innerHTML = `<tr><td colspan="12" style="text-align: center; padding: 2rem; color: var(--text-muted);">No questions match the selected filter.</td></tr>`;
+        $('tbody-items').innerHTML = `<tr><td colspan="13" style="text-align: center; padding: 2rem; color: var(--text-muted);">No questions match the selected filter.</td></tr>`;
         return;
       }
 
@@ -4913,12 +5687,16 @@
         }
 
         const signalsHtml = generateItemSignals(item, keyItem, totalStudents);
+        const bloom = item.bloom || defaultBloomFor(k);
+        const bloomAbbr = bloom.slice(0, 3).toLowerCase();
+        const bloomBadge = `<span class="badge-bloom badge-bloom--${bloomAbbr}">${bloom}</span>`;
 
         return `
-          <tr>
+          <tr id="row-item-${k}" data-item="${k}">
             <td><strong>#${k}</strong></td>
             <td><code>${item.correctAnswer}</code></td>
             <td>${item.points}</td>
+            <td>${bloomBadge}</td>
             <td>${(item.difficulty * 100).toFixed(1)}%</td>
             <td style="color: ${item.discrimination >= 0.3 ? 'var(--success)' : (item.discrimination < 0.15 ? 'var(--danger)' : 'var(--text)')}; font-weight: 700;">
               ${item.discrimination.toFixed(3)}
@@ -5058,14 +5836,17 @@
       }
     }
 
-    window.inspectStudent = (idx) => {
-      if (!state.results || !state.results.grades || !state.results.grades[idx]) return;
+    window.inspectStudent = (idxOrId) => {
+      if (!state.results || !state.results.grades) return;
+      let idx = typeof idxOrId === 'number' ? idxOrId : state.results.grades.findIndex(g => g.studentId === String(idxOrId) || g.examId === String(idxOrId));
+      if (idx === -1 || !state.results.grades[idx]) return;
       state.selectedStudentIdx = idx;
 
       const rows = $$('#tbody-roster tr');
       rows.forEach((row, rIdx) => {
         if (rIdx === idx) {
           row.classList.add('is-selected');
+          try { row.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (_) {}
         } else {
           row.classList.remove('is-selected');
         }
@@ -5384,17 +6165,19 @@
       downloadFile("grades_summary.csv", csv.join("\n"), "text/csv");
     };
 
-    // Export Comprehensive HTML Report with Embedded Vector SVG Graphs
+    // Export Comprehensive Standalone HTML Assessment & Psychometrics Dashboard
     $('btn-export-html').onclick = () => {
       if (!state.results) return;
       const { psychometrics, grades, passThreshold } = state.results;
       const bellCurveSvg = generateBellCurveSVG(grades, passThreshold);
       const difficultySvg = getItemDifficultyChartSVG(psychometrics.itemStats);
       const discriminationSvg = getItemDiscriminationChartSVG(psychometrics.itemStats);
+      const bloomSvg = getBloomDistributionChartSVG(psychometrics.bloomStats, Object.keys(psychometrics.itemStats).length);
 
+      const totalN = grades.length;
       const passCount = grades.filter(g => g.percentage >= passThreshold).length;
       const failCount = grades.length - passCount;
-      const passRate = grades.length > 0 ? ((passCount / grades.length) * 100).toFixed(1) : 0;
+      const passRate = totalN > 0 ? ((passCount / totalN) * 100).toFixed(1) : '0.0';
 
       const itemKeys = Object.keys(psychometrics.itemStats).sort((a, b) => {
         const na = Number(a), nb = Number(b);
@@ -5402,9 +6185,13 @@
         return a.localeCompare(b);
       });
 
+      let sumDiff = 0;
+      let sumDisc = 0;
       const flaggedItems = [];
       itemKeys.forEach(k => {
         const it = psychometrics.itemStats[k];
+        sumDiff += it.difficulty;
+        sumDisc += it.discrimination;
         const reasons = [];
         if (it.discrimination < 0) reasons.push(`Negative discrimination (r = ${it.discrimination.toFixed(2)}) — higher scorers missed more frequently`);
         else if (it.discrimination < 0.20) reasons.push(`Low discrimination (r = ${it.discrimination.toFixed(2)})`);
@@ -5413,6 +6200,90 @@
         if (reasons.length > 0) flaggedItems.push({ key: k, item: it, reasons });
       });
 
+      const avgDiff = itemKeys.length > 0 ? (sumDiff / itemKeys.length) * 100 : 0;
+      const avgDisc = itemKeys.length > 0 ? (sumDisc / itemKeys.length) : 0;
+      const highQualityCount = psychometrics.highQualityCount ?? 0;
+
+      // Top Performing Students
+      const sortedStudents = [...grades]
+        .sort((a, b) => b.rawScore - a.rawScore || (a.studentName || '').localeCompare(b.studentName || ''));
+      const topList = sortedStudents.slice(0, Math.min(10, sortedStudents.length));
+
+      const topStudentsHtml = topList.map((s, idx) => {
+        const rank = 1 + grades.filter(g => g.rawScore > s.rawScore).length;
+        const rankClass = rank === 1 ? 'rank-badge--1' : (rank === 2 ? 'rank-badge--2' : (rank === 3 ? 'rank-badge--3' : 'rank-badge--other'));
+        const countLower = grades.filter(g => g.rawScore < s.rawScore).length;
+        const countEqual = grades.filter(g => g.rawScore === s.rawScore).length;
+        const pr = ((countLower + 0.5 * countEqual) / totalN) * 100;
+        return `
+          <tr>
+            <td><span class="rank-badge ${rankClass}">#${rank}</span></td>
+            <td><strong>${s.studentName || 'Student'}</strong></td>
+            <td><code>${s.studentId || '—'}</code></td>
+            <td>${s.rawScore.toFixed(1)} / ${s.maxScore.toFixed(1)}</td>
+            <td><strong style="color: ${s.percentage >= 80 ? '#10b981' : 'inherit'};">${s.percentage.toFixed(1)}%</strong></td>
+            <td><strong style="color: #0284c7;">${pr.toFixed(1)}th</strong></td>
+          </tr>
+        `;
+      }).join('');
+
+      // Bloom Summary Grid
+      const bloomCardsHtml = BLOOM_LEVELS.map(lvl => {
+        const bs = (psychometrics.bloomStats && psychometrics.bloomStats[lvl]) || { itemCount: 0, totalPoints: 0, masteryPct: 0, avgDifficulty: 0, avgDiscrimination: 0 };
+        const abbr = lvl.slice(0, 3).toLowerCase();
+        return `
+          <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.75rem 0.85rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+              <span class="badge-bloom badge-bloom--${abbr}">${lvl}</span>
+              <span style="font-size: 0.72rem; color: #64748b;">${bs.itemCount} items (${bs.totalPoints} pts)</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-top: 0.4rem;">
+              <span style="font-size: 0.75rem; color: #64748b;">Cohort Mastery</span>
+              <strong style="font-size: 0.95rem; color: ${bs.masteryPct >= 70 ? '#10b981' : (bs.masteryPct < 50 && bs.itemCount > 0 ? '#ef4444' : '#1e293b')};">${bs.masteryPct.toFixed(1)}%</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: #94a3b8; margin-top: 0.25rem;">
+              <span>Diff: ${(bs.avgDifficulty * 100).toFixed(0)}%</span>
+              <span>Disc: ${bs.avgDiscrimination.toFixed(2)}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Detailed Item Rows
+      const tableRowsHtml = itemKeys.map(k => {
+        const item = psychometrics.itemStats[k];
+        const keyItem = state.key ? (state.key.items[k] || {}) : {};
+        const isItemTF = (keyItem.kind === 'tf' || keyItem.kind === 'modified_tf' || item.correctAnswer === 'T' || item.correctAnswer === 'F');
+
+        const deadList = getDeadDistractors(item, keyItem);
+        let deadHtml = '<span style="color: #94a3b8; font-size: 11px;">None</span>';
+        if (deadList.length > 0) {
+          deadHtml = deadList.map(opt => `<span class="badge-dead-opt">${opt}</span>`).join(' ');
+        }
+
+        const signalsHtml = generateItemSignals(item, keyItem, totalN);
+        const bloom = item.bloom || defaultBloomFor(k);
+        const bloomAbbr = bloom.slice(0, 3).toLowerCase();
+
+        return `
+          <tr id="row-item-${k}" data-item="${k}">
+            <td><strong>#${k}</strong></td>
+            <td><code>${item.correctAnswer}</code></td>
+            <td>${item.points}</td>
+            <td><span class="badge-bloom badge-bloom--${bloomAbbr}">${bloom}</span></td>
+            <td>${(item.difficulty * 100).toFixed(1)}%</td>
+            <td style="font-weight: 700; color: ${item.discrimination >= 0.3 ? '#10b981' : (item.discrimination < 0.20 ? '#ef4444' : 'inherit')};">${item.discrimination.toFixed(3)}</td>
+            <td>${isItemTF ? (item.distractors.T || 0) : (item.distractors.A || 0)}</td>
+            <td>${isItemTF ? (item.distractors.F || 0) : (item.distractors.B || 0)}</td>
+            <td>${isItemTF ? '—' : (item.distractors.C || 0)}</td>
+            <td>${isItemTF ? '—' : (item.distractors.D || 0)}</td>
+            <td>${isItemTF ? '—' : (item.distractors.E || 0)}</td>
+            <td>${deadHtml}</td>
+            <td>${signalsHtml}</td>
+          </tr>
+        `;
+      }).join('');
+
       const html = `<!doctype html>
 <html lang="en">
 <head>
@@ -5420,26 +6291,28 @@
   <title>Assessment & Psychometrics Report — ${state.key.title}</title>
   <style>
     :root { color-scheme: light dark; }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 2.5rem; max-width: 1040px; margin: 0 auto; color: #1e293b; background: #fff; line-height: 1.5; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 2.5rem; max-width: 1120px; margin: 0 auto; color: #1e293b; background: #fff; line-height: 1.5; }
     @media (prefers-color-scheme: dark) {
       body { background: #0f172a; color: #f1f5f9; }
       .metric, .card, .chart-card { background: #1e293b !important; border-color: #334155 !important; }
       th { background: #1e293b !important; color: #cbd5e1 !important; border-color: #334155 !important; }
       td { border-color: #334155 !important; }
       .alert-box { background: rgba(245, 158, 11, 0.12) !important; border-color: rgba(245, 158, 11, 0.3) !important; color: #fbbf24 !important; }
+      .bloom-card { background: #1e293b !important; border-color: #334155 !important; }
+      #references { background: #1e293b !important; border-color: #334155 !important; }
     }
     h1 { margin: 0 0 0.35rem 0; font-size: 1.75rem; font-weight: 800; letter-spacing: -0.02em; }
     .subtitle { color: #64748b; font-size: 0.9rem; margin-bottom: 2rem; }
-    .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
-    .metric { background: #f8fafc; border: 1px solid #e2e8f0; padding: 1.1rem; border-radius: 10px; }
-    .metric span { display: block; font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: #64748b; margin-bottom: 0.35rem; }
-    .metric b { display: block; font-size: 1.7rem; font-weight: 800; color: #0284c7; }
-    .metric small { display: block; font-size: 0.75rem; color: #94a3b8; margin-top: 0.25rem; }
+    .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.85rem; margin-bottom: 2rem; }
+    .metric { background: #f8fafc; border: 1px solid #e2e8f0; padding: 1rem; border-radius: 10px; }
+    .metric span { display: block; font-size: 0.76rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: #64748b; margin-bottom: 0.35rem; }
+    .metric b { display: block; font-size: 1.55rem; font-weight: 800; color: #0284c7; }
+    .metric small { display: block; font-size: 0.74rem; color: #94a3b8; margin-top: 0.25rem; }
     .card, .chart-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 1.25rem; margin-bottom: 2rem; }
-    .chart-card h2 { margin: 0 0 0.85rem 0; font-size: 1.05rem; font-weight: 700; }
-    .charts-grid { display: grid; grid-template-columns: 1fr; gap: 1.5rem; margin-bottom: 2rem; }
+    .chart-card h2, .card h2 { margin: 0 0 0.85rem 0; font-size: 1.05rem; font-weight: 700; }
+    .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(460px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
     .alert-box { background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 2rem; color: #b45309; }
-    table { width: 100%; border-collapse: collapse; margin-top: 1rem; font-size: 13px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 0.85rem; font-size: 13px; }
     th, td { border: 1px solid #e2e8f0; padding: 8px 10px; text-align: left; }
     th { background: #f1f5f9; font-weight: 700; color: #475569; }
     code { font-family: monospace; font-weight: 700; }
@@ -5452,9 +6325,28 @@
     .sig-badge--easy { background: rgba(59, 130, 246, 0.14); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.35); }
     .sig-badge--misconception { background: rgba(236, 72, 153, 0.14); color: #ec4899; border: 1px solid rgba(236, 72, 153, 0.35); }
     .sig-badge--optimal { background: rgba(16, 185, 129, 0.08); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.25); }
+    .badge-bloom { display: inline-flex; align-items: center; justify-content: center; font-size: 0.72rem; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 9999px; text-transform: uppercase; letter-spacing: 0.03em; }
+    .badge-bloom--rem { background: rgba(59, 130, 246, 0.15); color: #2563eb; border: 1px solid rgba(59, 130, 246, 0.35); }
+    .badge-bloom--und { background: rgba(16, 185, 129, 0.15); color: #059669; border: 1px solid rgba(16, 185, 129, 0.35); }
+    .badge-bloom--app { background: rgba(245, 158, 11, 0.15); color: #d97706; border: 1px solid rgba(245, 158, 11, 0.35); }
+    .badge-bloom--ana { background: rgba(168, 85, 247, 0.15); color: #7c3aed; border: 1px solid rgba(168, 85, 247, 0.35); }
+    .badge-bloom--eva { background: rgba(236, 72, 153, 0.15); color: #db2777; border: 1px solid rgba(236, 72, 153, 0.35); }
+    .badge-bloom--cre { background: rgba(239, 68, 68, 0.15); color: #dc2626; border: 1px solid rgba(239, 68, 68, 0.35); }
+    .rank-badge { display: inline-flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.76rem; border-radius: 9999px; min-width: 28px; height: 24px; padding: 0 0.45rem; }
+    .rank-badge--1 { background: #fbbf24; color: #78350f; border: 1px solid #f59e0b; }
+    .rank-badge--2 { background: #cbd5e1; color: #1e293b; border: 1px solid #94a3b8; }
+    .rank-badge--3 { background: #fed7aa; color: #7c2d12; border: 1px solid #fdba74; }
+    .rank-badge--other { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+    .chart-bar-group { cursor: pointer; transition: opacity 0.15s ease; }
+    .chart-bar-group:hover rect { filter: brightness(1.22); opacity: 0.95; }
+    .chart-tooltip { position: fixed; pointer-events: none; background: rgba(15, 23, 42, 0.96); color: #f8fafc; border: 1px solid rgba(255, 255, 255, 0.18); border-radius: 6px; padding: 0.55rem 0.85rem; font-size: 0.76rem; line-height: 1.45; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5); z-index: 1000; display: none; white-space: nowrap; }
+    tr.is-row-highlight { animation: highlight-pulse 1.8s ease; }
+    @keyframes highlight-pulse { 0% { background-color: rgba(14, 165, 233, 0.35); } 100% { background-color: transparent; } }
     @media print {
       body { padding: 0.5cm; max-width: 100%; }
-      .chart-card { break-inside: avoid; }
+      .chart-card, .card { break-inside: avoid; }
+      .chart-tooltip { display: none !important; }
+      svg { width: 100% !important; max-width: 100% !important; min-width: 0 !important; }
     }
   </style>
 </head>
@@ -5463,15 +6355,68 @@
   <div class="subtitle">${state.key.title} &bull; Generated by Instructor Essentials &bull; ${new Date().toLocaleDateString(undefined, { dateStyle: 'long' })}</div>
 
   <div class="metrics">
-    <div class="metric"><span>Total Graded</span><b>${grades.length}</b><small>Completed student scans</small></div>
+    <div class="metric"><span>Total Graded</span><b>${totalN}</b><small>Completed student scans</small></div>
     <div class="metric"><span>Average Score</span><b>${psychometrics.meanScore.toFixed(1)} / ${psychometrics.totalPossible.toFixed(1)}</b><small>${((psychometrics.meanScore / psychometrics.totalPossible) * 100).toFixed(1)}% class average</small></div>
     <div class="metric"><span>Pass Rate</span><b>${passRate}%</b><small>${passCount} passed / ${failCount} failed (cutoff: ${passThreshold}%)</small></div>
-    <div class="metric"><span>Reliability (α)</span><b>${psychometrics.cronbachAlpha.toFixed(3)}</b><small>Cronbach's Alpha consistency</small></div>
+    <div class="metric"><span>Reliability (α / KR-20)</span><b>${psychometrics.cronbachAlpha.toFixed(3)}</b><small>Internal consistency [Cronbach, 1951; Kuder &amp; Richardson, 1937]</small></div>
+    <div class="metric"><span>Avg Difficulty (P̄)</span><b>${avgDiff.toFixed(1)}%</b><small>Optimal: 50%–85% [Ebel, 1979]</small></div>
+    <div class="metric"><span>Avg Discrimination (r̄_pbis)</span><b>${avgDisc.toFixed(3)}</b><small>Target: ≥ 0.20 [Ebel, 1979]</small></div>
+    <div class="metric"><span>High-Quality Items</span><b style="color: #10b981;">${highQualityCount}</b><small>r ≥ 0.30 &amp; optimal diff</small></div>
+    <div class="metric"><span>Flagged Items</span><b style="color: #f59e0b;">${flaggedItems.length}</b><small>Low disc or extreme diff</small></div>
   </div>
 
   <div class="chart-card">
     <h2>Scores Distribution &amp; Bell Curve</h2>
     <div style="overflow-x: auto;">${bellCurveSvg}</div>
+  </div>
+
+  <!-- Top Performing Students (Cohort Leaders) -->
+  <div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+      <h2 style="margin: 0; font-size: 1.05rem;">Top Performing Students (Cohort Leaders)</h2>
+      <span style="font-size: 0.76rem; color: #64748b;">Ranked by overall score</span>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 50px;">Rank</th>
+          <th>Student Name</th>
+          <th>Student ID</th>
+          <th>Raw Score</th>
+          <th>Percentage</th>
+          <th>Percentile Rank</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${topStudentsHtml || '<tr><td colspan="6" style="text-align: center; color: #94a3b8; padding: 1.5rem;">No student grades available.</td></tr>'}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Bloom's Taxonomy Cognitive Distribution -->
+  <div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
+      <div>
+        <h2 style="margin: 0; font-size: 1.05rem;">Bloom's Taxonomy Cognitive Distribution</h2>
+        <div style="font-size: 0.75rem; color: #64748b; margin-top: 2px;">
+          Assessment balance across lower-order and higher-order cognitive domains [Anderson &amp; Krathwohl, 2001; Bloom et al., 1956; Krathwohl, 2002].
+        </div>
+      </div>
+      <div style="display: flex; gap: 0.35rem; flex-wrap: wrap;">
+        <span class="badge-bloom badge-bloom--rem">Remember</span>
+        <span class="badge-bloom badge-bloom--und">Understand</span>
+        <span class="badge-bloom badge-bloom--app">Apply</span>
+        <span class="badge-bloom badge-bloom--ana">Analyze</span>
+        <span class="badge-bloom badge-bloom--eva">Evaluate</span>
+        <span class="badge-bloom badge-bloom--cre">Create</span>
+      </div>
+    </div>
+    <div style="overflow-x: auto; margin-bottom: 1rem;">
+      ${bloomSvg}
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.75rem;">
+      ${bloomCardsHtml}
+    </div>
   </div>
 
   ${flaggedItems.length > 0 ? `
@@ -5486,11 +6431,11 @@
 
   <div class="charts-grid">
     <div class="chart-card">
-      <h2>Item Difficulty Index (P)</h2>
+      <h2>Item Difficulty Index (P) [Ebel, 1979]</h2>
       <div style="overflow-x: auto;">${difficultySvg}</div>
     </div>
     <div class="chart-card">
-      <h2>Item Discrimination (r_pbis)</h2>
+      <h2>Item Discrimination (r_pbis) [Ebel, 1979]</h2>
       <div style="overflow-x: auto;">${discriminationSvg}</div>
     </div>
   </div>
@@ -5499,44 +6444,35 @@
     <h2 style="margin: 0 0 0.85rem 0; font-size: 1.05rem; font-weight: 700;">Psychometric Interpretation Guide</h2>
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; font-size: 12px; line-height: 1.5;">
       <div>
-        <strong style="color: #10b981;">Difficulty Index (P):</strong> Proportion correct (0%–100%).
+        <strong style="color: #10b981;">Difficulty Index (P) [Ebel, 1979]:</strong> Proportion correct (0%–100%).
         <ul style="margin: 0.25rem 0 0 0; padding-left: 1.1rem; color: #64748b;">
-          <li><strong>50%–85%:</strong> Optimal measurement range.</li>
+          <li><strong>50%–85%:</strong> Optimal measurement range [Ebel, 1979].</li>
           <li><strong>&gt;85%:</strong> Easy; prerequisite check.</li>
           <li><strong>&lt;20%:</strong> Very hard; check wording or key.</li>
         </ul>
       </div>
       <div>
-        <strong style="color: #0284c7;">Discrimination (r_pbis):</strong> Point-biserial correlation.
+        <strong style="color: #0284c7;">Discrimination (r_pbis) [Ebel, 1979]:</strong> Point-biserial correlation.
         <ul style="margin: 0.25rem 0 0 0; padding-left: 1.1rem; color: #64748b;">
-          <li><strong>≥0.30:</strong> Strong discriminating power.</li>
+          <li><strong>≥0.30:</strong> Strong discriminating power [Ebel, 1979].</li>
           <li><strong>0.20–0.29:</strong> Acceptable classroom item.</li>
           <li><strong>&lt;0.00:</strong> Critical! Check for wrong answer key.</li>
         </ul>
       </div>
       <div>
-        <strong style="color: #8b5cf6;">Distractor Efficiency:</strong> Option distribution.
+        <strong style="color: #8b5cf6;">Distractor Efficiency [Haladyna &amp; Downing, 1993]:</strong> Option distribution.
         <ul style="margin: 0.25rem 0 0 0; padding-left: 1.1rem; color: #64748b;">
           <li><strong>Dead (0%):</strong> No student chose; revise option.</li>
           <li><strong>Common Misconception:</strong> &gt;25% chosen by cohort.</li>
         </ul>
       </div>
       <div>
-        <strong style="color: #ec4899;">Reliability (α / KR-20):</strong> Test consistency.
+        <strong style="color: #ec4899;">Reliability (α / KR-20) [Cronbach, 1951]:</strong> Test consistency.
         <ul style="margin: 0.25rem 0 0 0; padding-left: 1.1rem; color: #64748b;">
-          <li><strong>≥0.80:</strong> High reliability for grading.</li>
+          <li><strong>≥0.80:</strong> High reliability for grading [Cronbach, 1951].</li>
           <li><strong>0.70–0.79:</strong> Standard classroom benchmark.</li>
         </ul>
       </div>
-    </div>
-    <div style="margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid #e2e8f0; font-size: 11px; color: #64748b; line-height: 1.5;">
-      <strong style="color: #334155;">Academic &amp; Psychometric References:</strong>
-      <ul style="margin: 0.25rem 0 0 0; padding-left: 1.1rem;">
-        <li>Ebel, R. L. (1979). <em>Essentials of Educational Measurement</em> (3rd ed.). Prentice-Hall. (Difficulty &amp; discrimination $r_{pbis} \ge 0.20$ criteria).</li>
-        <li>Cronbach, L. J. (1951). Coefficient alpha and the internal structure of tests. <em>Psychometrika</em>, 16(3), 297–334. (Internal consistency reliability $\alpha$).</li>
-        <li>Haladyna, T. M., &amp; Downing, S. M. (1993). How to build a better multiple-choice test item. <em>Applied Measurement in Education</em>, 6(3), 241–261. (Distractor functioning).</li>
-        <li>Kuder, G. F., &amp; Richardson, M. W. (1937). The theory of the estimation of test reliability. <em>Psychometrika</em>, 2(3), 151–160. (Formula 20 / KR-20 reliability).</li>
-      </ul>
     </div>
   </div>
 
@@ -5545,44 +6481,96 @@
     <table>
       <thead>
         <tr>
-          <th>Item</th><th>Key</th><th>Pts</th><th>Difficulty (P)</th><th>Discrimination (r_pbis)</th>
+          <th>Item</th><th>Key</th><th>Pts</th><th>Bloom Level</th><th>Difficulty (P)</th><th>Discrimination (r_pbis)</th>
           <th>A / T</th><th>B / F</th><th>C</th><th>D</th><th>E</th><th>Dead Options (0%)</th><th>Signals &amp; Actions</th>
         </tr>
       </thead>
       <tbody>
-        ${itemKeys.map(k => {
-          const item = psychometrics.itemStats[k];
-          const keyItem = state.key ? (state.key.items[k] || {}) : {};
-          const isItemTF = (keyItem.kind === 'tf' || keyItem.kind === 'modified_tf' || item.correctAnswer === 'T' || item.correctAnswer === 'F');
-
-          const deadList = getDeadDistractors(item, keyItem);
-          let deadHtml = '<span style="color: #94a3b8; font-size: 11px;">None</span>';
-          if (deadList.length > 0) {
-            deadHtml = deadList.map(opt => `<span class="badge-dead-opt">${opt}</span>`).join(' ');
-          }
-
-          const signalsHtml = generateItemSignals(item, keyItem, grades.length);
-
-          return `
-            <tr>
-              <td><strong>#${k}</strong></td>
-              <td><code>${item.correctAnswer}</code></td>
-              <td>${item.points}</td>
-              <td>${(item.difficulty * 100).toFixed(1)}%</td>
-              <td style="font-weight: 700; color: ${item.discrimination >= 0.3 ? '#10b981' : (item.discrimination < 0.20 ? '#ef4444' : 'inherit')};">${item.discrimination.toFixed(3)}</td>
-              <td>${isItemTF ? (item.distractors.T || 0) : (item.distractors.A || 0)}</td>
-              <td>${isItemTF ? (item.distractors.F || 0) : (item.distractors.B || 0)}</td>
-              <td>${isItemTF ? '—' : (item.distractors.C || 0)}</td>
-              <td>${isItemTF ? '—' : (item.distractors.D || 0)}</td>
-              <td>${isItemTF ? '—' : (item.distractors.E || 0)}</td>
-              <td>${deadHtml}</td>
-              <td>${signalsHtml}</td>
-            </tr>
-          `;
-        }).join('')}
+        ${tableRowsHtml}
       </tbody>
     </table>
   </div>
+
+  <!-- Dedicated Academic & Psychometric References Section -->
+  <section id="references" class="card" style="margin-top: 2rem; background: #f8fafc; border: 1px solid #e2e8f0; padding: 1.25rem 1.5rem; border-radius: 10px;">
+    <h2 style="margin: 0 0 0.75rem 0; font-size: 1rem; font-weight: 700;">Academic &amp; Psychometric References</h2>
+    <ul style="margin: 0; padding-left: 1.25rem; font-size: 0.78rem; color: #64748b; line-height: 1.6;">
+      <li><strong>Anderson, L. W., &amp; Krathwohl, D. R. (Eds.). (2001).</strong> <em>A Taxonomy for Learning, Teaching, and Assessing: A Revision of Bloom's Taxonomy of Educational Objectives</em>. Longman.</li>
+      <li><strong>Bloom, B. S., Engelhart, M. D., Furst, E. J., Hill, W. H., &amp; Krathwohl, D. R. (1956).</strong> <em>Taxonomy of Educational Objectives: The Classification of Educational Goals. Handbook I: Cognitive Domain</em>. David McKay Company.</li>
+      <li><strong>Cronbach, L. J. (1951).</strong> Coefficient alpha and the internal structure of tests. <em>Psychometrika</em>, 16(3), 297–334. https://doi.org/10.1007/BF02310555</li>
+      <li><strong>Ebel, R. L. (1979).</strong> <em>Essentials of Educational Measurement</em> (3rd ed.). Prentice-Hall. (Difficulty index and point-biserial discrimination criteria).</li>
+      <li><strong>Haladyna, T. M., &amp; Downing, S. M. (1993).</strong> How to build a better multiple-choice test item. <em>Applied Measurement in Education</em>, 6(3), 241–261. https://doi.org/10.1207/s15324818ame0603_3</li>
+      <li><strong>Krathwohl, D. R. (2002).</strong> A revision of Bloom's taxonomy: An overview. <em>Theory Into Practice</em>, 41(4), 212–218. https://doi.org/10.1207/s15430421tip4104_2</li>
+      <li><strong>Kuder, G. F., &amp; Richardson, M. W. (1937).</strong> The theory of the estimation of test reliability. <em>Psychometrika</em>, 2(3), 151–160. https://doi.org/10.1207/s15430421tip4104_2</li>
+    </ul>
+  </section>
+
+  <div id="chart-floating-tooltip" class="chart-tooltip"></div>
+
+  ${'<' + 'script>'}
+    (function() {
+      var tooltip = document.getElementById('chart-floating-tooltip');
+      if (!tooltip) return;
+
+      function pos(e) {
+        var w = tooltip.offsetWidth || 180;
+        var h = tooltip.offsetHeight || 60;
+        var left = Math.min(window.innerWidth - w - 12, Math.max(12, e.clientX + 12));
+        var top = e.clientY + 14;
+        if (top + h > window.innerHeight - 10) {
+          top = Math.max(10, e.clientY - h - 10);
+        }
+        tooltip.style.left = left + 'px';
+        tooltip.style.top = top + 'px';
+      }
+
+      document.querySelectorAll('.chart-bar-group').forEach(function(group) {
+        group.addEventListener('mouseenter', function(e) {
+          var type = group.getAttribute('data-type');
+          var text = '';
+          if (type === 'bin') {
+            var bin = group.getAttribute('data-bin');
+            var count = group.getAttribute('data-count');
+            var pct = group.getAttribute('data-pct');
+            var status = group.getAttribute('data-status');
+            text = '<strong>Score Range: ' + bin + '</strong><br>Students: <strong>' + count + '</strong> (' + pct + '% of class)<br>Status: <strong>' + status + 'ing</strong>';
+          } else if (type === 'bloom') {
+            var b = group.getAttribute('data-bloom');
+            var c = group.getAttribute('data-count');
+            var p = group.getAttribute('data-pts');
+            var m = group.getAttribute('data-mastery');
+            text = '<strong>' + b + '</strong> (' + c + ' items, ' + p + ' pts)<br>Cohort Mastery: <strong>' + m + '%</strong>';
+          } else {
+            var it = group.getAttribute('data-item');
+            var k = group.getAttribute('data-key');
+            var diff = group.getAttribute('data-diff');
+            var disc = group.getAttribute('data-disc');
+            var bloom = group.getAttribute('data-bloom');
+            text = '<strong>Item #' + it + '</strong> (Key: ' + k + ')<br>Bloom: <strong>' + bloom + '</strong><br>Difficulty: <strong>' + diff + '%</strong><br>Discrimination: <strong>' + disc + '</strong>';
+          }
+          tooltip.innerHTML = text;
+          tooltip.style.display = 'block';
+          pos(e);
+        });
+        group.addEventListener('mousemove', pos);
+        group.addEventListener('mouseleave', function() {
+          tooltip.style.display = 'none';
+        });
+        group.addEventListener('click', function() {
+          var it = group.getAttribute('data-item');
+          if (it) {
+            var r = document.getElementById('row-item-' + it);
+            if (r) {
+              r.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              r.classList.remove('is-row-highlight');
+              void r.offsetWidth;
+              r.classList.add('is-row-highlight');
+            }
+          }
+        });
+      });
+    })();
+  ${'<' + '/script>'}
 </body>
 </html>`;
       downloadFile("assessment_psychometrics_report.html", html, "text/html");

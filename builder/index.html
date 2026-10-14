@@ -486,9 +486,9 @@
           <button type="button" id="btn-key-fill-t" class="btn btn--secondary btn-xs" title="Set all True/False answers to True">All T</button>
           <button type="button" id="btn-key-random" class="btn btn--secondary btn-xs" title="Quickly generate a sample key for testing">Sample Key</button>
           <button type="button" id="btn-key-clear" class="btn btn--secondary btn-xs is-danger" title="Clear all answers">Clear</button>
-          <label class="btn btn--secondary btn-xs" style="cursor: pointer;" title="Import answer key JSON file">
+          <label class="btn btn--secondary btn-xs" style="cursor: pointer;" title="Import answer key JSON or CSV file">
             <span>Import Key</span>
-            <input type="file" id="key-file-import" accept=".json" style="display: none;">
+            <input type="file" id="key-file-import" accept=".json,.csv" style="display: none;">
           </label>
         </div>
       </div>
@@ -502,6 +502,10 @@
         <button type="button" id="btn-key-download" class="btn btn--secondary">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           Download Key (.json)
+        </button>
+        <button type="button" id="btn-key-download-csv" class="btn btn--secondary">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download Key (.csv)
         </button>
         <button type="button" id="btn-key-save-apply" class="btn btn--primary">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m5 12 5 5L20 7"/></svg>

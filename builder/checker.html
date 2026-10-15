@@ -1363,7 +1363,7 @@
       text-overflow: ellipsis;
       overflow: hidden;
       white-space: nowrap;
-      flex-shrink: 0;
+      flex-shrink: 1;
     }
 
     /* Visual Answer Key Editor styles (Parity with Sheet Builder) */
@@ -1440,13 +1440,16 @@
     }
     .key-matrix-grid {
       column-count: 2;
-      column-gap: 1.25rem;
+      column-gap: 1rem;
       column-rule: 1px solid var(--border);
     }
-    @media (min-width: 780px) {
+    @media (min-width: 880px) {
       .key-matrix-grid { column-count: 3; }
     }
-    @media (max-width: 600px) {
+    @media (max-width: 860px) {
+      .key-matrix-grid { column-count: 2 !important; }
+    }
+    @media (max-width: 580px) {
       .key-matrix-grid { column-count: 1 !important; }
     }
     .key-item-cell {
@@ -1454,14 +1457,16 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0.32rem 0.5rem;
+      padding: 0.3rem 0.45rem;
       background: var(--bg);
       border: 1px solid var(--border);
       border-radius: var(--radius-sm);
       gap: 0.35rem;
       margin-bottom: 0.45rem;
       min-width: 0;
+      width: 100%;
       box-sizing: border-box;
+      overflow: hidden;
     }
     .key-item-cell--text {
       width: 100%;
@@ -1528,8 +1533,8 @@
       box-shadow: 0 2px 6px -1px rgba(37, 99, 235, 0.4);
     }
     .key-pts-input {
-      width: 40px !important;
-      padding: 0.15rem 0.25rem;
+      width: 38px !important;
+      padding: 0.15rem 0.2rem;
       font: inherit;
       font-size: 0.72rem;
       border: 1px solid var(--border);
@@ -2643,7 +2648,7 @@
   </dialog>
 
   <!-- Modal: Answer Key Editor (Full Interactive Visual Matrix matching Sheet Builder) -->
-  <dialog id="modal-key-editor" style="border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 0; background: var(--panel); color: var(--text); max-width: 95vw; max-height: 88vh; width: 880px; box-shadow: var(--shadow-xl); overflow: hidden;">
+  <dialog id="modal-key-editor" style="border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 0; background: var(--panel); color: var(--text); max-width: 95vw; max-height: 88vh; width: 960px; box-shadow: var(--shadow-xl); overflow: hidden;">
     <div style="display: flex; flex-direction: column; height: 100%; max-height: 88vh;">
       <!-- Modal Header -->
       <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.85rem 1.25rem; border-bottom: 1px solid var(--border); background: var(--panel-header);">
@@ -2966,15 +2971,23 @@
       if (raw.items && typeof raw.items === 'object') {
         for (const [k, v] of Object.entries(raw.items)) {
           if (typeof v === 'string') {
-            items[String(k)] = { answer: v, points: 1.0, kind: "mcq", bloom: defaultBloomFor(k) };
+            const isTF = v === 'T' || v === 'F';
+            const isSingleLetter = /^[A-E]$/i.test(v);
+            items[String(k)] = { answer: v, points: 1.0, kind: isTF ? "tf" : (isSingleLetter ? "mcq" : "text"), bloom: defaultBloomFor(k) };
           } else if (v && typeof v === 'object') {
             const ans = Array.isArray(v.answer) ? v.answer[0] : (v.answer ?? v.correct);
+            const ansStr = String(ans || "").trim();
             const rawBloom = v.bloom || v.level || v.cognitiveLevel;
+            const isTF = v.kind === 'tf' || ansStr === 'T' || ansStr === 'F';
+            const isSingleLetter = /^[A-E]$/i.test(ansStr);
+            const isText = v.kind === 'text' || v.type === 'written' || v.type === 'short_answer' || v.type === 'essay' || v.correction || (!isSingleLetter && !isTF);
             items[String(k)] = {
-              answer: String(ans || ""),
+              answer: ansStr,
               points: Number(v.points ?? 1.0),
-              kind: v.kind || "mcq",
-              bloom: normalizeBloom(rawBloom || defaultBloomFor(k))
+              kind: isText ? "text" : (isTF ? "tf" : "mcq"),
+              bloom: normalizeBloom(rawBloom || defaultBloomFor(k)),
+              label: v.label || k,
+              rubric: v.rubric
             };
           }
         }
@@ -2982,11 +2995,16 @@
         raw.forEach((item, idx) => {
           const k = String(idx + 1);
           const rawBloom = typeof item === 'object' ? (item.bloom || item.level) : null;
+          const ansStr = typeof item === 'object' ? String(item.answer || item.correct || "").trim() : String(item).trim();
+          const isTF = (typeof item === 'object' && item.kind === 'tf') || ansStr === 'T' || ansStr === 'F';
+          const isSingleLetter = /^[A-E]$/i.test(ansStr);
+          const isText = (typeof item === 'object' && (item.kind === 'text' || item.type === 'written' || item.type === 'short_answer' || item.type === 'essay')) || (!isSingleLetter && !isTF);
           items[k] = {
-            answer: typeof item === 'object' ? String(item.answer || item.correct) : String(item),
+            answer: ansStr,
             points: typeof item === 'object' ? Number(item.points || 1.0) : 1.0,
-            kind: typeof item === 'object' ? (item.kind || "mcq") : "mcq",
-            bloom: normalizeBloom(rawBloom || defaultBloomFor(k))
+            kind: isText ? "text" : (isTF ? "tf" : "mcq"),
+            bloom: normalizeBloom(rawBloom || defaultBloomFor(k)),
+            label: (typeof item === 'object' && item.label) || k
           };
         });
       }
@@ -3977,8 +3995,8 @@
               zoneCols: zone.columns ? Math.min(4, Math.max(1, zone.columns)) : 3
             };
           }
-          for (const r of (zone.rois || []).filter(r => r.graded)) {
-            const k = String(r.key);
+          for (const r of (zone.rois || []).filter(r => r.graded !== false && r.role !== 'name' && r.role !== 'student_id' && r.role !== 'score' && r.role !== 'signature')) {
+            const k = String(r.key || r.id);
             const existing = existingItems[k];
             const defaultAns = r.role === 'correction' ? 'Correction' : 'Sample Answer';
             const existingAns = typeof existing === 'object' && existing !== null && existing.answer !== undefined
@@ -4077,7 +4095,7 @@
       ];
       for (const r of allLayoutRois) {
         const rk = String(r.key || r.id);
-        if (r.graded !== false && r.role !== 'name' && r.role !== 'student_id' && !seenTextKeys.has(rk)) {
+        if (r.graded !== false && r.role !== 'name' && r.role !== 'student_id' && r.role !== 'score' && r.role !== 'signature' && !seenTextKeys.has(rk)) {
           seenTextKeys.add(rk);
           candidateTextItems.push({
             k: rk,
@@ -4184,21 +4202,33 @@
 
       // Preflight discrepancy check
       const layoutItemKeys = new Set();
+      const layoutItemsMeta = {};
       if (Array.isArray(state.layout.zones) && state.layout.zones.length > 0) {
         for (const z of state.layout.zones) {
           for (const g of (z.groups || []).filter(g => g.kind === 'mcq' || g.kind === 'tf')) {
-            layoutItemKeys.add(String(g.key));
+            const k = String(g.key);
+            layoutItemKeys.add(k);
+            layoutItemsMeta[k] = { kind: g.kind, options: (g.options || []).map(o => typeof o === 'object' ? (o.value || 'A') : o), points: Number(g.points || 1), label: g.label || k, zoneLabel: z.label || 'Questions' };
           }
-          for (const r of (z.rois || []).filter(r => r.graded)) {
-            layoutItemKeys.add(String(r.key));
+          for (const r of (z.rois || []).filter(r => r.graded !== false && r.role !== 'name' && r.role !== 'student_id' && r.role !== 'score' && r.role !== 'signature')) {
+            const k = String(r.key || r.id);
+            layoutItemKeys.add(k);
+            layoutItemsMeta[k] = { kind: 'text', points: Number(r.points || 1), label: r.label || k, zoneLabel: z.label || 'Handwriting / Short Answer' };
           }
         }
       } else {
         for (const b of (state.layout.bubbles || [])) {
-          if (b.item && !b.item.startsWith('sid[')) layoutItemKeys.add(String(b.item));
+          if (b.item && !b.item.startsWith('sid[')) {
+            const k = String(b.item);
+            layoutItemKeys.add(k);
+            if (!layoutItemsMeta[k]) layoutItemsMeta[k] = { kind: 'mcq', options: [], points: 1, label: k, zoneLabel: 'Questions' };
+            if (b.choice && !layoutItemsMeta[k].options.includes(b.choice)) layoutItemsMeta[k].options.push(b.choice);
+          }
         }
-        for (const r of (state.layout.rois || []).filter(r => r.graded !== false && r.role !== 'name' && r.role !== 'student_id')) {
-          layoutItemKeys.add(String(r.key || r.id));
+        for (const r of (state.layout.rois || []).filter(r => r.graded !== false && r.role !== 'name' && r.role !== 'student_id' && r.role !== 'score' && r.role !== 'signature')) {
+          const k = String(r.key || r.id);
+          layoutItemKeys.add(k);
+          layoutItemsMeta[k] = { kind: 'text', points: Number(r.points || 1), label: r.label || k, zoneLabel: 'Handwriting / Short Answer' };
         }
       }
 
@@ -4376,15 +4406,18 @@
       container.querySelector('#btn-sync-key-sheet')?.addEventListener('click', () => {
         layoutItemKeys.forEach(k => {
           if (!currentModalKey.items[k] || !currentModalKey.items[k].answer) {
+            const meta = layoutItemsMeta[k] || {};
+            const isText = meta.kind === 'text';
+            const isTF = meta.kind === 'tf';
             currentModalKey.items[k] = {
-              answer: 'A',
-              points: 1,
+              answer: isText ? 'Sample Answer' : (meta.options ? meta.options[0] : (isTF ? 'T' : 'A')),
+              points: meta.points || 1,
               bloom: defaultBloomFor(k),
-              kind: 'mcq',
-              options: ['A', 'B', 'C', 'D'],
-              label: k,
-              zoneLabel: 'Questions',
-              zoneCols: 3
+              kind: meta.kind || 'mcq',
+              options: meta.options || (isTF ? ['T', 'F'] : (isText ? null : ['A', 'B', 'C', 'D'])),
+              label: meta.label || k,
+              zoneLabel: meta.zoneLabel || 'Questions',
+              zoneCols: isText ? 1 : 3
             };
           }
         });
@@ -4456,10 +4489,11 @@
           else if (/^[A-Za-z]$/.test(normAns)) normAns = upper;
 
           const isTF = (normAns === 'T' || normAns === 'F');
+          const isSingleLetter = /^[A-E]$/i.test(normAns);
           items[itNum] = {
             answer: normAns,
             points: isNaN(pts) ? 1 : pts,
-            kind: isTF ? 'tf' : 'mcq',
+            kind: isTF ? 'tf' : (isSingleLetter ? 'mcq' : 'text'),
             bloom: bloom
           };
         }
@@ -4537,7 +4571,10 @@
           kind: it.kind,
           answer: it.answer,
           points: Number(it.points || 1),
-          bloom: it.bloom || defaultBloomFor(k)
+          bloom: it.bloom || defaultBloomFor(k),
+          ...(it.label ? { label: it.label } : {}),
+          ...(it.rubric ? { rubric: it.rubric } : {}),
+          ...(it.options ? { options: it.options } : {})
         };
       }
       const payload = {
@@ -4577,7 +4614,10 @@
           kind: it.kind,
           answer: it.answer,
           points: Number(it.points || 1),
-          bloom: it.bloom || defaultBloomFor(k)
+          bloom: it.bloom || defaultBloomFor(k),
+          ...(it.label ? { label: it.label } : {}),
+          ...(it.rubric ? { rubric: it.rubric } : {}),
+          ...(it.options ? { options: it.options } : {})
         };
       }
 

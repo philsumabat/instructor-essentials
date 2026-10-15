@@ -1954,7 +1954,7 @@ function openAnswerKeyModal() {
   const seenRoiKeys = new Set();
   for (const r of [...layout.zones.flatMap((z) => z.rois || []), ...(layout.rois || [])]) {
     const rk = String(r.key || r.id);
-    if (r.graded && !seenRoiKeys.has(rk)) {
+    if (r.graded !== false && r.role !== 'name' && r.role !== 'student_id' && r.role !== 'score' && r.role !== 'signature' && !seenRoiKeys.has(rk)) {
       seenRoiKeys.add(rk);
       candidateRois.push(r);
     }
@@ -1980,6 +1980,32 @@ function openAnswerKeyModal() {
       rubric: roi.charset === 'digits' ? 'exact' : 'case_insensitive',
       label: roi.label || rKey,
     };
+  }
+
+  // Discover any pre-existing text or custom items from existing key
+  for (const [k, it] of Object.entries(existingKey)) {
+    if (!currentAnswerKey.items[k]) {
+      const ans = typeof it === 'object' && it !== null && it.answer !== undefined
+        ? it.answer
+        : (typeof it === 'string' || typeof it === 'number' ? String(it) : 'Sample Answer');
+      const pts = typeof it === 'object' && it !== null && it.points !== undefined
+        ? Number(it.points)
+        : 1;
+      const bloom = typeof it === 'object' && it !== null && it.bloom
+        ? normalizeBloom(it.bloom)
+        : defaultBloomFor(k);
+      const isTF = it && (it.kind === 'tf' || it.answer === 'T' || it.answer === 'F');
+      const isSingleLetter = /^[A-E]$/i.test(String(ans));
+      const isText = it && (it.kind === 'text' || it.type === 'written' || it.type === 'short_answer' || it.type === 'essay' || it.correction || (!isSingleLetter && !isTF));
+      currentAnswerKey.items[k] = {
+        answer: ans,
+        points: pts,
+        bloom: normalizeBloom(bloom),
+        kind: isText ? 'text' : (isTF ? 'tf' : 'mcq'),
+        options: it.options || (isTF ? ['T', 'F'] : (isText ? null : ['A', 'B', 'C', 'D'])),
+        label: it.label || k,
+      };
+    }
   }
 
   const totalPoints = Object.values(currentAnswerKey.items).reduce((s, it) => s + Number(it.points || 1), 0);
@@ -2027,7 +2053,7 @@ function renderAnswerKeyModalContent() {
       sheetItemKeys.add(String(g.key));
       sheetItemsMeta[String(g.key)] = { kind: g.kind, options: g.options.map((o) => o.value) };
     }
-    for (const r of (zone.rois || []).filter((r) => r.graded)) {
+    for (const r of (zone.rois || []).filter((r) => r.graded !== false && r.role !== 'name' && r.role !== 'student_id' && r.role !== 'score' && r.role !== 'signature')) {
       sheetItemKeys.add(String(r.key));
       sheetItemsMeta[String(r.key)] = { kind: 'text', label: r.label || r.key };
     }
@@ -2069,10 +2095,11 @@ function renderAnswerKeyModalContent() {
     `;
   }
 
+  const renderedKeys = new Set();
   let html = discrepancyHtml;
   for (const zone of layout.zones) {
     const zoneGroups = zone.groups.filter((g) => g.kind === 'mcq' || g.kind === 'tf');
-    const zoneRois = (zone.rois || []).filter((r) => r.graded);
+    const zoneRois = (zone.rois || []).filter((r) => r.graded !== false && r.role !== 'name' && r.role !== 'student_id' && r.role !== 'score' && r.role !== 'signature');
 
     if (zoneGroups.length === 0 && zoneRois.length === 0) continue;
 
@@ -2088,6 +2115,7 @@ function renderAnswerKeyModalContent() {
     if (zoneGroups.length > 0) {
       html += `<div class="key-matrix-grid" style="column-count: ${zoneCols};">`;
       for (const g of zoneGroups) {
+        renderedKeys.add(String(g.key));
         const item = currentAnswerKey.items[g.key];
         if (!item) continue;
         const opts = item.options || ['A', 'B', 'C', 'D'];
@@ -2122,6 +2150,8 @@ function renderAnswerKeyModalContent() {
       html += `<div class="key-text-items-list" style="${zoneGroups.length > 0 ? 'margin-top: 0.6rem;' : ''}">`;
       for (const roi of zoneRois) {
         const rKey = String(roi.key || roi.id);
+        renderedKeys.add(rKey);
+        renderedKeys.add(String(roi.key));
         const item = currentAnswerKey.items[rKey] || currentAnswerKey.items[roi.key];
         if (!item) continue;
         const ansVal = Array.isArray(item.answer) ? item.answer.join(', ') : String(item.answer || '');
@@ -2148,6 +2178,71 @@ function renderAnswerKeyModalContent() {
     html += `
       </div>
     `;
+  }
+
+  // Render any remaining items in key (e.g. custom/extra short answer items)
+  const remainingKeys = Object.keys(currentAnswerKey.items).filter((k) => !renderedKeys.has(k));
+  if (remainingKeys.length > 0) {
+    const remChoice = remainingKeys.filter((k) => currentAnswerKey.items[k].kind !== 'text');
+    const remText = remainingKeys.filter((k) => currentAnswerKey.items[k].kind === 'text');
+
+    html += `
+      <div class="key-section-card">
+        <h4 class="key-section-title">Additional / Custom Questions</h4>
+    `;
+
+    if (remChoice.length > 0) {
+      html += `<div class="key-matrix-grid" style="column-count: 2;">`;
+      for (const k of remChoice) {
+        const item = currentAnswerKey.items[k];
+        const opts = item.options || ['A', 'B', 'C', 'D'];
+        const currentAns = String(item.answer || '');
+        const currentBloom = item.bloom || defaultBloomFor(k);
+        html += `
+          <div class="key-item-cell" data-key="${k}">
+            <div style="display: flex; align-items: center; gap: 0.35rem; min-width: 0;">
+              <span class="key-item-num">${k}.</span>
+              <div class="key-bubbles-row">
+                ${opts.map((opt) => `<button type="button" class="key-bubble-btn ${currentAns === opt ? 'is-active' : ''}" data-key="${k}" data-val="${opt}">${opt}</button>`).join('')}
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.3rem; flex-shrink: 0;">
+              <select class="key-bloom-select" data-key="${k}" title="Bloom's Cognitive Level">
+                ${BLOOM_LEVELS.map((lvl) => `<option value="${lvl}" ${currentBloom === lvl ? 'selected' : ''}>${lvl}</option>`).join('')}
+              </select>
+              <input type="number" class="key-pts-input" data-key="${k}" value="${item.points}" min="0.5" max="50" step="0.5" title="Points">
+            </div>
+          </div>
+        `;
+      }
+      html += `</div>`;
+    }
+
+    if (remText.length > 0) {
+      html += `<div class="key-text-items-list" style="${remChoice.length > 0 ? 'margin-top: 0.6rem;' : ''}">`;
+      for (const k of remText) {
+        const item = currentAnswerKey.items[k];
+        const ansVal = Array.isArray(item.answer) ? item.answer.join(', ') : String(item.answer || '');
+        const currentBloom = item.bloom || defaultBloomFor(k);
+        html += `
+          <div class="key-item-cell key-item-cell--text" data-key="${k}">
+            <div style="display: flex; align-items: center; gap: 0.5rem; flex: 1; min-width: 0;">
+              <span class="key-item-num" style="min-width: 28px; font-weight: 700;">${safeEscapeHTML(item.label || k)}:</span>
+              <input type="text" class="key-text-input" data-key="${k}" value="${safeEscapeHTML(ansVal)}" placeholder="Accepted answer / keywords">
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.35rem; flex-shrink: 0;">
+              <select class="key-bloom-select" data-key="${k}" title="Bloom's Cognitive Level">
+                ${BLOOM_LEVELS.map((lvl) => `<option value="${lvl}" ${currentBloom === lvl ? 'selected' : ''}>${lvl}</option>`).join('')}
+              </select>
+              <input type="number" class="key-pts-input" data-key="${k}" value="${item.points}" min="0.5" max="50" step="0.5" title="Points">
+            </div>
+          </div>
+        `;
+      }
+      html += `</div>`;
+    }
+
+    html += `</div>`;
   }
 
   els.keyItemsContainer.innerHTML = html;
@@ -2466,7 +2561,7 @@ function renderPartFields(part) {
       </div>
       <div class="gen-field-inline">
         <label>Box Height:</label>
-        <input type="number" class="gen-input gen-input--sm part-input-height" value="${part.boxHeight ?? 35}" min="15" max="80"> mm
+        <input type="number" class="gen-input gen-input--sm part-input-height" value="${part.boxHeight ?? 35}" min="3" max="80"> mm
       </div>
       <div class="gen-field-inline">
         <label>Pts/Item:</label>
@@ -2603,7 +2698,9 @@ function renderGeneratorParts() {
     const heightInput = card.querySelector('.part-input-height');
     if (heightInput) {
       heightInput.addEventListener('input', () => {
-        part.boxHeight = Math.max(3, parseInt(heightInput.value, 10) || 10);
+        const fallback = part.type === 'text_essay' ? 35 : 10;
+        const val = parseInt(heightInput.value, 10);
+        part.boxHeight = isNaN(val) ? fallback : Math.max(2, val);
         updateGeneratorLivePreview();
       });
     }
@@ -2913,7 +3010,7 @@ function generateExamFromGeneratorModal() {
     } else if (part.type === 'text_short') {
       const count = Math.max(1, part.count || 5);
       const pts = Math.max(1, part.pts || 2);
-      const h = part.boxHeight || 10;
+      const h = part.boxHeight ?? 10;
       const cols = part.cols === 'auto' ? (count <= 4 ? 1 : 2) : (parseInt(part.cols, 10) || 1);
 
       zones.push({
@@ -2931,7 +3028,7 @@ function generateExamFromGeneratorModal() {
     } else if (part.type === 'text_essay') {
       const count = Math.max(1, part.count || 1);
       const pts = Math.max(1, part.pts || 5);
-      const h = part.boxHeight || 36;
+      const h = part.boxHeight ?? 35;
       const cols = part.cols === 'auto' ? (count <= 2 ? 1 : 2) : (parseInt(part.cols, 10) || 1);
 
       zones.push({
@@ -3277,10 +3374,11 @@ function initEvents() {
         else if (/^[A-Za-z]$/.test(normAns)) normAns = upper;
 
         const isTF = normAns === 'T' || normAns === 'F';
+        const isSingleLetter = /^[A-E]$/i.test(normAns);
         items[itNum] = {
           answer: normAns,
           points: isNaN(pts) ? 1 : pts,
-          kind: isTF ? 'tf' : 'mcq',
+          kind: isTF ? 'tf' : (isSingleLetter ? 'mcq' : 'text'),
           bloom,
         };
       }
@@ -3302,6 +3400,7 @@ function initEvents() {
         for (const [k, v] of Object.entries(importedItems)) {
           if (currentAnswerKey.items[k]) {
             currentAnswerKey.items[k].answer = v.answer;
+            currentAnswerKey.items[k].kind = v.kind;
             if (v.points !== undefined) currentAnswerKey.items[k].points = v.points;
             if (v.bloom) currentAnswerKey.items[k].bloom = v.bloom;
           } else {
@@ -3310,7 +3409,7 @@ function initEvents() {
               points: v.points ?? 1,
               bloom: v.bloom || defaultBloomFor(k),
               kind: v.kind || 'mcq',
-              options: ['A', 'B', 'C', 'D'],
+              options: v.kind === 'tf' ? ['T', 'F'] : (v.kind === 'text' ? null : ['A', 'B', 'C', 'D']),
               label: k,
             };
           }
@@ -3320,18 +3419,26 @@ function initEvents() {
         const parsed = JSON.parse(text);
         if (parsed && typeof parsed.items === 'object') {
           for (const [k, v] of Object.entries(parsed.items)) {
+            const rawAns = typeof v === 'object' && v !== null && v.answer !== undefined ? v.answer : v;
+            const ansStr = String(rawAns ?? '').trim();
+            const isTF = (typeof v === 'object' && v.kind === 'tf') || ansStr === 'T' || ansStr === 'F';
+            const isSingleLetter = /^[A-E]$/i.test(ansStr);
+            const isText = (typeof v === 'object' && (v.kind === 'text' || v.type === 'written' || v.type === 'short_answer' || v.type === 'essay' || v.correction)) || (!isSingleLetter && !isTF);
+            const kind = isText ? 'text' : (isTF ? 'tf' : 'mcq');
+
             if (currentAnswerKey.items[k]) {
-              currentAnswerKey.items[k].answer = typeof v === 'object' && v.answer !== undefined ? v.answer : v;
-              if (typeof v === 'object' && v.points) currentAnswerKey.items[k].points = v.points;
+              currentAnswerKey.items[k].answer = ansStr;
+              currentAnswerKey.items[k].kind = kind;
+              if (typeof v === 'object' && v.points) currentAnswerKey.items[k].points = Number(v.points);
               if (typeof v === 'object' && v.bloom) currentAnswerKey.items[k].bloom = normalizeBloom(v.bloom);
-            } else if (typeof v === 'object') {
+            } else {
               currentAnswerKey.items[k] = {
-                answer: v.answer ?? '',
-                points: v.points ?? 1,
-                bloom: normalizeBloom(v.bloom || defaultBloomFor(k)),
-                kind: v.kind || 'mcq',
-                options: v.options || ['A', 'B', 'C', 'D'],
-                label: v.label || k,
+                answer: ansStr,
+                points: typeof v === 'object' && v.points ? Number(v.points) : 1,
+                bloom: normalizeBloom(typeof v === 'object' && v.bloom ? v.bloom : defaultBloomFor(k)),
+                kind,
+                options: typeof v === 'object' && v.options ? v.options : (isTF ? ['T', 'F'] : (isText ? null : ['A', 'B', 'C', 'D'])),
+                label: (typeof v === 'object' && v.label) || k,
               };
             }
           }

@@ -110,7 +110,8 @@ function zoneSVG(zone, layout, zoneIndex) {
     } else if (zone.rois && zone.rois.length > 0) {
       const roi = zone.rois[0];
       if (zone.isInline && zone.prompt) {
-        out.push(text(b.x + 2.5, roi.y + roi.h / 2, zone.prompt, { size: typography.label, weight: 700 }));
+        const isNum = /^\d+[\.\)]?$/.test(zone.prompt.trim());
+        out.push(text(b.x + 2.5, roi.y + roi.h / 2, zone.prompt, { size: isNum ? typography.number : typography.label, weight: 700 }));
       } else if (zone.prompt) {
         const lines = wrap(zone.prompt, typography.label, roi.w);
         lines.forEach((line, i) => out.push(text(roi.x, b.y + 2.5 + (i + 0.5) * typography.label * 1.3, line, { size: typography.label })));

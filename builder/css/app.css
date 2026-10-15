@@ -2359,14 +2359,14 @@ dialog.modal-dialog--answer-key {
 }
 
 .key-matrix-grid {
-  column-count: 3;
+  column-count: 2;
   column-gap: 1.25rem;
   column-rule: 1px solid var(--border);
 }
 
-@media (max-width: 900px) {
+@media (min-width: 780px) {
   .key-matrix-grid {
-    column-count: 2 !important;
+    column-count: 3;
   }
 }
 
@@ -2381,12 +2381,25 @@ dialog.modal-dialog--answer-key {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.35rem 0.55rem;
+  padding: 0.32rem 0.5rem;
   background: var(--bg);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  gap: 0.4rem;
+  gap: 0.35rem;
   margin-bottom: 0.45rem;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.key-item-cell--text {
+  width: 100%;
+  column-span: all;
+}
+
+.key-text-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
 }
 
 .key-discrepancy-banner {
@@ -2409,23 +2422,24 @@ dialog.modal-dialog--answer-key {
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   color: var(--text-muted);
-  min-width: 26px;
+  min-width: 24px;
 }
 
 .key-bubbles-row {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.2rem;
+  flex-shrink: 0;
 }
 
 .key-bubble-btn {
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   border: 1.5px solid var(--border-focus);
   background: var(--panel);
   color: var(--text);
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 700;
   display: inline-flex;
   align-items: center;
@@ -2434,6 +2448,7 @@ dialog.modal-dialog--answer-key {
   user-select: none;
   transition: all 120ms ease;
   padding: 0;
+  flex-shrink: 0;
 }
 
 .key-bubble-btn:hover {
@@ -2449,7 +2464,7 @@ dialog.modal-dialog--answer-key {
 }
 
 .key-pts-input {
-  width: 36px;
+  width: 40px !important;
   padding: 0.15rem 0.25rem;
   font: inherit;
   font-size: 0.72rem;
@@ -2458,22 +2473,30 @@ dialog.modal-dialog--answer-key {
   background: var(--panel);
   color: var(--text);
   text-align: center;
+  flex-shrink: 0;
 }
 
 .key-bloom-select {
-  padding: 0.15rem 0.35rem;
+  padding: 0.15rem 0.25rem;
   font: inherit;
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 600;
   border: 1px solid var(--border);
   border-radius: var(--radius-xs);
   background: var(--panel);
   color: var(--text);
   cursor: pointer;
+  max-width: 82px;
+  min-width: 0;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .key-text-input {
   flex: 1;
+  min-width: 120px;
   padding: 0.25rem 0.45rem;
   font: inherit;
   font-size: 0.76rem;
@@ -2488,8 +2511,11 @@ dialog.modal-dialog--answer-key {
    Print Isolation: Strict millimeter scale, ZERO chrome
    ========================================================================== */
 @media print {
-  .app-chrome, .cv-overlay, .zone-floating-toolbar, .drop-indicator, .canvas-bottom-bar {
+  .app-chrome, .cv-overlay, .zone-floating-toolbar, .drop-indicator, .canvas-bottom-bar, .omr-correction-hint {
     display: none !important;
+  }
+  .omr-correction-box {
+    color: transparent !important;
   }
   html, body {
     background: #fff !important;

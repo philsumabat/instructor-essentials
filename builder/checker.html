@@ -741,6 +741,93 @@
       gap: 0.75rem;
     }
 
+    /* Horizontal Grading Styles */
+    .horizontal-item-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 1rem 1.25rem;
+      box-shadow: var(--shadow-xs);
+      display: grid;
+      grid-template-columns: 240px minmax(0, 1fr) 220px;
+      gap: 1.25rem;
+      align-items: center;
+      transition: all 150ms var(--ease);
+    }
+    .horizontal-item-card:hover {
+      border-color: var(--accent);
+      box-shadow: var(--shadow-sm);
+    }
+    .horizontal-item-card.is-accepted {
+      border-left: 4px solid #10b981;
+    }
+    .horizontal-item-card.is-partial {
+      border-left: 4px solid #f59e0b;
+    }
+    .horizontal-item-card.is-rejected {
+      border-left: 4px solid #ef4444;
+    }
+    .horizontal-cutting-box {
+      background: #ffffff;
+      border: 1.5px solid #cbd5e1;
+      border-radius: var(--radius-sm);
+      padding: 0.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      overflow-x: auto;
+    }
+    .horizontal-cutting-canvas {
+      max-width: 100%;
+      height: auto;
+      border-radius: 2px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+      image-rendering: -webkit-optimize-contrast;
+      image-rendering: crisp-edges;
+    }
+    .btn-horizontal-accept {
+      background: #10b981 !important;
+      color: #ffffff !important;
+      border: none !important;
+    }
+    .btn-horizontal-accept:hover {
+      background: #059669 !important;
+    }
+    .btn-horizontal-accept:focus-visible {
+      outline: 2px solid #10b981;
+      outline-offset: 2px;
+    }
+    .btn-horizontal-partial {
+      background: #f59e0b !important;
+      color: #ffffff !important;
+      border: none !important;
+    }
+    .btn-horizontal-partial:hover {
+      background: #d97706 !important;
+    }
+    .btn-horizontal-partial:focus-visible {
+      outline: 2px solid #f59e0b;
+      outline-offset: 2px;
+    }
+    .btn-horizontal-reject {
+      background: #ef4444 !important;
+      color: #ffffff !important;
+      border: none !important;
+    }
+    .btn-horizontal-reject:hover {
+      background: #dc2626 !important;
+    }
+    .btn-horizontal-reject:focus-visible {
+      outline: 2px solid #ef4444;
+      outline-offset: 2px;
+    }
+    @media (max-width: 860px) {
+      .horizontal-item-card {
+        grid-template-columns: 1fr;
+        gap: 0.85rem;
+      }
+    }
+
     /* Table Column Sorting */
     th.sortable {
       cursor: pointer;
@@ -1262,15 +1349,21 @@
       100% { background-color: transparent; }
     }
     .key-bloom-select {
-      padding: 0.15rem 0.35rem;
+      padding: 0.15rem 0.25rem;
       font: inherit;
-      font-size: 0.72rem;
+      font-size: 0.7rem;
       font-weight: 600;
       border: 1px solid var(--border);
       border-radius: var(--radius-xs);
       background: var(--panel);
       color: var(--text);
       cursor: pointer;
+      max-width: 82px;
+      min-width: 0;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
+      flex-shrink: 0;
     }
 
     /* Visual Answer Key Editor styles (Parity with Sheet Builder) */
@@ -1346,12 +1439,12 @@
       color: var(--text);
     }
     .key-matrix-grid {
-      column-count: 3;
+      column-count: 2;
       column-gap: 1.25rem;
       column-rule: 1px solid var(--border);
     }
-    @media (max-width: 900px) {
-      .key-matrix-grid { column-count: 2 !important; }
+    @media (min-width: 780px) {
+      .key-matrix-grid { column-count: 3; }
     }
     @media (max-width: 600px) {
       .key-matrix-grid { column-count: 1 !important; }
@@ -1361,12 +1454,23 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0.35rem 0.55rem;
+      padding: 0.32rem 0.5rem;
       background: var(--bg);
       border: 1px solid var(--border);
       border-radius: var(--radius-sm);
-      gap: 0.4rem;
+      gap: 0.35rem;
       margin-bottom: 0.45rem;
+      min-width: 0;
+      box-sizing: border-box;
+    }
+    .key-item-cell--text {
+      width: 100%;
+      column-span: all;
+    }
+    .key-text-items-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
     }
     .key-discrepancy-banner {
       background: color-mix(in srgb, var(--warning) 12%, var(--panel));
@@ -1387,21 +1491,22 @@
       font-weight: 700;
       font-variant-numeric: tabular-nums;
       color: var(--text-muted);
-      min-width: 26px;
+      min-width: 24px;
     }
     .key-bubbles-row {
       display: flex;
       align-items: center;
-      gap: 0.25rem;
+      gap: 0.2rem;
+      flex-shrink: 0;
     }
     .key-bubble-btn {
-      width: 24px;
-      height: 24px;
+      width: 22px;
+      height: 22px;
       border-radius: 50%;
       border: 1.5px solid var(--border-focus);
       background: var(--panel);
       color: var(--text);
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       font-weight: 700;
       display: inline-flex;
       align-items: center;
@@ -1410,6 +1515,7 @@
       user-select: none;
       transition: all 120ms ease;
       padding: 0;
+      flex-shrink: 0;
     }
     .key-bubble-btn:hover {
       border-color: var(--accent);
@@ -1422,7 +1528,7 @@
       box-shadow: 0 2px 6px -1px rgba(37, 99, 235, 0.4);
     }
     .key-pts-input {
-      width: 38px;
+      width: 40px !important;
       padding: 0.15rem 0.25rem;
       font: inherit;
       font-size: 0.72rem;
@@ -1431,9 +1537,11 @@
       background: var(--panel);
       color: var(--text);
       text-align: center;
+      flex-shrink: 0;
     }
     .key-text-input {
       flex: 1;
+      min-width: 120px;
       padding: 0.25rem 0.45rem;
       font: inherit;
       font-size: 0.76rem;
@@ -1500,7 +1608,7 @@
   <!-- Auto-Save Notification Banner -->
   <div id="banner-resume-session" style="display: none; margin: 0.65rem 1.25rem 0 1.25rem; border-radius: var(--radius-sm); padding: 0.65rem 1rem; background: var(--panel); border: 1px solid var(--accent); align-items: center; justify-content: space-between; gap: 0.75rem; font-size: 0.82rem; box-shadow: var(--shadow-sm);">
     <div style="display: flex; align-items: center; gap: 0.6rem; min-width: 0;">
-      <span style="font-size: 1.2rem; flex-shrink: 0;">💾</span>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent); flex-shrink: 0;" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
       <div style="min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
         <strong style="color: var(--text);">Saved Grading Session:</strong>
         <span id="banner-resume-details" style="color: var(--text-muted); margin-left: 0.35rem;">Previous grading progress is available.</span>
@@ -1770,6 +1878,13 @@
         <button type="button" class="tab-btn" data-tab="items">
           <span>Item Analysis</span>
         </button>
+        <button type="button" class="tab-btn" data-tab="horizontal" id="tab-btn-horizontal" title="Item-by-item horizontal grading for written and identification responses">
+          <span style="display: inline-flex; align-items: center; gap: 0.35rem;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="12" x2="9" y2="12"/><line x1="21" y1="18" x2="7" y2="18"/></svg>
+            Horizontal Grading
+            <span id="badge-horizontal-count" class="badge" style="display: none; font-size: 0.65rem; padding: 0.1rem 0.4rem; background: var(--accent); color: #fff; border-radius: var(--radius-full);">0</span>
+          </span>
+        </button>
       </nav>
 
       <!-- Tab 1: Cohort Summary Dashboard -->
@@ -1897,6 +2012,13 @@
                   </span>
                   <span class="filter-count count-pill count-pill--warning" id="count-roster-review" style="margin-left: 0.25rem; font-weight: 700;">(0)</span>
                 </button>
+                <button type="button" class="btn btn--secondary btn-xs" data-filter="mismatches" id="filter-roster-mismatches" title="Filter to sheets with student name/ID mismatches against roster">
+                  <span style="display: inline-flex; align-items: center; gap: 0.25rem; color: #f59e0b;">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    Mismatches
+                  </span>
+                  <span class="filter-count count-pill count-pill--warning" id="count-roster-mismatches" style="margin-left: 0.25rem; font-weight: 700;">(0)</span>
+                </button>
                 <button type="button" class="btn btn--secondary btn-xs" data-filter="clean" id="filter-roster-clean" title="Filter to sheets with unambiguous reads and verified IDs">
                   <span style="display: inline-flex; align-items: center; gap: 0.25rem; color: var(--success);">
                     <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
@@ -1914,6 +2036,7 @@
                     <th class="sortable" data-sort="examId">Exam ID <span class="sort-icon"></span></th>
                     <th class="sortable" data-sort="studentId">Student ID <span class="sort-icon"></span></th>
                     <th class="sortable" data-sort="studentName">Student Name <span class="sort-icon"></span></th>
+                    <th class="sortable" data-sort="classOffer">Class / Offer No. <span class="sort-icon"></span></th>
                     <th class="sortable" data-sort="rawScore">Raw Score <span class="sort-icon"></span></th>
                     <th class="sortable" data-sort="maxScore">Max Score <span class="sort-icon"></span></th>
                     <th class="sortable" data-sort="percentage">Percentage <span class="sort-icon"></span></th>
@@ -1922,7 +2045,7 @@
                   </tr>
                 </thead>
                 <tbody id="tbody-roster">
-                  <tr><td colspan="8" style="text-align: center; padding: 2rem; color: var(--text-muted);">No student grades available.</td></tr>
+                  <tr><td colspan="9" style="text-align: center; padding: 2rem; color: var(--text-muted);">No student grades available.</td></tr>
                 </tbody>
               </table>
             </div>
@@ -1940,6 +2063,7 @@
                   </h3>
                   <div id="roster-student-badge" class="roster-student-badge" style="display: none; align-items: center; gap: 0.35rem; flex-wrap: wrap;">
                     <span id="roster-badge-name" class="roster-badge-name">—</span>
+                    <span id="roster-badge-class" class="badge" style="display: none; font-size: 0.72rem; padding: 0.15rem 0.5rem; background: var(--panel-alt); border: 1px solid var(--border); border-radius: var(--radius-sm); font-weight: 600; color: var(--text-muted);">—</span>
                     <span id="roster-badge-score" class="roster-badge-score">—</span>
                     <span id="roster-badge-review" class="badge-review" style="display: none;"></span>
                   </div>
@@ -1958,6 +2082,34 @@
 
               <!-- Review Alert Notice Banner -->
               <div id="roster-review-alert" style="display: none; background: var(--warning-light); border: 1px solid var(--warning); border-radius: var(--radius-sm); padding: 0.45rem 0.75rem; margin-bottom: 0.65rem; font-size: 0.76rem; color: var(--text);"></div>
+
+              <!-- Interactive Roster Mismatch Resolution Panel -->
+              <div id="roster-mismatch-panel" style="display: none; background: #fffbeb; border: 1.5px solid #f59e0b; border-radius: var(--radius-sm); padding: 0.65rem 0.85rem; margin-bottom: 0.75rem; font-size: 0.76rem; color: #78350f;">
+                <div style="display: flex; align-items: center; gap: 0.4rem; font-weight: 700; margin-bottom: 0.45rem; font-size: 0.82rem;">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: #d97706;"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                  <span>Student Roster Mismatch Detected</span>
+                </div>
+                <div id="roster-mismatch-details" style="margin-bottom: 0.5rem; line-height: 1.45;"></div>
+                <div id="roster-mismatch-crop-container" style="margin-bottom: 0.5rem; display: none;">
+                  <div style="font-weight: 600; margin-bottom: 0.25rem; font-size: 0.7rem; color: #92400e;">Written Student Info Crop:</div>
+                  <canvas id="roster-mismatch-crop-canvas" style="border: 1px solid #d97706; border-radius: 4px; max-width: 100%; height: auto; background: #fff;"></canvas>
+                </div>
+                <div style="display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap; margin-bottom: 0.5rem;">
+                  <label for="select-roster-candidate" style="font-weight: 600; font-size: 0.72rem; color: #92400e;">Roster Student:</label>
+                  <select id="select-roster-candidate" style="flex: 1; min-width: 180px; padding: 0.25rem 0.45rem; font-size: 0.75rem; border: 1px solid #d97706; border-radius: var(--radius-sm); background: #ffffff; color: #000;"></select>
+                </div>
+                <div style="display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap;">
+                  <button type="button" class="btn btn-xs" id="btn-mismatch-confirm" style="background: #10b981; color: #fff; border: none; font-weight: 600; padding: 0.3rem 0.65rem;" title="Confirm suggested match from roster">
+                    Confirm Match
+                  </button>
+                  <button type="button" class="btn btn-xs btn--secondary" id="btn-mismatch-assign" style="background: #fff; border: 1px solid #d97706; color: #92400e; font-weight: 600; padding: 0.3rem 0.65rem;" title="Assign currently selected student from roster">
+                    Assign Selected
+                  </button>
+                  <button type="button" class="btn btn-xs btn--secondary" id="btn-mismatch-accept-new" style="background: #fff; border: 1px solid #9ca3af; color: #374151; font-weight: 600; padding: 0.3rem 0.65rem;" title="Accept this student as new enrollment without matching existing roster">
+                    Accept as New Student
+                  </button>
+                </div>
+              </div>
 
               <!-- Color legend: Green = Correct, Red = Incorrect, Amber = Missed Key -->
               <div class="roster-preview-legend">
@@ -2070,6 +2222,7 @@
                   <th style="width: 50px;">Rank</th>
                   <th>Student Name</th>
                   <th>Student ID</th>
+                  <th>Class / Offer No.</th>
                   <th>Raw Score</th>
                   <th>Percentage</th>
                   <th>Percentile Rank</th>
@@ -2077,7 +2230,7 @@
                 </tr>
               </thead>
               <tbody id="tbody-top-students">
-                <tr><td colspan="7" style="text-align: center; padding: 1.5rem; color: var(--text-muted);">Run grading to display top cohort performers.</td></tr>
+                <tr><td colspan="8" style="text-align: center; padding: 1.5rem; color: var(--text-muted);">Run grading to display top cohort performers.</td></tr>
               </tbody>
             </table>
           </div>
@@ -2345,7 +2498,84 @@
           </ul>
         </section>
       </div>
-    </main>
+
+      <!-- Tab 4: Horizontal Grading (Item-by-Item) -->
+      <div id="tab-horizontal" class="tab-pane" style="display: none;">
+        <!-- Header & Item Selector Toolbar -->
+        <div class="dashboard-header-bar" style="display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1.25rem; flex-wrap: wrap;">
+          <div>
+            <h2 style="margin: 0; font-size: 1.2rem; font-weight: 800; color: var(--text); display: flex; align-items: center; gap: 0.5rem;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="12" x2="9" y2="12"/><line x1="21" y1="18" x2="7" y2="18"/></svg>
+              <span>Horizontal Grading (Item-by-Item)</span>
+            </h2>
+            <p style="margin: 0.25rem 0 0; font-size: 0.78rem; color: var(--text-muted);">
+              Standardized item-level review for identification, short answer, essay, and modified T/F corrections.
+            </p>
+          </div>
+
+          <!-- Item Navigator and Bulk Accept -->
+          <div style="display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap;">
+            <div style="display: inline-flex; align-items: center; gap: 0.35rem; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.25rem 0.5rem;">
+              <label for="select-horizontal-item" style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">Item:</label>
+              <select id="select-horizontal-item" style="font-size: 0.78rem; font-weight: 600; padding: 0.25rem 0.5rem; background: var(--panel-alt); color: var(--text); border: 1px solid var(--border); border-radius: var(--radius-sm); max-width: 280px;"></select>
+              <button type="button" id="btn-horizontal-item-prev" class="btn btn--secondary btn-xs" title="Previous item" disabled>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+              </button>
+              <button type="button" id="btn-horizontal-item-next" class="btn btn--secondary btn-xs" title="Next item" disabled>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+              </button>
+            </div>
+
+            <button type="button" id="btn-horizontal-accept-all" class="btn btn--secondary btn--sm" style="display: inline-flex; align-items: center; gap: 0.35rem;" title="Accept all remaining unreviewed responses for this item with full points">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              <span>Accept All Unreviewed</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Item Prompt & Rubric Reference Card -->
+        <div class="section-card" id="horizontal-prompt-card" style="margin-bottom: 1.25rem; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1rem 1.25rem;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap; margin-bottom: 0.65rem;">
+            <div>
+              <div style="display: flex; align-items: center; gap: 0.45rem;">
+                <span id="horizontal-badge-type" class="badge" style="background: var(--accent-light); color: var(--accent); font-weight: 700; font-size: 0.72rem; padding: 0.15rem 0.5rem; border-radius: var(--radius-sm);">Written Response</span>
+                <h3 id="horizontal-item-title" style="margin: 0; font-size: 0.98rem; font-weight: 700; color: var(--text);">Question Prompt</h3>
+              </div>
+              <p id="horizontal-item-prompt" style="margin: 0.4rem 0 0; font-size: 0.85rem; color: var(--text); line-height: 1.45;">—</p>
+            </div>
+            <div style="text-align: right; min-width: 140px;">
+              <span style="font-size: 0.72rem; color: var(--text-muted); display: block;">Item Value</span>
+              <span id="horizontal-item-points" style="font-size: 1.15rem; font-weight: 800; color: var(--text);">1.0 pts</span>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 0.75rem; background: var(--panel-alt); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.65rem 0.85rem; font-size: 0.76rem;">
+            <div>
+              <strong style="color: var(--text); display: block; margin-bottom: 0.15rem;">Expected / Key Answer:</strong>
+              <span id="horizontal-item-expected" style="color: var(--success); font-weight: 600;">—</span>
+            </div>
+            <div>
+              <strong style="color: var(--text); display: block; margin-bottom: 0.15rem;">Scoring Rubric &amp; Rules:</strong>
+              <span id="horizontal-item-rubric" style="color: var(--text-muted);">—</span>
+            </div>
+          </div>
+
+          <!-- Item Grading Progress Bar -->
+          <div style="margin-top: 0.85rem; display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;">
+            <div style="flex: 1; height: 7px; background: var(--panel-alt); border-radius: var(--radius-full); overflow: hidden; border: 1px solid var(--border);">
+              <div id="horizontal-progress-bar" style="height: 100%; width: 0%; background: #10b981; transition: width 200ms ease;"></div>
+            </div>
+            <span id="horizontal-progress-text" style="font-size: 0.74rem; font-weight: 700; color: var(--text-muted); white-space: nowrap;">0 of 0 reviewed</span>
+          </div>
+        </div>
+
+        <!-- Student Submissions Stream Container -->
+        <div id="horizontal-submissions-container" style="display: flex; flex-direction: column; gap: 0.85rem;">
+          <div style="text-align: center; padding: 3rem; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text-muted);">
+            No student submissions available for horizontal grading. Grade some scans or pre-load sample data first.
+          </div>
+        </div>
+      </div>
   </div>
 
   <!-- Floating Tooltip for Interactive Charts -->
@@ -2560,6 +2790,7 @@
         if ($(tabId)) $(tabId).style.display = 'block';
         state.activeTab = btn.dataset.tab;
         if (state.activeTab === 'viewer') renderViewerSheet();
+        if (state.activeTab === 'horizontal') renderHorizontalGradingView();
         if (state.activeTab === 'roster' && state.results && state.results.grades && state.results.grades.length > 0) {
           const idx = (state.selectedStudentIdx != null && state.selectedStudentIdx < state.results.grades.length)
             ? state.selectedStudentIdx
@@ -2700,7 +2931,9 @@
         paper: page.paper || raw.paper || "A4",
         page,
         markers,
-        bubbles
+        bubbles,
+        zones: raw.zones || [],
+        rois: raw.rois || (Array.isArray(raw.zones) ? raw.zones.flatMap(z => z.rois || []) : [])
       };
     }
 
@@ -3027,6 +3260,11 @@
       const header = parseCSVLine(lines[0]).map(h => h.trim().toLowerCase().replace(/^["']|["']$/g, ''));
       const idCol = header.findIndex(h => h.includes('id') || h === 'student_id');
       const nameCol = header.findIndex(h => h.includes('name') || h === 'student_name');
+      const classCol = header.findIndex(h => {
+        const norm = h.replace(/[^a-z0-9]/g, '');
+        return ['class', 'offerno', 'offer_no', 'offer', 'section', 'course', 'subject', 'sched', 'classoffer'].includes(norm) ||
+               h.includes('class') || h.includes('offer') || h.includes('section');
+      });
 
       const roster = [];
       for (let i = 1; i < lines.length; i++) {
@@ -3035,10 +3273,12 @@
         if (parts.length > 0) {
           const id = idCol !== -1 ? parts[idCol] : parts[0];
           const name = nameCol !== -1 ? parts[nameCol] : (parts[1] || `Student ${id}`);
+          const classOffer = classCol !== -1 ? String(parts[classCol] || '').trim().replace(/^["']|["']$/g, '') : '';
           if (id) {
             roster.push({
               id: String(id).trim().replace(/^["']|["']$/g, ''),
-              name: String(name || `Student ${id}`).trim().replace(/^["']|["']$/g, '')
+              name: String(name || `Student ${id}`).trim().replace(/^["']|["']$/g, ''),
+              classOffer: classOffer || ''
             });
           }
         }
@@ -3692,7 +3932,7 @@
 
     // Download Sample Student Roster Template CSV
     function downloadRosterTemplateCSV() {
-      const csvContent = 'Student ID,Student Name\n10482901,Alice Walker\n10482902,Benjamin Carter\n10482903,Chloe Davis\n10482904,David Evans\n10482905,Elena Foster\n10482906,Fiona Green\n10482907,George Harris\n10482908,Hannah Ibarra\n10482909,Ian Johnson\n10482910,Julia Kim\n';
+      const csvContent = 'Student ID,Student Name,Class / Offer No.\n10482901,Alice Walker,BIO101-SEC1\n10482902,Benjamin Carter,BIO101-SEC1\n10482903,Chloe Davis,BIO101-SEC2\n10482904,David Evans,BIO101-SEC2\n10482905,Elena Foster,BIO101-SEC1\n10482906,Fiona Green,BIO101-SEC2\n10482907,George Harris,BIO101-SEC1\n10482908,Hannah Ibarra,BIO101-SEC2\n10482909,Ian Johnson,BIO101-SEC1\n10482910,Julia Kim,BIO101-SEC2\n';
       downloadFile('student_roster_template.csv', csvContent, 'text/csv');
     }
 
@@ -3777,6 +4017,10 @@
           }
         }
         for (const k of Object.keys(existingItems)) {
+          const it = existingItems[k];
+          if (it && (it.kind === 'text' || it.type === 'written' || it.type === 'short_answer' || it.type === 'essay' || it.correction)) {
+            continue;
+          }
           if (!itemChoicesMap[k]) itemChoicesMap[k] = ['A', 'B', 'C', 'D'];
         }
 
@@ -3821,6 +4065,86 @@
             zoneCols: 3
           };
         }
+      }
+
+      // 3. Always discover and include all short answer / open response / ROI items
+      const candidateTextItems = [];
+      const seenTextKeys = new Set(Object.keys(currentModalKey.items));
+
+      const allLayoutRois = [
+        ...(Array.isArray(state.layout.rois) ? state.layout.rois : []),
+        ...(Array.isArray(state.layout.zones) ? state.layout.zones.flatMap(z => z.rois || []) : [])
+      ];
+      for (const r of allLayoutRois) {
+        const rk = String(r.key || r.id);
+        if (r.graded !== false && r.role !== 'name' && r.role !== 'student_id' && !seenTextKeys.has(rk)) {
+          seenTextKeys.add(rk);
+          candidateTextItems.push({
+            k: rk,
+            label: r.label || rk,
+            answer: r.role === 'correction' ? 'Correction' : 'Sample Answer',
+            points: Number(r.points || 1),
+            role: r.role,
+            zoneLabel: r.role === 'correction' ? 'Modified True/False Corrections' : 'Short Answer / Open Response'
+          });
+        }
+      }
+
+      if (typeof getHorizontalGradingItems === 'function') {
+        for (const it of getHorizontalGradingItems()) {
+          const ik = String(it.key || it.id);
+          if (!seenTextKeys.has(ik)) {
+            seenTextKeys.add(ik);
+            candidateTextItems.push({
+              k: ik,
+              label: it.label || ik,
+              answer: it.expected || 'Sample Answer',
+              points: Number(it.points || 2),
+              type: it.type,
+              zoneLabel: 'Short Answer / Identification'
+            });
+          }
+        }
+      }
+
+      for (const [k, it] of Object.entries(existingItems)) {
+        if (it && (it.kind === 'text' || it.type === 'written' || it.type === 'short_answer' || it.type === 'essay' || it.correction)) {
+          if (!seenTextKeys.has(String(k))) {
+            seenTextKeys.add(String(k));
+            candidateTextItems.push({
+              k: String(k),
+              label: it.label || k,
+              answer: it.answer || 'Sample Answer',
+              points: Number(it.points || 1),
+              bloom: it.bloom,
+              zoneLabel: 'Short Answer / Identification'
+            });
+          }
+        }
+      }
+
+      for (const cand of candidateTextItems) {
+        const k = cand.k;
+        const existing = existingItems[k];
+        const ans = typeof existing === 'object' && existing !== null && existing.answer !== undefined
+          ? existing.answer
+          : (typeof existing === 'string' || typeof existing === 'number' ? String(existing) : cand.answer);
+        const pts = typeof existing === 'object' && existing !== null && existing.points !== undefined
+          ? Number(existing.points)
+          : cand.points;
+        const bloom = typeof existing === 'object' && existing !== null && existing.bloom
+          ? normalizeBloom(existing.bloom)
+          : (cand.bloom || defaultBloomFor(k));
+
+        currentModalKey.items[k] = {
+          answer: ans,
+          points: pts,
+          bloom: normalizeBloom(bloom),
+          kind: 'text',
+          label: cand.label || k,
+          zoneLabel: cand.zoneLabel || 'Short Answer / Identification',
+          zoneCols: 1
+        };
       }
 
       // Calculate total points and passScore
@@ -3873,6 +4197,9 @@
         for (const b of (state.layout.bubbles || [])) {
           if (b.item && !b.item.startsWith('sid[')) layoutItemKeys.add(String(b.item));
         }
+        for (const r of (state.layout.rois || []).filter(r => r.graded !== false && r.role !== 'name' && r.role !== 'student_id')) {
+          layoutItemKeys.add(String(r.key || r.id));
+        }
       }
 
       const missingInKey = [];
@@ -3920,34 +4247,27 @@
 
       let html = discrepancyHtml;
       for (const [secTitle, secData] of sectionsMap.entries()) {
+        const choiceItems = secData.items.filter(it => it.kind !== 'text');
+        const textItems = secData.items.filter(it => it.kind === 'text');
+        const zoneCols = Math.min(3, Math.max(1, secData.cols ? Math.min(3, secData.cols) : 2));
+
         html += `
           <div class="key-section-card">
             <h4 class="key-section-title">${secTitle}</h4>
-            <div class="key-matrix-grid" style="column-count: ${secData.cols};">
         `;
 
-        for (const item of secData.items) {
-          const k = item.k;
-          const currentAns = String(item.answer || '');
-          const pts = item.points ?? 1;
-          const currentBloom = item.bloom || defaultBloomFor(k);
-
-          if (item.kind === 'text') {
-            html += `
-              <div class="key-item-cell" data-key="${k}" style="grid-column: 1 / -1; display: flex; gap: 0.5rem; align-items: center;">
-                <span class="key-item-num">${item.label || k}:</span>
-                <input type="text" class="key-text-input" data-key="${k}" value="${currentAns}" placeholder="Accepted answer" style="flex: 1;">
-                <select class="key-bloom-select" data-key="${k}" title="Bloom's Cognitive Level">
-                  ${BLOOM_LEVELS.map(lvl => `<option value="${lvl}" ${currentBloom === lvl ? 'selected' : ''}>${lvl}</option>`).join('')}
-                </select>
-                <input type="number" class="key-pts-input" data-key="${k}" value="${pts}" min="0.5" max="50" step="0.5" title="Points" style="width: 50px;">
-              </div>
-            `;
-          } else {
+        if (choiceItems.length > 0) {
+          html += `<div class="key-matrix-grid" style="column-count: ${zoneCols};">`;
+          for (const item of choiceItems) {
+            const k = item.k;
+            const currentAns = String(item.answer || '');
+            const pts = item.points ?? 1;
+            const currentBloom = item.bloom || defaultBloomFor(k);
             const opts = item.options || ['A', 'B', 'C', 'D'];
+
             html += `
               <div class="key-item-cell" data-key="${k}">
-                <div style="display: flex; align-items: center; gap: 0.4rem;">
+                <div style="display: flex; align-items: center; gap: 0.35rem; min-width: 0;">
                   <span class="key-item-num">${k}.</span>
                   <div class="key-bubbles-row">
                     ${opts.map(opt => `
@@ -3955,21 +4275,45 @@
                     `).join('')}
                   </div>
                 </div>
-                <div style="display: flex; align-items: center; gap: 0.35rem;">
+                <div style="display: flex; align-items: center; gap: 0.3rem; flex-shrink: 0;">
                   <select class="key-bloom-select" data-key="${k}" title="Bloom's Cognitive Level">
                     ${BLOOM_LEVELS.map(lvl => `<option value="${lvl}" ${currentBloom === lvl ? 'selected' : ''}>${lvl}</option>`).join('')}
                   </select>
-                  <input type="number" class="key-pts-input" data-key="${k}" value="${pts}" min="0.5" max="50" step="0.5" title="Points" style="width: 48px;">
+                  <input type="number" class="key-pts-input" data-key="${k}" value="${pts}" min="0.5" max="50" step="0.5" title="Points">
                 </div>
               </div>
             `;
           }
+          html += `</div>`;
         }
 
-        html += `
-            </div>
-          </div>
-        `;
+        if (textItems.length > 0) {
+          html += `<div class="key-text-items-list" style="${choiceItems.length > 0 ? 'margin-top: 0.6rem;' : ''}">`;
+          for (const item of textItems) {
+            const k = item.k;
+            const currentAns = String(item.answer || '').replace(/"/g, '&quot;');
+            const pts = item.points ?? 1;
+            const currentBloom = item.bloom || defaultBloomFor(k);
+
+            html += `
+              <div class="key-item-cell key-item-cell--text" data-key="${k}">
+                <div style="display: flex; align-items: center; gap: 0.5rem; flex: 1; min-width: 0;">
+                  <span class="key-item-num" style="min-width: 28px; font-weight: 700;">${item.label || k}:</span>
+                  <input type="text" class="key-text-input" data-key="${k}" value="${currentAns}" placeholder="Accepted answer / keywords">
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.35rem; flex-shrink: 0;">
+                  <select class="key-bloom-select" data-key="${k}" title="Bloom's Cognitive Level">
+                    ${BLOOM_LEVELS.map(lvl => `<option value="${lvl}" ${currentBloom === lvl ? 'selected' : ''}>${lvl}</option>`).join('')}
+                  </select>
+                  <input type="number" class="key-pts-input" data-key="${k}" value="${pts}" min="0.5" max="50" step="0.5" title="Points">
+                </div>
+              </div>
+            `;
+          }
+          html += `</div>`;
+        }
+
+        html += `</div>`;
       }
 
       container.innerHTML = html;
@@ -4649,6 +4993,189 @@
       };
     }
 
+    // Fuzzy string matching & Levenshtein distance utilities
+    function levenshteinDistance(s1, s2) {
+      s1 = String(s1 || '').trim().toLowerCase();
+      s2 = String(s2 || '').trim().toLowerCase();
+      const m = s1.length, n = s2.length;
+      if (m === 0) return n;
+      if (n === 0) return m;
+      const d = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0));
+      for (let i = 0; i <= m; i++) d[i][0] = i;
+      for (let j = 0; j <= n; j++) d[0][j] = j;
+      for (let i = 1; i <= m; i++) {
+        for (let j = 1; j <= n; j++) {
+          const cost = s1[i - 1] === s2[j - 1] ? 0 : 1;
+          d[i][j] = Math.min(
+            d[i - 1][j] + 1,
+            d[i][j - 1] + 1,
+            d[i - 1][j - 1] + cost
+          );
+        }
+      }
+      return d[m][n];
+    }
+    window.levenshteinDistance = levenshteinDistance;
+
+    function stringSimilarity(s1, s2) {
+      s1 = String(s1 || '').trim().toLowerCase();
+      s2 = String(s2 || '').trim().toLowerCase();
+      if (s1 === s2) return 1.0;
+      const maxLen = Math.max(s1.length, s2.length);
+      if (maxLen === 0) return 1.0;
+      const dist = levenshteinDistance(s1, s2);
+      return Math.max(0, 1 - dist / maxLen);
+    }
+    window.stringSimilarity = stringSimilarity;
+
+    function findBestRosterMatch(idOrName, rosterList) {
+      if (!rosterList || rosterList.length === 0 || !idOrName) return null;
+      const target = String(idOrName).trim().toLowerCase();
+      let best = null;
+      let bestScore = -1;
+
+      for (const stu of rosterList) {
+        const stuId = String(stu.id || '').trim().toLowerCase();
+        const stuName = String(stu.name || '').trim().toLowerCase();
+
+        const idSim = stringSimilarity(target, stuId);
+        const nameSim = stringSimilarity(target, stuName);
+
+        let partialSim = 0;
+        if (stuName && target.length > 2) {
+          if (stuName.includes(target) || target.includes(stuName)) {
+            partialSim = 0.85;
+          }
+        }
+
+        const score = Math.max(idSim, nameSim, partialSim);
+        if (score > bestScore) {
+          bestScore = score;
+          best = {
+            student: stu,
+            score,
+            field: score === idSim ? 'id' : 'name',
+            distance: score === idSim ? levenshteinDistance(target, stuId) : levenshteinDistance(target, stuName)
+          };
+        }
+      }
+
+      return bestScore >= 0.5 ? best : null;
+    }
+    window.findBestRosterMatch = findBestRosterMatch;
+
+    // Horizontal Grading Items extractor
+    function getHorizontalGradingItems() {
+      const items = [];
+      const seen = new Set();
+
+      const rois = state.layout?.rois || (Array.isArray(state.layout?.zones) ? state.layout.zones.flatMap(z => z.rois || []) : []);
+      for (const roi of rois) {
+        const isHorizontal = roi.graded === true ||
+          roi.role === 'correction' ||
+          String(roi.id).includes('correction') ||
+          String(roi.id).startsWith('mod_tf') ||
+          ['text', 'text_short', 'text_essay', 'modified_tf'].includes(roi.type || roi.kind);
+        if (isHorizontal && !seen.has(String(roi.key || roi.id))) {
+          seen.add(String(roi.key || roi.id));
+          const keyItem = state.key?.items?.[roi.key || roi.id];
+          items.push({
+            key: String(roi.key || roi.id),
+            id: String(roi.id || roi.key),
+            label: roi.label || keyItem?.label || `Item ${roi.key || roi.id}`,
+            prompt: roi.prompt || keyItem?.prompt || (roi.role === 'correction' ? 'True/False Correction' : 'Written Response'),
+            points: Number(roi.points || keyItem?.points || 1.0),
+            type: roi.role === 'correction' ? 'correction' : (roi.multiline ? 'essay' : 'short_answer'),
+            expected: keyItem?.answer || 'Sample Answer',
+            rubric: roi.charset === 'digits' ? 'Exact digits' : 'Instructor review / keywords',
+            roi: { x: roi.x, y: roi.y, w: roi.w, h: roi.h }
+          });
+        }
+      }
+
+      if (state.key && state.key.items) {
+        for (const [k, it] of Object.entries(state.key.items)) {
+          if ((it.kind === 'text' || it.type === 'written' || it.type === 'essay' || it.correction) && !seen.has(String(k))) {
+            seen.add(String(k));
+            items.push({
+              key: String(k),
+              id: String(k),
+              label: it.label || `Item ${k}`,
+              prompt: it.prompt || (it.correction ? 'True/False Correction' : 'Written Response'),
+              points: Number(it.points || 1.0),
+              type: it.type || (it.correction ? 'correction' : 'short_answer'),
+              expected: it.answer || 'Sample Answer',
+              rubric: it.rubric || 'Instructor review',
+              roi: null
+            });
+          }
+        }
+      }
+
+      if (items.length === 0 && (state.layout?.title?.includes('50') || Object.keys(state.key?.items || {}).length === 50)) {
+        items.push({
+          key: 'q61',
+          id: 'q61',
+          label: 'Q61 — Short Answer (Mitochondria / ATP)',
+          prompt: 'Identify the organelle responsible for ATP production through cellular respiration.',
+          points: 2.0,
+          type: 'short_answer',
+          expected: 'Mitochondria / ATP synthesis',
+          rubric: 'Case-insensitive identification (2 pts)',
+          roi: { x: 23.5, y: 173.46, w: 77, h: 8 }
+        });
+        items.push({
+          key: 'q62',
+          id: 'q62',
+          label: 'Q62 — Short Answer (Photosynthesis)',
+          prompt: 'State the primary light-absorbing pigment involved in photosynthesis.',
+          points: 2.0,
+          type: 'short_answer',
+          expected: 'Chlorophyll a / b',
+          rubric: 'Case-insensitive identification (2 pts)',
+          roi: { x: 118.5, y: 173.46, w: 77, h: 8 }
+        });
+      }
+
+      return items;
+    }
+    window.getHorizontalGradingItems = getHorizontalGradingItems;
+
+    // Crop ROI from rectified scan image into HTMLCanvasElement
+    function cropROIFromScan(grade, roi, destCanvas) {
+      if (!grade || !roi || !destCanvas) return;
+      const pxPerMm = 4.0;
+      const canX = Math.round(roi.x * pxPerMm);
+      const canY = Math.round(roi.y * pxPerMm);
+      const canW = Math.round(roi.w * pxPerMm);
+      const canH = Math.round(roi.h * pxPerMm);
+
+      destCanvas.width = Math.max(120, canW);
+      destCanvas.height = Math.max(40, canH);
+      const destCtx = destCanvas.getContext('2d');
+      if (!destCtx) return;
+      destCtx.fillStyle = '#ffffff';
+      destCtx.fillRect(0, 0, destCanvas.width, destCanvas.height);
+
+      if (grade.scanImg) {
+        try {
+          const off = document.createElement('canvas');
+          off.width = grade.targetW || 840;
+          off.height = grade.targetH || 1188;
+          const offCtx = off.getContext('2d');
+          if (offCtx && offCtx.drawImage) {
+            offCtx.drawImage(grade.scanImg, 0, 0, off.width, off.height);
+            destCtx.drawImage(off, canX, canY, canW, canH, 0, 0, destCanvas.width, destCanvas.height);
+          }
+        } catch (_) {
+          destCtx.fillStyle = '#333333';
+          destCtx.font = '12px sans-serif';
+          destCtx.fillText(`[Crop: ${roi.w}x${roi.h}mm]`, 10, 24);
+        }
+      }
+    }
+    window.cropROIFromScan = cropROIFromScan;
+
     // Process a single scanned exam image
     function processExamScan(scan, layout, key, bubbleThreshold) {
       // Target canonical canvas resolution: 4.0 px/mm (A4 = 840 x 1188 px)
@@ -4780,7 +5307,32 @@
         ? bubbleSid
         : (matchedId ? matchedId[0] : `STU-${Math.floor(100000 + Math.random() * 900000)}`);
       const rosterEntry = state.roster.find(r => String(r.id).trim() === String(studentId).trim());
-      const studentName = rosterEntry ? rosterEntry.name : `Student ${studentId}`;
+      const studentName = rosterEntry ? rosterEntry.name : (scan.studentName || `Student ${studentId}`);
+      const classOffer = rosterEntry?.classOffer || scan.classOffer || '';
+
+      // Initialize handwritten / horizontal grading items
+      const horizontalItems = getHorizontalGradingItems();
+      for (const hItem of horizontalItems) {
+        if (!gradedItems[hItem.key]) {
+          gradedItems[hItem.key] = {
+            expected: hItem.expected,
+            actual: scan.simulatedResponses?.[hItem.key] || "Handwritten response",
+            ocrText: scan.simulatedOcr?.[hItem.key] || hItem.expected,
+            ocrConfidence: scan.simulatedOcrConf?.[hItem.key] ?? 0.88,
+            isCorrect: false,
+            pointsAwarded: 0,
+            maxPoints: hItem.points,
+            status: 'unreviewed',
+            reviewed: false,
+            kind: 'text',
+            label: hItem.label,
+            prompt: hItem.prompt,
+            rubric: hItem.rubric,
+            roi: hItem.roi
+          };
+          maxScore += (Number(hItem.points) || 1.0);
+        }
+      }
 
       const percentage = maxScore > 0 ? (rawScore / maxScore) * 100 : 0;
 
@@ -4791,6 +5343,7 @@
       const multiMarkQuestions = [];
 
       for (const [itemNumStr, itemResult] of Object.entries(gradedItems)) {
+        if (itemResult.kind === 'text') continue;
         if (itemResult.actual === "BLANK" || !itemResult.actual) {
           blankCount++;
           blankQuestions.push(itemNumStr);
@@ -4800,12 +5353,28 @@
         }
       }
 
+      let isMismatch = false;
+      let suggestedMatch = null;
+      let matchScore = 0;
+      let matchField = '';
       const isUnmatchedId = (!rosterEntry && state.roster && state.roster.length > 0) || String(studentId).startsWith("STU-");
 
       const reviewReasons = [];
       if (blankCount > 0) reviewReasons.push(`${blankCount} blank response${blankCount > 1 ? 's' : ''}`);
       if (multiMarkCount > 0) reviewReasons.push(`${multiMarkCount} multiple mark${multiMarkCount > 1 ? 's' : ''}`);
-      if (isUnmatchedId) reviewReasons.push(`Unmatched Student ID`);
+
+      if (isUnmatchedId) {
+        const best = findBestRosterMatch(studentId, state.roster);
+        if (best && best.score >= 0.5) {
+          isMismatch = true;
+          suggestedMatch = best.student;
+          matchScore = best.score;
+          matchField = best.field;
+          reviewReasons.push(`Roster Mismatch: Suggested "${best.student.name}" (${(best.score * 100).toFixed(0)}% match)`);
+        } else {
+          reviewReasons.push(`Unmatched Student ID`);
+        }
+      }
 
       const reviewFlags = {
         needsReview: reviewReasons.length > 0,
@@ -4814,13 +5383,18 @@
         blankQuestions,
         multiMarkCount,
         multiMarkQuestions,
-        isUnmatchedId
+        isUnmatchedId,
+        isMismatch,
+        suggestedMatch,
+        matchScore,
+        matchField
       };
 
       return {
         examId: scan.name,
         studentId,
         studentName,
+        classOffer,
         rawScore,
         maxScore,
         percentage,
@@ -5142,6 +5716,9 @@
       if (filter === 'needs-review') {
         return state.results.grades.filter(g => g.reviewFlags && g.reviewFlags.needsReview);
       }
+      if (filter === 'mismatches') {
+        return state.results.grades.filter(g => g.reviewFlags && g.reviewFlags.isMismatch);
+      }
       if (filter === 'clean') {
         return state.results.grades.filter(g => !g.reviewFlags || !g.reviewFlags.needsReview);
       }
@@ -5153,10 +5730,12 @@
       const allGrades = state.results.grades;
       const totalCount = allGrades.length;
       const reviewCount = allGrades.filter(g => g.reviewFlags && g.reviewFlags.needsReview).length;
+      const mismatchCount = allGrades.filter(g => g.reviewFlags && g.reviewFlags.isMismatch).length;
       const cleanCount = totalCount - reviewCount;
 
       if ($('count-roster-all')) $('count-roster-all').textContent = `(${totalCount})`;
       if ($('count-roster-review')) $('count-roster-review').textContent = `(${reviewCount})`;
+      if ($('count-roster-mismatches')) $('count-roster-mismatches').textContent = `(${mismatchCount})`;
       if ($('count-roster-clean')) $('count-roster-clean').textContent = `(${cleanCount})`;
       if ($('roster-count-badge')) $('roster-count-badge').textContent = `${totalCount} student${totalCount === 1 ? '' : 's'}`;
       if ($('roster-total-count')) $('roster-total-count').textContent = `${totalCount} student${totalCount === 1 ? '' : 's'}`;
@@ -5299,10 +5878,14 @@
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 0.35rem; display: inline-block;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
             <div>✓ All exam sheets are clean and verified! No scans require manual review.</div>
           </div>`;
+        } else if (filter === 'mismatches') {
+          emptyMsg = `<div style="padding: 1.5rem; text-align: center; color: var(--success); font-weight: 600;">
+            <div>✓ No student name or ID mismatches found against roster!</div>
+          </div>`;
         } else if (filter === 'clean') {
           emptyMsg = `<div style="padding: 1.5rem; text-align: center; color: var(--text-muted);">No unflagged sheets.</div>`;
         }
-        tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 2rem; color: var(--text-muted);">${emptyMsg}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; padding: 2rem; color: var(--text-muted);">${emptyMsg}</td></tr>`;
         return;
       }
 
@@ -5336,6 +5919,7 @@
                 ${reviewBadgeHtml}
               </div>
             </td>
+            <td><span class="badge" style="font-size: 0.75rem; background: var(--panel-alt); border: 1px solid var(--border);">${g.classOffer || '—'}</span></td>
             <td>${g.rawScore.toFixed(1)}</td>
             <td>${g.maxScore.toFixed(1)}</td>
             <td><strong>${g.percentage.toFixed(1)}%</strong></td>
@@ -5576,6 +6160,7 @@
                 <td><span class="rank-badge ${rankBadgeClass}">#${rank}</span></td>
                 <td><strong>${s.studentName || 'Student'}</strong></td>
                 <td><code>${s.studentId || '—'}</code></td>
+                <td><span class="badge" style="font-size: 0.72rem; background: var(--panel-alt); border: 1px solid var(--border);">${s.classOffer || '—'}</span></td>
                 <td>${s.rawScore.toFixed(1)} / ${s.maxScore.toFixed(1)}</td>
                 <td><span style="font-weight: 700; color: ${s.percentage >= 80 ? 'var(--success)' : 'var(--text)'};">${s.percentage.toFixed(1)}%</span></td>
                 <td><span style="font-weight: 600; color: var(--accent);">${percentileRank.toFixed(1)}th</span></td>
@@ -5586,7 +6171,7 @@
             `;
           }).join('');
         } else {
-          topStudentsTbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 1.5rem; color: var(--text-muted);">Run grading to display top cohort performers.</td></tr>`;
+          topStudentsTbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 1.5rem; color: var(--text-muted);">Run grading to display top cohort performers.</td></tr>`;
         }
       }
 
@@ -6155,6 +6740,8 @@
 
       if (!state.results || !state.results.grades || !state.results.grades[idx]) {
         if ($('roster-student-badge')) $('roster-student-badge').style.display = 'none';
+        if ($('roster-badge-class')) $('roster-badge-class').style.display = 'none';
+        if ($('roster-mismatch-panel')) $('roster-mismatch-panel').style.display = 'none';
         if (reviewBadgeEl) reviewBadgeEl.style.display = 'none';
         if (reviewAlertEl) reviewAlertEl.style.display = 'none';
         if ($('btn-roster-download-jpeg')) $('btn-roster-download-jpeg').disabled = true;
@@ -6175,6 +6762,15 @@
 
       if ($('roster-student-badge')) $('roster-student-badge').style.display = 'inline-flex';
       if ($('roster-badge-name')) $('roster-badge-name').textContent = `${grade.studentName} (${grade.studentId})`;
+      const classBadgeEl = $('roster-badge-class');
+      if (classBadgeEl) {
+        if (grade.classOffer) {
+          classBadgeEl.textContent = grade.classOffer;
+          classBadgeEl.style.display = 'inline-block';
+        } else {
+          classBadgeEl.style.display = 'none';
+        }
+      }
       if ($('roster-badge-score')) {
         $('roster-badge-score').textContent = `${grade.rawScore.toFixed(1)} / ${grade.maxScore.toFixed(1)} (${grade.percentage.toFixed(1)}%)`;
         $('roster-badge-score').className = isPass ? 'badge-pass' : 'badge-fail';
@@ -6237,6 +6833,56 @@
         if (reviewAlertEl) reviewAlertEl.style.display = 'none';
       }
 
+      // Interactive Mismatch Resolution Panel
+      const mismatchPanel = $('roster-mismatch-panel');
+      if (mismatchPanel) {
+        if (grade.reviewFlags && grade.reviewFlags.isMismatch) {
+          mismatchPanel.style.display = 'block';
+          const detailsEl = $('roster-mismatch-details');
+          if (detailsEl) {
+            const detectedClass = grade.classOffer ? ` • Class: <code>${grade.classOffer}</code>` : '';
+            const matchScore = grade.reviewFlags.matchScore != null ? (grade.reviewFlags.matchScore * 100).toFixed(0) : '0';
+            const suggested = grade.reviewFlags.suggestedMatch;
+            const suggName = suggested ? suggested.name : 'None';
+            const suggId = suggested ? suggested.id : '—';
+            const suggClass = suggested?.classOffer ? ` (Class: <code>${suggested.classOffer}</code>)` : '';
+            detailsEl.innerHTML = `
+              <div><strong>Scanned / Detected:</strong> ID: <code>${grade.studentId}</code> • Name: <strong>${grade.studentName}</strong>${detectedClass}</div>
+              <div style="margin-top: 0.25rem;"><strong>Suggested Roster Match:</strong> <strong>${suggName}</strong> (ID: <code>${suggId}</code>)${suggClass} &bull; Confidence: <strong>${matchScore}%</strong></div>
+            `;
+          }
+
+          // Populate candidate select
+          const sel = $('select-roster-candidate');
+          if (sel && state.roster) {
+            sel.innerHTML = state.roster.map(r => `
+              <option value="${r.id}" ${grade.reviewFlags.suggestedMatch?.id === r.id ? 'selected' : ''}>${r.name} (${r.id}${r.classOffer ? ` - ${r.classOffer}` : ''})</option>
+            `).join('');
+          }
+
+          // Crop student info header if ROI or sheet available
+          const cropBox = $('roster-mismatch-crop-container');
+          const cropCanvas = $('roster-mismatch-crop-canvas');
+          if (cropBox && cropCanvas && grade.scanImg) {
+            cropBox.style.display = 'block';
+            const infoRoi = state.layout?.rois?.find(r => r.id === 'info.name' || r.id === 'info.sid' || r.key === 'name' || r.key === 'sid') ||
+                            { x: 12, y: 22, w: 186, h: 18 };
+            cropROIFromScan(grade, infoRoi, cropCanvas);
+          } else if (cropBox) {
+            cropBox.style.display = 'none';
+          }
+
+          const btnConfirm = $('btn-mismatch-confirm');
+          if (btnConfirm) btnConfirm.onclick = () => confirmRosterMatch(idx);
+          const btnAssign = $('btn-mismatch-assign');
+          if (btnAssign) btnAssign.onclick = () => assignSelectedRosterMatch(idx, $('select-roster-candidate')?.value);
+          const btnAcceptNew = $('btn-mismatch-accept-new');
+          if (btnAcceptNew) btnAcceptNew.onclick = () => acceptNewStudent(idx);
+        } else {
+          mismatchPanel.style.display = 'none';
+        }
+      }
+
       if ($('btn-roster-download-jpeg')) $('btn-roster-download-jpeg').disabled = false;
       if ($('btn-roster-expand-modal')) $('btn-roster-expand-modal').disabled = false;
 
@@ -6289,6 +6935,424 @@
       saveCheckerProgress({ downloadFile: false, silent: true });
     }
     window.reopenReviewFlag = reopenReviewFlag;
+
+    // Roster Mismatch Resolution Actions
+    function confirmRosterMatch(studentIdx) {
+      if (!state.results || !state.results.grades || !state.results.grades[studentIdx]) return;
+      const grade = state.results.grades[studentIdx];
+      const suggested = grade.reviewFlags?.suggestedMatch;
+      if (!suggested) return;
+
+      grade.studentId = suggested.id;
+      grade.studentName = suggested.name;
+      if (suggested.classOffer) grade.classOffer = suggested.classOffer;
+
+      grade.reviewFlags.isMismatch = false;
+      grade.reviewFlags.reasons = (grade.reviewFlags.reasons || []).filter(r => !r.includes('Mismatch') && !r.includes('Unmatched'));
+      if (grade.reviewFlags.reasons.length === 0) {
+        grade.reviewFlags.needsReview = false;
+        grade.reviewFlags.manuallyReviewed = true;
+      }
+
+      renderRosterTable();
+      renderSummaryTable();
+      updateRosterFilterCounts();
+      updateSummaryReviewCallout();
+
+      if (state.rosterFilter === 'mismatches') {
+        const remaining = state.results.grades.filter(g => g.reviewFlags && g.reviewFlags.isMismatch);
+        if (remaining.length > 0) {
+          const nextRemaining = remaining.find(g => state.results.grades.indexOf(g) > studentIdx) || remaining[0];
+          inspectStudent(state.results.grades.indexOf(nextRemaining));
+        } else {
+          inspectStudent(null);
+        }
+      } else if (state.rosterFilter === 'needs-review') {
+        const remaining = state.results.grades.filter(g => g.reviewFlags && g.reviewFlags.needsReview);
+        if (remaining.length > 0) {
+          const nextRemaining = remaining.find(g => state.results.grades.indexOf(g) > studentIdx) || remaining[0];
+          inspectStudent(state.results.grades.indexOf(nextRemaining));
+        } else {
+          inspectStudent(null);
+        }
+      } else {
+        inspectStudent(studentIdx);
+      }
+
+      saveCheckerProgress({ downloadFile: false, silent: true });
+      showToast(`✓ Matched student: ${grade.studentName} (${grade.studentId})`);
+    }
+    window.confirmRosterMatch = confirmRosterMatch;
+
+    function assignSelectedRosterMatch(studentIdx, selectedId) {
+      if (!state.results || !state.results.grades || !state.results.grades[studentIdx]) return;
+      const grade = state.results.grades[studentIdx];
+      const targetId = selectedId || $('select-roster-candidate')?.value || grade.reviewFlags?.suggestedMatch?.id;
+      const stu = (state.roster || []).find(r => String(r.id) === String(targetId));
+      if (!stu) return;
+
+      grade.studentId = stu.id;
+      grade.studentName = stu.name;
+      if (stu.classOffer) grade.classOffer = stu.classOffer;
+
+      grade.reviewFlags.isMismatch = false;
+      grade.reviewFlags.reasons = (grade.reviewFlags.reasons || []).filter(r => !r.includes('Mismatch') && !r.includes('Unmatched'));
+      if (grade.reviewFlags.reasons.length === 0) {
+        grade.reviewFlags.needsReview = false;
+        grade.reviewFlags.manuallyReviewed = true;
+      }
+
+      renderRosterTable();
+      renderSummaryTable();
+      updateRosterFilterCounts();
+      updateSummaryReviewCallout();
+
+      if (state.rosterFilter === 'mismatches') {
+        const remaining = state.results.grades.filter(g => g.reviewFlags && g.reviewFlags.isMismatch);
+        if (remaining.length > 0) {
+          const nextRemaining = remaining.find(g => state.results.grades.indexOf(g) > studentIdx) || remaining[0];
+          inspectStudent(state.results.grades.indexOf(nextRemaining));
+        } else {
+          inspectStudent(null);
+        }
+      } else if (state.rosterFilter === 'needs-review') {
+        const remaining = state.results.grades.filter(g => g.reviewFlags && g.reviewFlags.needsReview);
+        if (remaining.length > 0) {
+          const nextRemaining = remaining.find(g => state.results.grades.indexOf(g) > studentIdx) || remaining[0];
+          inspectStudent(state.results.grades.indexOf(nextRemaining));
+        } else {
+          inspectStudent(null);
+        }
+      } else {
+        inspectStudent(studentIdx);
+      }
+
+      saveCheckerProgress({ downloadFile: false, silent: true });
+      showToast(`✓ Assigned to roster: ${grade.studentName} (${grade.studentId})`);
+    }
+    window.assignSelectedRosterMatch = assignSelectedRosterMatch;
+
+    function acceptNewStudent(studentIdx) {
+      if (!state.results || !state.results.grades || !state.results.grades[studentIdx]) return;
+      const grade = state.results.grades[studentIdx];
+
+      grade.reviewFlags.isMismatch = false;
+      grade.reviewFlags.reasons = (grade.reviewFlags.reasons || []).filter(r => !r.includes('Mismatch') && !r.includes('Unmatched'));
+      if (grade.reviewFlags.reasons.length === 0) {
+        grade.reviewFlags.needsReview = false;
+        grade.reviewFlags.manuallyReviewed = true;
+      }
+
+      if (!state.roster) state.roster = [];
+      if (!state.roster.some(r => String(r.id) === String(grade.studentId))) {
+        state.roster.push({
+          id: grade.studentId,
+          name: grade.studentName,
+          classOffer: grade.classOffer || ''
+        });
+        updateRosterDisplay();
+      }
+
+      renderRosterTable();
+      renderSummaryTable();
+      updateRosterFilterCounts();
+      updateSummaryReviewCallout();
+
+      if (state.rosterFilter === 'mismatches') {
+        const remaining = state.results.grades.filter(g => g.reviewFlags && g.reviewFlags.isMismatch);
+        if (remaining.length > 0) {
+          const nextRemaining = remaining.find(g => state.results.grades.indexOf(g) > studentIdx) || remaining[0];
+          inspectStudent(state.results.grades.indexOf(nextRemaining));
+        } else {
+          inspectStudent(null);
+        }
+      } else if (state.rosterFilter === 'needs-review') {
+        const remaining = state.results.grades.filter(g => g.reviewFlags && g.reviewFlags.needsReview);
+        if (remaining.length > 0) {
+          const nextRemaining = remaining.find(g => state.results.grades.indexOf(g) > studentIdx) || remaining[0];
+          inspectStudent(state.results.grades.indexOf(nextRemaining));
+        } else {
+          inspectStudent(null);
+        }
+      } else {
+        inspectStudent(studentIdx);
+      }
+
+      saveCheckerProgress({ downloadFile: false, silent: true });
+      showToast(`✓ Accepted as new student: ${grade.studentName} (${grade.studentId})`);
+    }
+    window.acceptNewStudent = acceptNewStudent;
+
+    // Horizontal Grading Engine Controller
+    function gradeHorizontalItem(studentIdx, itemKey, action, customPoints) {
+      if (!state.results || !state.results.grades || !state.results.grades[studentIdx]) return;
+      const grade = state.results.grades[studentIdx];
+      if (!grade.gradedItems) grade.gradedItems = {};
+
+      const horizontalItems = getHorizontalGradingItems();
+      const hItem = horizontalItems.find(it => it.key === itemKey) || { points: 1.0, maxPoints: 1.0 };
+      const maxPts = Number(hItem.points || 1.0);
+
+      let ptsAwarded = 0;
+      let status = 'unreviewed';
+      let isCorrect = false;
+
+      if (action === 'accept') {
+        ptsAwarded = maxPts;
+        status = 'accepted';
+        isCorrect = true;
+      } else if (action === 'partial') {
+        ptsAwarded = customPoints != null ? Number(customPoints) : (maxPts / 2);
+        status = 'partial';
+        isCorrect = false;
+      } else if (action === 'reject') {
+        ptsAwarded = 0;
+        status = 'rejected';
+        isCorrect = false;
+      }
+
+      grade.gradedItems[itemKey] = {
+        ...(grade.gradedItems[itemKey] || {}),
+        pointsAwarded: ptsAwarded,
+        maxPoints: maxPts,
+        status,
+        isCorrect,
+        reviewed: true
+      };
+
+      // Recalculate student rawScore, maxScore, and percentage
+      let totalScore = 0;
+      let totalMax = 0;
+      for (const it of Object.values(grade.gradedItems)) {
+        totalScore += (it.pointsAwarded || 0);
+        totalMax += (it.maxPoints || 0);
+      }
+      grade.rawScore = totalScore;
+      if (totalMax > 0) grade.maxScore = totalMax;
+      grade.percentage = grade.maxScore > 0 ? (grade.rawScore / grade.maxScore) * 100 : 0;
+
+      // Recompute psychometrics and update summary / roster UI
+      if (state.key) {
+        state.results.psychometrics = computePsychometrics(state.results.grades, state.key);
+      }
+
+      // Update Summary Cards & distribution metrics
+      if (state.results.psychometrics) {
+        const { grades, psychometrics, passThreshold } = state.results;
+        if ($('metric-mean')) $('metric-mean').textContent = psychometrics.meanScore.toFixed(1);
+        if ($('metric-mean-sub')) $('metric-mean-sub').textContent = `${((psychometrics.meanScore / psychometrics.totalPossible) * 100).toFixed(1)}%`;
+        const passCount = grades.filter(g => g.percentage >= passThreshold).length;
+        const failCount = grades.length - passCount;
+        const passRate = grades.length > 0 ? (passCount / grades.length) * 100 : 0;
+        const failRate = grades.length > 0 ? (failCount / grades.length) * 100 : 0;
+        if ($('metric-passrate')) $('metric-passrate').textContent = `${passRate.toFixed(1)}%`;
+        if ($('metric-passrate-sub')) $('metric-passrate-sub').textContent = `${passCount} passed / ${failCount} failed`;
+        if ($('metric-alpha')) $('metric-alpha').textContent = psychometrics.cronbachAlpha.toFixed(3);
+        if ($('metric-stddev')) $('metric-stddev').textContent = `±${psychometrics.stdDev.toFixed(2)}`;
+        if ($('metric-median')) $('metric-median').textContent = `Median: ${psychometrics.median.toFixed(1)}`;
+        if ($('dist-bar-pass')) $('dist-bar-pass').style.width = `${passRate.toFixed(1)}%`;
+        if ($('dist-bar-fail')) $('dist-bar-fail').style.width = `${failRate.toFixed(1)}%`;
+        if ($('dist-label-pass')) $('dist-label-pass').textContent = `Pass: ${passCount} (${passRate.toFixed(1)}%)`;
+        if ($('dist-label-fail')) $('dist-label-fail').textContent = `Fail: ${failCount} (${failRate.toFixed(1)}%)`;
+        renderBellCurve(grades, passThreshold);
+      }
+
+      renderHorizontalGradingView();
+      renderSummaryTable();
+      renderRosterTable();
+      saveCheckerProgress({ downloadFile: false, silent: true });
+    }
+    window.gradeHorizontalItem = gradeHorizontalItem;
+
+    function acceptAllUnreviewedHorizontal(itemKey) {
+      if (!state.results || !state.results.grades) return;
+      state.results.grades.forEach((g, idx) => {
+        const it = g.gradedItems?.[itemKey];
+        if (!it || it.status === 'unreviewed' || !it.reviewed) {
+          gradeHorizontalItem(idx, itemKey, 'accept');
+        }
+      });
+      renderHorizontalGradingView();
+      showToast(`✓ All unreviewed submissions accepted for item ${itemKey}`);
+    }
+    window.acceptAllUnreviewedHorizontal = acceptAllUnreviewedHorizontal;
+
+    function renderHorizontalGradingView() {
+      const container = $('horizontal-submissions-container');
+      const selectItem = $('select-horizontal-item');
+      if (!container) return;
+
+      const horizontalItems = getHorizontalGradingItems();
+      const badgeCount = $('badge-horizontal-count');
+      if (badgeCount) {
+        badgeCount.textContent = horizontalItems.length;
+        badgeCount.style.display = horizontalItems.length > 0 ? 'inline-block' : 'none';
+      }
+
+      if (horizontalItems.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 3rem; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text-muted);">
+            <p style="margin: 0 0 0.5rem; font-weight: 700; color: var(--text);">No written or identification items found in this layout.</p>
+            <p style="margin: 0; font-size: 0.8rem;">Horizontal item-by-item grading is active for short answer, essay, identification, and modified true/false correction questions.</p>
+          </div>
+        `;
+        if ($('horizontal-prompt-card')) $('horizontal-prompt-card').style.display = 'none';
+        if (selectItem) selectItem.innerHTML = '<option value="">No written items</option>';
+        return;
+      }
+
+      if ($('horizontal-prompt-card')) $('horizontal-prompt-card').style.display = 'block';
+
+      // Ensure select element has current options
+      if (selectItem) {
+        const curVal = selectItem.value;
+        selectItem.innerHTML = horizontalItems.map(it => `
+          <option value="${it.key}" ${it.key === curVal ? 'selected' : ''}>${it.label} (${it.points} pts)</option>
+        `).join('');
+        if (!selectItem.value || !horizontalItems.some(it => it.key === selectItem.value)) {
+          selectItem.value = horizontalItems[0].key;
+        }
+      }
+
+      const activeKey = selectItem ? selectItem.value : horizontalItems[0].key;
+      const activeItem = horizontalItems.find(it => it.key === activeKey) || horizontalItems[0];
+      const activeIdx = horizontalItems.indexOf(activeItem);
+
+      // Update prev / next buttons
+      const prevBtn = $('btn-horizontal-item-prev');
+      const nextBtn = $('btn-horizontal-item-next');
+      if (prevBtn) prevBtn.disabled = activeIdx <= 0;
+      if (nextBtn) nextBtn.disabled = activeIdx >= horizontalItems.length - 1;
+
+      // Update reference card prompt, rubric, and expected answer
+      if ($('horizontal-item-title')) $('horizontal-item-title').textContent = activeItem.label;
+      if ($('horizontal-item-prompt')) $('horizontal-item-prompt').textContent = activeItem.prompt || 'No question prompt provided.';
+      if ($('horizontal-item-points')) $('horizontal-item-points').textContent = `${activeItem.points.toFixed(1)} pts`;
+      if ($('horizontal-item-expected')) $('horizontal-item-expected').textContent = activeItem.expected || 'Sample Answer';
+      if ($('horizontal-item-rubric')) $('horizontal-item-rubric').textContent = activeItem.rubric || 'Instructor verification';
+      if ($('horizontal-badge-type')) $('horizontal-badge-type').textContent = activeItem.type.replace('_', ' ').toUpperCase();
+
+      const grades = state.results?.grades || [];
+      if (grades.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 3rem; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text-muted);">
+            No student submissions available for grading. Grade some scans or pre-load sample data first.
+          </div>
+        `;
+        return;
+      }
+
+      // Calculate reviewed count
+      let reviewedCount = 0;
+      grades.forEach(g => {
+        const it = g.gradedItems?.[activeItem.key];
+        if (it && it.reviewed) reviewedCount++;
+      });
+      const pctReviewed = grades.length > 0 ? (reviewedCount / grades.length) * 100 : 0;
+      if ($('horizontal-progress-bar')) $('horizontal-progress-bar').style.width = `${pctReviewed}%`;
+      if ($('horizontal-progress-text')) $('horizontal-progress-text').textContent = `${reviewedCount} of ${grades.length} reviewed (${pctReviewed.toFixed(0)}%)`;
+
+      // Render cards for each student
+      const passThreshold = state.results?.passThreshold || 60;
+
+      container.innerHTML = grades.map((g, sIdx) => {
+        const itemData = g.gradedItems?.[activeItem.key] || {
+          status: 'unreviewed',
+          pointsAwarded: 0,
+          maxPoints: activeItem.points,
+          reviewed: false,
+          ocrText: activeItem.expected,
+          ocrConfidence: 0.88
+        };
+
+        const statusClass = itemData.status === 'accepted' ? 'is-accepted' : (itemData.status === 'partial' ? 'is-partial' : (itemData.status === 'rejected' ? 'is-rejected' : ''));
+        const isPass = g.percentage >= passThreshold;
+        const ocrConf = itemData.ocrConfidence != null ? itemData.ocrConfidence : 0.88;
+        const isLowConf = ocrConf < 0.80;
+
+        let statusBadge = '<span class="badge" style="background: var(--panel-alt); color: var(--text-muted); border: 1px solid var(--border);">Unreviewed</span>';
+        if (itemData.status === 'accepted') {
+          statusBadge = `<span class="badge" style="background: #ecfdf5; color: #065f46; border: 1px solid #10b981; font-weight: 700; display: inline-flex; align-items: center; gap: 0.25rem;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Accepted (+${itemData.pointsAwarded.toFixed(1)} pts)</span>`;
+        } else if (itemData.status === 'partial') {
+          statusBadge = `<span class="badge" style="background: #fffbeb; color: #92400e; border: 1px solid #f59e0b; font-weight: 700; display: inline-flex; align-items: center; gap: 0.25rem;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 0 20Z" fill="currentColor"/></svg> Partial (+${itemData.pointsAwarded.toFixed(1)} pts)</span>`;
+        } else if (itemData.status === 'rejected') {
+          statusBadge = `<span class="badge" style="background: #fef2f2; color: #991b1b; border: 1px solid #ef4444; font-weight: 700; display: inline-flex; align-items: center; gap: 0.25rem;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Rejected (0 pts)</span>`;
+        }
+
+        const confBadge = isLowConf
+          ? `<span class="badge" style="background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; font-size: 0.7rem; font-weight: 700; display: inline-flex; align-items: center; gap: 0.25rem;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Low OCR Conf (${(ocrConf * 100).toFixed(0)}%) — Verify</span>`
+          : `<span class="badge" style="background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; font-size: 0.7rem;">OCR Conf: ${(ocrConf * 100).toFixed(0)}%</span>`;
+
+        return `
+          <div class="horizontal-item-card ${statusClass}" id="h-card-${sIdx}">
+            <!-- Student Info Column -->
+            <div>
+              <div style="font-weight: 800; font-size: 0.95rem; color: var(--text);">${g.studentName || 'Student'}</div>
+              <div style="font-size: 0.76rem; color: var(--text-muted); margin-top: 0.15rem;">
+                ID: <code>${g.studentId}</code>
+                ${g.classOffer ? `<span class="badge" style="margin-left: 0.35rem; font-size: 0.7rem; background: var(--panel-alt); border: 1px solid var(--border);">${g.classOffer}</span>` : ''}
+              </div>
+              <div style="margin-top: 0.45rem; font-size: 0.76rem; display: flex; align-items: center; gap: 0.35rem; flex-wrap: wrap;">
+                <span style="font-weight: 600;">Score:</span>
+                <span>${g.rawScore.toFixed(1)} / ${g.maxScore.toFixed(1)}</span>
+                <span class="${isPass ? 'badge-pass' : 'badge-fail'}" style="font-size: 0.68rem; padding: 0.1rem 0.35rem;">${isPass ? 'PASS' : 'FAIL'}</span>
+              </div>
+              <div style="margin-top: 0.45rem;">
+                ${statusBadge}
+              </div>
+            </div>
+
+            <!-- Cutting & OCR Column -->
+            <div class="horizontal-cutting-box">
+              <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                <span style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted);">Answer Box Crop:</span>
+                ${confBadge}
+              </div>
+              <canvas id="crop-canvas-${sIdx}" class="horizontal-cutting-canvas" width="280" height="60"></canvas>
+              <div style="font-size: 0.76rem; color: var(--text); background: var(--panel-alt); padding: 0.35rem 0.55rem; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+                <strong style="color: var(--text-muted);">OCR Read:</strong> "${itemData.ocrText || activeItem.expected}"
+              </div>
+            </div>
+
+            <!-- Action Buttons Column -->
+            <div style="display: flex; flex-direction: column; gap: 0.4rem;">
+              <button type="button" class="btn btn-horizontal-accept btn-sm" onclick="gradeHorizontalItem(${sIdx}, '${activeItem.key}', 'accept');" style="font-weight: 700; padding: 0.45rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>Accept (${activeItem.points.toFixed(1)} pts)</span>
+              </button>
+              <button type="button" class="btn btn-horizontal-partial btn-sm" onclick="gradeHorizontalItem(${sIdx}, '${activeItem.key}', 'partial');" style="font-weight: 700; padding: 0.45rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 0 20Z" fill="currentColor"/></svg>
+                <span>Partial (${(activeItem.points / 2).toFixed(1)} pts)</span>
+              </button>
+              <button type="button" class="btn btn-horizontal-reject btn-sm" onclick="gradeHorizontalItem(${sIdx}, '${activeItem.key}', 'reject');" style="font-weight: 700; padding: 0.45rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                <span>Reject (0 pts)</span>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Draw image crops on each canvas
+      grades.forEach((g, sIdx) => {
+        const c = $(`crop-canvas-${sIdx}`);
+        if (c) {
+          if (activeItem.roi) {
+            cropROIFromScan(g, activeItem.roi, c);
+          } else {
+            const ctx = c.getContext ? c.getContext('2d') : null;
+            if (ctx && ctx.fillText) {
+              ctx.fillStyle = '#ffffff';
+              ctx.fillRect(0, 0, c.width, c.height);
+              ctx.font = 'italic 13px sans-serif';
+              ctx.fillStyle = '#222222';
+              ctx.fillText(`"${g.gradedItems?.[activeItem.key]?.ocrText || activeItem.expected}"`, 14, 34);
+            }
+          }
+        }
+      });
+    }
+    window.renderHorizontalGradingView = renderHorizontalGradingView;
 
     function inspectStudent(idxOrId) {
       if (!state.results || !state.results.grades) return;
@@ -6660,7 +7724,7 @@
     $('btn-export-csv').onclick = () => {
       if (!state.results) return;
       const csv = [
-        ["Exam ID", "Student ID", "Student Name", "Raw Score", "Max Score", "Percentage", "Status", "Review Status", "Review Reasons"].join(",")
+        ["Exam ID", "Student ID", "Student Name", "Class / Offer No.", "Raw Score", "Max Score", "Percentage", "Status", "Review Status", "Review Reasons"].join(",")
       ];
       state.results.grades.forEach(g => {
         const needsReview = g.reviewFlags && g.reviewFlags.needsReview;
@@ -6669,6 +7733,7 @@
           `"${g.examId}"`,
           `"${g.studentId}"`,
           `"${g.studentName}"`,
+          `"${g.classOffer || ''}"`,
           g.rawScore.toFixed(2),
           g.maxScore.toFixed(2),
           g.percentage.toFixed(2),
@@ -6735,6 +7800,7 @@
             <td><span class="rank-badge ${rankClass}">#${rank}</span></td>
             <td><strong>${s.studentName || 'Student'}</strong></td>
             <td><code>${s.studentId || '—'}</code></td>
+            <td><span style="font-size: 11px; padding: 2px 6px; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 4px;">${s.classOffer || '—'}</span></td>
             <td>${s.rawScore.toFixed(1)} / ${s.maxScore.toFixed(1)}</td>
             <td><strong style="color: ${s.percentage >= 80 ? '#10b981' : 'inherit'};">${s.percentage.toFixed(1)}%</strong></td>
             <td><strong style="color: #0284c7;">${pr.toFixed(1)}th</strong></td>
@@ -6897,13 +7963,14 @@
           <th style="width: 50px;">Rank</th>
           <th>Student Name</th>
           <th>Student ID</th>
+          <th>Class / Offer No.</th>
           <th>Raw Score</th>
           <th>Percentage</th>
           <th>Percentile Rank</th>
         </tr>
       </thead>
       <tbody>
-        ${topStudentsHtml || '<tr><td colspan="6" style="text-align: center; color: #94a3b8; padding: 1.5rem;">No student grades available.</td></tr>'}
+        ${topStudentsHtml || '<tr><td colspan="7" style="text-align: center; color: #94a3b8; padding: 1.5rem;">No student grades available.</td></tr>'}
       </tbody>
     </table>
   </div>
@@ -7154,6 +8221,7 @@
           examId: g.examId,
           studentId: g.studentId,
           studentName: g.studentName,
+          classOffer: g.classOffer || '',
           rawScore: g.rawScore,
           maxScore: g.maxScore,
           percentage: g.percentage,
@@ -7185,7 +8253,7 @@
       };
     }
 
-    function saveCheckerProgress({ downloadFile = false, silent = false } = {}) {
+    function saveCheckerProgress({ downloadFile: shouldDownload = false, silent = false, exportFile = false } = {}) {
       const data = serializeProgressSession();
       if (!data) {
         if (!silent) alert('No active grading results to save. Grade some scans first!');
@@ -7211,10 +8279,10 @@
         }
       }
 
-      // Download backup JSON file if requested
-      if (downloadFile) {
+      // Download backup JSON file if requested (.grader.progress.json)
+      if (shouldDownload || exportFile) {
         const title = (state.layout?.title || 'exam').replace(/[^a-zA-Z0-9_-]+/g, '_').toLowerCase();
-        const filename = `${title}_progress.grader.json`;
+        const filename = `${title}.grader.progress.json`;
         downloadFile(filename, JSON.stringify(data, null, 2), 'application/json');
       }
 
@@ -7254,6 +8322,7 @@
           examId: g.examId,
           studentId: g.studentId,
           studentName: g.studentName,
+          classOffer: g.classOffer || '',
           rawScore: g.rawScore,
           maxScore: g.maxScore,
           percentage: g.percentage,
@@ -7291,6 +8360,9 @@
       if (data.activeTab && typeof window.switchTab === 'function') {
         window.switchTab(data.activeTab);
       }
+      if (data.rosterFilter && typeof window.setRosterFilter === 'function') {
+        window.setRosterFilter(data.rosterFilter);
+      }
       if (state.results.grades.length > 0) {
         inspectStudent(0);
       }
@@ -7321,6 +8393,8 @@
     }
 
     // Attach core functions to window for testing and external access
+    window.state = state;
+    window.serializeProgressSession = serializeProgressSession;
     window.computePsychometrics = computePsychometrics;
     window.processExamScan = processExamScan;
     window.updateKeyDisplay = updateKeyDisplay;
@@ -7398,6 +8472,39 @@
 
     $('btn-banner-dismiss')?.addEventListener('click', () => {
       if ($('banner-resume-session')) $('banner-resume-session').style.display = 'none';
+    });
+
+    // Horizontal Grading Item Navigator & Bulk Accept listeners
+    $('select-horizontal-item')?.addEventListener('change', () => {
+      renderHorizontalGradingView();
+    });
+
+    $('btn-horizontal-item-prev')?.addEventListener('click', () => {
+      const horizontalItems = getHorizontalGradingItems();
+      const selectItem = $('select-horizontal-item');
+      if (!selectItem || horizontalItems.length === 0) return;
+      const curIdx = horizontalItems.findIndex(it => it.key === selectItem.value);
+      if (curIdx > 0) {
+        selectItem.value = horizontalItems[curIdx - 1].key;
+        renderHorizontalGradingView();
+      }
+    });
+
+    $('btn-horizontal-item-next')?.addEventListener('click', () => {
+      const horizontalItems = getHorizontalGradingItems();
+      const selectItem = $('select-horizontal-item');
+      if (!selectItem || horizontalItems.length === 0) return;
+      const curIdx = horizontalItems.findIndex(it => it.key === selectItem.value);
+      if (curIdx < horizontalItems.length - 1 && curIdx !== -1) {
+        selectItem.value = horizontalItems[curIdx + 1].key;
+        renderHorizontalGradingView();
+      }
+    });
+
+    $('btn-horizontal-accept-all')?.addEventListener('click', () => {
+      const selectItem = $('select-horizontal-item');
+      if (!selectItem || !selectItem.value) return;
+      acceptAllUnreviewedHorizontal(selectItem.value);
     });
 
     // Empty state CTA listeners

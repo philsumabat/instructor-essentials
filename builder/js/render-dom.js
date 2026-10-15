@@ -165,7 +165,7 @@ function zoneNode(zone, layout, index = 0) {
               'padding-left': '1mm',
             },
           },
-          'if false: correction',
+          h('span', { class: 'omr-correction-hint app-chrome' }, 'if false: correction'),
         ),
       );
     });
@@ -173,13 +173,14 @@ function zoneNode(zone, layout, index = 0) {
   if (zone.type === 'text' || zone.type === 'text_short' || zone.type === 'text_essay') {
     if (zone.items && zone.items.length > 0) {
       zone.items.forEach((item) => {
-        nodes.push(h('div', { class: 'omr-field-label', style: box(item.labelX, item.labelY, item.labelW, item.boxH) }, item.label));
+        nodes.push(h('div', { class: 'omr-field-label omr-item-num', style: box(item.labelX, item.labelY, item.labelW, item.boxH) }, item.label));
         nodes.push(h('div', { class: 'omr-write-box omr-write-box--answer', 'data-roi': item.id, style: box(item.boxX, item.boxY, item.boxW, item.boxH) }));
       });
     } else if (zone.rois && zone.rois.length > 0) {
       const roi = zone.rois[0];
       if (zone.isInline && zone.prompt) {
-        nodes.push(h('div', { class: 'omr-field-label', style: box(b.x + 2.5, roi.y, zone.labelW, roi.h) }, zone.prompt));
+        const isNum = /^\d+[\.\)]?$/.test(zone.prompt.trim());
+        nodes.push(h('div', { class: `omr-field-label ${isNum ? 'omr-item-num' : ''}`.trim(), style: box(b.x + 2.5, roi.y, zone.labelW, roi.h) }, zone.prompt));
       } else if (zone.prompt) {
         const promptH = roi.y - b.y - 2.5 - 1.5;
         nodes.push(

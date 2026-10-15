@@ -91,6 +91,13 @@
   color: #8a8a8a;
 }
 
+.omr-num,
+.omr-item-num {
+  font-size: var(--omr-font-number) !important;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
 .omr-num {
   align-self: start;
   height: var(--omr-pitch-y);
@@ -98,9 +105,6 @@
   align-items: center;
   justify-content: flex-end;
   padding-right: 1.2mm;
-  font-size: var(--omr-font-number);
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
 }
 
 .omr-digit-box {
@@ -165,10 +169,21 @@
   white-space: pre-line;
 }
 
+.omr-correction-hint {
+  display: inline;
+}
+
 @media print {
   .omr-sheet {
     box-shadow: none !important;
     break-after: page;
     break-inside: avoid;
+  }
+  .omr-correction-box {
+    color: transparent !important;
+  }
+  .omr-correction-hint {
+    display: none !important;
+    visibility: hidden !important;
   }
 }

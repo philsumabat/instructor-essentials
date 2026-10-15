@@ -90,6 +90,37 @@ test('Feature 2: Clean print isolation suppresses canvas-bottom-bar', () => {
   assert.match(appCss, /@media\s+print\s*\{[^}]*\.canvas-bottom-bar/, 'app.css @media print must suppress .canvas-bottom-bar');
 });
 
+test('Feature 2b: Modified T/F correction hint print suppression and geometry preservation', () => {
+  const sheetCss = fs.readFileSync(path.join(rootDir, 'builder/css/sheet.css'), 'utf8');
+  const appCss = fs.readFileSync(path.join(rootDir, 'builder/css/app.css'), 'utf8');
+  const renderDomJs = fs.readFileSync(path.join(rootDir, 'builder/js/render-dom.js'), 'utf8');
+  const renderSvgJs = fs.readFileSync(path.join(rootDir, 'builder/js/render-svg.js'), 'utf8');
+  const appJs = fs.readFileSync(path.join(rootDir, 'builder/js/app.js'), 'utf8');
+
+  // 1. render-dom wraps hint in .omr-correction-hint and .app-chrome inside .omr-correction-box
+  assert.match(
+    renderDomJs,
+    /h\('span',\s*\{\s*class:\s*'omr-correction-hint app-chrome'\s*\},\s*'if false: correction'\)/,
+    'render-dom.js must wrap hint in omr-correction-hint app-chrome span'
+  );
+
+  // 2. sheet.css suppresses hint and sets correction box color transparent in @media print
+  assert.match(sheetCss, /\.omr-correction-box\s*\{[^}]*border:\s*0\.25mm\s+solid\s+#000/, 'sheet.css preserves 0.25mm border on correction box');
+  assert.match(sheetCss, /@media\s+print\s*\{[\s\S]*?\.omr-correction-hint\s*\{[\s\S]*?display:\s*none\s*!important/, 'sheet.css hides hint in @media print');
+  assert.match(sheetCss, /@media\s+print\s*\{[\s\S]*?\.omr-correction-box\s*\{[\s\S]*?color:\s*transparent\s*!important/, 'sheet.css transparentizes text in @media print');
+
+  // 3. app.css print isolation suppresses .omr-correction-hint and sets .omr-correction-box color transparent
+  assert.match(appCss, /@media\s+print\s*\{[\s\S]*?\.omr-correction-hint/, 'app.css @media print includes .omr-correction-hint');
+  assert.match(appCss, /@media\s+print\s*\{[\s\S]*?\.omr-correction-box\s*\{[\s\S]*?color:\s*transparent\s*!important/, 'app.css @media print transparentizes .omr-correction-box');
+
+  // 4. app.js DEFAULT_SHEET_CSS fallback mirrors print suppression rules
+  assert.match(appJs, /DEFAULT_SHEET_CSS[\s\S]*?\.omr-correction-hint\s*\{\s*display:\s*none\s*!important/, 'DEFAULT_SHEET_CSS includes print suppression for hint');
+  assert.match(appJs, /DEFAULT_SHEET_CSS[\s\S]*?\.omr-correction-box\s*\{\s*color:\s*transparent\s*!important/, 'DEFAULT_SHEET_CSS includes color transparent for box');
+
+  // 5. render-svg modified_tf renders purely vector bounding rect with zero hint text
+  assert.doesNotMatch(renderSvgJs, /if false:\s*correction/, 'render-svg.js must not output any placeholder text');
+});
+
 test('Feature 3: Export dropdown has all buttons wired with answer key sheet generator', () => {
   const indexHtml = fs.readFileSync(path.join(rootDir, 'builder/index.html'), 'utf8');
   const appJs = fs.readFileSync(path.join(rootDir, 'builder/js/app.js'), 'utf8');
@@ -136,4 +167,76 @@ test('Feature 4: Checker Studio progress saving, resume banner, and state restor
   assert.match(checkerHtml, /renderResults\(\);\s*saveCheckerProgress\(/, 'Auto-saves after batch grading finishes');
   assert.match(checkerHtml, /resolveReviewFlag[\s\S]*?saveCheckerProgress\(/, 'Auto-saves when flag is resolved');
   assert.match(checkerHtml, /reopenReviewFlag[\s\S]*?saveCheckerProgress\(/, 'Auto-saves when flag is reopened');
+});
+
+test('Feature 5: Flexible box height down to 3mm without stepper clamping or duplicate listeners', () => {
+  const appJs = fs.readFileSync(path.join(rootDir, 'builder/js/app.js'), 'utf8');
+
+  // Verify inputs in appJs allow min="3"
+  assert.match(appJs, /id="insp-box-height"[^>]*min="3"/, 'insp-box-height input should have min="3"');
+  assert.match(appJs, /id="insp-corr-height"[^>]*min="3"/, 'insp-corr-height input should have min="3"');
+
+  // Verify bindStepper sets min to 3
+  assert.match(appJs, /bindStepper\('insp-box-height'[\s\S]*?3,\s*120\)/, 'bindStepper for insp-box-height must use min 3');
+  assert.match(appJs, /bindStepper\(\s*'insp-corr-height'[\s\S]*?3,\s*40\s*\)/, 'bindStepper for insp-corr-height must use min 3');
+
+  // Verify NO duplicate bindStepper calls exist for insp-box-height
+  const boxHeightMatches = appJs.match(/bindStepper\('insp-box-height'/g);
+  assert.equal(boxHeightMatches ? boxHeightMatches.length : 0, 1, 'insp-box-height must be bound exactly once');
+
+  // Verify layout engine builds with 3mm and 4mm box heights
+  const tpl3mm = {
+    id: 'test-3mm',
+    title: '3mm Height Test',
+    paper: 'A4',
+    zones: [
+      { id: 't1', type: 'text', label: '1.', boxHeight: 3, w: 80 },
+      { id: 't2', type: 'text_short', label: 'Short', count: 2, boxHeight: 4, w: 80 },
+      { id: 'm1', type: 'modified_tf', label: 'MTF', count: 2, boxHeight: 3, w: 80 },
+    ],
+  };
+  const layout = buildLayout(tpl3mm);
+  assert.ok(layout, 'Layout builds successfully with 3mm and 4mm boxes');
+  const z1 = layout.zones.find(z => z.id === 't1');
+  const z2 = layout.zones.find(z => z.id === 't2');
+  const zm = layout.zones.find(z => z.id === 'm1');
+  assert.equal(z1.rois[0].h, 3, 'Single text box height should be 3mm');
+  assert.equal(z2.rois[0].h, 4, 'Text short box height should be 4mm');
+  assert.equal(zm.rois[0].h, 3, 'Modified TF correction box height should be 3mm');
+});
+
+test('Feature 6: Uniform item number font size across all block types (MCQ, T/F, Short Answer, Essay)', () => {
+  const sheetCss = fs.readFileSync(path.join(rootDir, 'builder/css/sheet.css'), 'utf8');
+  const renderDomJs = fs.readFileSync(path.join(rootDir, 'builder/js/render-dom.js'), 'utf8');
+  const renderSvgJs = fs.readFileSync(path.join(rootDir, 'builder/js/render-svg.js'), 'utf8');
+  const appJs = fs.readFileSync(path.join(rootDir, 'builder/js/app.js'), 'utf8');
+
+  // sheet.css and DEFAULT_SHEET_CSS define .omr-item-num with var(--omr-font-number) !important
+  assert.match(sheetCss, /\.omr-item-num\s*\{[\s\S]*?font-size:\s*var\(--omr-font-number\)\s*!important;/, 'sheet.css enforces uniform item number font size');
+  assert.match(appJs, /\.omr-item-num\s*\{[\s\S]*?font-size:\s*var\(--omr-font-number\)\s*!important;/, 'app.js fallback sheet css enforces uniform item number font size');
+
+  // render-dom.js applies omr-item-num to text zone labels and item numbers
+  assert.match(renderDomJs, /omr-item-num/, 'render-dom.js attaches omr-item-num class');
+
+  // render-svg.js uses typography.number for inline text item prompt numbers
+  assert.match(renderSvgJs, /typography\.number/, 'render-svg.js uses typography.number for item number labels');
+});
+
+test('Feature 7: Bloom dropdown styling and Short Answer items in Answer Key Editor', () => {
+  const appCss = fs.readFileSync(path.join(rootDir, 'builder/css/app.css'), 'utf8');
+  const checkerHtml = fs.readFileSync(path.join(rootDir, 'builder/checker.html'), 'utf8');
+
+  // App CSS constraints for Bloom select dropdown
+  assert.match(appCss, /\.key-bloom-select\s*\{[\s\S]*?max-width:\s*82px;[\s\S]*?text-overflow:\s*ellipsis;/, 'app.css constrains bloom dropdown width');
+  assert.match(checkerHtml, /\.key-bloom-select\s*\{[\s\S]*?max-width:\s*82px;[\s\S]*?text-overflow:\s*ellipsis;/, 'checker.html constrains bloom dropdown width');
+
+  // Full-width short answer styling in Answer Key Editor
+  assert.match(appCss, /\.key-item-cell--text\s*\{[\s\S]*?width:\s*100%;[\s\S]*?column-span:\s*all;/, 'app.css has full-width text item cell');
+  assert.match(appCss, /\.key-text-items-list\s*\{[\s\S]*?display:\s*flex;[\s\S]*?flex-direction:\s*column;/, 'app.css has key-text-items-list container');
+  assert.match(checkerHtml, /\.key-item-cell--text\s*\{[\s\S]*?width:\s*100%;[\s\S]*?column-span:\s*all;/, 'checker.html has full-width text item cell');
+  assert.match(checkerHtml, /\.key-text-items-list\s*\{[\s\S]*?display:\s*flex;[\s\S]*?flex-direction:\s*column;/, 'checker.html has key-text-items-list container');
+
+  // Answer Key modal separation of MCQ/TF matrix and short answer list
+  assert.ok(checkerHtml.includes('key-matrix-grid'), 'checker.html separates choice items into key-matrix-grid');
+  assert.ok(checkerHtml.includes('key-text-items-list'), 'checker.html renders short answer items into key-text-items-list');
 });

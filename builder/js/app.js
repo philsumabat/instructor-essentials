@@ -265,7 +265,8 @@ const DEFAULT_SHEET_CSS = `/* Printable OMR sheet styles */
 .omr-grid { display: grid; grid-auto-rows: 0; grid-auto-columns: 0; }
 .omr-bubble { display: grid; place-items: center; align-self: start; justify-self: center; width: var(--omr-d); height: var(--omr-d); border: var(--omr-stroke) solid #000; border-radius: 50%; font-size: var(--omr-font-bubble); line-height: 1; color: #8a8a8a; }
 .omr-bubble.is-keyed, .omr-bubble--keyed { background-color: #000 !important; color: #fff !important; font-weight: 700 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-.omr-num { align-self: start; height: var(--omr-pitch-y); display: flex; align-items: center; justify-content: flex-end; padding-right: 1.2mm; font-size: var(--omr-font-number); font-weight: 700; font-variant-numeric: tabular-nums; }
+.omr-num, .omr-item-num { font-size: var(--omr-font-number) !important; font-weight: 700; font-variant-numeric: tabular-nums; }
+.omr-num { align-self: start; height: var(--omr-pitch-y); display: flex; align-items: center; justify-content: flex-end; padding-right: 1.2mm; }
 .omr-digit-box { justify-self: center; width: calc(100% - 0.8mm); height: 100%; border: 0.25mm solid #000; }
 .omr-field-label { display: flex; align-items: center; font-size: var(--omr-font-label); font-weight: 700; }
 .omr-write-box { border: 0.3mm solid #000; }
@@ -273,10 +274,11 @@ const DEFAULT_SHEET_CSS = `/* Printable OMR sheet styles */
 .omr-partitioned-digits .omr-digit-box { width: 100%; height: 100%; border: none; border-right: 0.25mm solid #000; }
 .omr-partitioned-digits .omr-digit-box:last-child { border-right: none; }
 .omr-correction-box { border: 0.25mm solid #000; font-size: 1.8mm; color: #888; font-style: italic; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.omr-correction-hint { display: inline; }
 .omr-prompt { font-size: var(--omr-font-label); overflow: hidden; }
 .omr-points { color: #555; white-space: nowrap; }
 .omr-instructions { padding: 1mm; color: #222; overflow: hidden; white-space: pre-line; }
-@media print { .omr-sheet { box-shadow: none !important; break-after: page; break-inside: avoid; } }`;
+@media print { .omr-sheet { box-shadow: none !important; break-after: page; break-inside: avoid; } .omr-correction-box { color: transparent !important; } .omr-correction-hint { display: none !important; visibility: hidden !important; } }`;
 
 async function getSheetCss() {
   if (state.sheetCss) return state.sheetCss;
@@ -1107,7 +1109,7 @@ function renderInspector() {
           <label class="form-label" for="insp-corr-height">Box Height (mm)</label>
           <div class="stepper-control">
             <button type="button" class="stepper-btn" id="insp-corr-height-minus" aria-label="Decrease box height">−</button>
-            <input type="number" id="insp-corr-height" class="stepper-input" value="${corrH}" min="5" max="40">
+            <input type="number" id="insp-corr-height" class="stepper-input" value="${corrH}" min="3" max="40">
             <button type="button" class="stepper-btn" id="insp-corr-height-plus" aria-label="Increase box height">+</button>
           </div>
         </div>
@@ -1251,7 +1253,7 @@ function renderInspector() {
           <label class="form-label" for="insp-box-height">Box Height (mm)</label>
           <div class="stepper-control">
             <button type="button" class="stepper-btn" id="insp-box-height-minus" aria-label="Decrease box height">−</button>
-            <input type="number" id="insp-box-height" class="stepper-input" value="${zone.boxHeight ?? defaultH}" min="6" max="120">
+            <input type="number" id="insp-box-height" class="stepper-input" value="${zone.boxHeight ?? defaultH}" min="3" max="120">
             <button type="button" class="stepper-btn" id="insp-box-height-plus" aria-label="Increase box height">+</button>
           </div>
         </div>
@@ -1384,7 +1386,7 @@ function bindInspectorEvents(zone) {
       15,
       190
     );
-    bindStepper('insp-box-height', () => zone.boxHeight ?? 10, (val) => { zone.boxHeight = val; update(); }, 6, 120);
+    bindStepper('insp-box-height', () => zone.boxHeight ?? 10, (val) => { zone.boxHeight = val; update(); }, 3, 120);
 
     const colsPills = $$('#insp-cols-pills .pill-btn');
     for (const pill of colsPills) {
@@ -1488,7 +1490,7 @@ function bindInspectorEvents(zone) {
         zone.fieldHeight = val;
         update();
       },
-      5,
+      3,
       40
     );
   }
@@ -1590,16 +1592,6 @@ function bindInspectorEvents(zone) {
 
   // Text / Written Answer properties (text, text_short, text_essay)
   if (zone.type === 'text' || zone.type === 'text_short' || zone.type === 'text_essay') {
-    bindStepper('insp-points', () => zone.points ?? 1, (val) => {
-      zone.points = val;
-      update();
-    }, 1, 50);
-
-    bindStepper('insp-box-height', () => zone.boxHeight ?? 14, (val) => {
-      zone.boxHeight = val;
-      update();
-    }, 8, 120);
-
     const charsetSelect = $('#insp-charset');
     if (charsetSelect) {
       charsetSelect.addEventListener('change', () => {
@@ -1958,27 +1950,36 @@ function openAnswerKeyModal() {
   }
 
   // 2. Graded handwriting OCR boxes (modified_tf correction, short answer, essay)
-  for (const roi of layout.zones.flatMap((z) => z.rois || [])) {
-    if (roi.graded) {
-      const existing = existingKey[roi.key] ?? existingKey[String(roi.key)];
-      const defaultAns = roi.role === 'correction' ? 'Correction' : 'Sample Answer';
-      const existingAns = typeof existing === 'object' && existing !== null && existing.answer !== undefined
-        ? existing.answer
-        : (typeof existing === 'string' || typeof existing === 'number' ? String(existing) : null);
-      const existingPts = typeof existing === 'object' && existing !== null && existing.points !== undefined
-        ? Number(existing.points)
-        : null;
-      const existingBloom = typeof existing === 'object' && existing !== null ? existing.bloom : null;
-
-      currentAnswerKey.items[roi.key] = {
-        answer: existingAns ?? defaultAns,
-        points: existingPts ?? Number(roi.points || 1),
-        bloom: normalizeBloom(existingBloom || defaultBloomFor(roi.key)),
-        kind: 'text',
-        rubric: roi.charset === 'digits' ? 'exact' : 'case_insensitive',
-        label: roi.label || roi.key,
-      };
+  const candidateRois = [];
+  const seenRoiKeys = new Set();
+  for (const r of [...layout.zones.flatMap((z) => z.rois || []), ...(layout.rois || [])]) {
+    const rk = String(r.key || r.id);
+    if (r.graded && !seenRoiKeys.has(rk)) {
+      seenRoiKeys.add(rk);
+      candidateRois.push(r);
     }
+  }
+
+  for (const roi of candidateRois) {
+    const rKey = String(roi.key || roi.id);
+    const existing = existingKey[rKey] ?? existingKey[String(roi.key)];
+    const defaultAns = roi.role === 'correction' ? 'Correction' : 'Sample Answer';
+    const existingAns = typeof existing === 'object' && existing !== null && existing.answer !== undefined
+      ? existing.answer
+      : (typeof existing === 'string' || typeof existing === 'number' ? String(existing) : null);
+    const existingPts = typeof existing === 'object' && existing !== null && existing.points !== undefined
+      ? Number(existing.points)
+      : null;
+    const existingBloom = typeof existing === 'object' && existing !== null ? existing.bloom : null;
+
+    currentAnswerKey.items[rKey] = {
+      answer: existingAns ?? defaultAns,
+      points: existingPts ?? Number(roi.points || 1),
+      bloom: normalizeBloom(existingBloom || defaultBloomFor(rKey)),
+      kind: 'text',
+      rubric: roi.charset === 'digits' ? 'exact' : 'case_insensitive',
+      label: roi.label || rKey,
+    };
   }
 
   const totalPoints = Object.values(currentAnswerKey.items).reduce((s, it) => s + Number(it.points || 1), 0);
@@ -2075,62 +2076,76 @@ function renderAnswerKeyModalContent() {
 
     if (zoneGroups.length === 0 && zoneRois.length === 0) continue;
 
-    const zoneCols = zone.columns ? Math.min(4, Math.max(1, zone.columns)) : 3;
+    const defaultTitle = zone.type === 'text_essay' ? 'Essay / Discussion Questions' : (zone.type === 'text_short' || zone.type === 'text' ? 'Short Answer / Identification' : zone.type.toUpperCase());
+    const zoneTitle = zone.label || defaultTitle;
+    const zoneCols = Math.min(3, Math.max(1, zone.columns ? Math.min(3, zone.columns) : 2));
+
     html += `
       <div class="key-section-card">
-        <h4 class="key-section-title">${safeEscapeHTML(zone.label || zone.type.toUpperCase())}</h4>
-        <div class="key-matrix-grid" style="column-count: ${zoneCols};">
+        <h4 class="key-section-title">${safeEscapeHTML(zoneTitle)}</h4>
     `;
 
-    for (const g of zoneGroups) {
-      const item = currentAnswerKey.items[g.key];
-      if (!item) continue;
-      const opts = item.options || ['A', 'B', 'C', 'D'];
-      const currentAns = String(item.answer || '');
-      const currentBloom = item.bloom || defaultBloomFor(g.key);
+    if (zoneGroups.length > 0) {
+      html += `<div class="key-matrix-grid" style="column-count: ${zoneCols};">`;
+      for (const g of zoneGroups) {
+        const item = currentAnswerKey.items[g.key];
+        if (!item) continue;
+        const opts = item.options || ['A', 'B', 'C', 'D'];
+        const currentAns = String(item.answer || '');
+        const currentBloom = item.bloom || defaultBloomFor(g.key);
 
-      html += `
-        <div class="key-item-cell" data-key="${g.key}">
-          <div style="display: flex; align-items: center; gap: 0.4rem;">
-            <span class="key-item-num">${g.key}.</span>
-            <div class="key-bubbles-row">
-              ${opts
-                .map((opt) => `
-                  <button type="button" class="key-bubble-btn ${currentAns === opt ? 'is-active' : ''}" data-key="${g.key}" data-val="${opt}">${opt}</button>
-                `)
-                .join('')}
+        html += `
+          <div class="key-item-cell" data-key="${g.key}">
+            <div style="display: flex; align-items: center; gap: 0.35rem; min-width: 0;">
+              <span class="key-item-num">${g.key}.</span>
+              <div class="key-bubbles-row">
+                ${opts
+                  .map((opt) => `
+                    <button type="button" class="key-bubble-btn ${currentAns === opt ? 'is-active' : ''}" data-key="${g.key}" data-val="${opt}">${opt}</button>
+                  `)
+                  .join('')}
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.3rem; flex-shrink: 0;">
+              <select class="key-bloom-select" data-key="${g.key}" title="Bloom's Cognitive Level">
+                ${BLOOM_LEVELS.map((lvl) => `<option value="${lvl}" ${currentBloom === lvl ? 'selected' : ''}>${lvl}</option>`).join('')}
+              </select>
+              <input type="number" class="key-pts-input" data-key="${g.key}" value="${item.points}" min="0.5" max="50" step="0.5" title="Points">
             </div>
           </div>
-          <div style="display: flex; align-items: center; gap: 0.35rem;">
-            <select class="key-bloom-select" data-key="${g.key}" title="Bloom's Cognitive Level">
-              ${BLOOM_LEVELS.map((lvl) => `<option value="${lvl}" ${currentBloom === lvl ? 'selected' : ''}>${lvl}</option>`).join('')}
-            </select>
-            <input type="number" class="key-pts-input" data-key="${g.key}" value="${item.points}" min="0.5" max="50" step="0.5" title="Points" style="width: 48px;">
-          </div>
-        </div>
-      `;
+        `;
+      }
+      html += `</div>`;
     }
 
-    for (const roi of zoneRois) {
-      const item = currentAnswerKey.items[roi.key];
-      if (!item) continue;
-      const ansVal = Array.isArray(item.answer) ? item.answer.join(', ') : String(item.answer || '');
-      const currentBloom = item.bloom || defaultBloomFor(roi.key);
+    if (zoneRois.length > 0) {
+      html += `<div class="key-text-items-list" style="${zoneGroups.length > 0 ? 'margin-top: 0.6rem;' : ''}">`;
+      for (const roi of zoneRois) {
+        const rKey = String(roi.key || roi.id);
+        const item = currentAnswerKey.items[rKey] || currentAnswerKey.items[roi.key];
+        if (!item) continue;
+        const ansVal = Array.isArray(item.answer) ? item.answer.join(', ') : String(item.answer || '');
+        const currentBloom = item.bloom || defaultBloomFor(rKey);
 
-      html += `
-        <div class="key-item-cell" data-key="${roi.key}" style="grid-column: 1 / -1; display: flex; gap: 0.5rem; align-items: center;">
-          <span class="key-item-num">${safeEscapeHTML(item.label || roi.key)}:</span>
-          <input type="text" class="key-text-input" data-key="${roi.key}" value="${safeEscapeHTML(ansVal)}" placeholder="Accepted answer">
-          <select class="key-bloom-select" data-key="${roi.key}" title="Bloom's Cognitive Level">
-            ${BLOOM_LEVELS.map((lvl) => `<option value="${lvl}" ${currentBloom === lvl ? 'selected' : ''}>${lvl}</option>`).join('')}
-          </select>
-          <input type="number" class="key-pts-input" data-key="${roi.key}" value="${item.points}" min="0.5" max="50" step="0.5" title="Points" style="width: 48px;">
-        </div>
-      `;
+        html += `
+          <div class="key-item-cell key-item-cell--text" data-key="${rKey}">
+            <div style="display: flex; align-items: center; gap: 0.5rem; flex: 1; min-width: 0;">
+              <span class="key-item-num" style="min-width: 28px; font-weight: 700;">${safeEscapeHTML(item.label || rKey)}:</span>
+              <input type="text" class="key-text-input" data-key="${rKey}" value="${safeEscapeHTML(ansVal)}" placeholder="Accepted answer / keywords">
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.35rem; flex-shrink: 0;">
+              <select class="key-bloom-select" data-key="${rKey}" title="Bloom's Cognitive Level">
+                ${BLOOM_LEVELS.map((lvl) => `<option value="${lvl}" ${currentBloom === lvl ? 'selected' : ''}>${lvl}</option>`).join('')}
+              </select>
+              <input type="number" class="key-pts-input" data-key="${rKey}" value="${item.points}" min="0.5" max="50" step="0.5" title="Points">
+            </div>
+          </div>
+        `;
+      }
+      html += `</div>`;
     }
 
     html += `
-        </div>
       </div>
     `;
   }
@@ -2427,7 +2442,7 @@ function renderPartFields(part) {
       </div>
       <div class="gen-field-inline">
         <label>Box Height:</label>
-        <input type="number" class="gen-input gen-input--sm part-input-height" value="${part.boxHeight ?? 10}" min="6" max="30"> mm
+        <input type="number" class="gen-input gen-input--sm part-input-height" value="${part.boxHeight ?? 10}" min="3" max="30"> mm
       </div>
       <div class="gen-field-inline">
         <label>Pts/Item:</label>
@@ -2588,7 +2603,7 @@ function renderGeneratorParts() {
     const heightInput = card.querySelector('.part-input-height');
     if (heightInput) {
       heightInput.addEventListener('input', () => {
-        part.boxHeight = Math.max(6, parseInt(heightInput.value, 10) || 12);
+        part.boxHeight = Math.max(3, parseInt(heightInput.value, 10) || 10);
         updateGeneratorLivePreview();
       });
     }

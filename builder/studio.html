@@ -102,6 +102,13 @@
   color: #8a8a8a;
 }
 
+.omr-num,
+.omr-item-num {
+  font-size: var(--omr-font-number) !important;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
 .omr-num {
   align-self: start;
   height: var(--omr-pitch-y);
@@ -109,9 +116,6 @@
   align-items: center;
   justify-content: flex-end;
   padding-right: 1.2mm;
-  font-size: var(--omr-font-number);
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
 }
 
 .omr-digit-box {
@@ -176,11 +180,22 @@
   white-space: pre-line;
 }
 
+.omr-correction-hint {
+  display: inline;
+}
+
 @media print {
   .omr-sheet {
     box-shadow: none !important;
     break-after: page;
     break-inside: avoid;
+  }
+  .omr-correction-box {
+    color: transparent !important;
+  }
+  .omr-correction-hint {
+    display: none !important;
+    visibility: hidden !important;
   }
 }
 
@@ -2548,14 +2563,14 @@ dialog.modal-dialog--answer-key {
 }
 
 .key-matrix-grid {
-  column-count: 3;
+  column-count: 2;
   column-gap: 1.25rem;
   column-rule: 1px solid var(--border);
 }
 
-@media (max-width: 900px) {
+@media (min-width: 780px) {
   .key-matrix-grid {
-    column-count: 2 !important;
+    column-count: 3;
   }
 }
 
@@ -2570,12 +2585,25 @@ dialog.modal-dialog--answer-key {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.35rem 0.55rem;
+  padding: 0.32rem 0.5rem;
   background: var(--bg);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  gap: 0.4rem;
+  gap: 0.35rem;
   margin-bottom: 0.45rem;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.key-item-cell--text {
+  width: 100%;
+  column-span: all;
+}
+
+.key-text-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
 }
 
 .key-discrepancy-banner {
@@ -2598,23 +2626,24 @@ dialog.modal-dialog--answer-key {
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   color: var(--text-muted);
-  min-width: 26px;
+  min-width: 24px;
 }
 
 .key-bubbles-row {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.2rem;
+  flex-shrink: 0;
 }
 
 .key-bubble-btn {
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   border: 1.5px solid var(--border-focus);
   background: var(--panel);
   color: var(--text);
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 700;
   display: inline-flex;
   align-items: center;
@@ -2623,6 +2652,7 @@ dialog.modal-dialog--answer-key {
   user-select: none;
   transition: all 120ms ease;
   padding: 0;
+  flex-shrink: 0;
 }
 
 .key-bubble-btn:hover {
@@ -2638,7 +2668,7 @@ dialog.modal-dialog--answer-key {
 }
 
 .key-pts-input {
-  width: 36px;
+  width: 40px !important;
   padding: 0.15rem 0.25rem;
   font: inherit;
   font-size: 0.72rem;
@@ -2647,22 +2677,30 @@ dialog.modal-dialog--answer-key {
   background: var(--panel);
   color: var(--text);
   text-align: center;
+  flex-shrink: 0;
 }
 
 .key-bloom-select {
-  padding: 0.15rem 0.35rem;
+  padding: 0.15rem 0.25rem;
   font: inherit;
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 600;
   border: 1px solid var(--border);
   border-radius: var(--radius-xs);
   background: var(--panel);
   color: var(--text);
   cursor: pointer;
+  max-width: 82px;
+  min-width: 0;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .key-text-input {
   flex: 1;
+  min-width: 120px;
   padding: 0.25rem 0.45rem;
   font: inherit;
   font-size: 0.76rem;
@@ -2677,8 +2715,11 @@ dialog.modal-dialog--answer-key {
    Print Isolation: Strict millimeter scale, ZERO chrome
    ========================================================================== */
 @media print {
-  .app-chrome, .cv-overlay, .zone-floating-toolbar, .drop-indicator, .canvas-bottom-bar {
+  .app-chrome, .cv-overlay, .zone-floating-toolbar, .drop-indicator, .canvas-bottom-bar, .omr-correction-hint {
     display: none !important;
+  }
+  .omr-correction-box {
+    color: transparent !important;
   }
   html, body {
     background: #fff !important;
@@ -3274,7 +3315,7 @@ dialog.modal-dialog--answer-key {
 // ---- Standalone Sheet Builder Bundle ----
 
 // Inlined Sheet CSS for zero-network/zero-CORS standalone execution
-window.__SHEET_CSS__ = "/*\n * Printable OMR sheet styles. Every dimension is in physical units (mm) so the\n * printed output matches the layout engine's coordinates. Shared by the\n * builder app and the standalone HTML export.\n */\n.omr-sheet {\n  position: relative;\n  box-sizing: border-box;\n  overflow: hidden;\n  background: #fff;\n  color: #000;\n  font-family: \"Helvetica Neue\", Helvetica, Arial, sans-serif;\n  font-size: var(--omr-font-body);\n  line-height: 1.3;\n  -webkit-print-color-adjust: exact;\n  print-color-adjust: exact;\n}\n\n.omr-sheet *,\n.omr-sheet *::before,\n.omr-sheet *::after {\n  box-sizing: border-box;\n  margin: 0;\n}\n\n/* Everything is absolutely positioned in sheet coordinates (mm). */\n.omr-sheet > * {\n  position: absolute;\n}\n\n.omr-fiducial {\n  display: block;\n  overflow: visible;\n}\n\n.omr-title {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  text-align: center;\n  font-size: var(--omr-font-title);\n  font-weight: 700;\n  line-height: 1.15;\n  overflow: hidden;\n}\n\n.omr-footer {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  text-align: center;\n  font-size: var(--omr-font-small);\n  color: #444;\n  overflow: hidden;\n}\n\n.omr-zone {\n  border: 0.3mm solid #000;\n  border-radius: 1.2mm;\n  padding: 2.5mm;\n}\n\n.omr-zone__title {\n  font-size: var(--omr-font-label);\n  font-weight: 700;\n  line-height: 4mm;\n  height: 5mm;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n}\n\n/* Bubble matrices: explicit mm tracks from the layout engine. */\n.omr-grid {\n  display: grid;\n  grid-auto-rows: 0;\n  grid-auto-columns: 0;\n}\n\n.omr-bubble {\n  display: grid;\n  place-items: center;\n  align-self: start;\n  justify-self: center;\n  width: var(--omr-d);\n  height: var(--omr-d);\n  border: var(--omr-stroke) solid #000;\n  border-radius: 50%;\n  font-size: var(--omr-font-bubble);\n  line-height: 1;\n  color: #8a8a8a;\n}\n\n.omr-num {\n  align-self: start;\n  height: var(--omr-pitch-y);\n  display: flex;\n  align-items: center;\n  justify-content: flex-end;\n  padding-right: 1.2mm;\n  font-size: var(--omr-font-number);\n  font-weight: 700;\n  font-variant-numeric: tabular-nums;\n}\n\n.omr-digit-box {\n  justify-self: center;\n  width: calc(100% - 0.8mm);\n  height: 100%;\n  border: 0.25mm solid #000;\n}\n\n.omr-field-label {\n  display: flex;\n  align-items: center;\n  font-size: var(--omr-font-label);\n  font-weight: 700;\n}\n\n.omr-write-box {\n  border: 0.3mm solid #000;\n}\n\n.omr-partitioned-digits {\n  display: grid;\n  border: 0.3mm solid #000;\n  background: #fff;\n}\n\n.omr-partitioned-digits .omr-digit-box {\n  width: 100%;\n  height: 100%;\n  border: none;\n  border-right: 0.25mm solid #000;\n}\n\n.omr-partitioned-digits .omr-digit-box:last-child {\n  border-right: none;\n}\n\n.omr-correction-box {\n  border: 0.25mm solid #000;\n  font-size: 1.8mm;\n  color: #888;\n  font-style: italic;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n.omr-prompt {\n  font-size: var(--omr-font-label);\n  overflow: hidden;\n}\n\n.omr-points {\n  color: #555;\n  white-space: nowrap;\n}\n\n.omr-instructions {\n  padding: 1mm;\n  color: #222;\n  overflow: hidden;\n  white-space: pre-line;\n}\n\n@media print {\n  .omr-sheet {\n    box-shadow: none !important;\n    break-after: page;\n    break-inside: avoid;\n  }\n}\n";
+window.__SHEET_CSS__ = "/*\n * Printable OMR sheet styles. Every dimension is in physical units (mm) so the\n * printed output matches the layout engine's coordinates. Shared by the\n * builder app and the standalone HTML export.\n */\n.omr-sheet {\n  position: relative;\n  box-sizing: border-box;\n  overflow: hidden;\n  background: #fff;\n  color: #000;\n  font-family: \"Helvetica Neue\", Helvetica, Arial, sans-serif;\n  font-size: var(--omr-font-body);\n  line-height: 1.3;\n  -webkit-print-color-adjust: exact;\n  print-color-adjust: exact;\n}\n\n.omr-sheet *,\n.omr-sheet *::before,\n.omr-sheet *::after {\n  box-sizing: border-box;\n  margin: 0;\n}\n\n/* Everything is absolutely positioned in sheet coordinates (mm). */\n.omr-sheet > * {\n  position: absolute;\n}\n\n.omr-fiducial {\n  display: block;\n  overflow: visible;\n}\n\n.omr-title {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  text-align: center;\n  font-size: var(--omr-font-title);\n  font-weight: 700;\n  line-height: 1.15;\n  overflow: hidden;\n}\n\n.omr-footer {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  text-align: center;\n  font-size: var(--omr-font-small);\n  color: #444;\n  overflow: hidden;\n}\n\n.omr-zone {\n  border: 0.3mm solid #000;\n  border-radius: 1.2mm;\n  padding: 2.5mm;\n}\n\n.omr-zone__title {\n  font-size: var(--omr-font-label);\n  font-weight: 700;\n  line-height: 4mm;\n  height: 5mm;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n}\n\n/* Bubble matrices: explicit mm tracks from the layout engine. */\n.omr-grid {\n  display: grid;\n  grid-auto-rows: 0;\n  grid-auto-columns: 0;\n}\n\n.omr-bubble {\n  display: grid;\n  place-items: center;\n  align-self: start;\n  justify-self: center;\n  width: var(--omr-d);\n  height: var(--omr-d);\n  border: var(--omr-stroke) solid #000;\n  border-radius: 50%;\n  font-size: var(--omr-font-bubble);\n  line-height: 1;\n  color: #8a8a8a;\n}\n\n.omr-num,\n.omr-item-num {\n  font-size: var(--omr-font-number) !important;\n  font-weight: 700;\n  font-variant-numeric: tabular-nums;\n}\n\n.omr-num {\n  align-self: start;\n  height: var(--omr-pitch-y);\n  display: flex;\n  align-items: center;\n  justify-content: flex-end;\n  padding-right: 1.2mm;\n}\n\n.omr-digit-box {\n  justify-self: center;\n  width: calc(100% - 0.8mm);\n  height: 100%;\n  border: 0.25mm solid #000;\n}\n\n.omr-field-label {\n  display: flex;\n  align-items: center;\n  font-size: var(--omr-font-label);\n  font-weight: 700;\n}\n\n.omr-write-box {\n  border: 0.3mm solid #000;\n}\n\n.omr-partitioned-digits {\n  display: grid;\n  border: 0.3mm solid #000;\n  background: #fff;\n}\n\n.omr-partitioned-digits .omr-digit-box {\n  width: 100%;\n  height: 100%;\n  border: none;\n  border-right: 0.25mm solid #000;\n}\n\n.omr-partitioned-digits .omr-digit-box:last-child {\n  border-right: none;\n}\n\n.omr-correction-box {\n  border: 0.25mm solid #000;\n  font-size: 1.8mm;\n  color: #888;\n  font-style: italic;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n.omr-prompt {\n  font-size: var(--omr-font-label);\n  overflow: hidden;\n}\n\n.omr-points {\n  color: #555;\n  white-space: nowrap;\n}\n\n.omr-instructions {\n  padding: 1mm;\n  color: #222;\n  overflow: hidden;\n  white-space: pre-line;\n}\n\n.omr-correction-hint {\n  display: inline;\n}\n\n@media print {\n  .omr-sheet {\n    box-shadow: none !important;\n    break-after: page;\n    break-inside: avoid;\n  }\n  .omr-correction-box {\n    color: transparent !important;\n  }\n  .omr-correction-hint {\n    display: none !important;\n    visibility: hidden !important;\n  }\n}\n";
 
 // 1. ArUco Fiducial Module
 const Aruco = (function() {
@@ -4347,7 +4388,7 @@ function zoneNode(zone, layout, index = 0) {
               'padding-left': '1mm',
             },
           },
-          'if false: correction',
+          h('span', { class: 'omr-correction-hint app-chrome' }, 'if false: correction'),
         ),
       );
     });
@@ -4355,13 +4396,14 @@ function zoneNode(zone, layout, index = 0) {
   if (zone.type === 'text' || zone.type === 'text_short' || zone.type === 'text_essay') {
     if (zone.items && zone.items.length > 0) {
       zone.items.forEach((item) => {
-        nodes.push(h('div', { class: 'omr-field-label', style: box(item.labelX, item.labelY, item.labelW, item.boxH) }, item.label));
+        nodes.push(h('div', { class: 'omr-field-label omr-item-num', style: box(item.labelX, item.labelY, item.labelW, item.boxH) }, item.label));
         nodes.push(h('div', { class: 'omr-write-box omr-write-box--answer', 'data-roi': item.id, style: box(item.boxX, item.boxY, item.boxW, item.boxH) }));
       });
     } else if (zone.rois && zone.rois.length > 0) {
       const roi = zone.rois[0];
       if (zone.isInline && zone.prompt) {
-        nodes.push(h('div', { class: 'omr-field-label', style: box(b.x + 2.5, roi.y, zone.labelW, roi.h) }, zone.prompt));
+        const isNum = /^\d+[\.\)]?$/.test(zone.prompt.trim());
+        nodes.push(h('div', { class: `omr-field-label ${isNum ? 'omr-item-num' : ''}`.trim(), style: box(b.x + 2.5, roi.y, zone.labelW, roi.h) }, zone.prompt));
       } else if (zone.prompt) {
         const promptH = roi.y - b.y - 2.5 - 1.5;
         nodes.push(
@@ -4562,7 +4604,8 @@ function zoneSVG(zone, layout, zoneIndex) {
     } else if (zone.rois && zone.rois.length > 0) {
       const roi = zone.rois[0];
       if (zone.isInline && zone.prompt) {
-        out.push(text(b.x + 2.5, roi.y + roi.h / 2, zone.prompt, { size: typography.label, weight: 700 }));
+        const isNum = /^\d+[\.\)]?$/.test(zone.prompt.trim());
+        out.push(text(b.x + 2.5, roi.y + roi.h / 2, zone.prompt, { size: isNum ? typography.number : typography.label, weight: 700 }));
       } else if (zone.prompt) {
         const lines = wrap(zone.prompt, typography.label, roi.w);
         lines.forEach((line, i) => out.push(text(roi.x, b.y + 2.5 + (i + 0.5) * typography.label * 1.3, line, { size: typography.label })));
@@ -5108,7 +5151,8 @@ const DEFAULT_SHEET_CSS = `/* Printable OMR sheet styles */
 .omr-grid { display: grid; grid-auto-rows: 0; grid-auto-columns: 0; }
 .omr-bubble { display: grid; place-items: center; align-self: start; justify-self: center; width: var(--omr-d); height: var(--omr-d); border: var(--omr-stroke) solid #000; border-radius: 50%; font-size: var(--omr-font-bubble); line-height: 1; color: #8a8a8a; }
 .omr-bubble.is-keyed, .omr-bubble--keyed { background-color: #000 !important; color: #fff !important; font-weight: 700 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-.omr-num { align-self: start; height: var(--omr-pitch-y); display: flex; align-items: center; justify-content: flex-end; padding-right: 1.2mm; font-size: var(--omr-font-number); font-weight: 700; font-variant-numeric: tabular-nums; }
+.omr-num, .omr-item-num { font-size: var(--omr-font-number) !important; font-weight: 700; font-variant-numeric: tabular-nums; }
+.omr-num { align-self: start; height: var(--omr-pitch-y); display: flex; align-items: center; justify-content: flex-end; padding-right: 1.2mm; }
 .omr-digit-box { justify-self: center; width: calc(100% - 0.8mm); height: 100%; border: 0.25mm solid #000; }
 .omr-field-label { display: flex; align-items: center; font-size: var(--omr-font-label); font-weight: 700; }
 .omr-write-box { border: 0.3mm solid #000; }
@@ -5116,10 +5160,11 @@ const DEFAULT_SHEET_CSS = `/* Printable OMR sheet styles */
 .omr-partitioned-digits .omr-digit-box { width: 100%; height: 100%; border: none; border-right: 0.25mm solid #000; }
 .omr-partitioned-digits .omr-digit-box:last-child { border-right: none; }
 .omr-correction-box { border: 0.25mm solid #000; font-size: 1.8mm; color: #888; font-style: italic; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.omr-correction-hint { display: inline; }
 .omr-prompt { font-size: var(--omr-font-label); overflow: hidden; }
 .omr-points { color: #555; white-space: nowrap; }
 .omr-instructions { padding: 1mm; color: #222; overflow: hidden; white-space: pre-line; }
-@media print { .omr-sheet { box-shadow: none !important; break-after: page; break-inside: avoid; } }`;
+@media print { .omr-sheet { box-shadow: none !important; break-after: page; break-inside: avoid; } .omr-correction-box { color: transparent !important; } .omr-correction-hint { display: none !important; visibility: hidden !important; } }`;
 
 async function getSheetCss() {
   if (state.sheetCss) return state.sheetCss;
@@ -5950,7 +5995,7 @@ function renderInspector() {
           <label class="form-label" for="insp-corr-height">Box Height (mm)</label>
           <div class="stepper-control">
             <button type="button" class="stepper-btn" id="insp-corr-height-minus" aria-label="Decrease box height">−</button>
-            <input type="number" id="insp-corr-height" class="stepper-input" value="${corrH}" min="5" max="40">
+            <input type="number" id="insp-corr-height" class="stepper-input" value="${corrH}" min="3" max="40">
             <button type="button" class="stepper-btn" id="insp-corr-height-plus" aria-label="Increase box height">+</button>
           </div>
         </div>
@@ -6094,7 +6139,7 @@ function renderInspector() {
           <label class="form-label" for="insp-box-height">Box Height (mm)</label>
           <div class="stepper-control">
             <button type="button" class="stepper-btn" id="insp-box-height-minus" aria-label="Decrease box height">−</button>
-            <input type="number" id="insp-box-height" class="stepper-input" value="${zone.boxHeight ?? defaultH}" min="6" max="120">
+            <input type="number" id="insp-box-height" class="stepper-input" value="${zone.boxHeight ?? defaultH}" min="3" max="120">
             <button type="button" class="stepper-btn" id="insp-box-height-plus" aria-label="Increase box height">+</button>
           </div>
         </div>
@@ -6227,7 +6272,7 @@ function bindInspectorEvents(zone) {
       15,
       190
     );
-    bindStepper('insp-box-height', () => zone.boxHeight ?? 10, (val) => { zone.boxHeight = val; update(); }, 6, 120);
+    bindStepper('insp-box-height', () => zone.boxHeight ?? 10, (val) => { zone.boxHeight = val; update(); }, 3, 120);
 
     const colsPills = $$('#insp-cols-pills .pill-btn');
     for (const pill of colsPills) {
@@ -6331,7 +6376,7 @@ function bindInspectorEvents(zone) {
         zone.fieldHeight = val;
         update();
       },
-      5,
+      3,
       40
     );
   }
@@ -6433,16 +6478,6 @@ function bindInspectorEvents(zone) {
 
   // Text / Written Answer properties (text, text_short, text_essay)
   if (zone.type === 'text' || zone.type === 'text_short' || zone.type === 'text_essay') {
-    bindStepper('insp-points', () => zone.points ?? 1, (val) => {
-      zone.points = val;
-      update();
-    }, 1, 50);
-
-    bindStepper('insp-box-height', () => zone.boxHeight ?? 14, (val) => {
-      zone.boxHeight = val;
-      update();
-    }, 8, 120);
-
     const charsetSelect = $('#insp-charset');
     if (charsetSelect) {
       charsetSelect.addEventListener('change', () => {
@@ -6801,27 +6836,36 @@ function openAnswerKeyModal() {
   }
 
   // 2. Graded handwriting OCR boxes (modified_tf correction, short answer, essay)
-  for (const roi of layout.zones.flatMap((z) => z.rois || [])) {
-    if (roi.graded) {
-      const existing = existingKey[roi.key] ?? existingKey[String(roi.key)];
-      const defaultAns = roi.role === 'correction' ? 'Correction' : 'Sample Answer';
-      const existingAns = typeof existing === 'object' && existing !== null && existing.answer !== undefined
-        ? existing.answer
-        : (typeof existing === 'string' || typeof existing === 'number' ? String(existing) : null);
-      const existingPts = typeof existing === 'object' && existing !== null && existing.points !== undefined
-        ? Number(existing.points)
-        : null;
-      const existingBloom = typeof existing === 'object' && existing !== null ? existing.bloom : null;
-
-      currentAnswerKey.items[roi.key] = {
-        answer: existingAns ?? defaultAns,
-        points: existingPts ?? Number(roi.points || 1),
-        bloom: normalizeBloom(existingBloom || defaultBloomFor(roi.key)),
-        kind: 'text',
-        rubric: roi.charset === 'digits' ? 'exact' : 'case_insensitive',
-        label: roi.label || roi.key,
-      };
+  const candidateRois = [];
+  const seenRoiKeys = new Set();
+  for (const r of [...layout.zones.flatMap((z) => z.rois || []), ...(layout.rois || [])]) {
+    const rk = String(r.key || r.id);
+    if (r.graded && !seenRoiKeys.has(rk)) {
+      seenRoiKeys.add(rk);
+      candidateRois.push(r);
     }
+  }
+
+  for (const roi of candidateRois) {
+    const rKey = String(roi.key || roi.id);
+    const existing = existingKey[rKey] ?? existingKey[String(roi.key)];
+    const defaultAns = roi.role === 'correction' ? 'Correction' : 'Sample Answer';
+    const existingAns = typeof existing === 'object' && existing !== null && existing.answer !== undefined
+      ? existing.answer
+      : (typeof existing === 'string' || typeof existing === 'number' ? String(existing) : null);
+    const existingPts = typeof existing === 'object' && existing !== null && existing.points !== undefined
+      ? Number(existing.points)
+      : null;
+    const existingBloom = typeof existing === 'object' && existing !== null ? existing.bloom : null;
+
+    currentAnswerKey.items[rKey] = {
+      answer: existingAns ?? defaultAns,
+      points: existingPts ?? Number(roi.points || 1),
+      bloom: normalizeBloom(existingBloom || defaultBloomFor(rKey)),
+      kind: 'text',
+      rubric: roi.charset === 'digits' ? 'exact' : 'case_insensitive',
+      label: roi.label || rKey,
+    };
   }
 
   const totalPoints = Object.values(currentAnswerKey.items).reduce((s, it) => s + Number(it.points || 1), 0);
@@ -6918,62 +6962,76 @@ function renderAnswerKeyModalContent() {
 
     if (zoneGroups.length === 0 && zoneRois.length === 0) continue;
 
-    const zoneCols = zone.columns ? Math.min(4, Math.max(1, zone.columns)) : 3;
+    const defaultTitle = zone.type === 'text_essay' ? 'Essay / Discussion Questions' : (zone.type === 'text_short' || zone.type === 'text' ? 'Short Answer / Identification' : zone.type.toUpperCase());
+    const zoneTitle = zone.label || defaultTitle;
+    const zoneCols = Math.min(3, Math.max(1, zone.columns ? Math.min(3, zone.columns) : 2));
+
     html += `
       <div class="key-section-card">
-        <h4 class="key-section-title">${safeEscapeHTML(zone.label || zone.type.toUpperCase())}</h4>
-        <div class="key-matrix-grid" style="column-count: ${zoneCols};">
+        <h4 class="key-section-title">${safeEscapeHTML(zoneTitle)}</h4>
     `;
 
-    for (const g of zoneGroups) {
-      const item = currentAnswerKey.items[g.key];
-      if (!item) continue;
-      const opts = item.options || ['A', 'B', 'C', 'D'];
-      const currentAns = String(item.answer || '');
-      const currentBloom = item.bloom || defaultBloomFor(g.key);
+    if (zoneGroups.length > 0) {
+      html += `<div class="key-matrix-grid" style="column-count: ${zoneCols};">`;
+      for (const g of zoneGroups) {
+        const item = currentAnswerKey.items[g.key];
+        if (!item) continue;
+        const opts = item.options || ['A', 'B', 'C', 'D'];
+        const currentAns = String(item.answer || '');
+        const currentBloom = item.bloom || defaultBloomFor(g.key);
 
-      html += `
-        <div class="key-item-cell" data-key="${g.key}">
-          <div style="display: flex; align-items: center; gap: 0.4rem;">
-            <span class="key-item-num">${g.key}.</span>
-            <div class="key-bubbles-row">
-              ${opts
-                .map((opt) => `
-                  <button type="button" class="key-bubble-btn ${currentAns === opt ? 'is-active' : ''}" data-key="${g.key}" data-val="${opt}">${opt}</button>
-                `)
-                .join('')}
+        html += `
+          <div class="key-item-cell" data-key="${g.key}">
+            <div style="display: flex; align-items: center; gap: 0.35rem; min-width: 0;">
+              <span class="key-item-num">${g.key}.</span>
+              <div class="key-bubbles-row">
+                ${opts
+                  .map((opt) => `
+                    <button type="button" class="key-bubble-btn ${currentAns === opt ? 'is-active' : ''}" data-key="${g.key}" data-val="${opt}">${opt}</button>
+                  `)
+                  .join('')}
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.3rem; flex-shrink: 0;">
+              <select class="key-bloom-select" data-key="${g.key}" title="Bloom's Cognitive Level">
+                ${BLOOM_LEVELS.map((lvl) => `<option value="${lvl}" ${currentBloom === lvl ? 'selected' : ''}>${lvl}</option>`).join('')}
+              </select>
+              <input type="number" class="key-pts-input" data-key="${g.key}" value="${item.points}" min="0.5" max="50" step="0.5" title="Points">
             </div>
           </div>
-          <div style="display: flex; align-items: center; gap: 0.35rem;">
-            <select class="key-bloom-select" data-key="${g.key}" title="Bloom's Cognitive Level">
-              ${BLOOM_LEVELS.map((lvl) => `<option value="${lvl}" ${currentBloom === lvl ? 'selected' : ''}>${lvl}</option>`).join('')}
-            </select>
-            <input type="number" class="key-pts-input" data-key="${g.key}" value="${item.points}" min="0.5" max="50" step="0.5" title="Points" style="width: 48px;">
-          </div>
-        </div>
-      `;
+        `;
+      }
+      html += `</div>`;
     }
 
-    for (const roi of zoneRois) {
-      const item = currentAnswerKey.items[roi.key];
-      if (!item) continue;
-      const ansVal = Array.isArray(item.answer) ? item.answer.join(', ') : String(item.answer || '');
-      const currentBloom = item.bloom || defaultBloomFor(roi.key);
+    if (zoneRois.length > 0) {
+      html += `<div class="key-text-items-list" style="${zoneGroups.length > 0 ? 'margin-top: 0.6rem;' : ''}">`;
+      for (const roi of zoneRois) {
+        const rKey = String(roi.key || roi.id);
+        const item = currentAnswerKey.items[rKey] || currentAnswerKey.items[roi.key];
+        if (!item) continue;
+        const ansVal = Array.isArray(item.answer) ? item.answer.join(', ') : String(item.answer || '');
+        const currentBloom = item.bloom || defaultBloomFor(rKey);
 
-      html += `
-        <div class="key-item-cell" data-key="${roi.key}" style="grid-column: 1 / -1; display: flex; gap: 0.5rem; align-items: center;">
-          <span class="key-item-num">${safeEscapeHTML(item.label || roi.key)}:</span>
-          <input type="text" class="key-text-input" data-key="${roi.key}" value="${safeEscapeHTML(ansVal)}" placeholder="Accepted answer">
-          <select class="key-bloom-select" data-key="${roi.key}" title="Bloom's Cognitive Level">
-            ${BLOOM_LEVELS.map((lvl) => `<option value="${lvl}" ${currentBloom === lvl ? 'selected' : ''}>${lvl}</option>`).join('')}
-          </select>
-          <input type="number" class="key-pts-input" data-key="${roi.key}" value="${item.points}" min="0.5" max="50" step="0.5" title="Points" style="width: 48px;">
-        </div>
-      `;
+        html += `
+          <div class="key-item-cell key-item-cell--text" data-key="${rKey}">
+            <div style="display: flex; align-items: center; gap: 0.5rem; flex: 1; min-width: 0;">
+              <span class="key-item-num" style="min-width: 28px; font-weight: 700;">${safeEscapeHTML(item.label || rKey)}:</span>
+              <input type="text" class="key-text-input" data-key="${rKey}" value="${safeEscapeHTML(ansVal)}" placeholder="Accepted answer / keywords">
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.35rem; flex-shrink: 0;">
+              <select class="key-bloom-select" data-key="${rKey}" title="Bloom's Cognitive Level">
+                ${BLOOM_LEVELS.map((lvl) => `<option value="${lvl}" ${currentBloom === lvl ? 'selected' : ''}>${lvl}</option>`).join('')}
+              </select>
+              <input type="number" class="key-pts-input" data-key="${rKey}" value="${item.points}" min="0.5" max="50" step="0.5" title="Points">
+            </div>
+          </div>
+        `;
+      }
+      html += `</div>`;
     }
 
     html += `
-        </div>
       </div>
     `;
   }
@@ -7270,7 +7328,7 @@ function renderPartFields(part) {
       </div>
       <div class="gen-field-inline">
         <label>Box Height:</label>
-        <input type="number" class="gen-input gen-input--sm part-input-height" value="${part.boxHeight ?? 10}" min="6" max="30"> mm
+        <input type="number" class="gen-input gen-input--sm part-input-height" value="${part.boxHeight ?? 10}" min="3" max="30"> mm
       </div>
       <div class="gen-field-inline">
         <label>Pts/Item:</label>
@@ -7431,7 +7489,7 @@ function renderGeneratorParts() {
     const heightInput = card.querySelector('.part-input-height');
     if (heightInput) {
       heightInput.addEventListener('input', () => {
-        part.boxHeight = Math.max(6, parseInt(heightInput.value, 10) || 12);
+        part.boxHeight = Math.max(3, parseInt(heightInput.value, 10) || 10);
         updateGeneratorLivePreview();
       });
     }

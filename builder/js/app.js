@@ -63,6 +63,8 @@ function initElements() {
       package: $('#dl-package'),
       svg: $('#dl-svg'),
       html: $('#dl-html'),
+      keySheetHtml: $('#dl-key-sheet-html'),
+      keySheetSvg: $('#dl-key-sheet-svg'),
       layout: $('#dl-layout'),
       template: $('#dl-template'),
     },
@@ -251,6 +253,31 @@ function createZip(files) {
   return result;
 }
 
+const DEFAULT_SHEET_CSS = `/* Printable OMR sheet styles */
+.omr-sheet { position: relative; box-sizing: border-box; overflow: hidden; background: #fff; color: #000; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: var(--omr-font-body); line-height: 1.3; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.omr-sheet *, .omr-sheet *::before, .omr-sheet *::after { box-sizing: border-box; margin: 0; }
+.omr-sheet > * { position: absolute; }
+.omr-fiducial { display: block; overflow: visible; }
+.omr-title { display: flex; align-items: center; justify-content: center; text-align: center; font-size: var(--omr-font-title); font-weight: 700; line-height: 1.15; overflow: hidden; }
+.omr-footer { display: flex; align-items: center; justify-content: center; text-align: center; font-size: var(--omr-font-small); color: #444; overflow: hidden; }
+.omr-zone { border: 0.3mm solid #000; border-radius: 1.2mm; padding: 2.5mm; }
+.omr-zone__title { font-size: var(--omr-font-label); font-weight: 700; line-height: 4mm; height: 5mm; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.omr-grid { display: grid; grid-auto-rows: 0; grid-auto-columns: 0; }
+.omr-bubble { display: grid; place-items: center; align-self: start; justify-self: center; width: var(--omr-d); height: var(--omr-d); border: var(--omr-stroke) solid #000; border-radius: 50%; font-size: var(--omr-font-bubble); line-height: 1; color: #8a8a8a; }
+.omr-bubble.is-keyed, .omr-bubble--keyed { background-color: #000 !important; color: #fff !important; font-weight: 700 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+.omr-num { align-self: start; height: var(--omr-pitch-y); display: flex; align-items: center; justify-content: flex-end; padding-right: 1.2mm; font-size: var(--omr-font-number); font-weight: 700; font-variant-numeric: tabular-nums; }
+.omr-digit-box { justify-self: center; width: calc(100% - 0.8mm); height: 100%; border: 0.25mm solid #000; }
+.omr-field-label { display: flex; align-items: center; font-size: var(--omr-font-label); font-weight: 700; }
+.omr-write-box { border: 0.3mm solid #000; }
+.omr-partitioned-digits { display: grid; border: 0.3mm solid #000; background: #fff; }
+.omr-partitioned-digits .omr-digit-box { width: 100%; height: 100%; border: none; border-right: 0.25mm solid #000; }
+.omr-partitioned-digits .omr-digit-box:last-child { border-right: none; }
+.omr-correction-box { border: 0.25mm solid #000; font-size: 1.8mm; color: #888; font-style: italic; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.omr-prompt { font-size: var(--omr-font-label); overflow: hidden; }
+.omr-points { color: #555; white-space: nowrap; }
+.omr-instructions { padding: 1mm; color: #222; overflow: hidden; white-space: pre-line; }
+@media print { .omr-sheet { box-shadow: none !important; break-after: page; break-inside: avoid; } }`;
+
 async function getSheetCss() {
   if (state.sheetCss) return state.sheetCss;
   if (typeof window !== 'undefined' && window.__SHEET_CSS__) {
@@ -258,11 +285,84 @@ async function getSheetCss() {
     return state.sheetCss;
   }
   try {
-    state.sheetCss = await fetch('css/sheet.css').then((r) => r.text());
+    const res = await fetch('css/sheet.css');
+    if (res.ok) {
+      state.sheetCss = await res.text();
+      return state.sheetCss;
+    }
   } catch {
-    state.sheetCss = '';
+    // offline or file:// protocol
   }
+  state.sheetCss = DEFAULT_SHEET_CSS;
   return state.sheetCss;
+}
+
+function getExportBaseId() {
+  const raw = state.layout?.templateId || state.template?.id || state.template?.title || 'exam';
+  return String(raw).trim().toLowerCase().replace(/[^a-z0-9_-]+/g, '-').replace(/^-+|-+$/g, '') || 'exam';
+}
+
+function generateKeySheetSVG(layout, keyItems) {
+  let svg = renderSVG(layout);
+  const items = keyItems || (currentAnswerKey && currentAnswerKey.items) || {};
+  const stroke = layout.bubble.stroke ?? 0.25;
+  const r = (layout.bubble.diameter / 2 - stroke / 2).toFixed(3);
+  const fontSize = layout.typography.bubble;
+
+  const keyedOverlays = [];
+  for (const g of allGroups(layout)) {
+    const keyedAns = items[g.key]?.answer;
+    if (!keyedAns) continue;
+    for (const opt of g.options) {
+      if (opt.value === keyedAns) {
+        keyedOverlays.push(
+          `<circle class="omr-bubble is-keyed" cx="${Number(opt.cx).toFixed(3)}" cy="${Number(opt.cy).toFixed(3)}" r="${r}" fill="#000" stroke="#000" stroke-width="${stroke}"/>`,
+          `<text x="${Number(opt.cx).toFixed(3)}" y="${(Number(opt.cy) + 0.05).toFixed(3)}" font-size="${fontSize}" text-anchor="middle" dominant-baseline="central" fill="#fff" font-weight="700">${opt.value}</text>`
+        );
+      }
+    }
+  }
+  const titleY = layout.fiducial.inset + layout.fiducial.size / 2 + 5;
+  const keyLabel = `<text x="${layout.header.title.x}" y="${titleY.toFixed(3)}" font-size="3" text-anchor="middle" dominant-baseline="central" fill="#dc2626" font-weight="700">★ ANSWER KEY SHEET ★</text>`;
+  return svg.replace('</svg>', `${keyedOverlays.join('\n')}\n${keyLabel}\n</svg>`);
+}
+
+function generateKeySheetHTML(layout, keyItems, css) {
+  const baseHtml = renderStandaloneHTML(layout, css);
+  const items = keyItems || (currentAnswerKey && currentAnswerKey.items) || {};
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(baseHtml, 'text/html');
+
+  const styleEl = doc.querySelector('style');
+  if (styleEl) {
+    styleEl.textContent += `\n.omr-bubble.is-keyed, .omr-bubble--keyed { background: #000 !important; color: #fff !important; font-weight: 700 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }\n`;
+  }
+
+  const groups = allGroups(layout);
+  for (const g of groups) {
+    const keyedAns = items[g.key]?.answer;
+    if (!keyedAns) continue;
+    const numEls = Array.from(doc.querySelectorAll('.omr-num')).filter((el) => el.textContent.trim() === String(g.key));
+    for (const numEl of numEls) {
+      const parentGrid = numEl.parentElement;
+      if (!parentGrid) continue;
+      const numRow = numEl.style.gridRowStart || numEl.style.gridRow;
+      const bubblesInRow = Array.from(parentGrid.querySelectorAll('.omr-bubble')).filter((b) => (b.style.gridRowStart || b.style.gridRow) === numRow);
+      for (const b of bubblesInRow) {
+        if (b.textContent.trim() === keyedAns) {
+          b.classList.add('is-keyed');
+          b.setAttribute('style', `${b.getAttribute('style') || ''}; background: #000 !important; color: #fff !important; font-weight: 700 !important;`);
+        }
+      }
+    }
+  }
+
+  const titleEl = doc.querySelector('.omr-title');
+  if (titleEl) {
+    titleEl.innerHTML = `${escapeHTML(layout.title || layout.templateId)} <span style="color: #dc2626; font-size: 0.75em; margin-left: 0.4em;">[ANSWER KEY]</span>`;
+  }
+
+  return '<!doctype html>\n' + doc.documentElement.outerHTML;
 }
 
 // ---- Default Zone Creators ----
@@ -955,7 +1055,8 @@ function renderInspector() {
       </div>
     `;
   } else if (zone.type === 'modified_tf') {
-    const corrW = zone.correctionWidth ?? zone.corrWidth ?? 42;
+    const corrW = zone.boxWidth ?? zone.correctionWidth ?? zone.corrWidth ?? 42;
+    const corrH = zone.boxHeight ?? zone.fieldHeight ?? 6;
 
     formHtml += `
       <div class="form-group">
@@ -992,12 +1093,23 @@ function renderInspector() {
         </div>
       </div>
 
-      <div class="form-group">
-        <label class="form-label" for="insp-corr-width">Correction Box Width (mm)</label>
-        <div class="stepper-control">
-          <button type="button" class="stepper-btn" id="insp-corr-width-minus" aria-label="Decrease correction box width">−</button>
-          <input type="number" id="insp-corr-width" class="stepper-input" value="${corrW}" min="20" max="90">
-          <button type="button" class="stepper-btn" id="insp-corr-width-plus" aria-label="Increase correction box width">+</button>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="insp-corr-width">Box Width (mm)</label>
+          <div class="stepper-control">
+            <button type="button" class="stepper-btn" id="insp-corr-width-minus" aria-label="Decrease box width">−</button>
+            <input type="number" id="insp-corr-width" class="stepper-input" value="${corrW}" min="15" max="120">
+            <button type="button" class="stepper-btn" id="insp-corr-width-plus" aria-label="Increase box width">+</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="insp-corr-height">Box Height (mm)</label>
+          <div class="stepper-control">
+            <button type="button" class="stepper-btn" id="insp-corr-height-minus" aria-label="Decrease box height">−</button>
+            <input type="number" id="insp-corr-height" class="stepper-input" value="${corrH}" min="5" max="40">
+            <button type="button" class="stepper-btn" id="insp-corr-height-plus" aria-label="Increase box height">+</button>
+          </div>
         </div>
       </div>
 
@@ -1127,10 +1239,19 @@ function renderInspector() {
 
       <div class="form-row">
         <div class="form-group">
+          <label class="form-label" for="insp-box-width">Box Width (mm)</label>
+          <div class="stepper-control">
+            <button type="button" class="stepper-btn" id="insp-box-width-minus" aria-label="Decrease box width">−</button>
+            <input type="number" id="insp-box-width" class="stepper-input" value="${zone.boxWidth ?? ''}" placeholder="Auto (Full)" min="15" max="190">
+            <button type="button" class="stepper-btn" id="insp-box-width-plus" aria-label="Increase box width">+</button>
+          </div>
+        </div>
+
+        <div class="form-group">
           <label class="form-label" for="insp-box-height">Box Height (mm)</label>
           <div class="stepper-control">
             <button type="button" class="stepper-btn" id="insp-box-height-minus" aria-label="Decrease box height">−</button>
-            <input type="number" id="insp-box-height" class="stepper-input" value="${zone.boxHeight ?? defaultH}" min="6" max="80">
+            <input type="number" id="insp-box-height" class="stepper-input" value="${zone.boxHeight ?? defaultH}" min="6" max="120">
             <button type="button" class="stepper-btn" id="insp-box-height-plus" aria-label="Increase box height">+</button>
           </div>
         </div>
@@ -1251,8 +1372,18 @@ function bindInspectorEvents(zone) {
     );
   }
 
-  // Box height & Columns for text zones
+  // Box dimensions & Columns for text zones
   if (['text_short', 'text_essay', 'text'].includes(zone.type)) {
+    bindStepper(
+      'insp-box-width',
+      () => zone.boxWidth ?? (zone.type === 'text_essay' ? 170 : 45),
+      (val) => {
+        zone.boxWidth = val;
+        update();
+      },
+      15,
+      190
+    );
     bindStepper('insp-box-height', () => zone.boxHeight ?? 10, (val) => { zone.boxHeight = val; update(); }, 6, 120);
 
     const colsPills = $$('#insp-cols-pills .pill-btn');
@@ -1335,18 +1466,30 @@ function bindInspectorEvents(zone) {
     update();
   });
 
-  // Modified T/F correction box width
+  // Modified T/F correction box width and height
   if (zone.type === 'modified_tf') {
     bindStepper(
       'insp-corr-width',
-      () => zone.correctionWidth ?? zone.corrWidth ?? 42,
+      () => zone.boxWidth ?? zone.correctionWidth ?? zone.corrWidth ?? 42,
       (val) => {
+        zone.boxWidth = val;
         zone.corrWidth = val;
         zone.correctionWidth = val;
         update();
       },
-      20,
-      90
+      15,
+      120
+    );
+    bindStepper(
+      'insp-corr-height',
+      () => zone.boxHeight ?? zone.fieldHeight ?? 6,
+      (val) => {
+        zone.boxHeight = val;
+        zone.fieldHeight = val;
+        update();
+      },
+      5,
+      40
     );
   }
 
@@ -3206,13 +3349,25 @@ function initEvents() {
     }
   });
 
+  // Auto-close dropdown when any option inside is clicked
+  els.exportMenu?.addEventListener('click', (e) => {
+    if (e.target.closest('button')) {
+      const parent = els.btnExportToggle?.closest('.dropdown-menu');
+      parent?.classList.remove('is-open');
+      els.btnExportToggle?.setAttribute('aria-expanded', 'false');
+    }
+  });
+
   // Export actions
   els.buttons.package?.addEventListener('click', async () => {
     if (!state.layout) return;
-    const baseId = state.layout.templateId || 'exam';
+    const baseId = getExportBaseId();
     const layoutJson = `${JSON.stringify(state.layout, null, 2)}\n`;
     const svgStr = renderSVG(state.layout);
-    const htmlStr = renderStandaloneHTML(state.layout, await getSheetCss());
+    const css = await getSheetCss();
+    const htmlStr = renderStandaloneHTML(state.layout, css);
+    const keySvgStr = generateKeySheetSVG(state.layout, currentAnswerKey.items);
+    const keyHtmlStr = generateKeySheetHTML(state.layout, currentAnswerKey.items, css);
     const templateJson = state.template ? `${JSON.stringify(state.template, null, 2)}\n` : layoutJson;
 
     const keyRows = ['Item #,Answer,Points,Bloom'];
@@ -3244,14 +3399,17 @@ CONTENTS:
    - High-precision printable exam sheet.
    - Print at 100% scale (Do NOT select "Fit to page" so ArUco fiducials remain millimeter-accurate).
 
-2. layout.json
+2. answer_key_sheet.html & answer_key_sheet.svg
+   - Master answer key reference sheet with correct answer bubbles shaded.
+
+3. layout.json
    - Exact fiducial marker coordinates and bubble positions.
    - In Checker Studio (checker.html), simply upload this file or this entire ZIP package to load the layout instantly!
 
-3. template.json
+4. template.json
    - The editable Sheet Builder blueprint. Load this back into Sheet Builder to edit questions or layout anytime.
 
-4. answer_key_template.csv
+5. answer_key_template.csv
    - Pre-populated answer key CSV template with Item #, Answer, Points, and Bloom's Taxonomy cognitive levels.
    - Upload directly into Checker Studio (checker.html) to grade completed exams!
 `;
@@ -3261,6 +3419,8 @@ CONTENTS:
       { name: 'layout.json', data: enc.encode(layoutJson) },
       { name: 'exam_sheet.svg', data: enc.encode(svgStr) },
       { name: 'exam_sheet.html', data: enc.encode(htmlStr) },
+      { name: 'answer_key_sheet.svg', data: enc.encode(keySvgStr) },
+      { name: 'answer_key_sheet.html', data: enc.encode(keyHtmlStr) },
       { name: 'template.json', data: enc.encode(templateJson) },
       { name: 'answer_key_template.csv', data: enc.encode(keyCsv) },
       { name: 'README.txt', data: enc.encode(readme) },
@@ -3273,22 +3433,41 @@ CONTENTS:
 
   els.buttons.svg?.addEventListener('click', () => {
     if (!state.layout) return;
-    download(`${state.layout.templateId}.svg`, renderSVG(state.layout), 'image/svg+xml');
+    const baseId = getExportBaseId();
+    download(`${baseId}.svg`, renderSVG(state.layout), 'image/svg+xml');
   });
 
   els.buttons.html?.addEventListener('click', async () => {
     if (!state.layout) return;
-    download(`${state.layout.templateId}.sheet.html`, renderStandaloneHTML(state.layout, await getSheetCss()), 'text/html');
+    const baseId = getExportBaseId();
+    download(`${baseId}.sheet.html`, renderStandaloneHTML(state.layout, await getSheetCss()), 'text/html');
+  });
+
+  els.buttons.keySheetHtml?.addEventListener('click', async () => {
+    if (!state.layout) return;
+    const baseId = getExportBaseId();
+    const css = await getSheetCss();
+    const htmlStr = generateKeySheetHTML(state.layout, currentAnswerKey.items, css);
+    download(`${baseId}-key-sheet.html`, htmlStr, 'text/html');
+  });
+
+  els.buttons.keySheetSvg?.addEventListener('click', () => {
+    if (!state.layout) return;
+    const baseId = getExportBaseId();
+    const svgStr = generateKeySheetSVG(state.layout, currentAnswerKey.items);
+    download(`${baseId}-key-sheet.svg`, svgStr, 'image/svg+xml');
   });
 
   els.buttons.layout?.addEventListener('click', () => {
     if (!state.layout) return;
-    download(`${state.layout.templateId}.layout.json`, `${JSON.stringify(state.layout, null, 2)}\n`, 'application/json');
+    const baseId = getExportBaseId();
+    download(`${baseId}.layout.json`, `${JSON.stringify(state.layout, null, 2)}\n`, 'application/json');
   });
 
   els.buttons.template?.addEventListener('click', () => {
-    if (!state.layout || !state.template) return;
-    download(`${state.layout.templateId}.sheet.json`, `${JSON.stringify(state.template, null, 2)}\n`, 'application/json');
+    if (!state.template) return;
+    const baseId = getExportBaseId();
+    download(`${baseId}.sheet.json`, `${JSON.stringify(state.template, null, 2)}\n`, 'application/json');
   });
 
   // Canvas zoom

@@ -53,13 +53,14 @@ function gridSVG(grid, layout) {
     const x0 = colStart(cell.col);
     const y0 = rowStart(cell.row);
     const cw = grid.columns[cell.col];
+    const rowH = grid.rows[cell.row] ?? bubble.pitchY;
     if (cell.kind === 'bubble') {
       const cx = x0 + cw / 2;
-      const cy = y0 + bubble.pitchY / 2;
+      const cy = y0 + rowH / 2;
       out.push(`<circle class="omr-bubble" cx="${f(cx)}" cy="${f(cy)}" r="${f(bubble.diameter / 2 - stroke / 2)}" fill="none" stroke="#000" stroke-width="${f(stroke)}"/>`);
       out.push(text(cx, cy + 0.05, cell.text, { size: typography.bubble, anchor: 'middle', fill: '#8a8a8a' }));
     } else if (cell.kind === 'num') {
-      out.push(text(x0 + cw - 1.2, y0 + bubble.pitchY / 2, cell.text, { size: typography.number, anchor: 'end', weight: 700 }));
+      out.push(text(x0 + cw - 1.2, y0 + rowH / 2, cell.text, { size: typography.number, anchor: 'end', weight: 700 }));
     } else if (cell.kind === 'box') {
       out.push(`<rect x="${f(x0 + 0.4 + 0.125)}" y="${f(y0 + 0.125)}" width="${f(cw - 0.8 - 0.25)}" height="${f(grid.rows[cell.row] - 0.25)}" fill="none" stroke="#000" stroke-width="0.25"/>`);
     }

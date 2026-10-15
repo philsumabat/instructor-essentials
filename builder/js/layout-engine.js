@@ -297,7 +297,9 @@ function layoutModifiedTrueFalse(zone, ctx, x, y, availW) {
   const numberW = zone.numberWidth ?? NUMBER_W;
   const choices = ['T', 'F'];
   const bubbleBlockW = numberW + choices.length * bubble.pitchX;
-  const correctionW = zone.correctionWidth ?? zone.corrWidth ?? 45;
+  const customBoxH = zone.boxHeight ?? zone.fieldHeight;
+  const customBoxW = zone.boxWidth ?? zone.correctionWidth ?? zone.corrWidth;
+  const correctionW = customBoxW ?? 45;
   const blockW = bubbleBlockW + correctionW + 2.5;
   const titleH = zone.label ? TITLE_H : 0;
 
@@ -325,7 +327,7 @@ function layoutModifiedTrueFalse(zone, ctx, x, y, availW) {
     }
   }
 
-  const rowH = Math.max(bubble.pitchY, 7);
+  const rowH = Math.max(bubble.pitchY, customBoxH ? customBoxH + 1.2 : 7);
   const rowHeights = Array(rowsPerCol).fill(rowH);
 
   const grids = [];
@@ -349,9 +351,9 @@ function layoutModifiedTrueFalse(zone, ctx, x, y, availW) {
       const points = Number(zone.pointsPerItem ?? zone.points ?? 1);
       groups.push({ key: String(q), kind: 'tf', label: String(q), options, points });
 
+      const boxH = customBoxH ?? (rowH - 1.2);
       const boxX = colX + bubbleBlockW + 1.5;
-      const boxY = y + PAD + titleH + r * rowH + 0.6;
-      const boxH = rowH - 1.2;
+      const boxY = y + PAD + titleH + r * rowH + (rowH - boxH) / 2;
 
       rois.push({
         id: `${zone.id}.${q}.correction`,
@@ -507,11 +509,15 @@ function layoutText(zone, ctx, x, y, availW) {
     if (isInline && prompt) {
       labelW = zone.labelWidth ?? Math.min(18, Math.max(8, prompt.length * 3.0));
       boxX = x + PAD + labelW;
-      boxW = innerW - labelW;
+      const maxBoxW = innerW - labelW;
+      boxW = zone.boxWidth != null ? Math.max(12, Math.min(maxBoxW, Number(zone.boxWidth))) : maxBoxW;
     } else if (prompt) {
       const promptLines = estimateLines(prompt, typography.label, innerW);
       promptH = promptLines * typography.label * LINE_HEIGHT;
       boxY = y + PAD + promptH + 1.2;
+      boxW = zone.boxWidth != null ? Math.max(12, Math.min(innerW, Number(zone.boxWidth))) : innerW;
+    } else {
+      boxW = zone.boxWidth != null ? Math.max(12, Math.min(innerW, Number(zone.boxWidth))) : innerW;
     }
 
     const roi = {
@@ -530,7 +536,7 @@ function layoutText(zone, ctx, x, y, availW) {
       points,
     };
     const h = (isInline ? y + PAD + boxH + PAD : boxY + boxH + PAD) - y;
-    return { bbox: { x, y, w, h }, grids: [], groups: [], rois: [roi], extra: { prompt, points, isInline, labelW, count: 1 } };
+    return { bbox: { x, y, w, h }, grids: [], groups: [], rois: [roi], extra: { prompt, points, isInline, labelW, count: 1, boxWidth: zone.boxWidth, boxHeight: boxH } };
   }
 
   // Multi-item combined module (e.g. 5 or 10 short answer items in 1, 2, or 3 columns)
@@ -555,7 +561,8 @@ function layoutText(zone, ctx, x, y, availW) {
       const qLabel = `${q}.`;
       const labelW = Math.max(7, qLabel.length * 3.2);
       const itemBoxX = colX + labelW;
-      const itemBoxW = Math.max(12, colW - labelW);
+      const maxBoxW = colW - labelW;
+      const itemBoxW = zone.boxWidth != null ? Math.max(12, Math.min(maxBoxW, Number(zone.boxWidth))) : Math.max(12, maxBoxW);
 
       const roi = {
         id: `${zone.id}.${q}`,

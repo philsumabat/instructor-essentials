@@ -71,7 +71,6 @@ function fiducialNode(f) {
 
 function gridNode(grid, layout, zone) {
   const { bubble } = layout;
-  const bubbleOffset = mm((bubble.pitchY - bubble.diameter) / 2);
   return h(
     'div',
     {
@@ -85,8 +84,10 @@ function gridNode(grid, layout, zone) {
     },
     grid.cells.map((cell) => {
       const place = { 'grid-row': cell.row + 1, 'grid-column': cell.col + 1 };
-      if (cell.kind === 'bubble') return h('span', { class: 'omr-bubble', style: { ...place, 'margin-top': bubbleOffset } }, cell.text);
-      if (cell.kind === 'num') return h('span', { class: 'omr-num', style: place }, cell.text);
+      const curRowH = grid.rows[cell.row] ?? bubble.pitchY;
+      const cellBubbleOffset = mm((curRowH - bubble.diameter) / 2);
+      if (cell.kind === 'bubble') return h('span', { class: 'omr-bubble', style: { ...place, 'margin-top': cellBubbleOffset } }, cell.text);
+      if (cell.kind === 'num') return h('span', { class: 'omr-num', style: { ...place, height: mm(curRowH) } }, cell.text);
       if (cell.kind === 'box') return h('span', { class: 'omr-digit-box', style: place, 'aria-label': `${zone.label} digit` });
       return null;
     }),

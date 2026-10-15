@@ -2488,7 +2488,7 @@ dialog.modal-dialog--answer-key {
    Print Isolation: Strict millimeter scale, ZERO chrome
    ========================================================================== */
 @media print {
-  .app-chrome, .cv-overlay, .zone-floating-toolbar, .drop-indicator {
+  .app-chrome, .cv-overlay, .zone-floating-toolbar, .drop-indicator, .canvas-bottom-bar {
     display: none !important;
   }
   html, body {

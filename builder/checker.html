@@ -1482,8 +1482,35 @@
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
         <span>Grade Scans</span>
       </button>
+      <!-- Save Progress Button -->
+      <button type="button" id="btn-save-progress" class="btn btn--secondary" title="Save current grading session and download progress backup">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        <span>Save Progress</span>
+      </button>
+
+      <!-- Resume Progress Button -->
+      <button type="button" id="btn-resume-progress" class="btn btn--secondary" title="Resume previous grading session from browser storage or file">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6 6h10M6 10h10"/></svg>
+        <span>Resume Progress</span>
+      </button>
+      <input type="file" id="input-progress-file" accept=".json" style="display: none;">
     </div>
   </header>
+
+  <!-- Auto-Save Notification Banner -->
+  <div id="banner-resume-session" style="display: none; margin: 0.65rem 1.25rem 0 1.25rem; border-radius: var(--radius-sm); padding: 0.65rem 1rem; background: var(--panel); border: 1px solid var(--accent); align-items: center; justify-content: space-between; gap: 0.75rem; font-size: 0.82rem; box-shadow: var(--shadow-sm);">
+    <div style="display: flex; align-items: center; gap: 0.6rem; min-width: 0;">
+      <span style="font-size: 1.2rem; flex-shrink: 0;">💾</span>
+      <div style="min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+        <strong style="color: var(--text);">Saved Grading Session:</strong>
+        <span id="banner-resume-details" style="color: var(--text-muted); margin-left: 0.35rem;">Previous grading progress is available.</span>
+      </div>
+    </div>
+    <div style="display: flex; gap: 0.45rem; align-items: center; flex-shrink: 0;">
+      <button type="button" id="btn-banner-resume" class="btn btn--primary btn-xs">Resume Session</button>
+      <button type="button" id="btn-banner-dismiss" class="btn btn--secondary btn-xs">Dismiss</button>
+    </div>
+  </div>
 
   <!-- Workspace -->
   <div class="workspace">
@@ -1654,9 +1681,13 @@
             <span>Item Analysis</span>
           </button>
         </div>
-        <button type="button" id="btn-export-zip" class="btn btn--secondary btn--sm" style="width: 100%;" disabled title="Export all graded exam sheets as high-quality annotated JPEGs in a ZIP archive">
+        <button type="button" id="btn-export-zip" class="btn btn--secondary btn--sm" style="width: 100%; margin-bottom: 0.5rem;" disabled title="Export all graded exam sheets as high-quality annotated JPEGs in a ZIP archive">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;" aria-hidden="true"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5M12 12v10"/></svg>
           <span>Download All Graded Sheets (ZIP)</span>
+        </button>
+        <button type="button" id="btn-export-progress" class="btn btn--secondary btn--sm" style="width: 100%;" disabled title="Save entire grading session and download .grader.json progress file">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          <span>Save Session Progress (.grader.json)</span>
         </button>
       </div>
     </aside>
@@ -1720,6 +1751,10 @@
           <button type="button" id="btn-results-export-html" class="btn btn--secondary" title="Export item analysis and psychometrics report as HTML">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
             <span>Item Analysis</span>
+          </button>
+          <button type="button" id="btn-results-save-progress" class="btn btn--secondary" title="Save session and download progress file">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            <span>Save Progress</span>
           </button>
         </div>
       </div>
@@ -4969,6 +5004,7 @@
       setTimeout(() => {
         $('grading-progress').style.display = 'none';
         renderResults();
+        saveCheckerProgress({ downloadFile: false, silent: true });
       }, 200);
     };
 
@@ -6235,6 +6271,7 @@
       } else {
         inspectStudent(idx);
       }
+      saveCheckerProgress({ downloadFile: false, silent: true });
     }
     window.resolveReviewFlag = resolveReviewFlag;
 
@@ -6249,6 +6286,7 @@
       renderSummaryTable();
       updateSummaryReviewCallout();
       inspectStudent(idx);
+      saveCheckerProgress({ downloadFile: false, silent: true });
     }
     window.reopenReviewFlag = reopenReviewFlag;
 
@@ -7065,6 +7103,223 @@
       URL.revokeObjectURL(url);
     }
 
+    // ---- Progress Persistence Engine ----
+    const PROGRESS_STORAGE_KEY = 'checker-studio:progress';
+
+    function showToast(msg) {
+      let toast = $('app-toast');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'app-toast';
+        toast.style.cssText = 'position: fixed; bottom: 24px; right: 24px; background: #0f172a; color: #f8fafc; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 10px 18px; font-size: 0.82rem; font-weight: 600; box-shadow: 0 10px 25px rgba(0,0,0,0.35); z-index: 99999; transition: opacity 0.25s ease, transform 0.25s ease; opacity: 0; transform: translateY(10px); pointer-events: none;';
+        document.body.appendChild(toast);
+      }
+      toast.textContent = msg;
+      toast.style.opacity = '1';
+      toast.style.transform = 'translateY(0)';
+      clearTimeout(toast._timeout);
+      toast._timeout = setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(10px)';
+      }, 3500);
+    }
+    window.showToast = showToast;
+
+    function serializeProgressSession() {
+      if (!state.results || !state.results.grades) {
+        return null;
+      }
+      const serializedGrades = state.results.grades.map((g) => {
+        let scanData = null;
+        try {
+          if (g.scanImg) {
+            if (g.scanImg instanceof HTMLCanvasElement) {
+              scanData = g.scanImg.toDataURL('image/jpeg', 0.65);
+            } else if (g.scanImg.src && g.scanImg.src.startsWith('data:')) {
+              scanData = g.scanImg.src;
+            } else if (g.scanImg.width && g.scanImg.height) {
+              const c = document.createElement('canvas');
+              c.width = g.scanImg.width;
+              c.height = g.scanImg.height;
+              const ctx = c.getContext('2d');
+              ctx.drawImage(g.scanImg, 0, 0);
+              scanData = c.toDataURL('image/jpeg', 0.65);
+            }
+          }
+        } catch {
+          // ignore error
+        }
+
+        return {
+          examId: g.examId,
+          studentId: g.studentId,
+          studentName: g.studentName,
+          rawScore: g.rawScore,
+          maxScore: g.maxScore,
+          percentage: g.percentage,
+          gradedItems: g.gradedItems,
+          bubbleDiagnostics: g.bubbleDiagnostics,
+          H_canToSrc: g.H_canToSrc,
+          targetW: g.targetW,
+          targetH: g.targetH,
+          reviewFlags: g.reviewFlags,
+          scanData,
+        };
+      });
+
+      return {
+        version: 1,
+        savedAt: new Date().toISOString(),
+        layout: state.layout,
+        key: state.key,
+        roster: state.roster,
+        threshold: $('input-threshold')?.value || '60',
+        bubbleThreshold: $('input-bubble-threshold')?.value || '0.20',
+        results: {
+          passThreshold: state.results.passThreshold,
+          psychometrics: state.results.psychometrics,
+          grades: serializedGrades,
+        },
+        activeTab: state.activeTab || 'summary',
+        rosterFilter: state.rosterFilter || 'all',
+      };
+    }
+
+    function saveCheckerProgress({ downloadFile = false, silent = false } = {}) {
+      const data = serializeProgressSession();
+      if (!data) {
+        if (!silent) alert('No active grading results to save. Grade some scans first!');
+        return;
+      }
+
+      // Try saving full session to localStorage
+      try {
+        localStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify(data));
+      } catch (err) {
+        // If quota exceeded due to scan images, strip scanData and save data
+        try {
+          const lightweight = {
+            ...data,
+            results: {
+              ...data.results,
+              grades: data.results.grades.map(({ scanData, ...rest }) => rest),
+            },
+          };
+          localStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify(lightweight));
+        } catch {
+          console.warn('LocalStorage quota exceeded');
+        }
+      }
+
+      // Download backup JSON file if requested
+      if (downloadFile) {
+        const title = (state.layout?.title || 'exam').replace(/[^a-zA-Z0-9_-]+/g, '_').toLowerCase();
+        const filename = `${title}_progress.grader.json`;
+        downloadFile(filename, JSON.stringify(data, null, 2), 'application/json');
+      }
+
+      if (!silent) {
+        showToast(`💾 Progress saved (${data.results.grades.length} students)`);
+      }
+    }
+    window.saveCheckerProgress = saveCheckerProgress;
+
+    function restoreCheckerProgress(data) {
+      if (!data || !data.results || !Array.isArray(data.results.grades)) {
+        throw new Error('Invalid or corrupted grading session progress file.');
+      }
+
+      state.layout = data.layout || null;
+      state.key = data.key || null;
+      state.roster = data.roster || [];
+      if ($('input-threshold') && data.threshold) $('input-threshold').value = data.threshold;
+      if ($('input-bubble-threshold') && data.bubbleThreshold) $('input-bubble-threshold').value = data.bubbleThreshold;
+
+      const restoredGrades = data.results.grades.map((g) => {
+        let scanImg = null;
+        if (g.scanData) {
+          scanImg = new Image();
+          scanImg.src = g.scanData;
+        } else {
+          const c = document.createElement('canvas');
+          c.width = g.targetW || 840;
+          c.height = g.targetH || 1188;
+          const ctx = c.getContext('2d');
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, c.width, c.height);
+          scanImg = c;
+        }
+
+        return {
+          examId: g.examId,
+          studentId: g.studentId,
+          studentName: g.studentName,
+          rawScore: g.rawScore,
+          maxScore: g.maxScore,
+          percentage: g.percentage,
+          gradedItems: g.gradedItems,
+          bubbleDiagnostics: g.bubbleDiagnostics || [],
+          H_canToSrc: g.H_canToSrc,
+          targetW: g.targetW || 840,
+          targetH: g.targetH || 1188,
+          scanImg,
+          reviewFlags: g.reviewFlags || { needsReview: false, reasons: [] },
+        };
+      });
+
+      state.scans = restoredGrades.map((g) => ({ name: g.examId, img: g.scanImg }));
+      state.results = {
+        passThreshold: data.results.passThreshold || parseFloat(data.threshold) || 60,
+        psychometrics: data.results.psychometrics || computePsychometrics(restoredGrades, state.key),
+        grades: restoredGrades,
+      };
+
+      if (state.layout) {
+        updateLayoutDisplay(state.layout.title || 'Loaded Layout');
+      }
+      if (state.key) {
+        updateKeyDisplay();
+      }
+      if (state.roster) {
+        updateRosterDisplay();
+      }
+
+      document.querySelector('.workspace')?.classList.add('has-data');
+      document.body.classList.add('has-data');
+      renderResults();
+
+      if (data.activeTab && typeof window.switchTab === 'function') {
+        window.switchTab(data.activeTab);
+      }
+      if (state.results.grades.length > 0) {
+        inspectStudent(0);
+      }
+
+      if ($('banner-resume-session')) $('banner-resume-session').style.display = 'none';
+      showToast(`✓ Session restored: ${restoredGrades.length} students graded`);
+    }
+    window.restoreCheckerProgress = restoreCheckerProgress;
+
+    function checkAutoSavedProgress() {
+      try {
+        const raw = localStorage.getItem(PROGRESS_STORAGE_KEY);
+        if (!raw) return;
+        const parsed = JSON.parse(raw);
+        if (parsed && parsed.results && parsed.results.grades && parsed.results.grades.length > 0) {
+          const banner = $('banner-resume-session');
+          const details = $('banner-resume-details');
+          if (banner && details) {
+            const dateStr = parsed.savedAt ? new Date(parsed.savedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'recently';
+            const title = parsed.layout?.title || 'Exam';
+            details.textContent = `${title} (${parsed.results.grades.length} students, saved ${dateStr})`;
+            banner.style.display = 'flex';
+          }
+        }
+      } catch {
+        // ignore
+      }
+    }
+
     // Attach core functions to window for testing and external access
     window.computePsychometrics = computePsychometrics;
     window.processExamScan = processExamScan;
@@ -7086,15 +7341,74 @@
     $('btn-results-export-zip')?.addEventListener('click', () => $('btn-export-zip').click());
     $('btn-results-export-csv')?.addEventListener('click', () => $('btn-export-csv').click());
     $('btn-results-export-html')?.addEventListener('click', () => $('btn-export-html').click());
+    $('btn-results-save-progress')?.addEventListener('click', () => saveCheckerProgress({ downloadFile: true, silent: false }));
+    $('btn-export-progress')?.addEventListener('click', () => saveCheckerProgress({ downloadFile: true, silent: false }));
+
+    // Header Save & Resume Progress button listeners
+    $('btn-save-progress')?.addEventListener('click', () => {
+      saveCheckerProgress({ downloadFile: true, silent: false });
+    });
+
+    $('btn-resume-progress')?.addEventListener('click', () => {
+      const saved = localStorage.getItem(PROGRESS_STORAGE_KEY);
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          const studentCount = parsed.results?.grades?.length || 0;
+          const dateStr = parsed.savedAt ? new Date(parsed.savedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+          const choice = confirm(`Found auto-saved progress in browser for "${parsed.layout?.title || 'Exam'}" (${studentCount} students, ${dateStr}).\n\nClick OK to resume from browser, or Cancel to open a saved .json file.`);
+          if (choice) {
+            restoreCheckerProgress(parsed);
+            return;
+          }
+        } catch {
+          // ignore error and open file dialog
+        }
+      }
+      $('input-progress-file')?.click();
+    });
+
+    $('input-progress-file')?.addEventListener('change', (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        try {
+          const parsed = JSON.parse(evt.target.result);
+          restoreCheckerProgress(parsed);
+        } catch (err) {
+          alert(`Could not resume session: ${err.message}`);
+        } finally {
+          if ($('input-progress-file')) $('input-progress-file').value = '';
+        }
+      };
+      reader.readAsText(file);
+    });
+
+    $('btn-banner-resume')?.addEventListener('click', () => {
+      const raw = localStorage.getItem(PROGRESS_STORAGE_KEY);
+      if (raw) {
+        try {
+          restoreCheckerProgress(JSON.parse(raw));
+        } catch (err) {
+          alert(`Could not resume session: ${err.message}`);
+        }
+      }
+    });
+
+    $('btn-banner-dismiss')?.addEventListener('click', () => {
+      if ($('banner-resume-session')) $('banner-resume-session').style.display = 'none';
+    });
 
     // Empty state CTA listeners
     $('btn-empty-sample')?.addEventListener('click', () => $('btn-sample-grade').click());
     $('btn-empty-upload')?.addEventListener('click', () => $('input-scans').click());
 
-    // Initial boot display
+    // Initial boot display and check auto-saved progress
     updateLayoutDisplay();
     updateKeyDisplay();
     updateRosterDisplay();
+    checkAutoSavedProgress();
   </script>
 </body>
 </html>

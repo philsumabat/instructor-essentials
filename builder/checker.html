@@ -764,6 +764,10 @@
     .horizontal-item-card.is-partial {
       border-left: 4px solid #f59e0b;
     }
+    .horizontal-item-card.is-unsure {
+      border-left: 4px solid #eab308;
+      background: rgba(234, 179, 8, 0.04);
+    }
     .horizontal-item-card.is-rejected {
       border-left: 4px solid #ef4444;
     }
@@ -797,6 +801,20 @@
       outline: 2px solid #10b981;
       outline-offset: 2px;
     }
+    .btn-horizontal-unsure {
+      background: #eab308 !important;
+      color: #1e293b !important;
+      border: none !important;
+      font-weight: 700;
+    }
+    .btn-horizontal-unsure:hover {
+      background: #ca8a04 !important;
+      color: #ffffff !important;
+    }
+    .btn-horizontal-unsure:focus-visible {
+      outline: 2px solid #eab308;
+      outline-offset: 2px;
+    }
     .btn-horizontal-partial {
       background: #f59e0b !important;
       color: #ffffff !important;
@@ -821,10 +839,83 @@
       outline: 2px solid #ef4444;
       outline-offset: 2px;
     }
+
+    /* Horizontal Flashcard Deck Styles */
+    .horizontal-flashcard-deck {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem 1.5rem;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 1.5rem;
+    }
+    .horizontal-deck-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-bottom: 1.15rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .horizontal-flashcard-card {
+      background: var(--panel-alt);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 1.25rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.15rem;
+      align-items: center;
+      transition: all 150ms ease;
+    }
+    .horizontal-flashcard-card:focus-within {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-light);
+    }
+    .flashcard-crop-container {
+      width: 100%;
+      max-width: 540px;
+      background: #ffffff;
+      border: 1.5px solid #cbd5e1;
+      border-radius: var(--radius-sm);
+      padding: 0.75rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.45rem;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .flashcard-actions-row {
+      display: flex;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      width: 100%;
+      max-width: 540px;
+    }
+    .flashcard-actions-row .btn {
+      flex: 1 1 110px;
+      padding: 0.55rem 0.85rem;
+      font-size: 0.82rem;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.35rem;
+    }
+
     @media (max-width: 860px) {
       .horizontal-item-card {
         grid-template-columns: 1fr;
         gap: 0.85rem;
+      }
+      .horizontal-flashcard-deck {
+        padding: 1rem;
+      }
+      .horizontal-flashcard-card {
+        padding: 1rem;
       }
     }
 
@@ -1853,6 +1944,11 @@
           <span>Export Reports &amp; Graded Sheets</span>
         </div>
         <div class="results-export-bar__buttons">
+          <button type="button" id="btn-results-horizontal-grading" class="btn btn--accent" title="Grade written and identification responses item-by-item" style="display: none; align-items: center; gap: 0.35rem;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="12" x2="9" y2="12"/><line x1="21" y1="18" x2="7" y2="18"/></svg>
+            <span>Horizontal Grading</span>
+            <span id="badge-header-horizontal-count" class="badge" style="background: rgba(255,255,255,0.25); color: #fff; font-size: 0.68rem; padding: 0.1rem 0.35rem; border-radius: 9999px;">0</span>
+          </button>
           <button type="button" id="btn-results-export-zip" class="btn btn--primary" title="Export all graded exam sheets as high-quality annotated JPEGs in a ZIP archive">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5M12 12v10"/></svg>
             <span>Download All Sheets (ZIP)</span>
@@ -1967,6 +2063,22 @@
           </div>
           <button type="button" class="btn btn--secondary btn-xs" id="btn-open-review-queue" style="background: var(--panel); border-color: var(--warning); color: var(--warning); font-weight: 700;" onclick="openReviewQueue();">
             <span>Open Review Queue →</span>
+          </button>
+        </div>
+
+        <!-- Horizontal Grading Pending Items Callout Banner -->
+        <div id="banner-horizontal-review" class="review-callout-banner" style="display: none; margin-bottom: 1.25rem; background: var(--panel); border: 1.5px solid var(--accent); border-radius: var(--radius-md); padding: 0.85rem 1.15rem; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
+          <div style="display: flex; align-items: center; gap: 0.65rem;">
+            <div style="width: 28px; height: 28px; border-radius: var(--radius-sm); background: var(--accent); color: #fff; display: grid; place-items: center; flex-shrink: 0;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="12" x2="9" y2="12"/><line x1="21" y1="18" x2="7" y2="18"/></svg>
+            </div>
+            <div>
+              <div style="font-weight: 700; font-size: 0.88rem; color: var(--text);" id="banner-horizontal-title">📝 Written Items Pending Review</div>
+              <div style="font-size: 0.76rem; color: var(--text-muted);" id="banner-horizontal-text">Submissions require instructor evaluation for written/identification items.</div>
+            </div>
+          </div>
+          <button type="button" class="btn btn--primary btn-xs" id="btn-banner-horizontal-open" style="font-weight: 700;" onclick="switchTab('horizontal');">
+            <span>Grade Written Items (Flashcards) →</span>
           </button>
         </div>
 
@@ -2574,6 +2686,52 @@
           </div>
         </div>
 
+        <!-- Flashcard Deck Workspace (Primary Rapid Grading Interface) -->
+        <div class="horizontal-flashcard-deck" id="horizontal-flashcard-deck">
+          <div class="horizontal-deck-nav">
+            <div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;">
+              <span style="font-size: 0.78rem; font-weight: 800; color: var(--text); display: inline-flex; align-items: center; gap: 0.35rem;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+                Flashcard Deck
+              </span>
+              <span id="flashcard-stepper-label" class="badge" style="background: var(--panel-alt); border: 1px solid var(--border); font-weight: 700; font-size: 0.76rem;">Card 1 of 0</span>
+              <div style="display: inline-flex; gap: 0.25rem;">
+                <button type="button" id="btn-flashcard-prev" class="btn btn--secondary btn-xs" title="Previous card [Shortcut: Left Arrow]" onclick="navigateFlashcard(-1);">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+                  <span>Prev</span>
+                </button>
+                <button type="button" id="btn-flashcard-next" class="btn btn--secondary btn-xs" title="Next card [Shortcut: Right Arrow]" onclick="navigateFlashcard(1);">
+                  <span>Next</span>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Filter Pills -->
+            <div class="filter-pills" id="flashcard-deck-filters" style="display: flex; gap: 0.35rem;">
+              <button type="button" class="filter-pill is-active" data-filter="all" onclick="setFlashcardFilter('all');">All (<span id="flashcard-filter-count-all">0</span>)</button>
+              <button type="button" class="filter-pill" data-filter="needs_review" onclick="setFlashcardFilter('needs_review');">Needs Review (<span id="flashcard-filter-count-pending">0</span>)</button>
+              <button type="button" class="filter-pill" data-filter="reviewed" onclick="setFlashcardFilter('reviewed');">Reviewed (<span id="flashcard-filter-count-reviewed">0</span>)</button>
+            </div>
+          </div>
+
+          <!-- Active Card Container -->
+          <div id="horizontal-active-card-container">
+            <!-- Rendered by renderHorizontalGradingView() -->
+          </div>
+        </div>
+
+        <!-- Section: Stream / Scroll Down Later -->
+        <div style="margin-top: 1.5rem; margin-bottom: 0.75rem; display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border); padding-top: 1.25rem;">
+          <div>
+            <h4 style="margin: 0; font-size: 0.95rem; font-weight: 700; color: var(--text);">All Submissions Stream (Scrollable Overview)</h4>
+            <p style="margin: 0.2rem 0 0; font-size: 0.75rem; color: var(--text-muted);">Browse all student answer crops below at any time, or click a card to open in Flashcard Deck.</p>
+          </div>
+          <button type="button" id="btn-toggle-stream" class="btn btn--secondary btn-xs" onclick="toggleStreamVisibility();">
+            <span id="label-toggle-stream">Hide Stream</span>
+          </button>
+        </div>
+
         <!-- Student Submissions Stream Container -->
         <div id="horizontal-submissions-container" style="display: flex; flex-direction: column; gap: 0.85rem;">
           <div style="text-align: center; padding: 3rem; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text-muted);">
@@ -2942,6 +3100,77 @@
       };
     }
 
+    // Question items extractor for layout (combines bubbles and graded ROIs)
+    function getLayoutQuestionItems(layout) {
+      if (!layout) return [];
+      const items = [];
+      const seen = new Set();
+
+      // 1. Bubbles (MCQ and True/False)
+      const bubbles = layout.bubbles || [];
+      for (const b of bubbles) {
+        if (b.item && !b.item.startsWith('sid[')) {
+          const key = String(b.item);
+          if (!seen.has(key)) {
+            seen.add(key);
+            const isTF = (b.choice === 'T' || b.choice === 'F');
+            items.push({
+              key,
+              id: key,
+              label: `Item ${key}`.replace(/\.+$/, ''),
+              kind: isTF ? 'tf' : 'mcq',
+              type: isTF ? 'tf' : 'mcq',
+              points: 1.0,
+              choices: b.choice ? [b.choice] : []
+            });
+          } else {
+            const exist = items.find(it => it.key === key);
+            if (exist && b.choice && !exist.choices.includes(b.choice)) {
+              exist.choices.push(b.choice);
+            }
+          }
+        }
+      }
+
+      // 2. Graded ROIs / Zones (short answer, essay, modified TF, written)
+      const rois = layout.rois || (Array.isArray(layout.zones) ? layout.zones.flatMap(z => z.rois || []) : []);
+      for (const roi of rois) {
+        const isExcluded = roi.role === 'student_id' || roi.role === 'name' || roi.role === 'score' || roi.role === 'class_offer';
+        if (isExcluded) continue;
+
+        const isGraded = roi.graded === true ||
+          roi.role === 'correction' ||
+          String(roi.id).includes('correction') ||
+          String(roi.id).startsWith('mod_tf') ||
+          ['text', 'text_short', 'text_essay', 'modified_tf'].includes(roi.type || roi.kind);
+
+        if (isGraded) {
+          const key = String(roi.key || roi.id);
+          if (!seen.has(key)) {
+            seen.add(key);
+            const rawLabel = roi.label || `Item ${key}`;
+            const cleanLabel = String(rawLabel).replace(/\.+$/, '');
+            items.push({
+              key,
+              id: String(roi.id || key),
+              label: cleanLabel,
+              kind: 'text',
+              type: roi.role === 'correction' ? 'correction' : (roi.multiline ? 'essay' : 'short_answer'),
+              points: Number(roi.points || 1.0),
+              prompt: roi.prompt || (roi.role === 'correction' ? 'True/False Correction' : 'Written Response'),
+              expected: roi.expected || 'Sample Answer',
+              rubric: roi.rubric || 'Instructor review',
+              choices: [],
+              roi: { x: roi.x, y: roi.y, w: roi.w, h: roi.h }
+            });
+          }
+        }
+      }
+
+      return items;
+    }
+    window.getLayoutQuestionItems = getLayoutQuestionItems;
+
     // ---- Bloom's Taxonomy Cognitive Domain Utilities [Anderson & Krathwohl, 2001] ----
     const BLOOM_LEVELS = ['Remember', 'Understand', 'Apply', 'Analyze', 'Evaluate', 'Create'];
 
@@ -3143,18 +3372,22 @@
 
       const titleEl = $('layout-title-display');
       const statsEl = $('layout-stats-display');
-      const qSet = new Set((state.layout.bubbles || []).filter(b => b.item && !b.item.startsWith('sid[')).map(b => b.item));
+      const allItems = getLayoutQuestionItems(state.layout);
+      const bubbleCount = (state.layout.bubbles || []).length;
       if (titleEl) titleEl.textContent = name || state.layout.title || 'Exam Layout';
       if (statsEl) {
-        statsEl.textContent = `${state.layout.paper || 'A4'} • ${qSet.size} Questions (${(state.layout.bubbles || []).length} Bubbles)`;
+        const parts = [`${state.layout.paper || 'A4'}`, `${allItems.length} Questions`];
+        if (bubbleCount > 0) parts.push(`(${bubbleCount} Bubbles)`);
+        statsEl.textContent = parts.join(' • ');
       }
     }
 
     function applyLoadedLayout(rawJson, sourceName) {
       try {
         const parsed = parseLayout(rawJson);
-        if (!parsed || parsed.bubbles.length === 0) {
-          throw new Error("Could not find valid bubble coordinates in layout JSON.");
+        const layoutItems = getLayoutQuestionItems(parsed);
+        if (!parsed || (parsed.bubbles.length === 0 && layoutItems.length === 0)) {
+          throw new Error("Could not find valid question items or bubble coordinates in layout JSON.");
         }
         state.layout = parsed;
 
@@ -3163,26 +3396,34 @@
         if (embeddedKey) {
           state.key = parseAnswerKey(embeddedKey);
         } else {
-          // Generate a starter key matching layout questions
+          // Generate a starter key matching all layout questions (bubbles & graded ROIs)
           const items = {};
-          for (const b of (state.layout.bubbles || [])) {
-            if (b.item && !b.item.startsWith('sid[')) {
-              if (!items[b.item]) {
-                const isTF = (b.choice === 'T' || b.choice === 'F');
-                items[b.item] = {
-                  answer: b.choice || (isTF ? 'T' : 'A'),
-                  points: 1,
-                  kind: isTF ? 'tf' : 'mcq'
-                };
-              }
+          for (const it of layoutItems) {
+            if (it.kind === 'text') {
+              items[it.key] = {
+                answer: it.expected || 'Sample Answer',
+                points: Number(it.points || 1.0),
+                kind: 'text',
+                label: it.label,
+                prompt: it.prompt,
+                rubric: it.rubric
+              };
+            } else {
+              items[it.key] = {
+                answer: it.choices?.[0] || (it.kind === 'tf' ? 'T' : 'A'),
+                points: Number(it.points || 1.0),
+                kind: it.kind,
+                label: it.label
+              };
             }
           }
           if (Object.keys(items).length > 0) {
+            const totPts = Object.values(items).reduce((s, it) => s + (Number(it.points) || 1), 0);
             state.key = {
               title: `${rawJson.title || 'Custom Exam'} Answer Key`,
               templateId: rawJson.templateId || 'custom',
-              total_points: Object.keys(items).length,
-              pass_score: Math.round(Object.keys(items).length * 0.6),
+              total_points: totPts,
+              pass_score: Math.round(totPts * 0.6),
               items
             };
           }
@@ -3192,7 +3433,7 @@
         updateKeyDisplay();
         validatePreflightKeyLayout();
 
-        const qCount = new Set((state.layout.bubbles || []).filter(b => b.item && !b.item.startsWith('sid[')).map(b => b.item)).size;
+        const qCount = layoutItems.length;
         alert(`Successfully loaded layout: "${rawJson.title || sourceName}"\n${state.layout.paper || 'A4'} • ${qCount} Questions • ${state.layout.bubbles.length} Bubbles`);
 
         if (state.scans.length > 0) {
@@ -3218,14 +3459,52 @@
             }
             let layoutFile = files.find(f => f.name === 'layout.json') ||
                              files.find(f => f.name.endsWith('.layout.json')) ||
-                             files.find(f => f.name.endsWith('.json'));
+                             files.find(f => f.name.endsWith('.json') && f.name !== 'template.json');
+
+            if (!layoutFile) {
+              layoutFile = files.find(f => f.name === 'template.json');
+            }
 
             if (!layoutFile) {
               alert("Could not find layout.json inside the ZIP package.");
               return;
             }
             const json = JSON.parse(layoutFile.text());
+
+            // Check if ZIP also includes an answer key CSV or template.json with key
+            const keyCsvFile = files.find(f => f.name === 'answer_key_template.csv' || f.name.endsWith('.key.csv') || f.name.endsWith('answer_key.csv'));
+            const templateFile = files.find(f => f.name === 'template.json');
+
+            let zipKey = null;
+            if (keyCsvFile) {
+              try {
+                const parsedKeyItems = parseKeyCSV(keyCsvFile.text());
+                if (Object.keys(parsedKeyItems).length > 0) {
+                  zipKey = {
+                    title: `${json.title || file.name.replace(/\.[^/.]+$/, "")} Answer Key`,
+                    templateId: 'zip-csv',
+                    total_points: Object.values(parsedKeyItems).reduce((s, it) => s + (it.points || 1), 0),
+                    pass_score: Math.round(Object.values(parsedKeyItems).reduce((s, it) => s + (it.points || 1), 0) * 0.6),
+                    items: parsedKeyItems
+                  };
+                }
+              } catch (_) {}
+            }
+            if (!zipKey && templateFile) {
+              try {
+                const tJson = JSON.parse(templateFile.text());
+                if (tJson.key || tJson.answerKey) {
+                  zipKey = parseAnswerKey(tJson.key || tJson.answerKey);
+                }
+              } catch (_) {}
+            }
+
             applyLoadedLayout(json, file.name);
+            if (zipKey) {
+              state.key = zipKey;
+              updateKeyDisplay();
+              validatePreflightKeyLayout();
+            }
           } catch (err) {
             alert("Error reading Exam Package ZIP: " + err.message);
           }
@@ -3371,17 +3650,11 @@
         return true;
       }
 
-      // Collect question items and choices from layout bubbles
+      // Collect question items and choices from layout (bubbles and graded ROIs)
       const layoutQuestions = new Map();
-      for (const b of (state.layout.bubbles || [])) {
-        if (b.item && !b.item.startsWith('sid[')) {
-          if (!layoutQuestions.has(b.item)) {
-            layoutQuestions.set(b.item, new Set());
-          }
-          if (b.choice) {
-            layoutQuestions.get(b.item).add(b.choice);
-          }
-        }
+      const layoutItems = getLayoutQuestionItems(state.layout);
+      for (const item of layoutItems) {
+        layoutQuestions.set(item.key, new Set(item.choices || []));
       }
 
       const keyItems = state.key.items || {};
@@ -3392,7 +3665,7 @@
       const unkeyed = layoutKeys.filter(q => !keyItems[q]);
 
       // 2. Extra keyed items (in key but not on sheet layout)
-      const extraKeyed = keyKeys.filter(q => !layoutQuestions.has(q) && keyItems[q].kind !== 'text');
+      const extraKeyed = keyKeys.filter(q => !layoutQuestions.has(q));
 
       // 3. Choice mismatches (key answer not present among bubble choices)
       const invalidChoices = [];
@@ -5111,6 +5384,9 @@
 
       const rois = state.layout?.rois || (Array.isArray(state.layout?.zones) ? state.layout.zones.flatMap(z => z.rois || []) : []);
       for (const roi of rois) {
+        const isExcluded = roi.role === 'student_id' || roi.role === 'name' || roi.role === 'score' || roi.role === 'class_offer';
+        if (isExcluded) continue;
+
         const isHorizontal = roi.graded === true ||
           roi.role === 'correction' ||
           String(roi.id).includes('correction') ||
@@ -5119,10 +5395,11 @@
         if (isHorizontal && !seen.has(String(roi.key || roi.id))) {
           seen.add(String(roi.key || roi.id));
           const keyItem = state.key?.items?.[roi.key || roi.id];
+          const rawLabel = roi.label || keyItem?.label || `Item ${roi.key || roi.id}`;
           items.push({
             key: String(roi.key || roi.id),
             id: String(roi.id || roi.key),
-            label: roi.label || keyItem?.label || `Item ${roi.key || roi.id}`,
+            label: String(rawLabel).replace(/\.+$/, ''),
             prompt: roi.prompt || keyItem?.prompt || (roi.role === 'correction' ? 'True/False Correction' : 'Written Response'),
             points: Number(roi.points || keyItem?.points || 1.0),
             type: roi.role === 'correction' ? 'correction' : (roi.multiline ? 'essay' : 'short_answer'),
@@ -5137,10 +5414,11 @@
         for (const [k, it] of Object.entries(state.key.items)) {
           if ((it.kind === 'text' || it.type === 'written' || it.type === 'essay' || it.correction) && !seen.has(String(k))) {
             seen.add(String(k));
+            const rawLabel = it.label || `Item ${k}`;
             items.push({
               key: String(k),
               id: String(k),
-              label: it.label || `Item ${k}`,
+              label: String(rawLabel).replace(/\.+$/, ''),
               prompt: it.prompt || (it.correction ? 'True/False Correction' : 'Written Response'),
               points: Number(it.points || 1.0),
               type: it.type || (it.correction ? 'correction' : 'short_answer'),
@@ -5212,6 +5490,13 @@
           destCtx.font = '12px sans-serif';
           destCtx.fillText(`[Crop: ${roi.w}x${roi.h}mm]`, 10, 24);
         }
+      } else {
+        destCtx.fillStyle = '#f8fafc';
+        destCtx.fillRect(0, 0, destCanvas.width, destCanvas.height);
+        destCtx.font = 'italic 13px sans-serif';
+        destCtx.fillStyle = '#334155';
+        const txt = grade.gradedItems?.[roi.key || roi.id]?.ocrText || 'Handwritten Answer';
+        destCtx.fillText(`"${txt}"`, 14, Math.round(destCanvas.height / 2) + 4);
       }
     }
     window.cropROIFromScan = cropROIFromScan;
@@ -6768,6 +7053,9 @@
       if ($('btn-results-export-csv')) $('btn-results-export-csv').disabled = false;
       if ($('btn-results-export-html')) $('btn-results-export-html').disabled = false;
 
+      // Update Horizontal Grading button and badges
+      updateHorizontalBadges();
+
       // Default to selecting the first student (index 0) in the roster preview pane
       if (grades.length > 0) {
         inspectStudent(0);
@@ -7124,6 +7412,62 @@
     window.acceptNewStudent = acceptNewStudent;
 
     // Horizontal Grading Engine Controller
+    const horizontalDeckState = {
+      currentIndex: 0,
+      filter: 'all',
+      streamVisible: true
+    };
+    window.horizontalDeckState = horizontalDeckState;
+
+    function getActiveHorizontalItem() {
+      const horizontalItems = getHorizontalGradingItems();
+      if (horizontalItems.length === 0) return null;
+      const selectItem = $('select-horizontal-item');
+      const activeKey = selectItem?.value || horizontalItems[0].key;
+      return horizontalItems.find(it => it.key === activeKey) || horizontalItems[0];
+    }
+    window.getActiveHorizontalItem = getActiveHorizontalItem;
+
+    function getFilteredFlashcardIndices(activeItemKey) {
+      const grades = state.results?.grades || [];
+      return grades.map((g, idx) => ({ g, idx })).filter(({ g }) => {
+        const it = g.gradedItems?.[activeItemKey];
+        const isDecided = it && it.reviewed && it.status !== 'unreviewed' && it.status !== 'unsure';
+        if (horizontalDeckState.filter === 'needs_review') {
+          return !isDecided;
+        }
+        if (horizontalDeckState.filter === 'reviewed') {
+          return isDecided;
+        }
+        return true;
+      }).map(entry => entry.idx);
+    }
+    window.getFilteredFlashcardIndices = getFilteredFlashcardIndices;
+
+    function updateHorizontalBadges() {
+      const horizontalItems = typeof getHorizontalGradingItems === 'function' ? getHorizontalGradingItems() : [];
+      const btnResultsHoriz = $('btn-results-horizontal-grading');
+      const badgeHeader = $('badge-header-horizontal-count');
+      const badgeTab = $('badge-horizontal-count');
+      const bannerHoriz = $('banner-horizontal-review');
+      const count = horizontalItems.length;
+
+      if (btnResultsHoriz) {
+        btnResultsHoriz.style.display = count > 0 ? 'inline-flex' : 'none';
+      }
+      if (badgeHeader) {
+        badgeHeader.textContent = count;
+      }
+      if (badgeTab) {
+        badgeTab.textContent = count;
+        badgeTab.style.display = count > 0 ? 'inline-block' : 'none';
+      }
+      if (bannerHoriz) {
+        bannerHoriz.style.display = count > 0 ? 'flex' : 'none';
+      }
+    }
+    window.updateHorizontalBadges = updateHorizontalBadges;
+
     function gradeHorizontalItem(studentIdx, itemKey, action, customPoints) {
       if (!state.results || !state.results.grades || !state.results.grades[studentIdx]) return;
       const grade = state.results.grades[studentIdx];
@@ -7144,6 +7488,10 @@
       } else if (action === 'partial') {
         ptsAwarded = customPoints != null ? Number(customPoints) : (maxPts / 2);
         status = 'partial';
+        isCorrect = false;
+      } else if (action === 'unsure') {
+        ptsAwarded = 0;
+        status = 'unsure';
         isCorrect = false;
       } else if (action === 'reject') {
         ptsAwarded = 0;
@@ -7204,6 +7552,72 @@
     }
     window.gradeHorizontalItem = gradeHorizontalItem;
 
+    function flashcardGradeAction(studentIdx, itemKey, action, customPoints) {
+      gradeHorizontalItem(studentIdx, itemKey, action, customPoints);
+
+      // Auto-advance logic
+      const activeItem = getActiveHorizontalItem();
+      if (activeItem) {
+        const matchingIndices = getFilteredFlashcardIndices(activeItem.key);
+        if (horizontalDeckState.filter === 'all') {
+          if (horizontalDeckState.currentIndex < matchingIndices.length - 1) {
+            horizontalDeckState.currentIndex++;
+          }
+        } else {
+          // In filtered views (needs_review or reviewed)
+          if (horizontalDeckState.currentIndex >= matchingIndices.length) {
+            horizontalDeckState.currentIndex = Math.max(0, matchingIndices.length - 1);
+          }
+        }
+      }
+      renderHorizontalGradingView();
+    }
+    window.flashcardGradeAction = flashcardGradeAction;
+
+    function navigateFlashcard(direction) {
+      const activeItem = getActiveHorizontalItem();
+      if (!activeItem) return;
+      const matchingIndices = getFilteredFlashcardIndices(activeItem.key);
+      if (matchingIndices.length === 0) return;
+      horizontalDeckState.currentIndex = Math.max(0, Math.min(matchingIndices.length - 1, horizontalDeckState.currentIndex + direction));
+      renderHorizontalGradingView();
+    }
+    window.navigateFlashcard = navigateFlashcard;
+
+    function setFlashcardFilter(filter) {
+      horizontalDeckState.filter = filter;
+      horizontalDeckState.currentIndex = 0;
+      renderHorizontalGradingView();
+    }
+    window.setFlashcardFilter = setFlashcardFilter;
+
+    function toggleStreamVisibility() {
+      horizontalDeckState.streamVisible = !horizontalDeckState.streamVisible;
+      const container = $('horizontal-submissions-container');
+      const label = $('label-toggle-stream');
+      if (container) {
+        container.style.display = horizontalDeckState.streamVisible ? 'flex' : 'none';
+      }
+      if (label) {
+        label.textContent = horizontalDeckState.streamVisible ? 'Hide Stream' : 'Show All Submissions';
+      }
+    }
+    window.toggleStreamVisibility = toggleStreamVisibility;
+
+    function focusSubmissionInFlashcards(sIdx) {
+      const activeItem = getActiveHorizontalItem();
+      if (!activeItem) return;
+      horizontalDeckState.filter = 'all';
+      const matching = getFilteredFlashcardIndices(activeItem.key);
+      const foundIdx = matching.indexOf(sIdx);
+      if (foundIdx !== -1) {
+        horizontalDeckState.currentIndex = foundIdx;
+      }
+      renderHorizontalGradingView();
+      $('horizontal-flashcard-deck')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    window.focusSubmissionInFlashcards = focusSubmissionInFlashcards;
+
     function acceptAllUnreviewedHorizontal(itemKey) {
       if (!state.results || !state.results.grades) return;
       state.results.grades.forEach((g, idx) => {
@@ -7219,28 +7633,27 @@
 
     function renderHorizontalGradingView() {
       const container = $('horizontal-submissions-container');
+      const activeCardContainer = $('horizontal-active-card-container');
       const selectItem = $('select-horizontal-item');
       if (!container) return;
 
       const horizontalItems = getHorizontalGradingItems();
-      const badgeCount = $('badge-horizontal-count');
-      if (badgeCount) {
-        badgeCount.textContent = horizontalItems.length;
-        badgeCount.style.display = horizontalItems.length > 0 ? 'inline-block' : 'none';
-      }
+      updateHorizontalBadges();
 
       if (horizontalItems.length === 0) {
+        if ($('horizontal-flashcard-deck')) $('horizontal-flashcard-deck').style.display = 'none';
+        if ($('horizontal-prompt-card')) $('horizontal-prompt-card').style.display = 'none';
         container.innerHTML = `
           <div style="text-align: center; padding: 3rem; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text-muted);">
             <p style="margin: 0 0 0.5rem; font-weight: 700; color: var(--text);">No written or identification items found in this layout.</p>
             <p style="margin: 0; font-size: 0.8rem;">Horizontal item-by-item grading is active for short answer, essay, identification, and modified true/false correction questions.</p>
           </div>
         `;
-        if ($('horizontal-prompt-card')) $('horizontal-prompt-card').style.display = 'none';
         if (selectItem) selectItem.innerHTML = '<option value="">No written items</option>';
         return;
       }
 
+      if ($('horizontal-flashcard-deck')) $('horizontal-flashcard-deck').style.display = 'block';
       if ($('horizontal-prompt-card')) $('horizontal-prompt-card').style.display = 'block';
 
       // Ensure select element has current options
@@ -7258,7 +7671,7 @@
       const activeItem = horizontalItems.find(it => it.key === activeKey) || horizontalItems[0];
       const activeIdx = horizontalItems.indexOf(activeItem);
 
-      // Update prev / next buttons
+      // Update prev / next item buttons
       const prevBtn = $('btn-horizontal-item-prev');
       const nextBtn = $('btn-horizontal-item-next');
       if (prevBtn) prevBtn.disabled = activeIdx <= 0;
@@ -7274,26 +7687,200 @@
 
       const grades = state.results?.grades || [];
       if (grades.length === 0) {
+        if (activeCardContainer) {
+          activeCardContainer.innerHTML = `
+            <div style="text-align: center; padding: 2.5rem 1rem; color: var(--text-muted);">
+              No student submissions available for grading. Grade some scans or pre-load sample data first.
+            </div>
+          `;
+        }
         container.innerHTML = `
           <div style="text-align: center; padding: 3rem; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text-muted);">
-            No student submissions available for grading. Grade some scans or pre-load sample data first.
+            No student submissions available for horizontal grading. Grade some scans or pre-load sample data first.
           </div>
         `;
         return;
       }
 
-      // Calculate reviewed count
+      // Calculate reviewed, unsure, and pending counts for this item
       let reviewedCount = 0;
+      let unsureCount = 0;
       grades.forEach(g => {
         const it = g.gradedItems?.[activeItem.key];
-        if (it && it.reviewed) reviewedCount++;
+        if (it && it.reviewed && it.status !== 'unreviewed' && it.status !== 'unsure') {
+          reviewedCount++;
+        } else if (it && it.status === 'unsure') {
+          unsureCount++;
+        }
       });
+      const pendingCount = grades.length - reviewedCount;
       const pctReviewed = grades.length > 0 ? (reviewedCount / grades.length) * 100 : 0;
       if ($('horizontal-progress-bar')) $('horizontal-progress-bar').style.width = `${pctReviewed}%`;
-      if ($('horizontal-progress-text')) $('horizontal-progress-text').textContent = `${reviewedCount} of ${grades.length} reviewed (${pctReviewed.toFixed(0)}%)`;
+      if ($('horizontal-progress-text')) {
+        let pTxt = `${reviewedCount} of ${grades.length} reviewed (${pctReviewed.toFixed(0)}%)`;
+        if (unsureCount > 0) pTxt += ` • ${unsureCount} flagged unsure`;
+        $('horizontal-progress-text').textContent = pTxt;
+      }
 
-      // Render cards for each student
-      const passThreshold = state.results?.passThreshold || 60;
+      // Update Filter Pill Counts and active classes
+      if ($('flashcard-filter-count-all')) $('flashcard-filter-count-all').textContent = grades.length;
+      if ($('flashcard-filter-count-pending')) $('flashcard-filter-count-pending').textContent = pendingCount;
+      if ($('flashcard-filter-count-reviewed')) $('flashcard-filter-count-reviewed').textContent = reviewedCount;
+      $$('#flashcard-deck-filters button[data-filter]').forEach(b => {
+        if (b.dataset.filter === horizontalDeckState.filter) b.classList.add('is-active');
+        else b.classList.remove('is-active');
+      });
+
+      // Helper to generate status badge (blind / anonymous)
+      function makeStatusBadge(status, ptsAwarded) {
+        if (status === 'accepted') {
+          return `<span class="badge" style="background: #ecfdf5; color: #065f46; border: 1px solid #10b981; font-weight: 700; display: inline-flex; align-items: center; gap: 0.25rem;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Accepted (+${(ptsAwarded || 0).toFixed(1)} pts)</span>`;
+        }
+        if (status === 'partial') {
+          return `<span class="badge" style="background: #fffbeb; color: #92400e; border: 1px solid #f59e0b; font-weight: 700; display: inline-flex; align-items: center; gap: 0.25rem;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 0 20Z" fill="currentColor"/></svg> Partial (+${(ptsAwarded || 0).toFixed(1)} pts)</span>`;
+        }
+        if (status === 'unsure') {
+          return `<span class="badge" style="background: #fefce8; color: #854d0e; border: 1px solid #eab308; font-weight: 700; display: inline-flex; align-items: center; gap: 0.25rem;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Unsure (Revisit Later)</span>`;
+        }
+        if (status === 'rejected') {
+          return `<span class="badge" style="background: #fef2f2; color: #991b1b; border: 1px solid #ef4444; font-weight: 700; display: inline-flex; align-items: center; gap: 0.25rem;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Rejected (0 pts)</span>`;
+        }
+        return `<span class="badge" style="background: var(--panel-alt); color: var(--text-muted); border: 1px solid var(--border);">Unreviewed</span>`;
+      }
+
+      function makeConfBadge(ocrConf) {
+        const conf = ocrConf != null ? ocrConf : 0.88;
+        if (conf < 0.80) {
+          return `<span class="badge" style="background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; font-size: 0.7rem; font-weight: 700; display: inline-flex; align-items: center; gap: 0.25rem;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Low OCR Conf (${(conf * 100).toFixed(0)}%)</span>`;
+        }
+        return `<span class="badge" style="background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; font-size: 0.7rem;">OCR Conf: ${(conf * 100).toFixed(0)}%</span>`;
+      }
+
+      // 1. Render Flashcard Deck (Primary Rapid View)
+      const matchingIndices = getFilteredFlashcardIndices(activeItem.key);
+      const prevCardBtn = $('btn-flashcard-prev');
+      const nextCardBtn = $('btn-flashcard-next');
+      const stepperLabel = $('flashcard-stepper-label');
+
+      if (matchingIndices.length === 0) {
+        if (stepperLabel) stepperLabel.textContent = `Card 0 of 0`;
+        if (prevCardBtn) prevCardBtn.disabled = true;
+        if (nextCardBtn) nextCardBtn.disabled = true;
+        if (activeCardContainer) {
+          activeCardContainer.innerHTML = `
+            <div style="text-align: center; padding: 2.75rem 1rem; color: var(--text-muted); background: var(--panel-alt); border-radius: var(--radius-md); border: 1px dashed var(--border);">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2" style="margin: 0 auto 0.75rem auto; display: block;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              <div style="font-weight: 700; font-size: 0.95rem; color: var(--text); margin-bottom: 0.25rem;">No Submissions in "${horizontalDeckState.filter.replace('_', ' ').toUpperCase()}" Filter</div>
+              <p style="font-size: 0.78rem; margin: 0;">Switch filters above, or navigate to another question item.</p>
+            </div>
+          `;
+        }
+      } else {
+        if (horizontalDeckState.currentIndex >= matchingIndices.length) {
+          horizontalDeckState.currentIndex = Math.max(0, matchingIndices.length - 1);
+        }
+        if (horizontalDeckState.currentIndex < 0) {
+          horizontalDeckState.currentIndex = 0;
+        }
+
+        const activeSubIdx = matchingIndices[horizontalDeckState.currentIndex];
+        const curGrade = grades[activeSubIdx];
+        const cardItemData = curGrade?.gradedItems?.[activeItem.key] || {
+          status: 'unreviewed',
+          pointsAwarded: 0,
+          maxPoints: activeItem.points,
+          reviewed: false,
+          ocrText: activeItem.expected,
+          ocrConfidence: 0.88
+        };
+
+        if (stepperLabel) {
+          stepperLabel.textContent = `Card ${horizontalDeckState.currentIndex + 1} of ${matchingIndices.length} (Submission #${activeSubIdx + 1})`;
+        }
+        if (prevCardBtn) prevCardBtn.disabled = horizontalDeckState.currentIndex <= 0;
+        if (nextCardBtn) nextCardBtn.disabled = horizontalDeckState.currentIndex >= matchingIndices.length - 1;
+
+        if (activeCardContainer) {
+          activeCardContainer.innerHTML = `
+            <div class="horizontal-flashcard-card">
+              <!-- Anonymous Blind Header -->
+              <div style="width: 100%; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                  <span style="font-weight: 800; font-size: 1.05rem; color: var(--text);">Submission #${activeSubIdx + 1}</span>
+                  <span class="badge" style="background: var(--panel); border: 1px solid var(--border); font-size: 0.7rem; color: var(--text-muted); display: inline-flex; align-items: center; gap: 0.25rem;">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                    Anonymous Blind Review
+                  </span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.4rem;">
+                  ${makeConfBadge(cardItemData.ocrConfidence)}
+                  ${makeStatusBadge(cardItemData.status, cardItemData.pointsAwarded)}
+                </div>
+              </div>
+
+              <!-- Crop & OCR Transcription Box -->
+              <div class="flashcard-crop-container">
+                <div style="width: 100%; display: flex; justify-content: space-between; align-items: center; font-size: 0.72rem; color: var(--text-muted); font-weight: 700;">
+                  <span>Student Answer Crop:</span>
+                  <span>${activeItem.label}</span>
+                </div>
+                <canvas id="flashcard-crop-canvas" class="horizontal-cutting-canvas" width="480" height="90" style="width: 100%; max-width: 480px; height: auto; border: 1px solid var(--border); border-radius: 4px;"></canvas>
+                <div style="width: 100%; font-size: 0.88rem; color: var(--text); background: var(--panel-alt); padding: 0.5rem 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--border); text-align: center;">
+                  <strong style="color: var(--text-muted); font-size: 0.72rem; display: block; margin-bottom: 0.15rem; text-transform: uppercase; letter-spacing: 0.04em;">OCR Transcription:</strong>
+                  "${cardItemData.ocrText || activeItem.expected}"
+                </div>
+              </div>
+
+              <!-- Rapid Grading Action Buttons -->
+              <div class="flashcard-actions-row">
+                <button type="button" class="btn btn-horizontal-accept" title="Accept response as correct [Shortcut: A]" onclick="flashcardGradeAction(${activeSubIdx}, '${activeItem.key}', 'accept');">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                  <span>Accept (+${activeItem.points.toFixed(1)} pts)</span>
+                  <kbd style="font-size: 0.65rem; background: rgba(0,0,0,0.2); padding: 1px 4px; border-radius: 3px;">A</kbd>
+                </button>
+                <button type="button" class="btn btn-horizontal-unsure" title="Flag as unsure to revisit later [Shortcut: U]" onclick="flashcardGradeAction(${activeSubIdx}, '${activeItem.key}', 'unsure');">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                  <span>Unsure</span>
+                  <kbd style="font-size: 0.65rem; background: rgba(0,0,0,0.15); padding: 1px 4px; border-radius: 3px;">U</kbd>
+                </button>
+                <button type="button" class="btn btn-horizontal-partial" title="Award partial credit [Shortcut: P]" onclick="flashcardGradeAction(${activeSubIdx}, '${activeItem.key}', 'partial');">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 0 20Z" fill="currentColor"/></svg>
+                  <span>Partial (+${(activeItem.points / 2).toFixed(1)} pts)</span>
+                  <kbd style="font-size: 0.65rem; background: rgba(0,0,0,0.2); padding: 1px 4px; border-radius: 3px;">P</kbd>
+                </button>
+                <button type="button" class="btn btn-horizontal-reject" title="Reject response [Shortcut: R]" onclick="flashcardGradeAction(${activeSubIdx}, '${activeItem.key}', 'reject');">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  <span>Reject (0 pts)</span>
+                  <kbd style="font-size: 0.65rem; background: rgba(0,0,0,0.2); padding: 1px 4px; border-radius: 3px;">R</kbd>
+                </button>
+              </div>
+              <div style="font-size: 0.72rem; color: var(--text-muted); text-align: center;">
+                Shortcuts: <kbd style="background: var(--panel); border: 1px solid var(--border); padding: 1px 4px; border-radius: 3px;">A</kbd> Accept • <kbd style="background: var(--panel); border: 1px solid var(--border); padding: 1px 4px; border-radius: 3px;">U</kbd> Unsure • <kbd style="background: var(--panel); border: 1px solid var(--border); padding: 1px 4px; border-radius: 3px;">P</kbd> Partial • <kbd style="background: var(--panel); border: 1px solid var(--border); padding: 1px 4px; border-radius: 3px;">R</kbd> Reject • <kbd style="background: var(--panel); border: 1px solid var(--border); padding: 1px 4px; border-radius: 3px;">←</kbd> / <kbd style="background: var(--panel); border: 1px solid var(--border); padding: 1px 4px; border-radius: 3px;">→</kbd> Navigate
+              </div>
+            </div>
+          `;
+
+          // Draw crop on flashcard canvas
+          const fCanvas = $('flashcard-crop-canvas');
+          if (fCanvas && curGrade) {
+            if (activeItem.roi) {
+              cropROIFromScan(curGrade, activeItem.roi, fCanvas);
+            } else {
+              const ctx = fCanvas.getContext ? fCanvas.getContext('2d') : null;
+              if (ctx && ctx.fillText) {
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, fCanvas.width, fCanvas.height);
+                ctx.font = 'italic 16px sans-serif';
+                ctx.fillStyle = '#222222';
+                ctx.fillText(`"${cardItemData.ocrText || activeItem.expected}"`, 16, 50);
+              }
+            }
+          }
+        }
+      }
+
+      // 2. Render Overview Stream (Scrollable Overview Below)
+      container.style.display = horizontalDeckState.streamVisible ? 'flex' : 'none';
 
       container.innerHTML = grades.map((g, sIdx) => {
         const itemData = g.gradedItems?.[activeItem.key] || {
@@ -7305,40 +7892,31 @@
           ocrConfidence: 0.88
         };
 
-        const statusClass = itemData.status === 'accepted' ? 'is-accepted' : (itemData.status === 'partial' ? 'is-partial' : (itemData.status === 'rejected' ? 'is-rejected' : ''));
-        const isPass = g.percentage >= passThreshold;
-        const ocrConf = itemData.ocrConfidence != null ? itemData.ocrConfidence : 0.88;
-        const isLowConf = ocrConf < 0.80;
-
-        let statusBadge = '<span class="badge" style="background: var(--panel-alt); color: var(--text-muted); border: 1px solid var(--border);">Unreviewed</span>';
-        if (itemData.status === 'accepted') {
-          statusBadge = `<span class="badge" style="background: #ecfdf5; color: #065f46; border: 1px solid #10b981; font-weight: 700; display: inline-flex; align-items: center; gap: 0.25rem;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Accepted (+${itemData.pointsAwarded.toFixed(1)} pts)</span>`;
-        } else if (itemData.status === 'partial') {
-          statusBadge = `<span class="badge" style="background: #fffbeb; color: #92400e; border: 1px solid #f59e0b; font-weight: 700; display: inline-flex; align-items: center; gap: 0.25rem;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 0 20Z" fill="currentColor"/></svg> Partial (+${itemData.pointsAwarded.toFixed(1)} pts)</span>`;
-        } else if (itemData.status === 'rejected') {
-          statusBadge = `<span class="badge" style="background: #fef2f2; color: #991b1b; border: 1px solid #ef4444; font-weight: 700; display: inline-flex; align-items: center; gap: 0.25rem;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Rejected (0 pts)</span>`;
-        }
-
-        const confBadge = isLowConf
-          ? `<span class="badge" style="background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; font-size: 0.7rem; font-weight: 700; display: inline-flex; align-items: center; gap: 0.25rem;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Low OCR Conf (${(ocrConf * 100).toFixed(0)}%) — Verify</span>`
-          : `<span class="badge" style="background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; font-size: 0.7rem;">OCR Conf: ${(ocrConf * 100).toFixed(0)}%</span>`;
+        const statusClass = itemData.status === 'accepted' ? 'is-accepted' :
+                            (itemData.status === 'partial' ? 'is-partial' :
+                            (itemData.status === 'unsure' ? 'is-unsure' :
+                            (itemData.status === 'rejected' ? 'is-rejected' : '')));
 
         return `
           <div class="horizontal-item-card ${statusClass}" id="h-card-${sIdx}">
-            <!-- Student Info Column -->
+            <!-- Blind / Anonymous Submission Info Column -->
             <div>
-              <div style="font-weight: 800; font-size: 0.95rem; color: var(--text);">${g.studentName || 'Student'}</div>
-              <div style="font-size: 0.76rem; color: var(--text-muted); margin-top: 0.15rem;">
-                ID: <code>${g.studentId}</code>
-                ${g.classOffer ? `<span class="badge" style="margin-left: 0.35rem; font-size: 0.7rem; background: var(--panel-alt); border: 1px solid var(--border);">${g.classOffer}</span>` : ''}
+              <div style="font-weight: 800; font-size: 0.95rem; color: var(--text); display: flex; align-items: center; gap: 0.35rem;">
+                <span style="color: var(--text-muted); font-size: 0.8rem;">#${sIdx + 1}</span>
+                <span>Submission #${sIdx + 1}</span>
               </div>
-              <div style="margin-top: 0.45rem; font-size: 0.76rem; display: flex; align-items: center; gap: 0.35rem; flex-wrap: wrap;">
-                <span style="font-weight: 600;">Score:</span>
-                <span>${g.rawScore.toFixed(1)} / ${g.maxScore.toFixed(1)}</span>
-                <span class="${isPass ? 'badge-pass' : 'badge-fail'}" style="font-size: 0.68rem; padding: 0.1rem 0.35rem;">${isPass ? 'PASS' : 'FAIL'}</span>
+              <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.15rem; display: flex; align-items: center; gap: 0.25rem;">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                <span>Anonymous Blind Review</span>
               </div>
               <div style="margin-top: 0.45rem;">
-                ${statusBadge}
+                ${makeStatusBadge(itemData.status, itemData.pointsAwarded)}
+              </div>
+              <div style="margin-top: 0.5rem;">
+                <button type="button" class="btn btn--secondary btn-xs" onclick="focusSubmissionInFlashcards(${sIdx});" style="font-size: 0.72rem; padding: 0.2rem 0.5rem; display: inline-flex; align-items: center; gap: 0.25rem;">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+                  <span>Open in Flashcards</span>
+                </button>
               </div>
             </div>
 
@@ -7346,7 +7924,7 @@
             <div class="horizontal-cutting-box">
               <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
                 <span style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted);">Answer Box Crop:</span>
-                ${confBadge}
+                ${makeConfBadge(itemData.ocrConfidence)}
               </div>
               <canvas id="crop-canvas-${sIdx}" class="horizontal-cutting-canvas" width="280" height="60"></canvas>
               <div style="font-size: 0.76rem; color: var(--text); background: var(--panel-alt); padding: 0.35rem 0.55rem; border-radius: var(--radius-sm); border: 1px solid var(--border);">
@@ -7359,6 +7937,10 @@
               <button type="button" class="btn btn-horizontal-accept btn-sm" onclick="gradeHorizontalItem(${sIdx}, '${activeItem.key}', 'accept');" style="font-weight: 700; padding: 0.45rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem;">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
                 <span>Accept (${activeItem.points.toFixed(1)} pts)</span>
+              </button>
+              <button type="button" class="btn btn-horizontal-unsure btn-sm" onclick="gradeHorizontalItem(${sIdx}, '${activeItem.key}', 'unsure');" style="font-weight: 700; padding: 0.45rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <span>Unsure</span>
               </button>
               <button type="button" class="btn btn-horizontal-partial btn-sm" onclick="gradeHorizontalItem(${sIdx}, '${activeItem.key}', 'partial');" style="font-weight: 700; padding: 0.45rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem;">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 0 20Z" fill="currentColor"/></svg>
@@ -7373,7 +7955,7 @@
         `;
       }).join('');
 
-      // Draw image crops on each canvas
+      // Draw image crops on each stream canvas
       grades.forEach((g, sIdx) => {
         const c = $(`crop-canvas-${sIdx}`);
         if (c) {
@@ -7485,20 +8067,54 @@
     if ($('btn-viewer-prev')) $('btn-viewer-prev').onclick = () => stepFilteredRoster(-1);
     if ($('btn-viewer-next')) $('btn-viewer-next').onclick = () => stepFilteredRoster(1);
 
-    // Keyboard navigation in Full View Inspector Modal
+    // Keyboard navigation: Full View Inspector Modal & Horizontal Flashcard Deck
     if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
       window.addEventListener('keydown', (e) => {
+        // If typing inside an input, textarea, or select, don't trigger shortcuts
+        if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA')) {
+          return;
+        }
+
         const modal = $('modal-viewer');
         if (modal && modal.open) {
-          if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA')) {
-            return;
-          }
           if (e.key === 'ArrowLeft' && $('btn-viewer-prev') && !$('btn-viewer-prev').disabled) {
             e.preventDefault();
             stepFilteredRoster(-1);
           } else if (e.key === 'ArrowRight' && $('btn-viewer-next') && !$('btn-viewer-next').disabled) {
             e.preventDefault();
             stepFilteredRoster(1);
+          }
+          return;
+        }
+
+        // Horizontal Grading Flashcard Deck shortcuts
+        if (state.activeTab === 'horizontal') {
+          const activeItem = typeof getActiveHorizontalItem === 'function' ? getActiveHorizontalItem() : null;
+          if (!activeItem) return;
+          const matchingIndices = getFilteredFlashcardIndices(activeItem.key);
+          if (matchingIndices.length === 0) return;
+          const activeSubIdx = matchingIndices[horizontalDeckState.currentIndex];
+          if (activeSubIdx == null) return;
+
+          const key = e.key.toLowerCase();
+          if (key === 'a') {
+            e.preventDefault();
+            flashcardGradeAction(activeSubIdx, activeItem.key, 'accept');
+          } else if (key === 'u') {
+            e.preventDefault();
+            flashcardGradeAction(activeSubIdx, activeItem.key, 'unsure');
+          } else if (key === 'p') {
+            e.preventDefault();
+            flashcardGradeAction(activeSubIdx, activeItem.key, 'partial');
+          } else if (key === 'r') {
+            e.preventDefault();
+            flashcardGradeAction(activeSubIdx, activeItem.key, 'reject');
+          } else if (e.key === 'ArrowLeft') {
+            e.preventDefault();
+            navigateFlashcard(-1);
+          } else if (e.key === 'ArrowRight') {
+            e.preventDefault();
+            navigateFlashcard(1);
           }
         }
       });
@@ -8452,6 +9068,7 @@
     // Sidebar & Results Export button listeners
     $('btn-sidebar-grade')?.addEventListener('click', () => $('btn-grade-now').click());
     $('btn-sidebar-sample')?.addEventListener('click', () => $('btn-sample-grade').click());
+    $('btn-results-horizontal-grading')?.addEventListener('click', () => switchTab('horizontal'));
     $('btn-results-export-zip')?.addEventListener('click', () => $('btn-export-zip').click());
     $('btn-results-export-csv')?.addEventListener('click', () => $('btn-export-csv').click());
     $('btn-results-export-html')?.addEventListener('click', () => $('btn-export-html').click());
@@ -8516,6 +9133,7 @@
 
     // Horizontal Grading Item Navigator & Bulk Accept listeners
     $('select-horizontal-item')?.addEventListener('change', () => {
+      horizontalDeckState.currentIndex = 0;
       renderHorizontalGradingView();
     });
 
@@ -8526,6 +9144,7 @@
       const curIdx = horizontalItems.findIndex(it => it.key === selectItem.value);
       if (curIdx > 0) {
         selectItem.value = horizontalItems[curIdx - 1].key;
+        horizontalDeckState.currentIndex = 0;
         renderHorizontalGradingView();
       }
     });
@@ -8537,6 +9156,7 @@
       const curIdx = horizontalItems.findIndex(it => it.key === selectItem.value);
       if (curIdx < horizontalItems.length - 1 && curIdx !== -1) {
         selectItem.value = horizontalItems[curIdx + 1].key;
+        horizontalDeckState.currentIndex = 0;
         renderHorizontalGradingView();
       }
     });

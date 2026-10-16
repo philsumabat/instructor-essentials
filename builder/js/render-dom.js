@@ -173,14 +173,16 @@ function zoneNode(zone, layout, index = 0) {
   if (zone.type === 'text' || zone.type === 'text_short' || zone.type === 'text_essay') {
     if (zone.items && zone.items.length > 0) {
       zone.items.forEach((item) => {
-        nodes.push(h('div', { class: 'omr-field-label omr-item-num', style: box(item.labelX, item.labelY, item.labelW, item.boxH) }, item.label));
+        const itemLabel = String(item.label ?? '').replace(/\.+$/, '');
+        nodes.push(h('div', { class: 'omr-field-label omr-item-num', style: box(item.labelX, item.labelY, item.labelW, item.boxH) }, itemLabel));
         nodes.push(h('div', { class: 'omr-write-box omr-write-box--answer', 'data-roi': item.id, style: box(item.boxX, item.boxY, item.boxW, item.boxH) }));
       });
     } else if (zone.rois && zone.rois.length > 0) {
       const roi = zone.rois[0];
       if (zone.isInline && zone.prompt) {
         const isNum = /^\d+[\.\)]?$/.test(zone.prompt.trim());
-        nodes.push(h('div', { class: `omr-field-label ${isNum ? 'omr-item-num' : ''}`.trim(), style: box(b.x + 2.5, roi.y, zone.labelW, roi.h) }, zone.prompt));
+        const displayPrompt = isNum ? zone.prompt.trim().replace(/[\.\)]+$/, '') : zone.prompt;
+        nodes.push(h('div', { class: `omr-field-label ${isNum ? 'omr-item-num' : ''}`.trim(), style: box(b.x + 2.5, roi.y, zone.labelW, roi.h) }, displayPrompt));
       } else if (zone.prompt) {
         const promptH = roi.y - b.y - 2.5 - 1.5;
         nodes.push(

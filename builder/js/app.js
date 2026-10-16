@@ -1742,7 +1742,8 @@ function renderOutline() {
 // ---- Header Live Stats & Warnings ----
 function renderMeta(layout) {
   const stats = layoutStats(layout);
-  els.statQuestions.textContent = String(stats.questions);
+  const totalQ = stats.totalQuestions ?? (stats.questions + (stats.textQuestions || 0));
+  els.statQuestions.textContent = String(totalQ);
 
   // Total points calculation
   let totalPts = 0;
@@ -2125,7 +2126,7 @@ function renderAnswerKeyModalContent() {
         html += `
           <div class="key-item-cell" data-key="${g.key}">
             <div style="display: flex; align-items: center; gap: 0.35rem; min-width: 0;">
-              <span class="key-item-num">${g.key}.</span>
+              <span class="key-item-num">${g.key}</span>
               <div class="key-bubbles-row">
                 ${opts
                   .map((opt) => `
@@ -2201,7 +2202,7 @@ function renderAnswerKeyModalContent() {
         html += `
           <div class="key-item-cell" data-key="${k}">
             <div style="display: flex; align-items: center; gap: 0.35rem; min-width: 0;">
-              <span class="key-item-num">${k}.</span>
+              <span class="key-item-num">${k}</span>
               <div class="key-bubbles-row">
                 ${opts.map((opt) => `<button type="button" class="key-bubble-btn ${currentAns === opt ? 'is-active' : ''}" data-key="${k}" data-val="${opt}">${opt}</button>`).join('')}
               </div>
@@ -3153,7 +3154,7 @@ function initEvents() {
       id: state.template.id,
       title,
       paper: state.template.paper || 'Folio',
-      questionCount: stats.questions,
+      questionCount: stats.totalQuestions ?? (stats.questions + (stats.textQuestions || 0)),
       timestamp: Date.now(),
       template: JSON.parse(JSON.stringify(state.template)),
       layout: state.layout ? JSON.parse(JSON.stringify(state.layout)) : null,
@@ -3207,7 +3208,7 @@ function initEvents() {
           id: tpl.id || `import_${Date.now().toString(36)}`,
           title: tpl.title || 'Imported Exam',
           paper: tpl.paper || 'Folio',
-          questionCount: stats.questions,
+          questionCount: stats.totalQuestions ?? (stats.questions + (stats.textQuestions || 0)),
           timestamp: Date.now(),
           template: tpl,
         };

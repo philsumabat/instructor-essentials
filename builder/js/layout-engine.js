@@ -558,8 +558,8 @@ function layoutText(zone, ctx, x, y, availW) {
       if (idx >= count) break;
       const q = start + idx;
       const itemY = y + PAD + titleH + r * (boxH + rowGap);
-      const qLabel = `${q}.`;
-      const labelW = Math.max(7, qLabel.length * 3.2);
+      const qLabel = `${q}`;
+      const labelW = Math.max(5, qLabel.length * 2.8);
       const itemBoxX = colX + labelW;
       const maxBoxW = colW - labelW;
       const itemBoxW = zone.boxWidth != null ? Math.max(12, Math.min(maxBoxW, Number(zone.boxWidth))) : Math.max(12, maxBoxW);
@@ -812,10 +812,15 @@ export function layoutStats(layout) {
   const sidZone = layout.zones.find((z) => z.type === 'student_id');
   const sidRoi = layout.zones.flatMap((z) => z.rois ?? []).find((r) => r.role === 'student_id');
   const idDigits = sidZone ? (sidZone.digits ?? groups.filter((g) => g.kind === 'sid').length) : (sidRoi?.digits ?? 0);
+  const bubbleQuestions = groups.filter((g) => g.kind !== 'sid').length;
+  const gradedRois = layout.zones.flatMap((z) => z.rois).filter((r) => r.graded);
+  const textQuestions = gradedRois.filter((r) => r.role !== 'student_id' && r.role !== 'correction').length;
   return {
-    questions: groups.filter((g) => g.kind !== 'sid').length,
+    questions: bubbleQuestions,
     bubbles: groups.reduce((n, g) => n + g.options.length, 0),
-    textRegions: layout.zones.flatMap((z) => z.rois).filter((r) => r.graded).length,
+    textRegions: gradedRois.length,
+    textQuestions,
+    totalQuestions: bubbleQuestions + textQuestions,
     idDigits,
   };
 }

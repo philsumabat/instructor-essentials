@@ -1,16 +1,30 @@
-# Grader — Optical Mark Recognition (OMR) & Document Processing Pipeline
+# Instructor Essentials — Optical Mark Recognition (OMR) & Assessment Suite
 
 An end-to-end, millimeter-accurate Optical Mark Recognition (OMR) and document assessment system operating on standard camera photos and flatbed scanner images (JPEG, PNG).
 
-Grader is architected into two clearly defined components:
-1. **`sheet-builder`**: The browser-based visual exam sheet designer, layout engine, and zero-CORS standalone HTML editor.
-2. **`checker`**: The computer vision OMR grading pipeline, OCR engine, psychometrics analyzer, CLI runner, and cloud web app (Hugging Face Spaces).
+Instructor Essentials is architected into two core pillars:
+1. **`sheet-builder`**: The browser-based visual exam sheet designer, millimeter layout engine, and zero-CORS standalone HTML editor.
+2. **`checker`**: The computer vision OMR grading pipeline, OCR engine, psychometrics analyzer, in-browser Checker Studio (`docs/checker.html`), local CLI runner, and optional cloud web app (Hugging Face Spaces).
+
+---
 
 ## Project Perspective
 
-Grader is led by an instructor and shaped by practical classroom needs. The maintainer is not presenting themself as a software engineering, computer vision, OCR, or psychometrics expert. Technical methods and assessment interpretations in this project are implementation choices and areas for continued validation; they should not be read as expert-certified conclusions. The goal is to build a useful, free tool and make its assumptions and limitations understandable.
+Instructor Essentials is led by an instructor and shaped by practical classroom needs. The maintainer is not presenting themself as a software engineering, computer vision, OCR, or psychometrics expert. Technical methods and assessment interpretations in this project are implementation choices and areas for continued validation; they should not be read as expert-certified conclusions. The goal is to build a useful, free tool and make its assumptions and limitations understandable.
 
 For AI coding agents and contributors, start with [`AGENTS.md`](AGENTS.md). It links to the [prioritized roadmap](ROADMAP.md), [engineering decisions and detailed architecture](DECISIONS.md), and this project overview. The current architecture overview lives in this README and the detailed specification is in `DECISIONS.md`.
+
+---
+
+## 🔒 Privacy, Security & Operating Modes
+
+Instructor Essentials is designed to give instructors complete control over student data privacy and hosting costs:
+
+| Mode | Where Code Runs | Where Data Goes | Network / Account Required | Best For |
+| :--- | :--- | :--- | :--- | :--- |
+| **1. Browser-Only (Offline / GitHub Pages)** | Client-side in browser (Canvas / JS) | **Never leaves device** (100% local memory & localStorage) | **None** (works offline, zero accounts) | Quick grading, FERPA compliance, zero-install setup |
+| **2. Local Desktop (CLI / Local Gradio)** | Locally on user machine (Python / OpenCV) | **Never leaves computer** (local disk only) | **None** (zero cloud calls, zero accounts) | Batch grading high volume scans, automated scripts |
+| **3. Cloud Web App (Hugging Face Spaces)** | Cloud container (Gradio / Linux) | Processed in cloud memory & deleted | Free Hugging Face account (recommend **Private** Space) | Shared departmental use without local Python setup |
 
 ---
 
@@ -55,154 +69,176 @@ flowchart TD
 ## System Components
 
 ### 1. `sheet-builder` (Visual Exam Sheet Studio & Layout Engine)
-- **Zero-Dependency Architecture**: Runs in any modern browser without npm dependencies, bundling requirements, or local servers.
-- **Standalone Mode (`builder/studio.html`)**: Complete single-file production bundle with inlined CSS, ArUco generators, and layout logic. Zero-CORS compatible under the `file://` protocol.
-- **Isomorphic Layout Engine (`builder/js/layout-engine.js`)**: Single source of truth computing exact millimeter coordinates ($x, y, w, h$) for all bubbles, labels, and text boxes.
+- **Zero-Dependency Architecture**: Runs in any modern browser without npm dependencies, build steps, or servers.
+- **Standalone Single-File (`builder/studio.html`)**: Complete self-contained production bundle with inlined styles, ArUco vector generators, and layout logic. Zero-CORS compatible under the `file://` protocol.
+- **Isomorphic Layout Engine (`builder/js/layout-engine.js`)**: Single source of truth computing exact millimeter coordinates ($x, y, w, h$) for all bubbles, labels, student ID grids, and text ROIs.
 - **Dual Export Targets**: Generates true-scale SVG graphics and responsive DOM sheets styled with millimetric CSS Grid and `@media print` rules.
-- **Cloud Hosting**: Deployed with zero backend to [GitHub Pages](docs/GITHUB_PAGES_SETUP.md).
+- **Hosted on GitHub Pages**: Deployed at `docs/index.html` (see [GitHub Pages Setup](docs/GITHUB_PAGES_SETUP.md)).
 
-### 2. `checker` (Computer Vision Grading Pipeline & Cloud Web App)
+### 2. `checker` (OMR Computer Vision Grading Pipeline & Studio)
+- **Client-Side Browser Studio (`docs/checker.html`)**: Complete zero-install in-browser grading interface hosted on GitHub Pages. Features client-side ArUco rectification, bubble fill detection, student roster matching, live sheet inspector, roster review queue, horizontal (blind) grading, and psychometric dashboards.
 - **Perspective Warping (`omr/vision.py`)**: Uses 4 OpenCV ArUco markers (`DICT_4X4_50`, IDs 0–3) for subpixel homography estimation, automatically rectifying upside-down, rotated, or skewed scans.
 - **Adaptive Bubble Density Sampling (`omr/vision.py`)**: Evaluates graphite fill density within an inner circular core ($72\%$ of bubble radius) to eliminate printed ring stroke interference.
 - **Partitioned Cell OCR (`omr/ocr.py`)**: Suppresses boundary lines and runs Tesseract PSM 8/10 on segmented handwritten student ID cells and short-answer boxes.
 - **Fault-Tolerant Roster Matching (`omr/roster.py`)**: Cascading 4-tier student ID resolution (exact $\rightarrow$ zero-normalized $\rightarrow$ wildcard inference $\rightarrow$ 1-digit Hamming recovery).
-- **Psychometrics Analyzer (`omr/report.py`)**: Computes Classical Test Theory indices (Facility $P$, Kelly's Discrimination $D$, Point-Biserial $r_{pbis}$, Cronbach's $\alpha$) and compiles a standalone Jinja2 HTML report.
-- **Multi-Interface Support**: Run locally via CLI (`python -m omr`) or deploy to [Hugging Face Spaces](docs/HUGGINGFACE_SPACES_SETUP.md) via Gradio 4.44.0.
+- **Psychometrics Suite (`omr/report.py`)**: Computes Classical Test Theory indices (Facility $P$, Kelly's Discrimination $D$, Point-Biserial $r_{pbis}$, Cronbach's $\alpha$) and compiles standalone Jinja2 HTML reports.
+- **Multi-Interface Support**: Run via top-level CLI wrappers (`./instructor-essentials`, `./checker`, `./checker-ui`), Python module (`python -m omr`), browser (`docs/checker.html`), or cloud web app ([Hugging Face Spaces](docs/HUGGINGFACE_SPACES_SETUP.md)).
+
+---
+
+## Reference Exam Templates
+
+Instructor Essentials includes 5 canonical exam templates covering standard classroom formats:
+
+| Template | Path | Paper Size | Capacity & Format | Features |
+| :--- | :--- | :--- | :--- | :--- |
+| **Blank Canvas** | `builder/templates/blank.json` | A4 / Letter / Folio | Customizable | Minimal starter template for custom designs |
+| **Exam 50** | `builder/templates/exam-50.json` | A4 (210 × 297 mm) | 50 MCQ + 10 T/F + 2 Short Answer | 8-digit Student ID grid, 2-line header, points per item |
+| **Exam 100** | `builder/templates/exam-100.json` | Letter (215.9 × 279.4 mm) | 100 MCQ (4 columns × 25) | High-density layout, 8-digit Student ID grid |
+| **Quiz True/False** | `builder/templates/quiz-tf.json` | Folio (215.9 × 330.2 mm) | 30 T/F + 12 Short Answer | Dual-choice T/F layout, correction hints, handwriting boxes |
+| **Quiz Bonus** | `builder/templates/quiz-bonus.json` | A4 (210 × 297 mm) | 10 MCQ + 1 Bonus Challenge | Partitioned digits, challenge question, compact quiz format |
 
 ---
 
 ## Project Structure
 
-### `sheet-builder` Files
-- `builder/css/app.css` — Studio UI styling, toolbar, inspector panels, and print resets.
-- `builder/css/sheet.css` — Physical millimeter sheet styling and CSS Grid layout definitions.
-- `builder/index.html` — Modular development editor for template preview and customization.
-- `builder/studio.html` — Production standalone single-file visual designer (zero-CORS, offline).
-- `builder/js/app.js` — Browser controller, library state management, and file exports.
-- `builder/js/aruco.js` — Native OpenCV `DICT_4X4_50` marker bit patterns (IDs 0–3).
-- `builder/js/layout-engine.js` — Core geometry engine calculating resolved millimeter coordinates.
-- `builder/js/render-dom.js` — DOM / CSS Grid virtual node renderer for browser display and printing.
-- `builder/js/render-svg.js` — True-scale Scalable Vector Graphic (SVG) generator.
-- `builder/templates/` — Reference exam definitions (`exam-50.json`, `exam-100.json`, `quiz-tf.json`).
-
-### `checker` Files
-- `omr/__main__.py` — Entrypoint for Python package execution (`python -m omr`).
-- `omr/annotator.py` — Visual grading overlay renderer creating marked-up JPEG feedback scans.
-- `omr/cli.py` — Command-line interface with argument parsing and execution control.
-- `omr/grading.py` — Evaluates student marks against `answer_key.json` (MCQ, T/F, fuzzy short-answer).
-- `omr/layout.py` — Typed loader mapping `layout.json` millimeter coordinates to pixel sampling targets.
-- `omr/ocr.py` — ROI border suppression, image preprocessing, and segmented Tesseract OCR.
-- `omr/pipeline.py` — Batch processing orchestrator coordinating vision, OCR, roster, and grading.
-- `omr/report.py` — Psychometrics calculation and standalone Jinja2 HTML report generator.
-- `omr/roster.py` — Class roster CSV ingestion and fault-tolerant student ID resolution.
-- `omr/simulator.py` — Test scan generator synthesizing realistic skew, perspective keystone, and noise.
-- `omr/vision.py` — ArUco corner detection, homography perspective warping, and bubble density scanning.
-- `spaces/exam-checker/` — Turnkey Gradio 4.44.0 cloud web application for Hugging Face Spaces.
-
-### Data & Deliverables
-- `data/` — Sample answer key (`bio101_key.json`), roster (`bio101_roster.csv`), and test scans (`scans/`).
-- `dist/` — Headless template exports (`layout.json`, `sheet.svg`, `sheet.html`).
-- `output/` — Grading deliverables (annotated JPEG scans, `grades_summary.json`, `item_analysis_report.html`).
+```text
+instructor-essentials/
+├── builder/                  # Sheet Builder web application & templates
+│   ├── css/                  # App styling and print millimeter grid CSS
+│   ├── js/                   # Layout engine, ArUco generator, DOM/SVG renderers
+│   ├── templates/            # Canonical exam template JSON definitions
+│   ├── index.html            # Modular development studio
+│   ├── studio.html           # Standalone single-file Sheet Builder (zero-CORS)
+│   └── checker.html          # Standalone single-file Checker Studio (zero-CORS)
+├── docs/                     # GitHub Pages deployment directory
+│   ├── index.html            # Hosted Sheet Builder (= builder/studio.html)
+│   ├── checker.html          # Hosted Checker Studio (= builder/checker.html)
+│   ├── .nojekyll             # Disables Jekyll processing
+│   ├── deploy-pages.yml.example # Template GitHub Actions deployment workflow
+│   ├── GITHUB_PAGES_SETUP.md # Deployment guide for GitHub Pages
+│   └── HUGGINGFACE_SPACES_SETUP.md # Deployment guide for Hugging Face Spaces
+├── omr/                      # Core Python computer vision & OMR engine
+│   ├── annotator.py          # Visual feedback JPEG overlay generator
+│   ├── cli.py                # Command-line interface logic
+│   ├── grading.py            # Scoring rules (MCQ, T/F, regex, fuzzy short-answer)
+│   ├── layout.py             # Layout geometry loader and coordinate mapper
+│   ├── ocr.py                # Segmented Tesseract OCR for handwriting
+│   ├── pipeline.py           # Batch processing orchestrator
+│   ├── report.py             # Psychometrics and standalone HTML report generator
+│   ├── roster.py             # CSV class roster ingestion and fuzzy matcher
+│   ├── simulator.py          # Synthetic scan generator for automated tests
+│   └── vision.py             # OpenCV ArUco homography, warping, and bubble scanner
+├── spaces/exam-checker/      # Turnkey Gradio 4.44.0 app for Hugging Face Spaces
+├── data/                     # Sample answer keys, rosters, and scan fixtures
+├── dist/                     # Headless compiled assets (layout.json, sheet.svg)
+├── output/                   # Default destination for grading deliverables
+├── scripts/                  # Build and development scripts
+├── tests/                    # Python unit tests and Node test suites
+├── instructor-essentials     # Top-level executable CLI wrapper
+├── checker                   # Top-level grading CLI wrapper
+├── checker-ui                # Top-level local Gradio web UI launcher
+├── grader                    # Compatibility alias wrapper
+├── LICENSE                   # MIT License
+├── package.json              # Node dependencies, build scripts, and test config
+└── pyproject.toml            # Python packaging and pytest configuration
+```
 
 ---
 
 ## Quickstart
 
-### 1. Installation
+### 1. Prerequisites & Installation
 
 ```bash
-# Python environment for checker
+# Clone the repository
+git clone https://github.com/<username>/instructor-essentials.git
+cd instructor-essentials
+
+# Setup Python environment for computer vision & grading
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 
-# Node environment for sheet-builder dev tools & tests (optional)
+# Setup Node.js (v18+) for Sheet Builder development & tests
 npm install
 ```
 
-### 2. Using `sheet-builder`
+### 2. Using `sheet-builder` (Designing Exam Sheets)
 
-Launch the local development studio:
+- **Option A: Run local dev server**:
+  ```bash
+  npm run dev
+  # Open http://localhost:5173 in your browser
+  ```
+- **Option B: Open standalone studio offline**:
+  ```bash
+  open builder/studio.html
+  ```
+- **Option C: Use live on GitHub Pages**:
+  Visit `https://<username>.github.io/<repository>/` (see [GitHub Pages Setup](docs/GITHUB_PAGES_SETUP.md)).
+- **Option D: Export all headless layouts via Node**:
+  ```bash
+  npm run export:all
+  ```
+  Generates `dist/<template>/` containing `layout.json`, `sheet.svg`, and `sheet.html`.
+
+### 3. Using `checker` (Grading Scanned Exams)
+
+- **Option A: In-Browser Checker Studio (Zero Install)**:
+  Open `builder/checker.html` locally or visit `https://<username>.github.io/<repository>/checker.html`.
+- **Option B: Top-Level CLI Wrapper**:
+  ```bash
+  ./instructor-essentials \
+    --layout dist/exam-50/layout.json \
+    --key data/bio101_key.json \
+    --roster data/bio101_roster.csv \
+    --scans "data/scans/*.jpg" \
+    --out output/
+  ```
+- **Option C: Launch Local Gradio Web Interface**:
+  ```bash
+  ./checker-ui
+  # Opens interactive Gradio app on http://localhost:7860
+  ```
+- **Option D: Python Module Execution**:
+  ```bash
+  python -m omr \
+    --layout dist/exam-50/layout.json \
+    --key data/bio101_key.json \
+    --roster data/bio101_roster.csv \
+    --scans "data/scans/*.jpg" \
+    --out output/
+  ```
+- **Option E: Deploy to Hugging Face Spaces**:
+  See [`docs/HUGGINGFACE_SPACES_SETUP.md`](docs/HUGGINGFACE_SPACES_SETUP.md).
+
+---
+
+## Rebuilding & Automated Verification
+
+To rebuild standalone bundles and verify both test suites:
+
 ```bash
-npm run dev
-# Open http://localhost:3000 in your browser
-```
+# Rebuild standalone HTML apps and sync docs/ for GitHub Pages
+npm run build:studio
 
-Or open the standalone single-file studio directly in any browser:
-```bash
-open builder/studio.html
-```
-
-Or export template assets headlessly via Node:
-```bash
-npm run export:all
-```
-This generates `dist/<template>/` containing:
-- `layout.json`: Canonical millimeter geometry consumed by the `checker` pipeline.
-- `sheet.svg`: Scalable vector graphic for publishing.
-- `sheet.html`: Standalone printable DOM sheet using CSS Grid and `@media print`.
-
-### 3. Running `checker` via CLI
-
-Grade a batch of scanned exams against an answer key and roster:
-```bash
-python -m omr \
-  --layout dist/exam-50/layout.json \
-  --key data/bio101_key.json \
-  --roster data/bio101_roster.csv \
-  --scans "data/scans/*.jpg" \
-  --out output/
-```
-
-### 4. Running `checker` on Hugging Face Spaces
-
-Deploy the turnkey web interface to Hugging Face Spaces for zero-install cloud grading:
-- See the complete deployment guide in [`docs/HUGGINGFACE_SPACES_SETUP.md`](docs/HUGGINGFACE_SPACES_SETUP.md).
-- Allows educators to upload scans, view real-time grading galleries, inspect item statistics, and download annotated scan packages in the cloud.
-
-### 5. Running the Automated Test Suite
-
-```bash
-# Node test suite (layout-engine, standalone bundle, SVG/DOM rendering)
+# Run Node test suite (64 tests: layout engine, standalone bundle, DOM/SVG, checker studio)
 npm test
 
-# Python test suite (OpenCV vision, homography, OCR, roster matching, psychometrics)
+# Run Python test suite (18 tests: OpenCV homography, OCR, roster matching, psychometrics)
 pytest -v
 ```
 
 ---
 
-## Implementation Details
+## Cloud Deployment Guides
 
-```mermaid
-flowchart LR
-    A["layout-engine.js<br/>(Physical mm)"] --> B["layout.json<br/>(Contract Schema)"]
-    B --> C["render-svg.js<br/>(Vector Print)"]
-    B --> D["render-dom.js<br/>(CSS Grid Print)"]
-    B --> E["omr/vision.py<br/>(px_per_mm = 10.0)"]
-```
-
-1. **Shared Coordinate Contract**:
-   `sheet-builder`'s `layout-engine.js` computes exact bubble center coordinates `(cx, cy)` in millimeters. When exported to `layout.json`, the Python `checker` pipeline samples those exact coordinates multiplied by `px_per_mm = 10.0`. Physical print layout and computer vision sampling coordinates never drift out of sync.
-
-2. **ArUco Perspective Transformation**:
-   Four ArUco markers (`DICT_4X4_50`, IDs 0, 1, 2, 3) placed at the sheet corners provide orientation-invariant anchor points. The homography matrix $H$ is computed using subpixel corner estimation, correcting scans rotated at arbitrary angles, upside-down feeds, and mobile camera keystoning.
-
-3. **Bubble Density Measurement**:
-   Adaptive thresholding isolates pencil graphite fills. Pixel density is computed within an inner circular core ($72\%$ of bubble radius) to eliminate printed ring stroke interference, combined with contour alignment and differential margin detection.
-
-4. **Fault-Tolerant Student ID Roster Matcher**:
-   Decodes multi-column student ID matrices and matches against CSV rosters using a multi-tier fallback: Exact match $\rightarrow$ Leading-zero normalization $\rightarrow$ Wildcard inference (recovering blank/smudged columns) $\rightarrow$ Single-digit Hamming distance recovery.
-
-5. **Handwriting OCR Extraction**:
-   Preprocesses cropped regions of interest (ROI inset border suppression, bilateral filtering, and Otsu thresholding) before feeding to Tesseract OCR with character whitelist constraints.
-
-6. **Visual Annotations & Psychometric Analysis**:
-   Annotates scans with green halos for correct answers, red crosses with missed-key indicators for errors, and student score cards. Computes Facility Index ($P$), Discrimination Index ($D$), Point-Biserial Correlation ($r_{pbis}$), distractor frequencies, and Cronbach's Alpha ($\alpha$) in a Jinja2 HTML report.
+- **GitHub Pages (Sheet Builder & Checker Studio)**: Detailed setup in [`docs/GITHUB_PAGES_SETUP.md`](docs/GITHUB_PAGES_SETUP.md).
+- **Hugging Face Spaces (Turnkey Gradio App)**: Detailed setup in [`docs/HUGGINGFACE_SPACES_SETUP.md`](docs/HUGGINGFACE_SPACES_SETUP.md).
 
 ---
 
-## Cloud Deployment Guides
+## License
 
-- **`sheet-builder` on GitHub Pages**: Detailed walkthrough in [`docs/GITHUB_PAGES_SETUP.md`](docs/GITHUB_PAGES_SETUP.md).
-- **`checker` on Hugging Face Spaces**: Detailed walkthrough in [`docs/HUGGINGFACE_SPACES_SETUP.md`](docs/HUGGINGFACE_SPACES_SETUP.md).
+This project is licensed under the [MIT License](LICENSE). Core features are free and usable without required accounts, subscriptions, or paid APIs.

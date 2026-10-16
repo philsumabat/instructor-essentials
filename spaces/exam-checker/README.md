@@ -1,5 +1,5 @@
 ---
-title: Checker - OMR Exam Grading & Item Analysis
+title: Instructor Essentials - OMR Exam Grading & Item Analysis
 emoji: 📝
 colorFrom: blue
 colorTo: indigo
@@ -8,10 +8,10 @@ sdk_version: 4.44.0
 app_file: app.py
 pinned: false
 license: mit
-short_description: Checker — OMR exam grading pipeline, OCR, and psychometric item analysis.
+short_description: Instructor Essentials — OMR exam grading pipeline, OCR, and psychometric item analysis.
 ---
 
-# 📝 Checker — OMR Exam Grading & Item Analysis
+# 📝 Instructor Essentials — OMR Exam Grading & Item Analysis
 
 An open-source, computer-vision grading pipeline that evaluates scanned multiple-choice exam bubble sheets, matches student IDs against class rosters, and generates psychometric item analysis reports.
 
@@ -50,7 +50,16 @@ An open-source, computer-vision grading pipeline that evaluates scanned multiple
 
 ---
 
+## 🔒 Privacy & Student Records
+
+When grading real student examinations or rosters subject to educational privacy regulations (e.g. FERPA):
+- Host this Space as **Private** in your Hugging Face account settings to ensure student names, IDs, and scans are not publicly accessible.
+- Alternatively, run Checker locally on your machine (`./checker` or `./checker-ui`) or in your browser (`docs/checker.html`) where 100% of processing remains on your local hardware.
+
+---
+
 ## 🔗 Integrated Ecosystem
 
 - **Sheet Builder:** Design custom exam layouts in your browser with SVG preview and instant export.
-- **Checker CLI:** Run high-throughput batch grading locally with `./checker` or `python -m omr.cli`.
+- **Checker CLI & UI:** Run high-throughput batch grading locally with `./checker`, `./checker-ui`, or `python -m omr.cli`.
+

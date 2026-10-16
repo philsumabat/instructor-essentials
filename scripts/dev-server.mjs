@@ -26,11 +26,20 @@ const MIME = {
 };
 
 const server = http.createServer((req, res) => {
-  const urlPath = req.url.split('?')[0];
-  let filePath = path.join(root, urlPath === '/' ? 'index.html' : urlPath);
+  let decodedPath;
+  try {
+    decodedPath = decodeURIComponent(req.url.split('?')[0]);
+  } catch {
+    res.writeHead(400);
+    return res.end('Bad Request');
+  }
 
-  // Security check: ensure path is inside root
-  if (!filePath.startsWith(root)) {
+  const cleanPath = decodedPath === '/' ? 'index.html' : decodedPath.replace(/^\/+/, '');
+  const filePath = path.resolve(root, cleanPath);
+
+  // Security check: ensure path is strictly inside root directory
+  const rel = path.relative(root, filePath);
+  if (rel.startsWith('..') || path.isAbsolute(rel)) {
     res.writeHead(403);
     return res.end('Forbidden');
   }
@@ -50,9 +59,9 @@ const server = http.createServer((req, res) => {
   });
 });
 
-server.listen(PORT, () => {
-  console.log(`\n  🚀 Grader Studio running at: http://localhost:${PORT}\n`);
+server.listen(PORT, '127.0.0.1', () => {
+  console.log(`\n  🚀 Grader Studio running at: http://127.0.0.1:${PORT}\n`);
   if (process.platform === 'darwin') {
-    exec(`open http://localhost:${PORT}`);
+    exec(`open http://127.0.0.1:${PORT}`);
   }
 });

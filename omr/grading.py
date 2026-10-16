@@ -234,7 +234,12 @@ class GradingEngine:
                 is_correct = is_match_text(norm_resp, str(correct_ans))
         elif key_spec.rubric == "regex":
             patterns = correct_ans if isinstance(correct_ans, list) else [correct_ans]
-            is_correct = any(bool(re.search(pat, cleaned_resp, re.IGNORECASE)) for pat in patterns)
+            def _safe_re_match(pat: str, text: str) -> bool:
+                try:
+                    return bool(re.search(str(pat), text, re.IGNORECASE))
+                except re.error:
+                    return False
+            is_correct = any(_safe_re_match(p, cleaned_resp) for p in patterns)
         else:  # exact
             if isinstance(correct_ans, list):
                 is_correct = cleaned_resp in correct_ans

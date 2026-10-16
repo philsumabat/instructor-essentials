@@ -319,7 +319,7 @@ function generateKeySheetSVG(layout, keyItems) {
       if (opt.value === keyedAns) {
         keyedOverlays.push(
           `<circle class="omr-bubble is-keyed" cx="${Number(opt.cx).toFixed(3)}" cy="${Number(opt.cy).toFixed(3)}" r="${r}" fill="#000" stroke="#000" stroke-width="${stroke}"/>`,
-          `<text x="${Number(opt.cx).toFixed(3)}" y="${(Number(opt.cy) + 0.05).toFixed(3)}" font-size="${fontSize}" text-anchor="middle" dominant-baseline="central" fill="#fff" font-weight="700">${opt.value}</text>`
+          `<text x="${Number(opt.cx).toFixed(3)}" y="${(Number(opt.cy) + 0.05).toFixed(3)}" font-size="${fontSize}" text-anchor="middle" dominant-baseline="central" fill="#fff" font-weight="700">${safeEscapeHTML(opt.value)}</text>`
         );
       }
     }
@@ -958,7 +958,7 @@ function renderInspector() {
       <div class="inspector-header__info">
         <span class="inspector-header__icon" aria-hidden="true">${ZONE_SVGS[zone.type] || '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>'}</span>
         <div>
-          <h3 class="inspector-header__title">${zone.label || typeNames[zone.type]}</h3>
+          <h3 class="inspector-header__title">${safeEscapeHTML(zone.label || typeNames[zone.type])}</h3>
           <span class="inspector-header__type">${typeNames[zone.type]}</span>
         </div>
       </div>
@@ -979,7 +979,7 @@ function renderInspector() {
     formHtml += `
       <div class="form-group">
         <label class="form-label" for="insp-label">Section Title</label>
-        <input type="text" id="insp-label" class="form-input" value="${zone.label || ''}">
+        <input type="text" id="insp-label" class="form-input" value="${safeEscapeHTML(zone.label || '')}">
       </div>
 
       <div class="form-row">
@@ -1020,7 +1020,7 @@ function renderInspector() {
           <button type="button" class="pill-btn ${choicesStr === 'ABC' ? 'is-active' : ''}" data-choices="ABC">A–C (3)</button>
           <button type="button" class="pill-btn ${!['ABCD', 'ABCDE', 'ABC'].includes(choicesStr) ? 'is-active' : ''}" data-choices="custom">Custom</button>
         </div>
-        <input type="text" id="insp-choices-custom" class="form-input" style="display: ${!['ABCD', 'ABCDE', 'ABC'].includes(choicesStr) ? 'block' : 'none'}; margin-top: 0.35rem;" value="${choicesStr}" placeholder="e.g. ABCDEFG">
+        <input type="text" id="insp-choices-custom" class="form-input" style="display: ${!['ABCD', 'ABCDE', 'ABC'].includes(choicesStr) ? 'block' : 'none'}; margin-top: 0.35rem;" value="${safeEscapeHTML(choicesStr)}" placeholder="e.g. ABCDEFG">
       </div>
       ` : `
       <div class="form-group">
@@ -1063,7 +1063,7 @@ function renderInspector() {
     formHtml += `
       <div class="form-group">
         <label class="form-label" for="insp-label">Section Title</label>
-        <input type="text" id="insp-label" class="form-input" value="${zone.label || ''}">
+        <input type="text" id="insp-label" class="form-input" value="${safeEscapeHTML(zone.label || '')}">
       </div>
 
       <div class="form-row">
@@ -1142,7 +1142,7 @@ function renderInspector() {
     formHtml += `
       <div class="form-group">
         <label class="form-label" for="insp-label">Zone Title</label>
-        <input type="text" id="insp-label" class="form-input" value="${zone.label || ''}">
+        <input type="text" id="insp-label" class="form-input" value="${safeEscapeHTML(zone.label || '')}">
       </div>
 
       <div class="form-group">
@@ -1161,7 +1161,7 @@ function renderInspector() {
     formHtml += `
       <div class="form-group">
         <label class="form-label" for="insp-label">Section Title</label>
-        <input type="text" id="insp-label" class="form-input" value="${zone.label || ''}" placeholder="(Leave blank to hide heading)">
+        <input type="text" id="insp-label" class="form-input" value="${safeEscapeHTML(zone.label || '')}" placeholder="(Leave blank to hide heading)">
       </div>
 
       <div class="form-group">
@@ -1207,7 +1207,7 @@ function renderInspector() {
     formHtml += `
       <div class="form-group">
         <label class="form-label" for="insp-label">${count > 1 ? 'Section Title' : 'Question Prompt / Label'}</label>
-        <input type="text" id="insp-label" class="form-input" value="${zone.label || ''}">
+        <input type="text" id="insp-label" class="form-input" value="${safeEscapeHTML(zone.label || '')}">
       </div>
 
       <div class="form-row">
@@ -1284,7 +1284,7 @@ function renderInspector() {
     formHtml += `
       <div class="form-group">
         <label class="form-label" for="insp-text">Instructions Text</label>
-        <textarea id="insp-text" class="form-textarea" rows="4">${zone.text || ''}</textarea>
+        <textarea id="insp-text" class="form-textarea" rows="4">${safeEscapeHTML(zone.text || '')}</textarea>
       </div>
 
       <div class="form-group">
@@ -1657,8 +1657,8 @@ function renderOutline() {
           <span class="outline-item__grip" title="Drag to reorder">⠿</span>
           <span class="outline-item__icon" aria-hidden="true">${ZONE_SVGS[z.type] || '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>'}</span>
           <div class="outline-item__info">
-            <div class="outline-item__title">${z.label || typeNames[z.type]}</div>
-            <div class="outline-item__meta">${typeNames[z.type]}${countMeta ? ` · ${countMeta}` : ''}</div>
+            <div class="outline-item__title">${safeEscapeHTML(z.label || typeNames[z.type])}</div>
+            <div class="outline-item__meta">${safeEscapeHTML(typeNames[z.type])}${countMeta ? ` · ${countMeta}` : ''}</div>
           </div>
           <div class="outline-item__actions">
             <button type="button" class="btn-mini-arrow btn-outline-up" data-index="${i}" title="Move Up" ${i === 0 ? 'disabled' : ''}><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m18 15-6-6-6 6"/></svg></button>
@@ -2078,10 +2078,10 @@ function renderAnswerKeyModalContent() {
   if (missingInKey.length > 0 || extraInKey.length > 0) {
     let msg = '';
     if (missingInKey.length > 0) {
-      msg += `<strong>${missingInKey.length} questions</strong> on sheet have no answer set (${missingInKey.slice(0, 4).join(', ')}${missingInKey.length > 4 ? '...' : ''}). Unkeyed questions will score 0 pts. `;
+      msg += `<strong>${missingInKey.length} questions</strong> on sheet have no answer set (${missingInKey.slice(0, 4).map(safeEscapeHTML).join(', ')}${missingInKey.length > 4 ? '...' : ''}). Unkeyed questions will score 0 pts. `;
     }
     if (extraInKey.length > 0) {
-      msg += `Key contains ${extraInKey.length} extra items (${extraInKey.slice(0, 3).join(', ')}) not on current sheet. `;
+      msg += `Key contains ${extraInKey.length} extra items (${extraInKey.slice(0, 3).map(safeEscapeHTML).join(', ')}) not on current sheet. `;
     }
     discrepancyHtml = `
       <div class="key-discrepancy-banner" id="key-discrepancy-banner">
@@ -2398,7 +2398,7 @@ function renderSavedBuildsList() {
     .map((b) => {
       const dateStr = b.timestamp ? new Date(b.timestamp).toLocaleString() : '';
       return `
-        <div class="saved-build-card" data-build-id="${b.id}">
+        <div class="saved-build-card" data-build-id="${safeEscapeHTML(b.id)}">
           <div class="saved-build-card__info">
             <h4 class="saved-build-card__title">${safeEscapeHTML(b.title || 'Untitled Exam')}</h4>
             <div class="saved-build-card__meta">
@@ -2408,9 +2408,9 @@ function renderSavedBuildsList() {
             </div>
           </div>
           <div class="saved-build-card__actions">
-            <button type="button" class="btn btn--secondary btn-sm btn-load-build" data-build-id="${b.id}" title="Load this exam build into editor">Load</button>
-            <button type="button" class="btn btn--secondary btn-sm btn-export-build" data-build-id="${b.id}" title="Download build file">Export .sheet.json</button>
-            <button type="button" class="btn btn--secondary btn-sm is-danger btn-delete-build" data-build-id="${b.id}" title="Delete this build">Delete</button>
+            <button type="button" class="btn btn--secondary btn-sm btn-load-build" data-build-id="${safeEscapeHTML(b.id)}" title="Load this exam build into editor">Load</button>
+            <button type="button" class="btn btn--secondary btn-sm btn-export-build" data-build-id="${safeEscapeHTML(b.id)}" title="Download build file">Export .sheet.json</button>
+            <button type="button" class="btn btn--secondary btn-sm is-danger btn-delete-build" data-build-id="${safeEscapeHTML(b.id)}" title="Delete this build">Delete</button>
           </div>
         </div>
       `;

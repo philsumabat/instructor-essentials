@@ -501,7 +501,7 @@ class ReportGenerator:
     """Renders psychometrics into clean static HTML reports."""
 
     def __init__(self):
-        self.template = jinja2.Template(REPORT_TEMPLATE_HTML)
+        self.template = jinja2.Environment(autoescape=True).from_string(REPORT_TEMPLATE_HTML)
 
     def render(self, metrics: BatchPsychometrics) -> str:
         return self.template.render(metrics=metrics)

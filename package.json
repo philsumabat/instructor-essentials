@@ -1,8 +1,9 @@
 {
   "name": "instructor-essentials",
   "version": "1.0.0",
+  "license": "MIT",
   "private": true,
-  "description": "Sheet Builder (browser OMR designer) & Checker (OpenCV grading pipeline)",
+  "description": "Instructor Essentials: Sheet Builder (browser OMR designer) & Checker (OpenCV grading pipeline)",
   "type": "module",
   "engines": {
     "node": ">=20"
@@ -13,10 +14,8 @@
     "export:all": "node scripts/export-layout.mjs builder/templates/exam-50.json && node scripts/export-layout.mjs builder/templates/exam-100.json && node scripts/export-layout.mjs builder/templates/quiz-tf.json && node scripts/export-layout.mjs builder/templates/quiz-bonus.json",
     "build:studio": "node scripts/build-standalone-studio.mjs",
     "build:sheet-builder": "node scripts/build-standalone-studio.mjs",
-    "checker:ui": "python3 spaces/exam-checker/app.py",
+    "checker:ui": "./checker-ui",
     "test": "node --test tests/js/*.test.mjs"
-  },
-  "devDependencies": {
-    "http-server": "^14.1.1"
   }
 }
+

@@ -1,6 +1,6 @@
-# Engineering Decisions & Architecture Specification (`grader`)
+# Engineering Decisions & Architecture Specification (Instructor Essentials)
 
-> **Project Name**: `grader` (Instructor Essentials)  
+> **Project Name**: Instructor Essentials  
 > **Last Updated**: October 2026  
 > **Intended Audience**: Software Engineers, Computer Vision Researchers, and Autonomous AI Pair Programmers.  
 > **Canonical Status**: This is the **single, authoritative decisions document** for the repository.
@@ -11,7 +11,7 @@
 
 ## 1. Executive Summary & Two-Pillar Philosophy
 
-`grader` is an end-to-end, zero-cost, millimeter-accurate Optical Mark Recognition (OMR) and document assessment system operating on standard camera photos and flatbed scanner images (JPEG, PNG).
+Instructor Essentials is an end-to-end, zero-cost, millimeter-accurate Optical Mark Recognition (OMR) and document assessment system operating on standard camera photos and flatbed scanner images (JPEG, PNG).
 
 The system eliminates traditional OMR friction (expensive proprietary hardware, pre-printed lithographic forms, and brittle pixel-coordinate models) by partitioning responsibilities into two robust pillars:
 
@@ -47,11 +47,11 @@ flowchart TD
 1. **`sheet-builder` (Frontend Designer & Layout Engine)**:
    - Zero-dependency client-side web application.
    - Fluid drag-and-drop exam designer with live millimeter page preview, property inspector controls, and automated answer-key generator.
-   - Runs in any browser or standalone as a single local file ([`builder/studio.html`](file:///Users/philsumabat/coding-projects/grader/builder/studio.html)) with zero internet connection or server required (zero-CORS).
-   - Hosted with zero backend server on GitHub Pages ([`docs/index.html`](file:///Users/philsumabat/coding-projects/grader/docs/index.html)).
+   - Runs in any browser or standalone as a single local file ([`builder/studio.html`](builder/studio.html)) with zero internet connection or server required (zero-CORS).
+   - Hosted with zero backend server on GitHub Pages ([`docs/index.html`](docs/index.html)).
 
 2. **`checker` (Computer Vision OMR Pipeline & Assessment Engine)**:
-   - **Client-Side Checker Studio** ([`builder/checker.html`](file:///Users/philsumabat/coding-projects/grader/builder/checker.html) / [`docs/checker.html`](file:///Users/philsumabat/coding-projects/grader/docs/checker.html)): Standalone in-browser OpenCV-style grading app with 100% inlined homography rectification, bubble density scoring, psychometrics, annotated JPEG downloads, and zero-dependency inlined ZIP export.
+   - **Client-Side Checker Studio** ([`builder/checker.html`](builder/checker.html) / [`docs/checker.html`](docs/checker.html)): Standalone in-browser OpenCV-style grading app with 100% inlined homography rectification, bubble density scoring, psychometrics, annotated JPEG downloads, and zero-dependency inlined ZIP export.
    - **High-Throughput Python Pipeline** (`omr/`): Batch grading CLI runner (`./grader`, `python -m omr`) with PyTesseract OCR, wildcard roster matching, and Jinja2 psychometric reports.
    - **Cloud Web Application**: Hugging Face Spaces Gradio 4.44.0 app in `spaces/exam-checker/`.
 
@@ -61,7 +61,7 @@ flowchart TD
 
 ```mermaid
 graph TD
-    ROOT["grader / instructor-essentials"]
+    ROOT["instructor-essentials"]
     ROOT --> BUILDER["builder/ (Sheet Builder & Client Checker)"]
     ROOT --> OMR_PKG["omr/ (Python Computer Vision & CLI)"]
     ROOT --> DOCS["docs/ (GitHub Pages Production Root)"]
@@ -71,18 +71,18 @@ graph TD
 ```
 
 ### `sheet-builder` (Frontend Designer & Renderers)
-- [`builder/css/app.css`](file:///Users/philsumabat/coding-projects/grader/builder/css/app.css) — Builder UI styles, control palette, and floating toolbar styling.
-- [`builder/css/sheet.css`](file:///Users/philsumabat/coding-projects/grader/builder/css/sheet.css) — Millimetric CSS Grid rules and `@media print` directives.
-- [`builder/index.html`](file:///Users/philsumabat/coding-projects/grader/builder/index.html) — Modular developer editor with live preview.
-- [`builder/studio.html`](file:///Users/philsumabat/coding-projects/grader/builder/studio.html) — Zero-dependency, standalone single-file production studio (zero-CORS).
-- [`builder/checker.html`](file:///Users/philsumabat/coding-projects/grader/builder/checker.html) — Standalone in-browser OMR grading studio with JPEG/ZIP export.
-- [`builder/js/app.js`](file:///Users/philsumabat/coding-projects/grader/builder/js/app.js) — UI controller, drag-and-drop state, and library actions.
-- [`builder/js/aruco.js`](file:///Users/philsumabat/coding-projects/grader/builder/js/aruco.js) — Native OpenCV `DICT_4X4_50` marker bit patterns (IDs 0–3).
-- [`builder/js/layout-engine.js`](file:///Users/philsumabat/coding-projects/grader/builder/js/layout-engine.js) — Isomorphic geometry engine (computes resolved mm coordinates).
-- [`builder/js/render-dom.js`](file:///Users/philsumabat/coding-projects/grader/builder/js/render-dom.js) — DOM / CSS Grid renderer for physical printing.
-- [`builder/js/render-svg.js`](file:///Users/philsumabat/coding-projects/grader/builder/js/render-svg.js) — True-scale Scalable Vector Graphic (SVG) generator.
-- [`builder/js/templates.js`](file:///Users/philsumabat/coding-projects/grader/builder/js/templates.js) — Inlined sample templates for offline execution.
-- [`builder/templates/`](file:///Users/philsumabat/coding-projects/grader/builder/templates/) — Canonical exam template definitions:
+- [`builder/css/app.css`](builder/css/app.css) — Builder UI styles, control palette, and floating toolbar styling.
+- [`builder/css/sheet.css`](builder/css/sheet.css) — Millimetric CSS Grid rules and `@media print` directives.
+- [`builder/index.html`](builder/index.html) — Modular developer editor with live preview.
+- [`builder/studio.html`](builder/studio.html) — Zero-dependency, standalone single-file production studio (zero-CORS).
+- [`builder/checker.html`](builder/checker.html) — Standalone in-browser OMR grading studio with JPEG/ZIP export.
+- [`builder/js/app.js`](builder/js/app.js) — UI controller, drag-and-drop state, and library actions.
+- [`builder/js/aruco.js`](builder/js/aruco.js) — Native OpenCV `DICT_4X4_50` marker bit patterns (IDs 0–3).
+- [`builder/js/layout-engine.js`](builder/js/layout-engine.js) — Isomorphic geometry engine (computes resolved mm coordinates).
+- [`builder/js/render-dom.js`](builder/js/render-dom.js) — DOM / CSS Grid renderer for physical printing.
+- [`builder/js/render-svg.js`](builder/js/render-svg.js) — True-scale Scalable Vector Graphic (SVG) generator.
+- [`builder/js/templates.js`](builder/js/templates.js) — Inlined sample templates for offline execution.
+- [`builder/templates/`](builder/templates/) — Canonical exam template definitions:
   - `blank.json` (Blank Sheet with Corner Markers, Folio)
   - `exam-50.json` (50 MCQ + T/F + Short Answer, A4)
   - `exam-100.json` (100 MCQ + 8-digit Student ID, Letter)
@@ -104,10 +104,10 @@ graph TD
 - `spaces/exam-checker/` — Turnkey Gradio 4.44.0 cloud web application for Hugging Face Spaces.
 
 ### Synchronized Deployment & Test Artifacts
-- [`docs/index.html`](file:///Users/philsumabat/coding-projects/grader/docs/index.html) — Production Sheet Builder served on GitHub Pages.
-- [`docs/checker.html`](file:///Users/philsumabat/coding-projects/grader/docs/checker.html) — Production Checker Studio served on GitHub Pages.
+- [`docs/index.html`](docs/index.html) — Production Sheet Builder served on GitHub Pages.
+- [`docs/checker.html`](docs/checker.html) — Production Checker Studio served on GitHub Pages.
 - `dist/` — Headless template exports (`exam-50/`, `exam-100/`, `quiz-tf/`, `quiz-bonus/`).
-- `tests/js/` — Node.js test suite ([`checker-presets.test.mjs`](file:///Users/philsumabat/coding-projects/grader/tests/js/checker-presets.test.mjs), [`standalone-bundle.test.mjs`](file:///Users/philsumabat/coding-projects/grader/tests/js/standalone-bundle.test.mjs), [`layout.test.mjs`](file:///Users/philsumabat/coding-projects/grader/tests/js/layout.test.mjs)).
+- `tests/js/` — Node.js test suite ([`checker-presets.test.mjs`](tests/js/checker-presets.test.mjs), [`standalone-bundle.test.mjs`](tests/js/standalone-bundle.test.mjs), [`layout.test.mjs`](tests/js/layout.test.mjs)).
 - `tests/test_*.py` — Python test suite covering vision, OCR, grading, psychometrics, and roster matching.
 
 ---
@@ -118,7 +118,7 @@ graph TD
 The single biggest pitfall in computer vision document processing is coordinate drift between the document generator and the CV analyzer.
 
 **The Solution:**
-- All geometry is defined and resolved strictly in **physical millimeters ($mm$)** inside [`builder/js/layout-engine.js`](file:///Users/philsumabat/coding-projects/grader/builder/js/layout-engine.js).
+- All geometry is defined and resolved strictly in **physical millimeters ($mm$)** inside [`builder/js/layout-engine.js`](builder/js/layout-engine.js).
 - The engine outputs `layout.json` describing bounding boxes, bubble centers, and ROI boxes with millimeter measurements.
 - The Python pipeline (`omr/layout.py`) ingests `layout.json` and scales all millimeter coordinates by `px_per_mm`:
   $$\text{Target Resolution} = 10.0\,\text{px/mm} \quad (\approx 254\,\text{DPI})$$
@@ -127,7 +127,7 @@ The single biggest pitfall in computer vision document processing is coordinate 
 - Because SVG export, print CSS Grid, and Python CV warping share the exact same `layout.json` source of truth, sampling centers never drift.
 
 ### 3.2 Fiducial Marker Standard (ArUco DICT_4X4_50)
-Instead of relying on fragile circular black dots that can be confused with punch holes or dark markings, `grader` embeds native OpenCV **ArUco markers** from `DICT_4X4_50` at the four corners of the sheet:
+Instead of relying on fragile circular black dots that can be confused with punch holes or dark markings, Instructor Essentials embeds native OpenCV **ArUco markers** from `DICT_4X4_50` at the four corners of the sheet:
 - **Top-Left (ID 0)**: Inset anchor $(12\,\text{mm}, 12\,\text{mm})$ center
 - **Top-Right (ID 1)**: Inset anchor $(W - 12\,\text{mm}, 12\,\text{mm})$ center
 - **Bottom-Right (ID 2)**: Inset anchor $(W - 12\,\text{mm}, H - 12\,\text{mm})$ center
@@ -181,7 +181,7 @@ ArUco markers encode 16 bits of error-corrected identity. The detector immediate
 ## 6. Synchronized Presets & Client-Side Checker Studio
 
 ### 6.1 Unified Preset Catalog
-Both **Sheet Builder Studio** ([`builder/index.html`](file:///Users/philsumabat/coding-projects/grader/builder/index.html)) and **Checker Studio** ([`builder/checker.html`](file:///Users/philsumabat/coding-projects/grader/builder/checker.html)) share identical, synchronized preset identifiers and display names:
+Both **Sheet Builder Studio** ([`builder/index.html`](builder/index.html)) and **Checker Studio** ([`builder/checker.html`](builder/checker.html)) share identical, synchronized preset identifiers and display names:
 
 ```mermaid
 flowchart LR
@@ -247,7 +247,7 @@ flowchart LR
 - **Decision**: Reaffirmed the policy to decompose complex engineering initiatives across specialized autonomous subagents.
 
 ### Decision 13: Browser-Based Standalone Checker Studio
-- **Decision**: Built [`builder/checker.html`](file:///Users/philsumabat/coding-projects/grader/builder/checker.html) to enable client-side grading with zero server dependencies, using inlined homography and bubble density sampling.
+- **Decision**: Built [`builder/checker.html`](builder/checker.html) to enable client-side grading with zero server dependencies, using inlined homography and bubble density sampling.
 
 ### Decision 14: Synchronized Preset Catalog Across Studios
 - **Decision**: Synchronized the preset dropdown options between Sheet Builder and Checker Studio to share identical keys, labels, and inlined data.
@@ -323,7 +323,7 @@ flowchart LR
 
 ### Decision 29: Workspace Branding Unification, Canvas Status HUD, Module Coercion & Input Focus Preservation
 - **Decision**: Refactored the pinned canvas bottom status bar (`.canvas-bottom-bar`) to use adaptive glassmorphic styling (`color-mix(in srgb, var(--panel) 88%, transparent)`), ensuring high contrast and clean aesthetics in both light and dark modes. Relocated live "Questions" and "Points" counters from the header into this HUD strip for an uncluttered viewport.
-- **Decision**: Unified Sheet Builder (`index.html`) and Checker Studio (`checker.html`) under the cohesive suite brand "Grader". Synced branding with an identical 20×20 SVG checkmark logo and an interactive segmented workflow navigation pill (`[ 📄 Sheet Builder ] [ ✔ Checker Studio ]`).
+- **Decision**: Unified Sheet Builder (`index.html`) and Checker Studio (`checker.html`) under the cohesive suite brand "Instructor Essentials". Synced branding with an identical 20×20 SVG checkmark logo and an interactive segmented workflow navigation pill (`[ 📄 Sheet Builder ] [ ✔ Checker Studio ]`).
 - **Decision**: Added multi-module separation and side-by-side configuration for written answer types (`text_short`, `text_essay`) in both the Property Inspector and the Exam Generator.
 - **Decision**: Implemented compact module coercion and vacant column slot packing in `layout-engine.js`. Modules with few items ($\le 12$ MCQ items) automatically coerce into side-by-side mode when not locked to full width, and right-hand modules intelligently pack into open column slots above. Added a one-click "⇄ Move to Opposite / Vacant Side" button in the Inspector.
 - **Decision**: Resolved real-time typing lock in Property Inspector. Guarded live input events on `#insp-label`, `#insp-text`, and `#insp-choices-custom` using `update({ skipInspector: true })`, preventing destructive re-renders of active input elements while preserving real-time sheet canvas updates.

@@ -1693,11 +1693,11 @@
         {
           "id": "s1",
           "key": "s1",
-          "label": "31.",
+          "label": "31",
           "role": null,
-          "x": 23.5,
+          "x": 20.1,
           "y": 132.5,
-          "w": 177.9,
+          "w": 181.3,
           "h": 12,
           "charset": "digits",
           "multiline": false,
@@ -1706,11 +1706,12 @@
           "points": 2
         }
       ],
-      "prompt": "31.",
+      "prompt": "31",
       "points": 2,
       "isInline": true,
-      "labelW": 9,
-      "count": 1
+      "labelW": 5.6,
+      "count": 1,
+      "boxHeight": 12
     },
     {
       "id": "s2",
@@ -1728,11 +1729,11 @@
         {
           "id": "s2",
           "key": "s2",
-          "label": "32.",
+          "label": "32",
           "role": null,
-          "x": 23.5,
+          "x": 20.1,
           "y": 153.5,
-          "w": 177.9,
+          "w": 181.3,
           "h": 32,
           "charset": "any",
           "multiline": true,
@@ -1741,11 +1742,12 @@
           "points": 5
         }
       ],
-      "prompt": "32.",
+      "prompt": "32",
       "points": 5,
       "isInline": true,
-      "labelW": 9,
-      "count": 1
+      "labelW": 5.6,
+      "count": 1,
+      "boxHeight": 32
     }
   ],
   "warnings": []

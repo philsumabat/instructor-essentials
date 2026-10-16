@@ -227,4 +227,6 @@ class Layout:
             raise LayoutError(f"Malformed layout file: {exc!r}") from exc
         if len(layout.fiducials) != 4:
             raise LayoutError("Layout must define exactly four fiducials")
+        if not (50.0 <= layout.page_width <= 500.0 and 50.0 <= layout.page_height <= 500.0):
+            raise LayoutError(f"Layout page dimensions out of valid bounds (50-500mm): {layout.page_width}x{layout.page_height}")
         return layout

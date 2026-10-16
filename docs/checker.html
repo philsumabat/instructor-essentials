@@ -1712,6 +1712,7 @@
     </div>
     <div style="display: flex; gap: 0.45rem; align-items: center; flex-shrink: 0;">
       <button type="button" id="btn-banner-resume" class="btn btn--primary btn-xs">Resume Session</button>
+      <button type="button" id="btn-banner-clear" class="btn btn--secondary btn-xs" title="Clear auto-saved progress from browser storage">Clear</button>
       <button type="button" id="btn-banner-dismiss" class="btn btn--secondary btn-xs">Dismiss</button>
     </div>
   </div>
@@ -2928,6 +2929,29 @@
       itemAnalysisSort: { col: 'item', dir: 'asc' }
     };
 
+    // ---- HTML & CSV Security Sanitization ----
+    function escapeHtml(s) {
+      if (s === null || s === undefined) return '';
+      return String(s).replace(/[&<>"']/g, c => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      }[c]));
+    }
+    window.escapeHtml = escapeHtml;
+
+    function safeCsvCell(val) {
+      if (val === null || val === undefined) return '""';
+      let s = String(val);
+      if (/^[=+\-@\t\r]/.test(s)) {
+        s = "'" + s;
+      }
+      return `"${s.replace(/"/g, '""')}"`;
+    }
+    window.safeCsvCell = safeCsvCell;
+
     // ---- DOM Elements ----
     const $ = (id) => {
       if (id === 'roster-inspector-canvas' || id === 'roster-preview-canvas') {
@@ -3013,7 +3037,7 @@
         <div class="file-badge">
           <span class="file-badge__name" style="display:flex;align-items:center;gap:0.4rem;">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-            <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${s.name}</span>
+            <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(s.name)}</span>
           </span>
           <button type="button" class="btn-step" style="width:20px;height:20px;font-size:10px;" onclick="removeScan(${idx})">✕</button>
         </div>
@@ -3459,9 +3483,9 @@
               return `
                 <div style="background: var(--panel-alt); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.75rem 1rem; display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;">
                   <div style="flex: 1; min-width: 0;">
-                    <div style="font-weight: 700; font-size: 0.88rem; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${b.title || 'Untitled Exam'}</div>
+                    <div style="font-weight: 700; font-size: 0.88rem; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(b.title || 'Untitled Exam')}</div>
                     <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                      <span>${b.paper || 'A4'}</span>
+                      <span>${escapeHtml(b.paper || 'A4')}</span>
                       <span>•</span>
                       <span>${qCount} Questions</span>
                       ${dateStr ? `<span>•</span><span>${dateStr}</span>` : ''}
@@ -3817,13 +3841,13 @@
       }
 
       const formatRange = (items) => {
-        if (items.length <= 3) return items.join(', ');
+        if (items.length <= 3) return items.map(escapeHtml).join(', ');
         const nums = items.map(Number);
         const isSeq = nums.every((n, i) => i === 0 || n === nums[i - 1] + 1);
         if (isSeq && !nums.some(isNaN)) {
-          return `${nums[0]}–${nums[nums.length - 1]}`;
+          return `${escapeHtml(nums[0])}–${escapeHtml(nums[nums.length - 1])}`;
         }
-        return `${items.slice(0, 3).join(', ')}... (+${items.length - 3} more)`;
+        return `${items.slice(0, 3).map(escapeHtml).join(', ')}... (+${items.length - 3} more)`;
       };
 
       const warnings = [];
@@ -3834,7 +3858,7 @@
         warnings.push(`<strong>Key contains ${extraKeyed.length} extra question${extraKeyed.length > 1 ? 's' : ''}:</strong> Questions ${formatRange(extraKeyed)} are in the answer key but do not exist on this sheet layout.`);
       }
       if (invalidChoices.length > 0) {
-        const choiceDetails = invalidChoices.map(ic => `Q${ic.q} (keyed '${ic.ans}', layout has [${ic.choices.join(', ')}])`).slice(0, 3).join('; ');
+        const choiceDetails = invalidChoices.map(ic => `Q${escapeHtml(ic.q)} (keyed '${escapeHtml(ic.ans)}', layout has [${ic.choices.map(escapeHtml).join(', ')}])`).slice(0, 3).join('; ');
         warnings.push(`<strong>Choice mismatch:</strong> Key answer choice does not exist on sheet: ${choiceDetails}${invalidChoices.length > 3 ? '...' : ''}.`);
       }
 
@@ -4609,10 +4633,10 @@
       if (missingInKey.length > 0 || extraInKey.length > 0) {
         let msg = '';
         if (missingInKey.length > 0) {
-          msg += `<strong>${missingInKey.length} questions</strong> on sheet have no answer set (${missingInKey.slice(0, 4).join(', ')}${missingInKey.length > 4 ? '...' : ''}). `;
+          msg += `<strong>${missingInKey.length} questions</strong> on sheet have no answer set (${missingInKey.slice(0, 4).map(escapeHtml).join(', ')}${missingInKey.length > 4 ? '...' : ''}). `;
         }
         if (extraInKey.length > 0) {
-          msg += `Key contains ${extraInKey.length} extra items (${extraInKey.slice(0, 3).join(', ')}) not on current layout. `;
+          msg += `Key contains ${extraInKey.length} extra items (${extraInKey.slice(0, 3).map(escapeHtml).join(', ')}) not on current layout. `;
         }
         discrepancyHtml = `
           <div class="key-discrepancy-banner">
@@ -4643,7 +4667,7 @@
 
         html += `
           <div class="key-section-card">
-            <h4 class="key-section-title">${secTitle}</h4>
+            <h4 class="key-section-title">${escapeHtml(secTitle)}</h4>
         `;
 
         if (choiceItems.length > 0) {
@@ -4656,20 +4680,20 @@
             const opts = item.options || ['A', 'B', 'C', 'D'];
 
             html += `
-              <div class="key-item-cell" data-key="${k}">
+              <div class="key-item-cell" data-key="${escapeHtml(k)}">
                 <div style="display: flex; align-items: center; gap: 0.35rem; min-width: 0;">
-                  <span class="key-item-num">${k}</span>
+                  <span class="key-item-num">${escapeHtml(k)}</span>
                   <div class="key-bubbles-row">
                     ${opts.map(opt => `
-                      <button type="button" class="key-bubble-btn ${currentAns === opt ? 'is-active' : ''}" data-key="${k}" data-val="${opt}">${opt}</button>
+                      <button type="button" class="key-bubble-btn ${currentAns === opt ? 'is-active' : ''}" data-key="${escapeHtml(k)}" data-val="${escapeHtml(opt)}">${escapeHtml(opt)}</button>
                     `).join('')}
                   </div>
                 </div>
                 <div style="display: flex; align-items: center; gap: 0.3rem; flex-shrink: 0;">
-                  <select class="key-bloom-select" data-key="${k}" title="Bloom's Cognitive Level">
+                  <select class="key-bloom-select" data-key="${escapeHtml(k)}" title="Bloom's Cognitive Level">
                     ${BLOOM_LEVELS.map(lvl => `<option value="${lvl}" ${currentBloom === lvl ? 'selected' : ''}>${lvl}</option>`).join('')}
                   </select>
-                  <input type="number" class="key-pts-input" data-key="${k}" value="${pts}" min="0.5" max="50" step="0.5" title="Points">
+                  <input type="number" class="key-pts-input" data-key="${escapeHtml(k)}" value="${pts}" min="0.5" max="50" step="0.5" title="Points">
                 </div>
               </div>
             `;
@@ -4681,21 +4705,21 @@
           html += `<div class="key-text-items-list" style="${choiceItems.length > 0 ? 'margin-top: 0.6rem;' : ''}">`;
           for (const item of textItems) {
             const k = item.k;
-            const currentAns = String(item.answer || '').replace(/"/g, '&quot;');
+            const currentAns = String(item.answer || '');
             const pts = item.points ?? 1;
             const currentBloom = item.bloom || defaultBloomFor(k);
 
             html += `
-              <div class="key-item-cell key-item-cell--text" data-key="${k}">
+              <div class="key-item-cell key-item-cell--text" data-key="${escapeHtml(k)}">
                 <div style="display: flex; align-items: center; gap: 0.5rem; flex: 1; min-width: 0;">
-                  <span class="key-item-num" style="min-width: 28px; font-weight: 700;">${item.label || k}:</span>
-                  <input type="text" class="key-text-input" data-key="${k}" value="${currentAns}" placeholder="Accepted answer / keywords">
+                  <span class="key-item-num" style="min-width: 28px; font-weight: 700;">${escapeHtml(item.label || k)}:</span>
+                  <input type="text" class="key-text-input" data-key="${escapeHtml(k)}" value="${escapeHtml(currentAns)}" placeholder="Accepted answer / keywords">
                 </div>
                 <div style="display: flex; align-items: center; gap: 0.35rem; flex-shrink: 0;">
-                  <select class="key-bloom-select" data-key="${k}" title="Bloom's Cognitive Level">
+                  <select class="key-bloom-select" data-key="${escapeHtml(k)}" title="Bloom's Cognitive Level">
                     ${BLOOM_LEVELS.map(lvl => `<option value="${lvl}" ${currentBloom === lvl ? 'selected' : ''}>${lvl}</option>`).join('')}
                   </select>
-                  <input type="number" class="key-pts-input" data-key="${k}" value="${pts}" min="0.5" max="50" step="0.5" title="Points">
+                  <input type="number" class="key-pts-input" data-key="${escapeHtml(k)}" value="${pts}" min="0.5" max="50" step="0.5" title="Points">
                 </div>
               </div>
             `;
@@ -6126,8 +6150,8 @@
       const { grades, passThreshold } = state.results;
       $('tbody-summary').innerHTML = grades.map((g, idx) => `
         <tr onclick="inspectStudent(${idx}); switchTab('roster');" class="${state.selectedStudentIdx === idx ? 'is-selected' : ''}">
-          <td><strong>${g.studentId}</strong></td>
-          <td>${g.studentName}</td>
+          <td><strong>${escapeHtml(g.studentId)}</strong></td>
+          <td>${escapeHtml(g.studentName)}</td>
           <td>${g.rawScore.toFixed(1)} / ${g.maxScore.toFixed(1)}</td>
           <td>${g.percentage.toFixed(1)}%</td>
           <td><span class="${g.percentage >= passThreshold ? 'badge-pass' : 'badge-fail'}">${g.percentage >= passThreshold ? 'PASS' : 'FAIL'}</span></td>
@@ -6325,8 +6349,9 @@
 
         let reviewBadgeHtml = '';
         if (needsReview) {
+          const reasonsTitle = escapeHtml((g.reviewFlags.reasons || []).join('; '));
           reviewBadgeHtml = `
-            <span class="badge-review" title="${(g.reviewFlags.reasons || []).join('; ')}">
+            <span class="badge-review" title="${reasonsTitle}">
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
               <span>Needs Review</span>
             </span>
@@ -6339,15 +6364,15 @@
 
         return `
           <tr onclick="inspectStudent(${origIdx})" data-idx="${origIdx}" data-orig-idx="${origIdx}" class="${isSelected ? 'is-selected' : ''}">
-            <td><code>${g.examId}</code></td>
-            <td><strong>${g.studentId}</strong></td>
+            <td><code>${escapeHtml(g.examId)}</code></td>
+            <td><strong>${escapeHtml(g.studentId)}</strong></td>
             <td>
               <div style="display: flex; align-items: center; gap: 0.45rem; flex-wrap: wrap;">
-                <span>${g.studentName}</span>
+                <span>${escapeHtml(g.studentName)}</span>
                 ${reviewBadgeHtml}
               </div>
             </td>
-            <td><span class="badge" style="font-size: 0.75rem; background: var(--panel-alt); border: 1px solid var(--border);">${g.classOffer || '—'}</span></td>
+            <td><span class="badge" style="font-size: 0.75rem; background: var(--panel-alt); border: 1px solid var(--border);">${escapeHtml(g.classOffer || '—')}</span></td>
             <td>${g.rawScore.toFixed(1)}</td>
             <td>${g.maxScore.toFixed(1)}</td>
             <td><strong>${g.percentage.toFixed(1)}%</strong></td>
@@ -6586,8 +6611,8 @@
             return `
               <tr>
                 <td><span class="rank-badge ${rankBadgeClass}">#${rank}</span></td>
-                <td><strong>${s.studentName || 'Student'}</strong></td>
-                <td><code>${s.studentId || '—'}</code></td>
+                <td><strong>${escapeHtml(s.studentName || 'Student')}</strong></td>
+                <td><code>${escapeHtml(s.studentId || '—')}</code></td>
                 <td><span class="badge" style="font-size: 0.72rem; background: var(--panel-alt); border: 1px solid var(--border);">${s.classOffer || '—'}</span></td>
                 <td>${s.rawScore.toFixed(1)} / ${s.maxScore.toFixed(1)}</td>
                 <td><span style="font-weight: 700; color: ${s.percentage >= 80 ? 'var(--success)' : 'var(--text)'};">${s.percentage.toFixed(1)}%</span></td>
@@ -6644,9 +6669,9 @@
           reviewList.innerHTML = flaggedItems.map(f => `
             <div style="background: var(--panel); border: 1px solid var(--border); padding: 0.6rem 0.85rem; border-radius: var(--radius-sm); display: flex; align-items: flex-start; justify-content: space-between; gap: 0.75rem;">
               <div>
-                <span style="font-weight: 700; color: var(--warning); margin-right: 0.5rem;">Question #${f.key} (Key: ${f.item.correctAnswer})</span>
+                <span style="font-weight: 700; color: var(--warning); margin-right: 0.5rem;">Question #${escapeHtml(f.key)} (Key: ${escapeHtml(f.item.correctAnswer)})</span>
                 <span style="color: var(--text-muted); font-size: 0.75rem; margin-right: 0.5rem;">[P = ${(f.item.difficulty * 100).toFixed(1)}%, r = ${f.item.discrimination.toFixed(2)}]</span>
-                <div style="margin-top: 0.25rem; color: var(--text); font-size: 0.78rem; line-height: 1.4;">${f.reasons.join(' • ')}</div>
+                <div style="margin-top: 0.25rem; color: var(--text); font-size: 0.78rem; line-height: 1.4;">${(f.reasons || []).map(r => escapeHtml(r)).join(' • ')}</div>
               </div>
             </div>
           `).join('');
@@ -7068,12 +7093,12 @@
         const signalsHtml = generateItemSignals(item, keyItem, totalStudents);
         const bloom = item.bloom || defaultBloomFor(k);
         const bloomAbbr = bloom.slice(0, 3).toLowerCase();
-        const bloomBadge = `<span class="badge-bloom badge-bloom--${bloomAbbr}">${bloom}</span>`;
+        const bloomBadge = `<span class="badge-bloom badge-bloom--${bloomAbbr}">${escapeHtml(bloom)}</span>`;
 
         return `
-          <tr id="row-item-${k}" data-item="${k}">
-            <td><strong>#${k}</strong></td>
-            <td><code>${item.correctAnswer}</code></td>
+          <tr id="row-item-${escapeHtml(k)}" data-item="${escapeHtml(k)}">
+            <td><strong>#${escapeHtml(k)}</strong></td>
+            <td><code>${escapeHtml(item.correctAnswer)}</code></td>
             <td>${item.points}</td>
             <td>${bloomBadge}</td>
             <td>${(item.difficulty * 100).toFixed(1)}%</td>
@@ -7135,7 +7160,7 @@
       // Student Selector in Viewer
       const sel = $('viewer-student-select');
       sel.innerHTML = grades.map((g, idx) => `
-        <option value="${idx}">${g.studentName} (${g.studentId}) — ${g.rawScore.toFixed(1)} pts (${g.percentage.toFixed(1)}%)</option>
+        <option value="${idx}">${escapeHtml(g.studentName)} (${escapeHtml(g.studentId)}) — ${g.rawScore.toFixed(1)} pts (${g.percentage.toFixed(1)}%)</option>
       `).join('');
       sel.onchange = (e) => {
         state.selectedStudentIdx = parseInt(e.target.value);
@@ -7224,10 +7249,11 @@
           reviewAlertEl.style.gap = '0.5rem';
           reviewAlertEl.style.background = 'var(--warning-light)';
           reviewAlertEl.style.border = '1px solid var(--warning)';
+          const reasonsSafe = (grade.reviewFlags.reasons || []).map(r => escapeHtml(r)).join(' • ');
           reviewAlertEl.innerHTML = `
             <div style="display: flex; align-items: center; gap: 0.4rem; flex: 1;">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--warning); flex-shrink: 0;"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-              <span><strong>⚠️ Needs Review:</strong> ${(grade.reviewFlags.reasons || []).join(' • ')}</span>
+              <span><strong>⚠️ Needs Review:</strong> ${reasonsSafe}</span>
             </div>
             <button type="button" class="btn btn--secondary btn-xs" id="btn-resolve-review-flag" onclick="resolveReviewFlag(${idx});" style="background: var(--panel); flex-shrink: 0;" title="Confirm machine read or instructor override and mark this sheet as verified">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--success);"><polyline points="20 6 9 17 4 12"/></svg>
@@ -7271,14 +7297,14 @@
           mismatchPanel.style.display = 'block';
           const detailsEl = $('roster-mismatch-details');
           if (detailsEl) {
-            const detectedClass = grade.classOffer ? ` • Class: <code>${grade.classOffer}</code>` : '';
+            const detectedClass = grade.classOffer ? ` • Class: <code>${escapeHtml(grade.classOffer)}</code>` : '';
             const matchScore = grade.reviewFlags.matchScore != null ? (grade.reviewFlags.matchScore * 100).toFixed(0) : '0';
             const suggested = grade.reviewFlags.suggestedMatch;
-            const suggName = suggested ? suggested.name : 'None';
-            const suggId = suggested ? suggested.id : '—';
-            const suggClass = suggested?.classOffer ? ` (Class: <code>${suggested.classOffer}</code>)` : '';
+            const suggName = suggested ? escapeHtml(suggested.name) : 'None';
+            const suggId = suggested ? escapeHtml(suggested.id) : '—';
+            const suggClass = suggested?.classOffer ? ` (Class: <code>${escapeHtml(suggested.classOffer)}</code>)` : '';
             detailsEl.innerHTML = `
-              <div><strong>Scanned / Detected:</strong> ID: <code>${grade.studentId}</code> • Name: <strong>${grade.studentName}</strong>${detectedClass}</div>
+              <div><strong>Scanned / Detected:</strong> ID: <code>${escapeHtml(grade.studentId)}</code> • Name: <strong>${escapeHtml(grade.studentName)}</strong>${detectedClass}</div>
               <div style="margin-top: 0.25rem;"><strong>Suggested Roster Match:</strong> <strong>${suggName}</strong> (ID: <code>${suggId}</code>)${suggClass} &bull; Confidence: <strong>${matchScore}%</strong></div>
             `;
           }
@@ -7287,7 +7313,7 @@
           const sel = $('select-roster-candidate');
           if (sel && state.roster) {
             sel.innerHTML = state.roster.map(r => `
-              <option value="${r.id}" ${grade.reviewFlags.suggestedMatch?.id === r.id ? 'selected' : ''}>${r.name} (${r.id}${r.classOffer ? ` - ${r.classOffer}` : ''})</option>
+              <option value="${escapeHtml(r.id)}" ${grade.reviewFlags.suggestedMatch?.id === r.id ? 'selected' : ''}>${escapeHtml(r.name)} (${escapeHtml(r.id)}${r.classOffer ? ` - ${escapeHtml(r.classOffer)}` : ''})</option>
             `).join('');
           }
 
@@ -7933,12 +7959,12 @@
               <div class="flashcard-crop-container">
                 <div style="width: 100%; display: flex; justify-content: space-between; align-items: center; font-size: 0.72rem; color: var(--text-muted); font-weight: 700;">
                   <span>Student Answer Crop:</span>
-                  <span>${activeItem.label}</span>
+                  <span>${escapeHtml(activeItem.label)}</span>
                 </div>
                 <canvas id="flashcard-crop-canvas" class="horizontal-cutting-canvas" width="480" height="90" style="width: 100%; max-width: 480px; height: auto; border: 1px solid var(--border); border-radius: 4px;"></canvas>
                 <div style="width: 100%; font-size: 0.88rem; color: var(--text); background: var(--panel-alt); padding: 0.5rem 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--border); text-align: center;">
                   <strong style="color: var(--text-muted); font-size: 0.72rem; display: block; margin-bottom: 0.15rem; text-transform: uppercase; letter-spacing: 0.04em;">OCR Transcription:</strong>
-                  "${cardItemData.ocrText || '(Handwritten response)'}"
+                  "${escapeHtml(cardItemData.ocrText || '(Handwritten response)')}"
                 </div>
               </div>
 
@@ -8039,7 +8065,7 @@
               </div>
               <canvas id="crop-canvas-${sIdx}" class="horizontal-cutting-canvas" width="280" height="60"></canvas>
               <div style="font-size: 0.76rem; color: var(--text); background: var(--panel-alt); padding: 0.35rem 0.55rem; border-radius: var(--radius-sm); border: 1px solid var(--border);">
-                <strong style="color: var(--text-muted);">OCR Read:</strong> "${itemData.ocrText || '(Handwritten response)'}"
+                <strong style="color: var(--text-muted);">OCR Read:</strong> "${escapeHtml(itemData.ocrText || '(Handwritten response)')}"
               </div>
             </div>
 
@@ -8497,16 +8523,16 @@
         const needsReview = g.reviewFlags && g.reviewFlags.needsReview;
         const reasons = needsReview ? (g.reviewFlags.reasons || []).join(" | ") : "";
         csv.push([
-          `"${g.examId}"`,
-          `"${g.studentId}"`,
-          `"${g.studentName}"`,
+          safeCsvCell(g.examId),
+          safeCsvCell(g.studentId),
+          safeCsvCell(g.studentName),
           `"${g.classOffer || ''}"`,
           g.rawScore.toFixed(2),
           g.maxScore.toFixed(2),
           g.percentage.toFixed(2),
           g.percentage >= state.results.passThreshold ? "PASS" : "FAIL",
           needsReview ? "NEEDS_REVIEW" : "VERIFIED",
-          `"${reasons}"`
+          safeCsvCell(reasons)
         ].join(","));
       });
       downloadFile("grades_summary.csv", csv.join("\n"), "text/csv");
@@ -8565,9 +8591,9 @@
         return `
           <tr>
             <td><span class="rank-badge ${rankClass}">#${rank}</span></td>
-            <td><strong>${s.studentName || 'Student'}</strong></td>
-            <td><code>${s.studentId || '—'}</code></td>
-            <td><span style="font-size: 11px; padding: 2px 6px; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 4px;">${s.classOffer || '—'}</span></td>
+            <td><strong>${escapeHtml(s.studentName || 'Student')}</strong></td>
+            <td><code>${escapeHtml(s.studentId || '—')}</code></td>
+            <td><span style="font-size: 11px; padding: 2px 6px; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 4px;">${escapeHtml(s.classOffer || '—')}</span></td>
             <td>${s.rawScore.toFixed(1)} / ${s.maxScore.toFixed(1)}</td>
             <td><strong style="color: ${s.percentage >= 80 ? '#10b981' : 'inherit'};">${s.percentage.toFixed(1)}%</strong></td>
             <td><strong style="color: #0284c7;">${pr.toFixed(1)}th</strong></td>
@@ -8614,11 +8640,11 @@
         const bloomAbbr = bloom.slice(0, 3).toLowerCase();
 
         return `
-          <tr id="row-item-${k}" data-item="${k}">
-            <td><strong>#${k}</strong></td>
-            <td><code>${item.correctAnswer}</code></td>
+          <tr id="row-item-${escapeHtml(k)}" data-item="${escapeHtml(k)}">
+            <td><strong>#${escapeHtml(k)}</strong></td>
+            <td><code>${escapeHtml(item.correctAnswer)}</code></td>
             <td>${item.points}</td>
-            <td><span class="badge-bloom badge-bloom--${bloomAbbr}">${bloom}</span></td>
+            <td><span class="badge-bloom badge-bloom--${bloomAbbr}">${escapeHtml(bloom)}</span></td>
             <td>${(item.difficulty * 100).toFixed(1)}%</td>
             <td style="font-weight: 700; color: ${item.discrimination >= 0.3 ? '#10b981' : (item.discrimination < 0.20 ? '#ef4444' : 'inherit')};">${item.discrimination.toFixed(3)}</td>
             <td>${isItemTF ? (item.distractors.T || 0) : (item.distractors.A || 0)}</td>
@@ -8700,7 +8726,7 @@
 </head>
 <body>
   <h1>Assessment & Psychometrics Report</h1>
-  <div class="subtitle">${state.key.title} &bull; Generated by Instructor Essentials &bull; ${new Date().toLocaleDateString(undefined, { dateStyle: 'long' })}</div>
+  <div class="subtitle">${escapeHtml(state.key?.title || 'Assessment')} &bull; Generated by Instructor Essentials &bull; ${new Date().toLocaleDateString(undefined, { dateStyle: 'long' })}</div>
 
   <div class="metrics">
     <div class="metric"><span>Total Graded</span><b>${totalN}</b><small>Completed student scans</small></div>
@@ -9236,6 +9262,14 @@
           alert(`Could not resume session: ${err.message}`);
         }
       }
+    });
+
+    $('btn-banner-clear')?.addEventListener('click', () => {
+      try {
+        localStorage.removeItem(PROGRESS_STORAGE_KEY);
+      } catch {}
+      if ($('banner-resume-session')) $('banner-resume-session').style.display = 'none';
+      showToast('Saved session cleared from browser storage');
     });
 
     $('btn-banner-dismiss')?.addEventListener('click', () => {

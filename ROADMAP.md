@@ -1,8 +1,8 @@
-# Grader Product and Engine Roadmap
+# Instructor Essentials Product and Engine Roadmap
 
 ## Product direction
 
-Grader should help an instructor move from a printable assessment to trustworthy, reviewable results with as little setup as possible. Keep the full product free: no paid feature gates, accounts, subscriptions, or required paid services.
+Instructor Essentials should help an instructor move from a printable assessment to trustworthy, reviewable results with as little setup as possible. Keep the full product free: no paid feature gates, accounts, subscriptions, or required paid services.
 
 ## Project perspective
 

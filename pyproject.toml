@@ -5,8 +5,9 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "instructor-essentials"
 version = "1.0.0"
-description = "Optical Mark Recognition and document processing pipeline"
+description = "Instructor Essentials — Optical Mark Recognition and document assessment pipeline"
 readme = "README.md"
+license = { text = "MIT" }
 requires-python = ">=3.9"
 dependencies = [
     "opencv-python-headless>=4.8.0",
@@ -19,8 +20,20 @@ dependencies = [
 dev = [
     "pytest>=8.0.0",
 ]
+ui = [
+    "gradio>=4.44.0",
+]
 
 [project.scripts]
+instructor-essentials = "omr.cli:main"
 checker = "omr.cli:main"
 grader = "omr.cli:main"
 omr = "omr.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["omr*"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]

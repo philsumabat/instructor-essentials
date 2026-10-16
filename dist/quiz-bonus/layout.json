@@ -1028,7 +1028,8 @@
       "points": 5,
       "isInline": false,
       "labelW": 0,
-      "count": 1
+      "count": 1,
+      "boxHeight": 18
     }
   ],
   "warnings": []

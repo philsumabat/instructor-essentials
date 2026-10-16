@@ -4417,11 +4417,11 @@
         {
           "id": "q61",
           "key": "q61",
-          "label": "61.",
+          "label": "61",
           "role": null,
-          "x": 23.5,
+          "x": 20.1,
           "y": 173.46,
-          "w": 77,
+          "w": 80.4,
           "h": 8,
           "charset": "alpha",
           "multiline": false,
@@ -4430,11 +4430,12 @@
           "points": 2
         }
       ],
-      "prompt": "61.",
+      "prompt": "61",
       "points": 2,
       "isInline": true,
-      "labelW": 9,
-      "count": 1
+      "labelW": 5.6,
+      "count": 1,
+      "boxHeight": 8
     },
     {
       "id": "q62",
@@ -4452,11 +4453,11 @@
         {
           "id": "q62",
           "key": "q62",
-          "label": "62.",
+          "label": "62",
           "role": null,
-          "x": 118.5,
+          "x": 115.1,
           "y": 173.46,
-          "w": 77,
+          "w": 80.4,
           "h": 8,
           "charset": "alpha",
           "multiline": false,
@@ -4465,11 +4466,12 @@
           "points": 2
         }
       ],
-      "prompt": "62.",
+      "prompt": "62",
       "points": 2,
       "isInline": true,
-      "labelW": 9,
-      "count": 1
+      "labelW": 5.6,
+      "count": 1,
+      "boxHeight": 8
     }
   ],
   "warnings": []

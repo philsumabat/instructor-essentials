@@ -63,3 +63,14 @@ Thumbs.db
 
 # Pipeline Deliverables (generated grading results)
 output/
+
+# Environment, Secrets & Private Keys
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Local Session Exports (contains student scans and grading progress)
+*.grader.progress.json

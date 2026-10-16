@@ -22,6 +22,7 @@ ID_ALIASES = {"studentid", "id", "sid", "studentnumber", "studentno", "idnumber"
 NAME_ALIASES = {"fullname", "name", "studentname", "displayname"}
 FIRST_ALIASES = {"firstname", "givenname", "first"}
 LAST_ALIASES = {"lastname", "surname", "familyname", "last"}
+CLASS_ALIASES = {"class", "offerno", "offer_no", "offer", "section", "course", "subject", "sched", "classsched"}
 
 BLANK = "?"
 MULTI = "*"
@@ -40,6 +41,14 @@ class Student:
     student_id: str
     full_name: str
     extra: dict = field(default_factory=dict, compare=False, hash=False)
+
+    @property
+    def class_offer(self) -> str:
+        for k in ("class", "offerno", "offer_no", "offer", "section", "course", "subject"):
+            for ek, ev in self.extra.items():
+                if _norm_header(ek) == k and ev:
+                    return str(ev).strip()
+        return ""
 
 
 @dataclass(frozen=True)

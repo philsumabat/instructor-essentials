@@ -1,6 +1,6 @@
-# Deploying `checker` to Hugging Face Spaces
+# Deploying Instructor Essentials Checker to Hugging Face Spaces
 
-The directory [`spaces/exam-checker/`](../spaces/exam-checker/) contains a complete, ready-to-deploy cloud web application for the **`checker`** component of Grader, powered by **Gradio 4.44.0**.
+The directory [`spaces/exam-checker/`](../spaces/exam-checker/) contains a complete, ready-to-deploy cloud web application for the **`checker`** component of Instructor Essentials, powered by **Gradio 4.44.0**.
 
 It provides educators, professors, and exam proctors with a zero-install interactive web application to upload scanned exam sheets, evaluate them against custom answer keys and class rosters, inspect live psychometric item analysis reports, and download visually marked exam scans directly in the cloud.
 
@@ -70,7 +70,7 @@ flowchart TD
    - **Select the Space SDK**: **Gradio**
    - **Gradio template**: Blank
    - **Space hardware**: `CPU basic` (2 vCPU · 16 GB RAM — Free tier)
-   - **Visibility**: Public or Private
+   - **Visibility**: **Private** (strongly recommended when handling student records, FERPA-regulated rosters, or real classroom scans) or Public
 3. Click **Create Space**.
 
 ---
@@ -151,7 +151,7 @@ Within 1–2 minutes, your Space status will turn green (**Running**), and the i
 ## Step 4: Using the Deployed Exam Checker
 
 ### 1. Test with the Built-in Sample
-- Click **"⚡ Pre-fill Inputs with Sample Files"** or directly click **"🔍 Grade Scanned Exams"**.
+- Click **"⚡ Pre-fill Inputs with Sample Files"** or directly click **"🔍 Grade Scanned Exams with Checker"**.
 - The Space automatically evaluates the included 10 sample scans from the 50-item BIO 101 Midterm examination.
 - Within 2–3 seconds, you will see:
   - **Cohort Overview Cards:** Total exams, class mean score, pass rate, and Cronbach's $\alpha$ test reliability.
@@ -165,7 +165,7 @@ Within 1–2 minutes, your Space status will turn green (**Running**), and the i
 2. Prepare an answer key JSON file (e.g. `{"title": "Exam 1", "items": {"1": {"kind": "mcq", "answer": "B", "points": 1.0}}}`).
 3. Optional: Prepare a student roster CSV with `Student ID` and `Full Name` columns.
 4. Scan your filled exam sheets (JPEG or PNG) using any document scanner or phone camera.
-5. Upload these files to your Hugging Face Space and click **"🔍 Grade Scanned Exams"**.
+5. Upload these files to your Hugging Face Space and click **"🔍 Grade Scanned Exams with Checker"**.
 
 ---
 

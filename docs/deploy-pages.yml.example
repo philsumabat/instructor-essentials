@@ -1,4 +1,4 @@
-name: Deploy Grader Studio to GitHub Pages
+name: Deploy Instructor Essentials to GitHub Pages
 
 on:
   push:
@@ -30,15 +30,20 @@ jobs:
         with:
           node-version: 20
 
-      - name: Build Standalone Studio
+      - name: Build Standalone Web Apps
         run: |
           npm run build:studio
 
       - name: Stage GitHub Pages site
         run: |
           mkdir -p _site
+          # Sheet Builder (primary entrypoint & alias)
           cp builder/studio.html _site/index.html
           cp builder/studio.html _site/studio.html
+          # Checker Studio (OMR & grading dashboard)
+          cp builder/checker.html _site/checker.html
+          # Disable Jekyll processing on GitHub Pages
+          touch _site/.nojekyll
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

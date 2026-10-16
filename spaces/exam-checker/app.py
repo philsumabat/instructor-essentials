@@ -15,6 +15,7 @@ import os
 import shutil
 import sys
 import tempfile
+import time
 import zipfile
 from pathlib import Path
 
@@ -111,19 +112,19 @@ def run_grading_pipeline(
     # 2. Resolve Layout
     layout_path = _extract_path(layout_input)
     if not layout_path or not layout_path.exists():
-        if SAMPLE_LAYOUT.exists():
+        if use_sample_fallback and SAMPLE_LAYOUT.exists():
             layout_path = SAMPLE_LAYOUT
         else:
-            err_html = "<div style='color: #dc2626; padding: 16px; border: 1px solid #f87171; border-radius: 8px; background: #fef2f2;'><strong>Error:</strong> Missing Layout JSON file.</div>"
+            err_html = "<div style='color: #dc2626; padding: 16px; border: 1px solid #f87171; border-radius: 8px; background: #fef2f2;'><strong>Error:</strong> Missing Layout JSON file. Please upload a layout or enable sample fallback.</div>"
             return err_html, [], [], None, "", None, None
 
     # 3. Resolve Answer Key
     key_path = _extract_path(key_input)
     if not key_path or not key_path.exists():
-        if SAMPLE_KEY.exists():
+        if use_sample_fallback and SAMPLE_KEY.exists():
             key_path = SAMPLE_KEY
         else:
-            err_html = "<div style='color: #dc2626; padding: 16px; border: 1px solid #f87171; border-radius: 8px; background: #fef2f2;'><strong>Error:</strong> Missing Answer Key JSON file.</div>"
+            err_html = "<div style='color: #dc2626; padding: 16px; border: 1px solid #f87171; border-radius: 8px; background: #fef2f2;'><strong>Error:</strong> Missing Answer Key JSON file. Please upload an answer key or enable sample fallback.</div>"
             return err_html, [], [], None, "", None, None
 
     # 4. Resolve Roster (Optional)
@@ -165,6 +166,16 @@ def run_grading_pipeline(
         except Exception:
             roster = None
 
+    # Clean up any stale temporary directories older than 1 hour
+    tmp_base = Path(tempfile.gettempdir())
+    now = time.time()
+    for old_dir in tmp_base.glob("grader_hf_*"):
+        try:
+            if old_dir.is_dir() and (now - old_dir.stat().st_mtime) > 3600:
+                shutil.rmtree(old_dir, ignore_errors=True)
+        except Exception:
+            pass
+
     # 6. Execute Batch Grading in Temporary Working Directory
     temp_dir = Path(tempfile.mkdtemp(prefix="grader_hf_"))
 
@@ -177,6 +188,7 @@ def run_grading_pipeline(
         )
         result = pipeline.process_batch(scan_paths, output_dir=temp_dir)
     except Exception as exc:
+        shutil.rmtree(temp_dir, ignore_errors=True)
         return (
             f"<div style='color:#dc2626; padding:16px; background:#fef2f2; border:1px solid #f87171; border-radius:8px;'><strong>Grading Pipeline Error:</strong> {html.escape(str(exc))}</div>",
             [],
@@ -260,7 +272,7 @@ def run_grading_pipeline(
     escaped_report = html.escape(raw_html_report, quote=True)
     report_embed_html = f"""
     <div style="border-radius: 8px; overflow: hidden; border: 1px solid #cbd5e1; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-        <iframe srcdoc="{escaped_report}" style="width: 100%; height: 750px; border: none; background: white;"></iframe>
+        <iframe sandbox="allow-same-origin" srcdoc="{escaped_report}" style="width: 100%; height: 750px; border: none; background: white;"></iframe>
     </div>
     """
 
@@ -329,13 +341,13 @@ def create_demo():
             "Gradio is not installed. Please install dependencies: pip install gradio"
         )
 
-    with gr.Blocks(css=CUSTOM_CSS, title="Checker — OMR Exam Grading & Item Analysis") as demo:
+    with gr.Blocks(css=CUSTOM_CSS, title="Instructor Essentials — OMR Exam Grading & Item Analysis") as demo:
         gr.HTML(
             """
             <div class="app-header">
-                <h1>📝 Checker — OMR Exam Grading & Item Analysis</h1>
+                <h1>📝 Instructor Essentials — OMR Exam Grading & Item Analysis</h1>
                 <p>
-                    Zero-cloud-leak Optical Mark Recognition (OMR) grading pipeline with OpenCV ArUco registration,
+                    Turnkey cloud Optical Mark Recognition (OMR) grading pipeline with OpenCV ArUco registration,
                     automated roster mapping, and classical psychometric item analysis (difficulty index, point-biserial discrimination, Cronbach's α).
                 </p>
             </div>

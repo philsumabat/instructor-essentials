@@ -521,18 +521,21 @@ function layoutText(zone, ctx, x, y, availW) {
     let boxY = y + PAD;
     let boxW = innerW;
     let labelW = 0;
+    let maxBoxW = innerW;
 
     if (isInline && prompt) {
       labelW = zone.labelWidth ?? Math.min(18, Math.max(5, prompt.length * 2.8));
       boxX = x + PAD + labelW;
-      const maxBoxW = innerW - labelW;
+      maxBoxW = innerW - labelW;
       boxW = zone.boxWidth != null ? Math.max(12, Math.min(maxBoxW, Number(zone.boxWidth))) : maxBoxW;
     } else if (prompt) {
       const promptLines = estimateLines(prompt, typography.label, innerW);
       promptH = promptLines * typography.label * LINE_HEIGHT;
-      boxY = y + PAD + promptH + 1.2;
+      boxY = y + PAD + promptH + (rowGap > 0 ? rowGap : 1.5);
+      maxBoxW = innerW;
       boxW = zone.boxWidth != null ? Math.max(12, Math.min(innerW, Number(zone.boxWidth))) : innerW;
     } else {
+      maxBoxW = innerW;
       boxW = zone.boxWidth != null ? Math.max(12, Math.min(innerW, Number(zone.boxWidth))) : innerW;
     }
 
@@ -551,6 +554,8 @@ function layoutText(zone, ctx, x, y, availW) {
       graded: zone.graded !== false,
       points,
     };
+    const startNum = zone.start ?? (isNum ? parseInt(prompt, 10) : ctx.nextQuestion);
+    ctx.nextQuestion = startNum + 1;
     const h = (isInline ? y + PAD + boxH + PAD : boxY + boxH + PAD) - y;
     return {
       bbox: { x, y, w, h },
@@ -560,10 +565,13 @@ function layoutText(zone, ctx, x, y, availW) {
       extra: {
         prompt,
         points,
+        pointsPerItem: points,
         isInline,
         labelW,
         count: 1,
+        start: startNum,
         boxWidth: zone.boxWidth,
+        maxBoxW: Math.floor(maxBoxW),
         boxHeight: boxH,
         rowGap,
       },
@@ -572,12 +580,13 @@ function layoutText(zone, ctx, x, y, availW) {
 
   // Multi-item / structured module (e.g. 5 or 10 short answer items in 1, 2, or 3 columns, or essay questions)
   const titleH = zone.label ? TITLE_H : 0;
-  const titleGap = zone.label ? Math.max(1.5, rowGap * 0.5) : 0;
+  const titleGap = zone.label ? (rowGap > 0 ? rowGap : 1.5) : 0;
   const start = zone.start == null ? ctx.nextQuestion : positiveInt(zone.start, `Zone "${zone.id}" start`);
   const columns = Math.max(1, zone.columns ? positiveInt(zone.columns, `Zone "${zone.id}" columns`) : 1);
   const rowsPerCol = Math.ceil(count / columns);
   const interColGap = 4;
   const colW = (innerW - (columns - 1) * interColGap) / columns;
+  let maxBoxW = colW;
 
   const items = [];
   const rois = [];
@@ -592,7 +601,7 @@ function layoutText(zone, ctx, x, y, availW) {
       const qLabel = `${q}`;
       const labelW = Math.max(5, qLabel.length * 2.8);
       const itemBoxX = colX + labelW;
-      const maxBoxW = colW - labelW;
+      maxBoxW = colW - labelW;
       const itemBoxW = zone.boxWidth != null ? Math.max(12, Math.min(maxBoxW, Number(zone.boxWidth))) : Math.max(12, maxBoxW);
 
       const roi = {
@@ -639,6 +648,7 @@ function layoutText(zone, ctx, x, y, availW) {
       columns,
       boxHeight: boxH,
       boxWidth: zone.boxWidth,
+      maxBoxW: Math.floor(maxBoxW),
       pointsPerItem: points,
       items,
       rowGap,
@@ -765,12 +775,18 @@ export function buildLayout(input) {
     const bbox = { x: r3(res.bbox.x), y: r3(res.bbox.y), w: r3(res.bbox.w), h: r3(res.bbox.h) };
 
     for (const g of res.groups) {
-      if (seenKeys.has(g.key)) throw new TemplateError(`Item key "${g.key}" is defined by both "${seenKeys.get(g.key)}" and "${raw.id}"`);
-      seenKeys.set(g.key, raw.id);
+      if (seenKeys.has(g.key)) {
+        warnings.push(`Item key "${g.key}" in zone "${raw.id}" duplicates key in zone "${seenKeys.get(g.key)}"`);
+      } else {
+        seenKeys.set(g.key, raw.id);
+      }
     }
     for (const roi of res.rois) {
-      if (roi.graded && seenKeys.has(roi.key)) throw new TemplateError(`Item key "${roi.key}" is defined by both "${seenKeys.get(roi.key)}" and "${raw.id}"`);
-      if (roi.graded) seenKeys.set(roi.key, raw.id);
+      if (roi.graded && seenKeys.has(roi.key)) {
+        warnings.push(`Item key "${roi.key}" in zone "${raw.id}" duplicates key in zone "${seenKeys.get(roi.key)}"`);
+      } else if (roi.graded) {
+        seenKeys.set(roi.key, raw.id);
+      }
     }
 
     if (bbox.x < content.x - 0.01 || bbox.x + bbox.w > contentRight + 0.01 || bbox.y < content.y - 0.01 || bbox.y + bbox.h > contentBottom + 0.01) {
@@ -784,12 +800,12 @@ export function buildLayout(input) {
       if (intersects(bbox, q)) warnings.push(`Zone "${raw.id}" intrudes on the quiet zone of fiducial ${f.id} (${f.corner})`);
     }
 
-    const isTextType = raw.type === 'text' || raw.type === 'text_short' || raw.type === 'text_essay';
-    const isLegacyPrompt = isTextType && raw.start == null && raw.count == null;
+    const isLegacyPrompt = raw.type === 'text' && raw.start == null && raw.count == null;
+    const isNumericPrompt = isLegacyPrompt && /^\d+[\.\)]?$/.test(String(raw.label ?? '').trim());
     const zone = {
       id: raw.id,
       type: raw.type,
-      label: isLegacyPrompt ? '' : String(raw.label ?? ''),
+      label: isNumericPrompt ? '' : String(raw.label ?? ''),
       bbox,
       grids: res.grids,
       groups: res.groups,

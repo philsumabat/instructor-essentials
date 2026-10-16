@@ -63,6 +63,10 @@ Thumbs.db
 
 # Pipeline Deliverables (generated grading results)
 output/
+output_rust/
+
+# Rust build artifacts
+target/
 
 # Environment, Secrets & Private Keys
 .env

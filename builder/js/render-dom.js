@@ -69,12 +69,13 @@ function fiducialNode(f) {
   );
 }
 
-function gridNode(grid, layout, zone) {
+function gridNode(grid, layout, zone, index = 0) {
   const { bubble } = layout;
   return h(
     'div',
     {
       class: 'omr-grid',
+      'data-zone-index': index,
       style: {
         left: mm(grid.x),
         top: mm(grid.y),
@@ -118,6 +119,7 @@ function zoneNode(zone, layout, index = 0) {
     ? `(${ptsNum} pt${ptsNum === 1 ? '' : 's'}${count > 1 ? ' each' : ''})`
     : '';
 
+  const showTitle = Boolean(rawLabel || (isTextType && zone.type !== 'text') || zone.type === 'mcq' || zone.type === 'truefalse' || zone.type === 'modified_tf');
   nodes.push(
     h(
       'section',
@@ -129,19 +131,19 @@ function zoneNode(zone, layout, index = 0) {
         'data-zone-type': zone.type,
         style: box(b.x, b.y, b.w, b.h)
       },
-      rawLabel ? h(
+      showTitle ? h(
         'h2',
         { class: 'omr-zone__title' },
-        h('span', { class: 'omr-zone__title-text' }, rawLabel),
+        h('span', { class: 'omr-zone__title-text', 'data-placeholder': 'Section Title' }, rawLabel),
         pointsSuffix ? h('span', { class: 'omr-points', style: { 'font-weight': 'normal', 'margin-left': '0.4em' } }, pointsSuffix) : null,
       ) : null,
     ),
   );
-  for (const grid of zone.grids) nodes.push(gridNode(grid, layout, zone));
+  for (const grid of zone.grids) nodes.push(gridNode(grid, layout, zone, index));
   if (zone.type === 'fields') {
     zone.rows.forEach((row, i) => {
       const roi = zone.rois[i];
-      nodes.push(h('div', { class: 'omr-field-label', style: box(row.x, row.y, row.labelW, row.h) }, row.label));
+      nodes.push(h('div', { class: 'omr-field-label', 'data-zone-index': index, style: box(row.x, row.y, row.labelW, row.h) }, row.label));
       if (roi.digits > 0) {
         nodes.push(
           h(
@@ -149,6 +151,7 @@ function zoneNode(zone, layout, index = 0) {
             {
               class: 'omr-partitioned-digits',
               'data-roi': roi.id,
+              'data-zone-index': index,
               style: {
                 ...box(roi.x, roi.y, roi.w, roi.h),
                 display: 'grid',
@@ -159,7 +162,7 @@ function zoneNode(zone, layout, index = 0) {
           ),
         );
       } else {
-        nodes.push(h('div', { class: 'omr-write-box', 'data-roi': roi.id, style: box(roi.x, roi.y, roi.w, roi.h) }));
+        nodes.push(h('div', { class: 'omr-write-box', 'data-roi': roi.id, 'data-zone-index': index, style: box(roi.x, roi.y, roi.w, roi.h) }));
       }
     });
   }
@@ -171,6 +174,7 @@ function zoneNode(zone, layout, index = 0) {
           {
             class: 'omr-write-box omr-correction-box',
             'data-roi': roi.id,
+            'data-zone-index': index,
             style: {
               ...box(roi.x, roi.y, roi.w, roi.h),
               'font-size': '1.8mm',
@@ -193,6 +197,7 @@ function zoneNode(zone, layout, index = 0) {
           'div',
           {
             class: 'omr-field-label omr-item-num',
+            'data-zone-index': index,
             style: {
               ...box(item.labelX, item.labelY, item.labelW, item.boxH),
               ...(item.boxH > 15 ? { 'align-items': 'flex-start', 'padding-top': '1mm' } : {}),
@@ -200,25 +205,25 @@ function zoneNode(zone, layout, index = 0) {
           },
           itemLabel,
         ));
-        nodes.push(h('div', { class: 'omr-write-box omr-write-box--answer', 'data-roi': item.id, style: box(item.boxX, item.boxY, item.boxW, item.boxH) }));
+        nodes.push(h('div', { class: 'omr-write-box omr-write-box--answer', 'data-roi': item.id, 'data-zone-index': index, style: box(item.boxX, item.boxY, item.boxW, item.boxH) }));
       });
     } else if (zone.rois && zone.rois.length > 0) {
       const roi = zone.rois[0];
       if (zone.isInline && zone.prompt) {
         const isNum = /^\d+[\.\)]?$/.test(zone.prompt.trim());
-        const displayPrompt = isNum ? zone.prompt.trim().replace(/[\.\)]+$/, '') : zone.prompt;
-        nodes.push(h('div', { class: `omr-field-label ${isNum ? 'omr-item-num' : ''}`.trim(), style: box(b.x + 2.5, roi.y, zone.labelW, roi.h) }, displayPrompt));
+        const displayPrompt = isNum ? (zone.start != null ? String(zone.start) : zone.prompt.trim().replace(/[\.\)]+$/, '')) : zone.prompt;
+        nodes.push(h('div', { class: `omr-field-label ${isNum ? 'omr-item-num' : ''}`.trim(), 'data-zone-index': index, style: box(b.x + 2.5, roi.y, zone.labelW, roi.h) }, displayPrompt));
       } else if (zone.prompt) {
         const promptH = roi.y - b.y - 2.5 - 1.5;
         nodes.push(
           h(
             'div',
-            { class: 'omr-prompt', style: box(roi.x, b.y + 2.5, roi.w, Math.max(promptH, 0)) },
+            { class: 'omr-prompt', 'data-zone-index': index, style: box(roi.x, b.y + 2.5, roi.w, Math.max(promptH, 0)) },
             zone.prompt,
           ),
         );
       }
-      nodes.push(h('div', { class: 'omr-write-box omr-write-box--answer', 'data-roi': roi.id, style: box(roi.x, roi.y, roi.w, roi.h) }));
+      nodes.push(h('div', { class: 'omr-write-box omr-write-box--answer', 'data-roi': roi.id, 'data-zone-index': index, style: box(roi.x, roi.y, roi.w, roi.h) }));
     }
   }
   return nodes;

@@ -357,6 +357,37 @@ flowchart LR
 - **Summary Tab Review Callout (`#summary-review-callout`)**: Integrated an amber alert banner above the Summary preview in Tab 1 that appears whenever flagged scans are detected, providing an immediate `"Open Review Queue →"` button that switches tabs, activates the `needs-review` filter, and selects the first flagged sheet.
 - **Filtered Row Index Mapping**: Implemented `data-orig-idx` on roster table rows, ensuring student selection, sorting, and `.is-selected` active highlights map accurately to `state.results.grades` regardless of whether the table is in a filtered or sorted view.
 
+### Decision 33: Desktop Architecture — Tauri v2 + Pure Rust Engine & Speed Grader Specification
+- **Decision**: Validated the complete architectural specification for **Instructor Essentials Desktop** using **Tauri v2 + Rust** to deliver a unified, zero-dependency desktop application for macOS, Windows, and Linux.
+- **Pure-Rust Engine**: Eliminates external Python, pip, OpenCV, and Tesseract dependencies via a modular pure-Rust library (`crates/grader-core`), featuring native ArUco homography, 72% inner-core bubble density, and an embedded ONNX digit classifier for 8-digit student IDs.
+- **Speed Grader for Written Work**: Added a dedicated on-screen horizontal blind grading workflow for short-answer and essay questions, allowing instructors to score cropped student handwriting boxes with keyboard shortcuts without flipping physical exam sheets.
+- **Progressive Disclosure UI**: Standardized the desktop application on a calm, minimalist interface where sidebars, toolbars, and review queues remain hidden until contextually needed.
+- **Durable Specification**: Documented complete architecture, decision log, and verification gates in [`docs/DESKTOP_APP_SPEC.md`](docs/DESKTOP_APP_SPEC.md).
+
+### Decision 34: Desktop App Parity & Minimalist macOS Native Design System
+- **Context**: An initial draft replaced the desktop interface with a toy mock that omitted actual layout engines, CV pipelines, review queues, and modals.
+- **Decision**: Restored 100% of the rich capabilities across Sheet Builder and Checker Studio within `apps/desktop/ui/` while wrapping them in a refined, minimalist macOS native design system.
+- **Feature Parity**:
+  - **Sheet Builder (`index.html`)**: Isomorphic layout engine, DOM & SVG true-scale millimeter renderers, ArUco marker generator, Quick Exam Generator modal, Saved Builds library modal, visual Answer Key Editor modal, property inspector with full block controls (start number, points, box width/height, row gap, section titles), print CSS (`sheet.css`), all canonical templates (`exam-50`, `exam-100`, `quiz-tf`, `quiz-bonus`, `blank`), and export suite (ZIP package, SVG, HTML, layout.json, .sheet.json).
+  - **Checker Studio (`checker.html`)**: Client-side and Rust-backed CV, ArUco fiducials detection & homography, bubble density scanner, master-detail Student Roster table with live Sheet Inspector side preview pane (`#roster-preview-canvas`), filterable Review Queue (Needs Review, Clean, Reviewed) with stepper navigation and flag resolution, SVG Bell curve with histogram and Gaussian cutoff, batch ZIP / annotated JPEG exports, preflight alignment validation, scan sheet as answer key, item analysis, and horizontal flashcard deck mode for written short-answer scoring.
+- **Minimalist macOS Aesthetic**: Integrated macOS native styling (`titleBarStyle: "Overlay"`, `data-tauri-drag-region`, 84px traffic lights clearance, glassmorphism window titlebar, segmented navigation pill switcher, system font stack, subtle hairline borders, and progressive disclosure).
+- **Native IPC Bridge**: `desktop.js` bridges native Tauri IPC (`grade_scans`) when running inside desktop Tauri, with instant fallback to client-side JS engine, global keyboard shortcuts (Cmd+1, Cmd+2, Cmd+3, Cmd+P, Cmd+S), and drag-and-drop file ingestion.
+
+### Decision 35: Sheet Builder Canvas Interactivity & Stepper Robustness
+- **Context**: In live browser interaction, changes to section titles, question start numbers, points, row spacing, and box widths were failing to persist or update correctly, and clicking section titles directly on the canvas caused immediate focus loss.
+- **Root Causes**:
+  1. Title span elements and sub-elements (write-boxes, grids, labels) were selected indiscriminately by `[data-zone-index]`, attaching floating toolbars to child write-boxes and causing background deselects on child clicks.
+  2. Clicking on an unselected zone's title called `selectZone()`, triggering `renderPreview()` and destroying the active DOM contenteditable element.
+  3. `bindStepper` clicks invoked `update({ skipInspector: false })`, destroying and rebuilding the inspector HTML on every click, dropping button focus and interrupting rapid stepping.
+  4. `layoutText` clamped item box width to `maxBoxW` (~83mm in 2-col, ~176mm in 1-col), but inspector steppers had fixed `max="190"`, creating dead zones where clicking `+` had no visual effect on paper.
+  5. `zone.start` was often undefined in templates (computed dynamically), causing start steppers to show `1` instead of the actual question number and jumping from e.g. 21 to 2 when clicking `+`.
+- **Decision & Architecture**:
+  - **Zone Container Scoping & Canvas Event Delegation**: Scoped zone container queries to `.omr-zone[data-zone-index], .omr-instructions[data-zone-index]` and attached `data-zone-index` to child write-boxes and grids, using `sheetEl.addEventListener('click')` with `e.target.closest('[data-zone-index]')` to delegate zone selection cleanly.
+  - **Non-Destructive Title Editing & Placeholder**: Clicking or focusing on `.omr-zone__title-text` performs non-destructive selection (updating outline and inspector without calling `renderPreview()`), retaining caret focus. Empty titles render with `data-placeholder="Section Title"` via CSS pseudo-element.
+  - **Preserved Inspector DOM during Stepper Manipulation**: Configured `bindStepper` to default to `skipInspector = true` on `minus`/`plus` button clicks and input changes, updating the input value in place and re-rendering only the canvas preview.
+  - **Dynamic Box Width Clamping**: Exposed computed `maxBoxW` from `layoutText` in zone metadata and constrained `insp-box-width` `max` and placeholder to `maxBoxW`.
+  - **Dynamic Start Number & Range Badge Synchronization**: Read `start` fallback from computed layout zones and added `syncZoneRangeInLabel` to automatically update embedded `(start–end)` badges when start number or question count changes.
+
 ---
 
 ## 8. Multi-Agent Development Mandate

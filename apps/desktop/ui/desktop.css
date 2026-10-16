@@ -1,0 +1,467 @@
+/* Instructor Essentials — Desktop Native Minimalist Stylesheet */
+
+:root {
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", Roboto, "Inter", Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+
+  /* Refined Light Theme Tokens */
+  --bg-app: #f6f7f9;
+  --bg-window: rgba(255, 255, 255, 0.88);
+  --bg-surface: #ffffff;
+  --bg-subtle: #f0f2f5;
+  --bg-panel: #ffffff;
+  --bg-panel-alt: #f8fafc;
+  --border: rgba(0, 0, 0, 0.08);
+  --border-strong: rgba(0, 0, 0, 0.15);
+  --border-focus: #2563eb;
+
+  --text-main: #111827;
+  --text-secondary: #4b5563;
+  --text-muted: #9ca3af;
+  --text-subtle: #cbd5e1;
+
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --accent-light: rgba(37, 99, 235, 0.08);
+  --accent-subtle: rgba(37, 99, 235, 0.06);
+
+  --success: #16a34a;
+  --success-light: rgba(22, 163, 74, 0.1);
+  --warning: #d97706;
+  --warning-light: rgba(217, 119, 6, 0.1);
+  --danger: #dc2626;
+  --danger-light: rgba(220, 38, 38, 0.1);
+
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-full: 9999px;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 14px -2px rgba(0, 0, 0, 0.08), 0 2px 6px -1px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 12px 28px -4px rgba(0, 0, 0, 0.12), 0 4px 12px -2px rgba(0, 0, 0, 0.06);
+  --shadow-sheet: 0 8px 30px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
+
+  --titlebar-h: 52px;
+  --transition: 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-app: #121316;
+    --bg-window: rgba(22, 23, 27, 0.88);
+    --bg-surface: #1e2025;
+    --bg-subtle: #272a31;
+    --bg-panel: #1a1c22;
+    --bg-panel-alt: #16171d;
+    --border: rgba(255, 255, 255, 0.08);
+    --border-strong: rgba(255, 255, 255, 0.16);
+    --border-focus: #3b82f6;
+
+    --text-main: #f9fafb;
+    --text-secondary: #9ca3af;
+    --text-muted: #6b7280;
+    --text-subtle: #4b5563;
+
+    --accent: #3b82f6;
+    --accent-hover: #60a5fa;
+    --accent-light: rgba(59, 130, 246, 0.15);
+    --accent-subtle: rgba(59, 130, 246, 0.1);
+
+    --success: #10b981;
+    --success-light: rgba(16, 185, 129, 0.15);
+    --warning: #f59e0b;
+    --warning-light: rgba(245, 158, 11, 0.15);
+    --danger: #ef4444;
+    --danger-light: rgba(239, 68, 68, 0.15);
+
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 4px 14px -2px rgba(0, 0, 0, 0.5);
+    --shadow-lg: 0 12px 28px -4px rgba(0, 0, 0, 0.6);
+    --shadow-sheet: 0 12px 36px rgba(0, 0, 0, 0.6);
+  }
+}
+
+/* Base resets & typography */
+body {
+  font-family: var(--font-sans) !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ==========================================================================
+   macOS Window Title Bar (Draggable, traffic lights space, glassmorphism)
+   ========================================================================== */
+.app-header.app-chrome {
+  height: var(--titlebar-h) !important;
+  background: var(--bg-window) !important;
+  backdrop-filter: blur(24px) !important;
+  -webkit-backdrop-filter: blur(24px) !important;
+  border-bottom: 1px solid var(--border) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 0 1.25rem 0 84px !important; /* 84px preserves space for macOS traffic light buttons */
+  z-index: 100 !important;
+  flex-shrink: 0 !important;
+  app-region: drag;
+  -webkit-app-region: drag;
+}
+
+.app-header button,
+.app-header input,
+.app-header select,
+.app-header a,
+.app-header .workflow-nav,
+.app-header .dropdown-menu,
+.app-header .app-header__actions,
+.app-header .header-actions {
+  app-region: no-drag !important;
+  -webkit-app-region: no-drag !important;
+}
+
+.app-brand {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.6rem !important;
+}
+
+.app-brand__logo {
+  width: 24px !important;
+  height: 24px !important;
+  background: var(--accent) !important;
+  color: #fff !important;
+  border-radius: var(--radius-sm) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+}
+
+.app-brand__title {
+  font-size: 0.9rem !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.01em !important;
+  color: var(--text-main) !important;
+  margin: 0 !important;
+}
+
+/* ==========================================================================
+   Segmented Navigation Pill Control (macOS Native Segmented Switcher)
+   ========================================================================== */
+.workflow-nav.segmented-control {
+  display: inline-flex !important;
+  align-items: center !important;
+  background: var(--bg-subtle) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-full) !important;
+  padding: 3px !important;
+  gap: 2px !important;
+  margin-left: 1.25rem !important;
+}
+
+.workflow-nav__item.seg-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.45rem !important;
+  background: transparent !important;
+  border: none !important;
+  font-family: var(--font-sans) !important;
+  font-size: 0.82rem !important;
+  font-weight: 500 !important;
+  color: var(--text-secondary) !important;
+  padding: 5px 14px !important;
+  border-radius: var(--radius-full) !important;
+  cursor: pointer !important;
+  text-decoration: none !important;
+  transition: var(--transition) !important;
+  line-height: 1 !important;
+}
+
+.workflow-nav__item.seg-btn:hover {
+  color: var(--text-main) !important;
+}
+
+.workflow-nav__item.seg-btn.is-active {
+  background: var(--bg-surface) !important;
+  color: var(--text-main) !important;
+  font-weight: 600 !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+/* ==========================================================================
+   Minimalist macOS Buttons
+   ========================================================================== */
+.btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.45rem !important;
+  font-family: var(--font-sans) !important;
+  font-size: 0.82rem !important;
+  font-weight: 500 !important;
+  padding: 6px 13px !important;
+  border-radius: var(--radius-sm) !important;
+  border: 1px solid var(--border) !important;
+  background: var(--bg-surface) !important;
+  color: var(--text-main) !important;
+  cursor: pointer !important;
+  transition: var(--transition) !important;
+  box-shadow: var(--shadow-sm) !important;
+  line-height: 1.25 !important;
+}
+
+.btn:hover {
+  background: var(--bg-subtle) !important;
+  border-color: var(--border-strong) !important;
+}
+
+.btn:active {
+  transform: scale(0.98) !important;
+}
+
+.btn--primary,
+.btn-primary {
+  background: var(--accent) !important;
+  color: #ffffff !important;
+  border-color: transparent !important;
+  font-weight: 600 !important;
+}
+
+.btn--primary:hover,
+.btn-primary:hover {
+  background: var(--accent-hover) !important;
+  color: #ffffff !important;
+}
+
+.btn--secondary,
+.btn-secondary {
+  background: var(--bg-surface) !important;
+  color: var(--text-main) !important;
+  border: 1px solid var(--border) !important;
+}
+
+.btn--secondary:hover,
+.btn-secondary:hover {
+  background: var(--bg-subtle) !important;
+  border-color: var(--border-strong) !important;
+}
+
+.btn--accent {
+  background: var(--accent-light) !important;
+  color: var(--accent) !important;
+  border: 1px solid var(--accent-light) !important;
+  font-weight: 600 !important;
+}
+
+.btn--accent:hover {
+  background: var(--accent) !important;
+  color: #ffffff !important;
+}
+
+.btn-xs,
+.btn--sm,
+.btn-sm {
+  padding: 4px 10px !important;
+  font-size: 0.76rem !important;
+  border-radius: var(--radius-xs) !important;
+}
+
+/* ==========================================================================
+   Clean Canvas & Elevation
+   ========================================================================== */
+.studio-canvas {
+  background: var(--bg-app) !important;
+}
+
+.canvas-container {
+  background: var(--bg-app) !important;
+}
+
+.sheet-paper,
+#sheet-preview {
+  box-shadow: var(--shadow-sheet) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 2px !important;
+}
+
+/* Floating bottom bar & zoom HUD */
+.canvas-bottom-bar,
+.floating-status-hud {
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  background: var(--bg-window) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: var(--shadow-md) !important;
+  border-radius: var(--radius-full) !important;
+}
+
+/* ==========================================================================
+   Clean Modals (Backdrop blur & subtle elevation)
+   ========================================================================== */
+dialog.modal,
+.modal-overlay,
+.modal-backdrop {
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  background: rgba(0, 0, 0, 0.35) !important;
+}
+
+.modal-content,
+.modal-card,
+.modal-box {
+  background: var(--bg-surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-lg) !important;
+}
+
+.modal-header {
+  border-bottom: 1px solid var(--border) !important;
+}
+
+.modal-footer {
+  border-top: 1px solid var(--border) !important;
+  background: var(--bg-panel-alt) !important;
+}
+
+/* ==========================================================================
+   Clean Dropdowns & Menus
+   ========================================================================== */
+.dropdown-menu__content,
+.menu-dropdown {
+  background: var(--bg-surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-lg) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  overflow: hidden !important;
+}
+
+.dropdown-menu__content button {
+  font-family: var(--font-sans) !important;
+  font-size: 0.82rem !important;
+  color: var(--text-main) !important;
+  transition: var(--transition) !important;
+}
+
+.dropdown-menu__content button:hover {
+  background: var(--bg-subtle) !important;
+}
+
+/* ==========================================================================
+   Checker Studio Refinements
+   ========================================================================== */
+.section-card {
+  background: var(--bg-panel) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-sm) !important;
+  transition: var(--transition) !important;
+}
+
+.section-card:hover {
+  border-color: var(--border-strong) !important;
+}
+
+.section-title {
+  color: var(--text-main) !important;
+  font-size: 0.88rem !important;
+  font-weight: 600 !important;
+}
+
+.dropzone {
+  border: 1.5px dashed var(--border-strong) !important;
+  border-radius: var(--radius-md) !important;
+  background: var(--bg-panel-alt) !important;
+  transition: var(--transition) !important;
+}
+
+.dropzone:hover,
+.dropzone.is-dragover {
+  border-color: var(--accent) !important;
+  background: var(--accent-light) !important;
+}
+
+.kpi-card {
+  background: var(--bg-panel) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+.kpi-label {
+  color: var(--text-muted) !important;
+  font-size: 0.72rem !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+}
+
+.kpi-number {
+  color: var(--text-main) !important;
+  font-weight: 700 !important;
+}
+
+/* Review Queue & Stepper */
+.review-queue-card,
+.summary-review-callout {
+  border-radius: var(--radius-md) !important;
+}
+
+/* Master-detail tables */
+table.data-table,
+table.desktop-table {
+  border-collapse: collapse !important;
+  width: 100% !important;
+  font-size: 0.82rem !important;
+}
+
+table th {
+  background: var(--bg-panel-alt) !important;
+  color: var(--text-secondary) !important;
+  font-weight: 600 !important;
+  border-bottom: 1px solid var(--border) !important;
+}
+
+table td {
+  border-bottom: 1px solid var(--border) !important;
+  color: var(--text-main) !important;
+}
+
+table tr:hover td {
+  background: var(--bg-subtle) !important;
+}
+
+/* Horizontal Flashcard Deck (Speed Grader) */
+.horizontal-flashcard-deck {
+  border-radius: var(--radius-lg) !important;
+}
+
+.horizontal-flashcard-card {
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-md) !important;
+}
+
+/* Clean Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.14);
+  border-radius: 9999px;
+}
+
+@media (prefers-color-scheme: dark) {
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.16);
+  }
+}

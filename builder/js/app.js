@@ -643,6 +643,45 @@ function renderPreview() {
   applyZoom();
 }
 
+// Floating action toolbar helper for selected zone
+function attachFloatingToolbar(zEl, idx) {
+  if (zEl.querySelector('.zone-floating-toolbar')) return;
+  const toolbar = document.createElement('div');
+  toolbar.className = 'zone-floating-toolbar app-chrome';
+  toolbar.innerHTML = `
+    <span class="zone-drag-grip" title="Drag to reorder" draggable="true" data-zone-index="${idx}">⠿</span>
+    <button type="button" class="btn-zone-up" title="Move Up" ${idx === 0 ? 'disabled' : ''}>▲</button>
+    <button type="button" class="btn-zone-down" title="Move Down" ${idx === state.template.zones.length - 1 ? 'disabled' : ''}>▼</button>
+    <button type="button" class="btn-zone-dup" title="Duplicate">⧉</button>
+    <button type="button" class="btn-zone-del is-delete" title="Delete">🗑</button>
+  `;
+
+  toolbar.querySelector('.btn-zone-up')?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    moveZone(idx, idx - 1);
+  });
+  toolbar.querySelector('.btn-zone-down')?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    moveZone(idx, idx + 1);
+  });
+  toolbar.querySelector('.btn-zone-dup')?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    duplicateZone(idx);
+  });
+  toolbar.querySelector('.btn-zone-del')?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    deleteZone(idx);
+  });
+
+  const grip = toolbar.querySelector('.zone-drag-grip');
+  grip?.addEventListener('dragstart', (e) => {
+    e.dataTransfer.setData('application/x-omr-reorder', String(idx));
+    e.dataTransfer.effectAllowed = 'move';
+  });
+
+  zEl.append(toolbar);
+}
+
 // ---- Canvas Zone Interactive Overlays & Click Handling (DOM Mode) ----
 function attachCanvasZoneInteractions(sheetEl) {
   // Direct exam title editing on the paper
@@ -655,7 +694,7 @@ function attachCanvasZoneInteractions(sheetEl) {
       e.stopPropagation();
     });
     examTitleEl.addEventListener('input', () => {
-      state.template.title = examTitleEl.textContent.trim();
+      state.template.title = examTitleEl.textContent;
       if (els.examTitle) {
         els.examTitle.value = state.template.title;
       }
@@ -667,14 +706,16 @@ function attachCanvasZoneInteractions(sheetEl) {
       }
     });
     examTitleEl.addEventListener('blur', () => {
-      state.template.title = examTitleEl.textContent.trim();
+      const trimmed = examTitleEl.textContent.trim();
+      state.template.title = trimmed;
+      examTitleEl.textContent = trimmed;
       update();
     });
   }
 
-  // Find all rendered zones
-  const zoneEls = sheetEl.querySelectorAll('[data-zone-index]');
-  for (const zEl of zoneEls) {
+  // Find all rendered top-level zone containers
+  const zoneContainers = sheetEl.querySelectorAll('.omr-zone[data-zone-index], .omr-instructions[data-zone-index]');
+  for (const zEl of zoneContainers) {
     const idx = parseInt(zEl.getAttribute('data-zone-index'), 10);
     if (Number.isNaN(idx)) continue;
 
@@ -684,23 +725,51 @@ function attachCanvasZoneInteractions(sheetEl) {
       titleTextEl.setAttribute('contenteditable', 'true');
       titleTextEl.setAttribute('spellcheck', 'false');
       titleTextEl.setAttribute('title', 'Click to edit section title');
+
+      const selectZoneNonDestructive = () => {
+        if (state.selectedZoneIndex !== idx) {
+          state.selectedZoneIndex = idx;
+          for (const otherEl of zoneContainers) {
+            otherEl.classList.toggle('is-selected', otherEl === zEl);
+          }
+          sheetEl.querySelectorAll('.zone-floating-toolbar').forEach((tb) => tb.remove());
+          attachFloatingToolbar(zEl, idx);
+          renderOutline();
+          if (state.activeTab !== 'inspector') {
+            switchTab('inspector');
+          } else {
+            renderInspector();
+          }
+        }
+      };
+
       titleTextEl.addEventListener('click', (e) => {
         e.stopPropagation();
-        if (state.selectedZoneIndex !== idx) {
-          selectZone(idx);
-        }
+        selectZoneNonDestructive();
+      });
+      titleTextEl.addEventListener('focus', () => {
+        selectZoneNonDestructive();
       });
       titleTextEl.addEventListener('input', () => {
         const zone = state.template.zones[idx];
         if (!zone) return;
-        zone.label = titleTextEl.textContent.trim();
+        zone.label = titleTextEl.textContent;
         const inspLabel = $('#insp-label');
         if (inspLabel && state.selectedZoneIndex === idx) {
           inspLabel.value = zone.label;
         }
+        const inspHeaderTitle = $('.inspector-header__title');
+        if (inspHeaderTitle && state.selectedZoneIndex === idx) {
+          inspHeaderTitle.textContent = zone.label || (ZONE_TYPE_NAMES[zone.type] || zone.type);
+        }
         const outlineTitle = document.querySelector(`.outline-item[data-zone-index="${idx}"] .outline-item__title`);
         if (outlineTitle) {
           outlineTitle.textContent = zone.label || (ZONE_TYPE_NAMES[zone.type] || zone.type);
+        }
+        const serialized = JSON.stringify(state.template, null, 2);
+        localStorage.setItem(STORAGE_KEY, serialized);
+        if (els.rawJson && document.activeElement !== els.rawJson) {
+          els.rawJson.value = serialized;
         }
       });
       titleTextEl.addEventListener('keydown', (e) => {
@@ -712,7 +781,9 @@ function attachCanvasZoneInteractions(sheetEl) {
       titleTextEl.addEventListener('blur', () => {
         const zone = state.template.zones[idx];
         if (zone) {
-          zone.label = titleTextEl.textContent.trim();
+          const trimmed = titleTextEl.textContent.trim();
+          zone.label = trimmed;
+          titleTextEl.textContent = trimmed;
           update();
         }
       });
@@ -720,58 +791,26 @@ function attachCanvasZoneInteractions(sheetEl) {
 
     if (idx === state.selectedZoneIndex) {
       zEl.classList.add('is-selected');
-
-      // Floating toolbar on selected zone
-      const toolbar = document.createElement('div');
-      toolbar.className = 'zone-floating-toolbar app-chrome';
-      toolbar.innerHTML = `
-        <span class="zone-drag-grip" title="Drag to reorder" draggable="true" data-zone-index="${idx}">⠿</span>
-        <button type="button" class="btn-zone-up" title="Move Up" ${idx === 0 ? 'disabled' : ''}>▲</button>
-        <button type="button" class="btn-zone-down" title="Move Down" ${idx === state.template.zones.length - 1 ? 'disabled' : ''}>▼</button>
-        <button type="button" class="btn-zone-dup" title="Duplicate">⧉</button>
-        <button type="button" class="btn-zone-del is-delete" title="Delete">🗑</button>
-      `;
-
-      toolbar.querySelector('.btn-zone-up')?.addEventListener('click', (e) => {
-        e.stopPropagation();
-        moveZone(idx, idx - 1);
-      });
-      toolbar.querySelector('.btn-zone-down')?.addEventListener('click', (e) => {
-        e.stopPropagation();
-        moveZone(idx, idx + 1);
-      });
-      toolbar.querySelector('.btn-zone-dup')?.addEventListener('click', (e) => {
-        e.stopPropagation();
-        duplicateZone(idx);
-      });
-      toolbar.querySelector('.btn-zone-del')?.addEventListener('click', (e) => {
-        e.stopPropagation();
-        deleteZone(idx);
-      });
-
-      // Drag reorder from floating grip
-      const grip = toolbar.querySelector('.zone-drag-grip');
-      grip?.addEventListener('dragstart', (e) => {
-        e.dataTransfer.setData('application/x-omr-reorder', String(idx));
-        e.dataTransfer.effectAllowed = 'move';
-      });
-
-      zEl.append(toolbar);
+      attachFloatingToolbar(zEl, idx);
     }
-
-    zEl.addEventListener('click', (e) => {
-      e.stopPropagation();
-      selectZone(idx);
-    });
   }
 
-  // Deselect on sheet background click
+  // Delegated click handling on canvas: selecting zones from write-boxes/grids or deselecting on background
   sheetEl.addEventListener('click', (e) => {
-    if (e.target.closest('[data-zone-index]')) return;
-    state.selectedZoneIndex = -1;
-    renderInspector();
-    renderOutline();
-    renderPreview();
+    const zoneTarget = e.target.closest('[data-zone-index]');
+    if (!zoneTarget) {
+      if (state.selectedZoneIndex !== -1) {
+        state.selectedZoneIndex = -1;
+        renderInspector();
+        renderOutline();
+        renderPreview();
+      }
+      return;
+    }
+    const idx = parseInt(zoneTarget.getAttribute('data-zone-index'), 10);
+    if (!Number.isNaN(idx) && state.selectedZoneIndex !== idx) {
+      selectZone(idx);
+    }
   });
 }
 
@@ -1088,7 +1127,7 @@ function renderInspector() {
           <label class="form-label" for="insp-start">Start #</label>
           <div class="stepper-control">
             <button type="button" class="stepper-btn" id="insp-start-minus" aria-label="Decrease start number">−</button>
-            <input type="number" id="insp-start" class="stepper-input" value="${zone.start ?? 1}" min="1" max="999">
+            <input type="number" id="insp-start" class="stepper-input" value="${zone.start ?? state.layout?.zones?.[idx]?.start ?? 1}" min="1" max="999">
             <button type="button" class="stepper-btn" id="insp-start-plus" aria-label="Increase start number">+</button>
           </div>
         </div>
@@ -1183,7 +1222,7 @@ function renderInspector() {
           <label class="form-label" for="insp-start">Start #</label>
           <div class="stepper-control">
             <button type="button" class="stepper-btn" id="insp-start-minus" aria-label="Decrease start number">−</button>
-            <input type="number" id="insp-start" class="stepper-input" value="${zone.start ?? 1}" min="1" max="999">
+            <input type="number" id="insp-start" class="stepper-input" value="${zone.start ?? state.layout?.zones?.[idx]?.start ?? 1}" min="1" max="999">
             <button type="button" class="stepper-btn" id="insp-start-plus" aria-label="Increase start number">+</button>
           </div>
         </div>
@@ -1325,6 +1364,13 @@ function renderInspector() {
     const defaultH = zone.type === 'text_essay' ? 35 : (zone.type === 'text_short' ? 10 : 12);
     const count = zone.count ?? 1;
     const cols = zone.columns ?? 1;
+    const startVal = zone.start ?? state.layout?.zones?.[idx]?.start ?? state.layout?.zones?.[idx]?.items?.[0]?.q ?? 1;
+    const autoW = state.layout?.zones?.[idx]?.items?.[0]?.boxW ?? state.layout?.zones?.[idx]?.rois?.[0]?.w;
+    const maxBoxW = state.layout?.zones?.[idx]?.maxBoxW ?? (cols === 2 ? 84 : 176);
+    const boxWidthVal = zone.boxWidth ?? '';
+    const boxWidthPlaceholder = autoW ? `Auto (${Math.round(autoW)}mm)` : (zone.type === 'text_essay' ? 'Auto (176mm)' : 'Auto (83mm)');
+    const ptsVal = zone.pointsPerItem ?? zone.points ?? state.layout?.zones?.[idx]?.pointsPerItem ?? defaultPts;
+    const rowGapVal = zone.rowGap ?? state.layout?.zones?.[idx]?.rowGap ?? 3;
 
     formHtml += `
       <div class="form-group">
@@ -1346,7 +1392,7 @@ function renderInspector() {
           <label class="form-label" for="insp-start">Start No.</label>
           <div class="stepper-control">
             <button type="button" class="stepper-btn" id="insp-start-minus" aria-label="Decrease start number">−</button>
-            <input type="number" id="insp-start" class="stepper-input" value="${zone.start ?? 1}" min="1" max="999">
+            <input type="number" id="insp-start" class="stepper-input" value="${startVal}" min="1" max="999">
             <button type="button" class="stepper-btn" id="insp-start-plus" aria-label="Increase start number">+</button>
           </div>
         </div>
@@ -1366,7 +1412,7 @@ function renderInspector() {
           <label class="form-label" for="insp-box-width">Box Width (mm)</label>
           <div class="stepper-control">
             <button type="button" class="stepper-btn" id="insp-box-width-minus" aria-label="Decrease box width">−</button>
-            <input type="number" id="insp-box-width" class="stepper-input" value="${zone.boxWidth ?? ''}" placeholder="Auto (Full)" min="15" max="190">
+            <input type="number" id="insp-box-width" class="stepper-input" value="${boxWidthVal}" placeholder="${boxWidthPlaceholder}" min="12" max="${maxBoxW}">
             <button type="button" class="stepper-btn" id="insp-box-width-plus" aria-label="Increase box width">+</button>
           </div>
         </div>
@@ -1384,7 +1430,7 @@ function renderInspector() {
           <label class="form-label" for="insp-points">Pts / Item</label>
           <div class="stepper-control">
             <button type="button" class="stepper-btn" id="insp-points-minus" aria-label="Decrease points">−</button>
-            <input type="number" id="insp-points" class="stepper-input" value="${zone.pointsPerItem ?? zone.points ?? defaultPts}" min="1" max="50">
+            <input type="number" id="insp-points" class="stepper-input" value="${ptsVal}" min="1" max="50">
             <button type="button" class="stepper-btn" id="insp-points-plus" aria-label="Increase points">+</button>
           </div>
         </div>
@@ -1395,7 +1441,7 @@ function renderInspector() {
           <label class="form-label" for="insp-row-gap">Item Spacing (mm)</label>
           <div class="stepper-control">
             <button type="button" class="stepper-btn" id="insp-row-gap-minus" aria-label="Decrease item spacing">−</button>
-            <input type="number" id="insp-row-gap" class="stepper-input" value="${zone.rowGap ?? 3}" min="0" max="50">
+            <input type="number" id="insp-row-gap" class="stepper-input" value="${rowGapVal}" min="0" max="50">
             <button type="button" class="stepper-btn" id="insp-row-gap-plus" aria-label="Increase item spacing">+</button>
           </div>
         </div>
@@ -1465,12 +1511,13 @@ function syncZonePointsToAnswerKey(zone, pts) {
   };
 
   const count = zone.count ?? 1;
-  const start = zone.start ?? 1;
+  const start = zone.start ?? state.layout?.zones?.find((z) => z.id === zone.id)?.start ?? 1;
   const keys = [];
   for (let i = 0; i < count; i++) {
     keys.push(String(start + i));
     if (zone.id) {
       keys.push(`${zone.id}_roi_${i + 1}`);
+      keys.push(`${zone.id}.${start + i}`);
     }
   }
 
@@ -1504,7 +1551,7 @@ function bindStepper(idPrefix, getter, setter, min = 1, max = 999) {
     return min;
   };
 
-  const clampAndSet = (val, skipInspector = false) => {
+  const clampAndSet = (val, skipInspector = true) => {
     let num = parseInt(val, 10);
     if (Number.isNaN(num)) num = getBaseVal();
     num = Math.max(min, Math.min(max, num));
@@ -1512,8 +1559,8 @@ function bindStepper(idPrefix, getter, setter, min = 1, max = 999) {
     setter(num, skipInspector);
   };
 
-  minus?.addEventListener('click', () => clampAndSet(getBaseVal() - 1, false));
-  plus?.addEventListener('click', () => clampAndSet(getBaseVal() + 1, false));
+  minus?.addEventListener('click', () => clampAndSet(getBaseVal() - 1, true));
+  plus?.addEventListener('click', () => clampAndSet(getBaseVal() + 1, true));
   input.addEventListener('input', () => {
     if (input.value.trim() === '') {
       setter(undefined, true);
@@ -1534,6 +1581,23 @@ function bindStepper(idPrefix, getter, setter, min = 1, max = 999) {
   });
 }
 
+function syncZoneRangeInLabel(zone, idx) {
+  if (!zone || !zone.label) return;
+  const count = zone.count ?? 1;
+  const start = zone.start ?? state.layout?.zones?.[idx]?.start ?? 1;
+  const end = start + count - 1;
+  const rangePattern = /\(\s*\d+\s*[–-]\s*\d+\s*\)/;
+  if (rangePattern.test(zone.label)) {
+    zone.label = zone.label.replace(rangePattern, `(${start}–${end})`);
+    const inspLabel = $('#insp-label');
+    if (inspLabel && state.selectedZoneIndex === idx) inspLabel.value = zone.label;
+    const inspHeaderTitle = $('.inspector-header__title');
+    if (inspHeaderTitle && state.selectedZoneIndex === idx) inspHeaderTitle.textContent = zone.label;
+    const outlineTitle = document.querySelector(`.outline-item[data-zone-index="${idx}"] .outline-item__title`);
+    if (outlineTitle) outlineTitle.textContent = zone.label;
+  }
+}
+
 function bindInspectorEvents(zone) {
   const idx = state.selectedZoneIndex;
 
@@ -1548,6 +1612,10 @@ function bindInspectorEvents(zone) {
   if (labelInput) {
     labelInput.addEventListener('input', () => {
       zone.label = labelInput.value;
+      const inspHeaderTitle = $('.inspector-header__title');
+      if (inspHeaderTitle) {
+        inspHeaderTitle.textContent = zone.label || (ZONE_TYPE_NAMES[zone.type] || zone.type);
+      }
       update({ skipInspector: true });
       const outlineTitle = document.querySelector(`.outline-item[data-zone-index="${idx}"] .outline-item__title`);
       if (outlineTitle) outlineTitle.textContent = zone.label || (ZONE_TYPE_NAMES[zone.type] || zone.type);
@@ -1559,15 +1627,47 @@ function bindInspectorEvents(zone) {
 
   // Count & Start & Points steppers
   if (['mcq', 'truefalse', 'modified_tf', 'text_short', 'text_essay', 'text'].includes(zone.type)) {
-    bindStepper('insp-count', () => zone.count ?? 1, (val, skip) => { zone.count = val ?? 1; update({ skipInspector: skip }); }, 1, 100);
-    bindStepper('insp-start', () => zone.start ?? 1, (val, skip) => { zone.start = val ?? 1; update({ skipInspector: skip }); }, 1, 999);
+    bindStepper(
+      'insp-count',
+      () => zone.count ?? 1,
+      (val, skip) => {
+        zone.count = val ?? 1;
+        syncZoneRangeInLabel(zone, idx);
+        update({ skipInspector: skip });
+      },
+      1,
+      100,
+    );
+    bindStepper(
+      'insp-start',
+      () => zone.start ?? state.layout?.zones?.[idx]?.start ?? state.layout?.zones?.[idx]?.items?.[0]?.q ?? 1,
+      (val, skip) => {
+        zone.start = val ?? 1;
+        syncZoneRangeInLabel(zone, idx);
+        update({ skipInspector: skip });
+      },
+      1,
+      999,
+    );
     bindStepper(
       'insp-points',
-      () => zone.pointsPerItem ?? zone.points ?? (zone.type === 'modified_tf' ? 2 : (zone.type === 'text_essay' ? 5 : 1)),
+      () => zone.pointsPerItem ?? zone.points ?? state.layout?.zones?.[idx]?.pointsPerItem ?? (zone.type === 'modified_tf' ? 2 : (zone.type === 'text_essay' ? 5 : 1)),
       (val, skip) => {
         const pts = val ?? 1;
         zone.pointsPerItem = pts;
         zone.points = pts;
+        const count = zone.count ?? 1;
+        const ptsPattern = /\(\s*\d+(\.\d+)?\s*pts?(?:\s+each)?\s*\)/i;
+        if (zone.label && ptsPattern.test(zone.label)) {
+          const suffix = `(${pts} pt${pts === 1 ? '' : 's'}${count > 1 ? ' each' : ''})`;
+          zone.label = zone.label.replace(ptsPattern, suffix);
+          const inspLabel = $('#insp-label');
+          if (inspLabel) inspLabel.value = zone.label;
+          const inspHeaderTitle = $('.inspector-header__title');
+          if (inspHeaderTitle) inspHeaderTitle.textContent = zone.label;
+          const outlineTitle = document.querySelector(`.outline-item[data-zone-index="${idx}"] .outline-item__title`);
+          if (outlineTitle) outlineTitle.textContent = zone.label;
+        }
         syncZonePointsToAnswerKey(zone, pts);
         update({ skipInspector: skip });
       },
@@ -1595,9 +1695,15 @@ function bindInspectorEvents(zone) {
 
   // Box dimensions & Columns for text zones
   if (['text_short', 'text_essay', 'text'].includes(zone.type)) {
+    const maxBoxW = state.layout?.zones?.[idx]?.maxBoxW ?? (zone.type === 'text_essay' ? 176 : 190);
     bindStepper(
       'insp-box-width',
-      () => zone.boxWidth ?? (zone.type === 'text_essay' ? 170 : 45),
+      () => {
+        if (zone.boxWidth != null) return zone.boxWidth;
+        const autoW = state.layout?.zones?.[idx]?.items?.[0]?.boxW ?? state.layout?.zones?.[idx]?.rois?.[0]?.w;
+        if (autoW != null) return Math.round(autoW);
+        return zone.type === 'text_essay' ? 170 : 45;
+      },
       (val, skip) => {
         if (val === undefined) {
           delete zone.boxWidth;
@@ -1606,8 +1712,8 @@ function bindInspectorEvents(zone) {
         }
         update({ skipInspector: skip });
       },
-      15,
-      190,
+      12,
+      maxBoxW,
     );
     bindStepper('insp-box-height', () => zone.boxHeight ?? (zone.type === 'text_essay' ? 35 : (zone.type === 'text_short' ? 10 : 12)), (val, skip) => { zone.boxHeight = val ?? (zone.type === 'text_essay' ? 35 : 10); update({ skipInspector: skip }); }, 3, 120);
 

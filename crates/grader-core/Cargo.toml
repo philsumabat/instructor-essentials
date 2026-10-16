@@ -1,0 +1,20 @@
+[package]
+name = "grader-core"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+image.workspace = true
+imageproc.workspace = true
+nalgebra.workspace = true
+csv.workspace = true
+thiserror.workspace = true
+anyhow.workspace = true
+rayon.workspace = true
+
+[dev-dependencies]
+tempfile = "3.10"

@@ -320,3 +320,67 @@ test('Feature 8: Text essay and short answer controls (boxWidth, points, rowGap,
   assert.match(appJs, /examTitleEl\.setAttribute\('contenteditable',\s*'true'\)/, 'DOM exam title is contenteditable on canvas');
   assert.match(appJs, /setter\(num,\s*skipInspector\)/, 'bindStepper passes skipInspector to prevent focus loss during live updates');
 });
+
+test('Feature 8b: Sheet Builder Inspector steppers and canvas title interaction mechanics', () => {
+  const appJs = fs.readFileSync(path.join(rootDir, 'builder/js/app.js'), 'utf8');
+
+  // 1. Direct on-paper title editing does not destroy DOM on click (uses attachFloatingToolbar)
+  assert.match(appJs, /function attachFloatingToolbar\(/, 'attachFloatingToolbar helper is defined');
+  assert.match(appJs, /attachFloatingToolbar\(zEl,\s*idx\)/, 'Floating toolbar attached without full preview rerender');
+
+  // 2. Direct on-paper title input preserves untrimmed spaces while typing
+  assert.match(appJs, /zone\.label\s*=\s*titleTextEl\.textContent;/, 'Paper title input does not trim prematurely');
+  assert.match(appJs, /state\.template\.title\s*=\s*examTitleEl\.textContent;/, 'Exam title input does not trim prematurely');
+
+  // 3. Duplicate item key collision yields diagnostic warning rather than fatal TemplateError
+  const collisionTpl = {
+    id: 'col-test',
+    title: 'Collision Test',
+    paper: 'A4',
+    zones: [
+      { id: 'm1', type: 'mcq', count: 5, start: 1 },
+      { id: 'm2', type: 'mcq', count: 5, start: 3 }, // Collides on questions 3, 4, 5
+    ],
+  };
+  assert.doesNotThrow(() => {
+    const res = buildLayout(collisionTpl);
+    assert.ok(res.warnings.some((w) => w.includes('duplicates key')), 'Duplicate key produces diagnostic warning');
+  }, 'buildLayout handles transient duplicate start numbers without throwing fatal exception');
+
+  // 4. Stepper start number reads from computed layout start when zone.start is unset
+  assert.match(appJs, /zone\.start\s*\?\?\s*state\.layout\?\.zones\?\.\[idx\]\?\.start/, 'Start stepper uses computed layout start fallback');
+
+  // 5. Stepper box width getter reads from rendered box width instead of jumping
+  assert.match(appJs, /state\.layout\?\.zones\?\.\[idx\]\?\.items\?\.\[0\]\?\.boxW/, 'Box width getter reads rendered item boxW');
+
+  // 6. Stepper points per item updates embedded points badge in zone.label
+  assert.match(appJs, /ptsPattern\s*=\s*\/\\\(.+?pts\?/, 'Points stepper recognizes embedded points badge pattern');
+  assert.match(appJs, /zone\.label\.replace\(ptsPattern,\s*suffix\)/, 'Points stepper synchronizes embedded points badge in label');
+
+  // 7. Stepper clicks preserve inspector DOM without destruction (skipInspector: true)
+  assert.match(appJs, /minus\?\.addEventListener\('click',\s*\(\)\s*=>\s*clampAndSet\(getBaseVal\(\)\s*-\s*1,\s*true\)\)/, 'Minus stepper click passes skipInspector: true');
+  assert.match(appJs, /plus\?\.addEventListener\('click',\s*\(\)\s*=>\s*clampAndSet\(getBaseVal\(\)\s*\+\s*1,\s*true\)\)/, 'Plus stepper click passes skipInspector: true');
+
+  // 8. Range badge synchronization when start/count changes (e.g. 1-20 -> 21-40)
+  assert.match(appJs, /function syncZoneRangeInLabel\(/, 'syncZoneRangeInLabel helper defined');
+  assert.match(appJs, /syncZoneRangeInLabel\(zone,\s*idx\)/, 'syncZoneRangeInLabel invoked on start/count stepper changes');
+
+  // 9. Layout engine exposes maxBoxW and inspector constrains stepper max
+  const essayTpl = {
+    id: 'boxw-tpl',
+    paper: 'A4',
+    zones: [
+      { id: 'e1', type: 'text_essay', count: 1, start: 1 },
+      { id: 's2', type: 'text_short', count: 4, columns: 2, start: 2 },
+    ],
+  };
+  const layout = buildLayout(essayTpl);
+  assert.ok(layout.zones[0].maxBoxW >= 170, 'Single-col essay exposes ~176mm maxBoxW');
+  assert.ok(layout.zones[1].maxBoxW <= 90 && layout.zones[1].maxBoxW >= 80, 'Two-col short answer exposes ~83mm maxBoxW');
+  assert.match(appJs, /maxBoxW\s*=\s*state\.layout\?\.zones\?\.\[idx\]\?\.maxBoxW/, 'Inspector reads layout maxBoxW for box width constraint');
+
+  // 10. Canvas zone interaction queries top-level zone containers and delegates clicks for child write-boxes
+  assert.match(appJs, /\.omr-zone\[data-zone-index\],\s*\.omr-instructions\[data-zone-index\]/, 'attachCanvasZoneInteractions queries top-level zone containers');
+  assert.match(appJs, /e\.target\.closest\('\[data-zone-index\]'\)/, 'Delegated click on sheetEl resolves closest zone index element');
+});
+

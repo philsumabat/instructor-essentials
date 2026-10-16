@@ -53,7 +53,7 @@ export const SAMPLE_TEMPLATES = {
       {
         type: 'text',
         id: 'q61',
-        label: '61.',
+        label: '61',
         w: 91,
         boxHeight: 8,
         points: 2,
@@ -63,7 +63,7 @@ export const SAMPLE_TEMPLATES = {
         type: 'text',
         id: 'q62',
         inline: true,
-        label: '62.',
+        label: '62',
         w: 91,
         boxHeight: 8,
         points: 2,
@@ -148,7 +148,7 @@ export const SAMPLE_TEMPLATES = {
       {
         type: 'text',
         id: 's1',
-        label: '31.',
+        label: '31',
         w: 191.9,
         boxHeight: 12,
         points: 2,
@@ -157,7 +157,7 @@ export const SAMPLE_TEMPLATES = {
       {
         type: 'text',
         id: 's2',
-        label: '32.',
+        label: '32',
         w: 191.9,
         boxHeight: 32,
         points: 5,

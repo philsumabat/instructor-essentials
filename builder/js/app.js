@@ -462,7 +462,7 @@ function createDefaultZone(type) {
         type: 'text',
         id: uid('q'),
         key: String(nextQ),
-        label: `${nextQ}.`,
+        label: `${nextQ}`,
         boxHeight: 12,
         points: 2,
         charset: 'any',
@@ -2807,9 +2807,9 @@ function updateGeneratorLivePreview() {
       estimatedHeight += Math.ceil(count / 2) * 5.4 + 10;
       sampleBadges = `
         <div class="wf-bubbles-matrix">
-          <div class="wf-item-row">${startQ}. ${Array(numChoices).fill('<span class="wf-dot"></span>').join('')}</div>
-          ${count > 1 ? `<div class="wf-item-row">${startQ + 1}. ${Array(numChoices).fill('<span class="wf-dot"></span>').join('')}</div>` : ''}
-          ${count > 2 ? `<div class="wf-item-row">...</div><div class="wf-item-row">${endQ}. ${Array(numChoices).fill('<span class="wf-dot"></span>').join('')}</div>` : ''}
+          <div class="wf-item-row">${startQ} ${Array(numChoices).fill('<span class="wf-dot"></span>').join('')}</div>
+          ${count > 1 ? `<div class="wf-item-row">${startQ + 1} ${Array(numChoices).fill('<span class="wf-dot"></span>').join('')}</div>` : ''}
+          ${count > 2 ? `<div class="wf-item-row">...</div><div class="wf-item-row">${endQ} ${Array(numChoices).fill('<span class="wf-dot"></span>').join('')}</div>` : ''}
         </div>
       `;
     } else if (part.type === 'truefalse') {
@@ -2817,9 +2817,9 @@ function updateGeneratorLivePreview() {
       estimatedHeight += Math.ceil(count / 2) * 5.4 + 10;
       sampleBadges = `
         <div class="wf-bubbles-matrix">
-          <div class="wf-item-row">${startQ}. <span class="wf-dot"></span> <span class="wf-dot"></span></div>
-          ${count > 1 ? `<div class="wf-item-row">${startQ + 1}. <span class="wf-dot"></span> <span class="wf-dot"></span></div>` : ''}
-          ${count > 2 ? `<div class="wf-item-row">...</div><div class="wf-item-row">${endQ}. <span class="wf-dot"></span> <span class="wf-dot"></span></div>` : ''}
+          <div class="wf-item-row">${startQ} <span class="wf-dot"></span> <span class="wf-dot"></span></div>
+          ${count > 1 ? `<div class="wf-item-row">${startQ + 1} <span class="wf-dot"></span> <span class="wf-dot"></span></div>` : ''}
+          ${count > 2 ? `<div class="wf-item-row">...</div><div class="wf-item-row">${endQ} <span class="wf-dot"></span> <span class="wf-dot"></span></div>` : ''}
         </div>
       `;
     } else if (part.type === 'modified_tf') {
@@ -2827,7 +2827,7 @@ function updateGeneratorLivePreview() {
       estimatedHeight += count * 7.5 + 10;
       sampleBadges = `
         <div class="wf-bubbles-matrix">
-          <div class="wf-item-row">${startQ}. <span class="wf-dot"></span> <span class="wf-dot"></span> [ Correction Box ]</div>
+          <div class="wf-item-row">${startQ} <span class="wf-dot"></span> <span class="wf-dot"></span> [ Correction Box ]</div>
           ${count > 1 ? `<div class="wf-item-row">... ${count} items total</div>` : ''}
         </div>
       `;
@@ -2837,7 +2837,7 @@ function updateGeneratorLivePreview() {
       sampleBadges = `
         <div class="wf-bubbles-matrix">
           <div class="wf-item-row" style="width: 100%; display: flex; flex-direction: column; gap: 0.2rem;">
-            <span>${startQ}.</span>
+            <span>${startQ}</span>
             <div class="wf-box-writein" style="height: ${Math.min(28, (part.boxHeight || 12))}px;">Write-in answer / term</div>
           </div>
           ${count > 1 ? `<div class="wf-item-row" style="font-size: 0.65rem; color: #64748b; font-style: italic;">... +${count - 1} more items (${startQ + 1}–${endQ})</div>` : ''}
@@ -2849,7 +2849,7 @@ function updateGeneratorLivePreview() {
       sampleBadges = `
         <div class="wf-bubbles-matrix">
           <div class="wf-item-row" style="width: 100%; display: flex; flex-direction: column; gap: 0.2rem;">
-            <span>${startQ}.</span>
+            <span>${startQ}</span>
             <div class="wf-box-writein" style="height: ${Math.min(50, (part.boxHeight || 36))}px;">Extended explanation / essay response</div>
           </div>
         </div>

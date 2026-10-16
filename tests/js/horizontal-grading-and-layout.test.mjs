@@ -4,7 +4,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import vm from 'node:vm';
-import { buildLayout } from '../../builder/js/layout-engine.js';
+import { buildLayout, layoutStats } from '../../builder/js/layout-engine.js';
+import { SAMPLE_TEMPLATES } from '../../builder/js/templates.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -271,6 +272,20 @@ test('Feature 4: Flashcard Deck Mode & Auto-Advance', () => {
   ctx.navigateFlashcard(-1);
   assert.equal(ctx.horizontalDeckState.currentIndex, 1, 'Navigates back to card index 1');
 
+  // Test Auto-Advance in needs_review filter: clicking 'unsure' MUST advance to next card
+  ctx.horizontalDeckState.filter = 'needs_review';
+  ctx.horizontalDeckState.currentIndex = 0;
+  // Reset grades to unreviewed
+  ctx.state.results.grades.forEach(g => {
+    g.gradedItems['q10'] = { status: 'unreviewed', reviewed: false, pointsAwarded: 0 };
+  });
+  const pendingBefore = ctx.getFilteredFlashcardIndices('q10');
+  assert.equal(pendingBefore.length, 3);
+  // Grade submission 0 with 'unsure'
+  ctx.flashcardGradeAction(0, 'q10', 'unsure');
+  assert.equal(ctx.state.results.grades[0].gradedItems['q10'].status, 'unsure');
+  assert.equal(ctx.horizontalDeckState.currentIndex, 1, 'Auto-advances to card index 1 after marking unsure in needs_review filter');
+
   // Toggle stream visibility
   ctx.toggleStreamVisibility();
   assert.equal(ctx.horizontalDeckState.streamVisible, false);
@@ -365,4 +380,129 @@ test('Feature 6: Item Numbers Do Not Have Trailing Dot to Save Horizontal Space'
 
   // Verify labelW is compact (e.g. 5mm for single digit) leaving maximum room for boxW
   assert.ok(zone.items[0].labelW <= 6, `Label width is compact (${zone.items[0].labelW}mm <= 6mm)`);
+
+  // Verify SAMPLE_TEMPLATES have no trailing dots in text item numbers
+  assert.equal(SAMPLE_TEMPLATES['exam-50'].zones.find(z => z.id === 'q61').label, '61');
+  assert.equal(SAMPLE_TEMPLATES['exam-50'].zones.find(z => z.id === 'q62').label, '62');
+  assert.equal(SAMPLE_TEMPLATES['quiz-tf'].zones.find(z => z.id === 's1').label, '31');
+  assert.equal(SAMPLE_TEMPLATES['quiz-tf'].zones.find(z => z.id === 's2').label, '32');
+
+  // Verify single-item text layout strips trailing dot from numeric label
+  const singleItemTemplate = {
+    id: 'single-dot-test',
+    title: 'Single Dot Item Layout',
+    paper: 'A4',
+    zones: [{ type: 'text', id: 'q99', label: '99.', boxHeight: 10, w: 90 }]
+  };
+  const singleLayout = buildLayout(singleItemTemplate);
+  assert.equal(singleLayout.zones[0].prompt, '99');
+  assert.equal(singleLayout.zones[0].rois[0].label, '99');
+});
+
+test('Feature 7: layoutStats Safety and Uncompiled Template Recognition in Checker Studio', () => {
+  // 1. Verify layoutStats handles zones without rois (e.g. instructions zone) and top-level rois safely
+  const mockLayoutWithoutRois = {
+    zones: [
+      { id: 'inst', type: 'instructions', groups: [] },
+      { id: 'custom', type: 'custom', groups: [] }
+    ],
+    rois: [
+      { id: 'extra_q', key: '51', graded: true }
+    ]
+  };
+  const stats = layoutStats(mockLayoutWithoutRois);
+  assert.equal(stats.questions, 0);
+  assert.equal(stats.textQuestions, 1);
+  assert.equal(stats.totalQuestions, 1);
+
+  // 2. Verify parseLayout and getLayoutQuestionItems recognize uncompiled template zones (.sheet.json)
+  const checkerHtml = fs.readFileSync(path.join(rootDir, 'builder/checker.html'), 'utf8');
+  const ctx = extractCheckerFunctions(checkerHtml);
+
+  const rawTemplate = {
+    id: 'bio-midterm-template',
+    title: 'Biology Midterm Sheet',
+    paper: 'A4',
+    zones: [
+      { type: 'fields', id: 'info' },
+      { type: 'instructions', id: 'notes' },
+      { type: 'mcq', id: 'part1', count: 50, choices: 'ABCDE', start: 1 },
+      { type: 'truefalse', id: 'part2', count: 10, start: 51 },
+      { type: 'text_short', id: 'part3', count: 5, start: 61 },
+      { type: 'modified_tf', id: 'part4', count: 5, start: 66 }
+    ]
+  };
+
+  const parsed = ctx.parseLayout(rawTemplate);
+  assert.ok(parsed, 'parseLayout returns parsed layout for uncompiled template');
+  assert.equal(parsed.bubbles.length, 50 * 5 + 10 * 2 + 5 * 2, 'Synthesizes bubbles for MCQ, TF, and modified TF');
+  assert.equal(parsed.rois.length, 5 + 5, 'Synthesizes rois for text_short and modified_tf corrections');
+
+  const questionItems = ctx.getLayoutQuestionItems(parsed);
+  assert.equal(questionItems.length, 50 + 10 + 5 + 5 + 5, 'Recognizes all 75 questions and correction items from uncompiled template');
+
+  const mcq1 = questionItems.find(it => it.key === '1');
+  assert.ok(mcq1 && mcq1.kind === 'mcq');
+  const tf51 = questionItems.find(it => it.key === '51');
+  assert.ok(tf51 && tf51.kind === 'tf');
+  const short61 = questionItems.find(it => it.key === '61');
+  assert.ok(short61 && short61.kind === 'text');
+  const modCorr66 = questionItems.find(it => it.key === '66_corr');
+  assert.ok(modCorr66 && modCorr66.type === 'correction');
+
+  // 3. Verify downloadKeyTemplateCSV includes all items without throwing
+  ctx.state.layout = parsed;
+  let downloadedCsv = null;
+  ctx.downloadFile = (name, content) => { downloadedCsv = content; };
+  ctx.downloadKeyTemplateCSV();
+  assert.ok(downloadedCsv, 'downloadKeyTemplateCSV generates CSV for all questions');
+  assert.ok(downloadedCsv.includes('1,'), 'Contains item 1');
+  assert.ok(downloadedCsv.includes('51,'), 'Contains item 51');
+  assert.ok(downloadedCsv.includes('61,'), 'Contains item 61');
+  assert.ok(downloadedCsv.includes('66_corr,'), 'Contains item 66_corr');
+});
+
+test('Feature 8: OCR Transcription Honesty (No Expected Answer Leakage)', () => {
+  const checkerHtml = fs.readFileSync(path.join(rootDir, 'builder/checker.html'), 'utf8');
+  const ctx = extractCheckerFunctions(checkerHtml);
+
+  ctx.state.layout = {
+    title: 'Honest OCR Test',
+    zones: [{
+      id: 'written-zone',
+      type: 'text_short',
+      rois: [{ key: 'q99', id: 'q99', label: '99', points: 2.0, graded: true }]
+    }]
+  };
+  ctx.state.key = {
+    items: {
+      'q99': { answer: 'VERY_SECRET_CORRECT_ANSWER', points: 2.0, kind: 'text' }
+    }
+  };
+  // Submission has NO OCR text (empty / not read yet)
+  ctx.state.results = {
+    passThreshold: 60,
+    grades: [{
+      examId: 'scan_no_ocr.jpg',
+      studentId: '1001',
+      studentName: 'Anonymous Student',
+      rawScore: 0,
+      maxScore: 2,
+      percentage: 0,
+      gradedItems: {
+        'q99': { status: 'unreviewed', reviewed: false, ocrText: '' }
+      }
+    }]
+  };
+
+  ctx.renderHorizontalGradingView();
+
+  const activeCardContainer = ctx.document.getElementById('horizontal-active-card-container');
+  const streamContainer = ctx.document.getElementById('horizontal-submissions-container');
+
+  // Must NOT display the secret correct answer as OCR Read
+  assert.ok(!activeCardContainer.innerHTML.includes('VERY_SECRET_CORRECT_ANSWER'), 'Flashcard must NOT leak expected answer as OCR text');
+  assert.ok(!streamContainer.innerHTML.includes('VERY_SECRET_CORRECT_ANSWER'), 'Stream card must NOT leak expected answer as OCR text');
+  assert.ok(activeCardContainer.innerHTML.includes('(Handwritten response)'), 'Flashcard displays honest fallback');
+  assert.ok(streamContainer.innerHTML.includes('(Handwritten response)'), 'Stream card displays honest fallback');
 });

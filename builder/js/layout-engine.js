@@ -498,7 +498,9 @@ function layoutText(zone, ctx, x, y, availW) {
 
   // Single-item text box (backwards-compatible)
   if (count <= 1) {
-    const prompt = String(zone.label ?? '');
+    const rawPrompt = String(zone.label ?? '');
+    const isNum = /^\d+[\.\)]?$/.test(rawPrompt.trim());
+    const prompt = isNum ? rawPrompt.trim().replace(/[\.\)]+$/, '') : rawPrompt;
     const isInline = zone.inlineLabel ?? (prompt.length <= 10 || boxH <= 10);
     let promptH = 0;
     let boxX = x + PAD;
@@ -507,7 +509,7 @@ function layoutText(zone, ctx, x, y, availW) {
     let labelW = 0;
 
     if (isInline && prompt) {
-      labelW = zone.labelWidth ?? Math.min(18, Math.max(8, prompt.length * 3.0));
+      labelW = zone.labelWidth ?? Math.min(18, Math.max(5, prompt.length * 2.8));
       boxX = x + PAD + labelW;
       const maxBoxW = innerW - labelW;
       boxW = zone.boxWidth != null ? Math.max(12, Math.min(maxBoxW, Number(zone.boxWidth))) : maxBoxW;
@@ -522,7 +524,7 @@ function layoutText(zone, ctx, x, y, availW) {
 
     const roi = {
       id: zone.id,
-      key: zone.key ?? zone.id,
+      key: zone.key ?? (zone.start != null ? String(zone.start) : zone.id),
       label: prompt || zone.id,
       role: null,
       x: r3(boxX),
@@ -803,21 +805,25 @@ export function buildLayout(input) {
 
 /** Flat list of every bubble group (student ID digits + questions) in layout order. */
 export function allGroups(layout) {
-  return layout.zones.flatMap((z) => z.groups.map((g) => ({ ...g, zoneId: z.id })));
+  return (layout.zones || []).flatMap((z) => (z.groups || []).map((g) => ({ ...g, zoneId: z.id })));
 }
 
 /** Summary counts for UI display. */
 export function layoutStats(layout) {
   const groups = allGroups(layout);
-  const sidZone = layout.zones.find((z) => z.type === 'student_id');
-  const sidRoi = layout.zones.flatMap((z) => z.rois ?? []).find((r) => r.role === 'student_id');
+  const sidZone = (layout.zones || []).find((z) => z.type === 'student_id');
+  const zoneRois = (layout.zones || []).flatMap((z) => z.rois ?? []);
+  const allRois = (layout.rois && Array.isArray(layout.rois))
+    ? [...new Map([...zoneRois, ...layout.rois].map((r) => [r.id || r.key, r])).values()]
+    : zoneRois;
+  const sidRoi = allRois.find((r) => r.role === 'student_id');
   const idDigits = sidZone ? (sidZone.digits ?? groups.filter((g) => g.kind === 'sid').length) : (sidRoi?.digits ?? 0);
   const bubbleQuestions = groups.filter((g) => g.kind !== 'sid').length;
-  const gradedRois = layout.zones.flatMap((z) => z.rois).filter((r) => r.graded);
+  const gradedRois = allRois.filter((r) => r && r.graded);
   const textQuestions = gradedRois.filter((r) => r.role !== 'student_id' && r.role !== 'correction').length;
   return {
     questions: bubbleQuestions,
-    bubbles: groups.reduce((n, g) => n + g.options.length, 0),
+    bubbles: groups.reduce((n, g) => n + (g.options || []).length, 0),
     textRegions: gradedRois.length,
     textQuestions,
     totalQuestions: bubbleQuestions + textQuestions,

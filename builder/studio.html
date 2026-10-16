@@ -3891,7 +3891,9 @@ function layoutText(zone, ctx, x, y, availW) {
 
   // Single-item text box (backwards-compatible)
   if (count <= 1) {
-    const prompt = String(zone.label ?? '');
+    const rawPrompt = String(zone.label ?? '');
+    const isNum = /^\d+[\.\)]?$/.test(rawPrompt.trim());
+    const prompt = isNum ? rawPrompt.trim().replace(/[\.\)]+$/, '') : rawPrompt;
     const isInline = zone.inlineLabel ?? (prompt.length <= 10 || boxH <= 10);
     let promptH = 0;
     let boxX = x + PAD;
@@ -3900,7 +3902,7 @@ function layoutText(zone, ctx, x, y, availW) {
     let labelW = 0;
 
     if (isInline && prompt) {
-      labelW = zone.labelWidth ?? Math.min(18, Math.max(8, prompt.length * 3.0));
+      labelW = zone.labelWidth ?? Math.min(18, Math.max(5, prompt.length * 2.8));
       boxX = x + PAD + labelW;
       const maxBoxW = innerW - labelW;
       boxW = zone.boxWidth != null ? Math.max(12, Math.min(maxBoxW, Number(zone.boxWidth))) : maxBoxW;
@@ -3915,7 +3917,7 @@ function layoutText(zone, ctx, x, y, availW) {
 
     const roi = {
       id: zone.id,
-      key: zone.key ?? zone.id,
+      key: zone.key ?? (zone.start != null ? String(zone.start) : zone.id),
       label: prompt || zone.id,
       role: null,
       x: r3(boxX),
@@ -4196,21 +4198,25 @@ function buildLayout(input) {
 
 /** Flat list of every bubble group (student ID digits + questions) in layout order. */
 function allGroups(layout) {
-  return layout.zones.flatMap((z) => z.groups.map((g) => ({ ...g, zoneId: z.id })));
+  return (layout.zones || []).flatMap((z) => (z.groups || []).map((g) => ({ ...g, zoneId: z.id })));
 }
 
 /** Summary counts for UI display. */
 function layoutStats(layout) {
   const groups = allGroups(layout);
-  const sidZone = layout.zones.find((z) => z.type === 'student_id');
-  const sidRoi = layout.zones.flatMap((z) => z.rois ?? []).find((r) => r.role === 'student_id');
+  const sidZone = (layout.zones || []).find((z) => z.type === 'student_id');
+  const zoneRois = (layout.zones || []).flatMap((z) => z.rois ?? []);
+  const allRois = (layout.rois && Array.isArray(layout.rois))
+    ? [...new Map([...zoneRois, ...layout.rois].map((r) => [r.id || r.key, r])).values()]
+    : zoneRois;
+  const sidRoi = allRois.find((r) => r.role === 'student_id');
   const idDigits = sidZone ? (sidZone.digits ?? groups.filter((g) => g.kind === 'sid').length) : (sidRoi?.digits ?? 0);
   const bubbleQuestions = groups.filter((g) => g.kind !== 'sid').length;
-  const gradedRois = layout.zones.flatMap((z) => z.rois).filter((r) => r.graded);
+  const gradedRois = allRois.filter((r) => r && r.graded);
   const textQuestions = gradedRois.filter((r) => r.role !== 'student_id' && r.role !== 'correction').length;
   return {
     questions: bubbleQuestions,
-    bubbles: groups.reduce((n, g) => n + g.options.length, 0),
+    bubbles: groups.reduce((n, g) => n + (g.options || []).length, 0),
     textRegions: gradedRois.length,
     textQuestions,
     totalQuestions: bubbleQuestions + textQuestions,
@@ -4715,7 +4721,7 @@ const SAMPLE_TEMPLATES = {
       {
         type: 'text',
         id: 'q61',
-        label: '61.',
+        label: '61',
         w: 91,
         boxHeight: 8,
         points: 2,
@@ -4725,7 +4731,7 @@ const SAMPLE_TEMPLATES = {
         type: 'text',
         id: 'q62',
         inline: true,
-        label: '62.',
+        label: '62',
         w: 91,
         boxHeight: 8,
         points: 2,
@@ -4810,7 +4816,7 @@ const SAMPLE_TEMPLATES = {
       {
         type: 'text',
         id: 's1',
-        label: '31.',
+        label: '31',
         w: 191.9,
         boxHeight: 12,
         points: 2,
@@ -4819,7 +4825,7 @@ const SAMPLE_TEMPLATES = {
       {
         type: 'text',
         id: 's2',
-        label: '32.',
+        label: '32',
         w: 191.9,
         boxHeight: 32,
         points: 5,
@@ -5365,7 +5371,7 @@ function createDefaultZone(type) {
         type: 'text',
         id: uid('q'),
         key: String(nextQ),
-        label: `${nextQ}.`,
+        label: `${nextQ}`,
         boxHeight: 12,
         points: 2,
         charset: 'any',
@@ -7710,9 +7716,9 @@ function updateGeneratorLivePreview() {
       estimatedHeight += Math.ceil(count / 2) * 5.4 + 10;
       sampleBadges = `
         <div class="wf-bubbles-matrix">
-          <div class="wf-item-row">${startQ}. ${Array(numChoices).fill('<span class="wf-dot"></span>').join('')}</div>
-          ${count > 1 ? `<div class="wf-item-row">${startQ + 1}. ${Array(numChoices).fill('<span class="wf-dot"></span>').join('')}</div>` : ''}
-          ${count > 2 ? `<div class="wf-item-row">...</div><div class="wf-item-row">${endQ}. ${Array(numChoices).fill('<span class="wf-dot"></span>').join('')}</div>` : ''}
+          <div class="wf-item-row">${startQ} ${Array(numChoices).fill('<span class="wf-dot"></span>').join('')}</div>
+          ${count > 1 ? `<div class="wf-item-row">${startQ + 1} ${Array(numChoices).fill('<span class="wf-dot"></span>').join('')}</div>` : ''}
+          ${count > 2 ? `<div class="wf-item-row">...</div><div class="wf-item-row">${endQ} ${Array(numChoices).fill('<span class="wf-dot"></span>').join('')}</div>` : ''}
         </div>
       `;
     } else if (part.type === 'truefalse') {
@@ -7720,9 +7726,9 @@ function updateGeneratorLivePreview() {
       estimatedHeight += Math.ceil(count / 2) * 5.4 + 10;
       sampleBadges = `
         <div class="wf-bubbles-matrix">
-          <div class="wf-item-row">${startQ}. <span class="wf-dot"></span> <span class="wf-dot"></span></div>
-          ${count > 1 ? `<div class="wf-item-row">${startQ + 1}. <span class="wf-dot"></span> <span class="wf-dot"></span></div>` : ''}
-          ${count > 2 ? `<div class="wf-item-row">...</div><div class="wf-item-row">${endQ}. <span class="wf-dot"></span> <span class="wf-dot"></span></div>` : ''}
+          <div class="wf-item-row">${startQ} <span class="wf-dot"></span> <span class="wf-dot"></span></div>
+          ${count > 1 ? `<div class="wf-item-row">${startQ + 1} <span class="wf-dot"></span> <span class="wf-dot"></span></div>` : ''}
+          ${count > 2 ? `<div class="wf-item-row">...</div><div class="wf-item-row">${endQ} <span class="wf-dot"></span> <span class="wf-dot"></span></div>` : ''}
         </div>
       `;
     } else if (part.type === 'modified_tf') {
@@ -7730,7 +7736,7 @@ function updateGeneratorLivePreview() {
       estimatedHeight += count * 7.5 + 10;
       sampleBadges = `
         <div class="wf-bubbles-matrix">
-          <div class="wf-item-row">${startQ}. <span class="wf-dot"></span> <span class="wf-dot"></span> [ Correction Box ]</div>
+          <div class="wf-item-row">${startQ} <span class="wf-dot"></span> <span class="wf-dot"></span> [ Correction Box ]</div>
           ${count > 1 ? `<div class="wf-item-row">... ${count} items total</div>` : ''}
         </div>
       `;
@@ -7740,7 +7746,7 @@ function updateGeneratorLivePreview() {
       sampleBadges = `
         <div class="wf-bubbles-matrix">
           <div class="wf-item-row" style="width: 100%; display: flex; flex-direction: column; gap: 0.2rem;">
-            <span>${startQ}.</span>
+            <span>${startQ}</span>
             <div class="wf-box-writein" style="height: ${Math.min(28, (part.boxHeight || 12))}px;">Write-in answer / term</div>
           </div>
           ${count > 1 ? `<div class="wf-item-row" style="font-size: 0.65rem; color: #64748b; font-style: italic;">... +${count - 1} more items (${startQ + 1}–${endQ})</div>` : ''}
@@ -7752,7 +7758,7 @@ function updateGeneratorLivePreview() {
       sampleBadges = `
         <div class="wf-bubbles-matrix">
           <div class="wf-item-row" style="width: 100%; display: flex; flex-direction: column; gap: 0.2rem;">
-            <span>${startQ}.</span>
+            <span>${startQ}</span>
             <div class="wf-box-writein" style="height: ${Math.min(50, (part.boxHeight || 36))}px;">Extended explanation / essay response</div>
           </div>
         </div>

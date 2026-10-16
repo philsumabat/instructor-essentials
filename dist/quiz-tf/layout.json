@@ -1711,7 +1711,8 @@
       "isInline": true,
       "labelW": 5.6,
       "count": 1,
-      "boxHeight": 12
+      "boxHeight": 12,
+      "rowGap": 3
     },
     {
       "id": "s2",
@@ -1747,7 +1748,8 @@
       "isInline": true,
       "labelW": 5.6,
       "count": 1,
-      "boxHeight": 32
+      "boxHeight": 32,
+      "rowGap": 3
     }
   ],
   "warnings": []

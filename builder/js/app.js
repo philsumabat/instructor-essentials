@@ -27,6 +27,18 @@ function uid(prefix = 'zone') {
   return `${prefix}_${Date.now().toString(36).slice(-4)}_${idCounter++}`;
 }
 
+const ZONE_TYPE_NAMES = {
+  student_id: 'ID no.',
+  fields: 'Info & ID no.',
+  mcq: 'Multiple Choice (MCQ)',
+  truefalse: 'True / False',
+  modified_tf: 'Modified True / False',
+  text: 'Written Answer Box',
+  text_short: 'Short Answer Question',
+  text_essay: 'Essay / Long Answer',
+  instructions: 'Instructions & Notes',
+};
+
 // ---- State ----
 const state = {
   template: null,
@@ -633,11 +645,78 @@ function renderPreview() {
 
 // ---- Canvas Zone Interactive Overlays & Click Handling (DOM Mode) ----
 function attachCanvasZoneInteractions(sheetEl) {
+  // Direct exam title editing on the paper
+  const examTitleEl = sheetEl.querySelector('.omr-title');
+  if (examTitleEl) {
+    examTitleEl.setAttribute('contenteditable', 'true');
+    examTitleEl.setAttribute('spellcheck', 'false');
+    examTitleEl.setAttribute('title', 'Click to edit exam title');
+    examTitleEl.addEventListener('click', (e) => {
+      e.stopPropagation();
+    });
+    examTitleEl.addEventListener('input', () => {
+      state.template.title = examTitleEl.textContent.trim();
+      if (els.examTitle) {
+        els.examTitle.value = state.template.title;
+      }
+    });
+    examTitleEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        examTitleEl.blur();
+      }
+    });
+    examTitleEl.addEventListener('blur', () => {
+      state.template.title = examTitleEl.textContent.trim();
+      update();
+    });
+  }
+
   // Find all rendered zones
   const zoneEls = sheetEl.querySelectorAll('[data-zone-index]');
   for (const zEl of zoneEls) {
     const idx = parseInt(zEl.getAttribute('data-zone-index'), 10);
     if (Number.isNaN(idx)) continue;
+
+    // Direct section title editing on the paper
+    const titleTextEl = zEl.querySelector('.omr-zone__title-text') || zEl.querySelector('.omr-zone__title');
+    if (titleTextEl) {
+      titleTextEl.setAttribute('contenteditable', 'true');
+      titleTextEl.setAttribute('spellcheck', 'false');
+      titleTextEl.setAttribute('title', 'Click to edit section title');
+      titleTextEl.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (state.selectedZoneIndex !== idx) {
+          selectZone(idx);
+        }
+      });
+      titleTextEl.addEventListener('input', () => {
+        const zone = state.template.zones[idx];
+        if (!zone) return;
+        zone.label = titleTextEl.textContent.trim();
+        const inspLabel = $('#insp-label');
+        if (inspLabel && state.selectedZoneIndex === idx) {
+          inspLabel.value = zone.label;
+        }
+        const outlineTitle = document.querySelector(`.outline-item[data-zone-index="${idx}"] .outline-item__title`);
+        if (outlineTitle) {
+          outlineTitle.textContent = zone.label || (ZONE_TYPE_NAMES[zone.type] || zone.type);
+        }
+      });
+      titleTextEl.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          titleTextEl.blur();
+        }
+      });
+      titleTextEl.addEventListener('blur', () => {
+        const zone = state.template.zones[idx];
+        if (zone) {
+          zone.label = titleTextEl.textContent.trim();
+          update();
+        }
+      });
+    }
 
     if (idx === state.selectedZoneIndex) {
       zEl.classList.add('is-selected');
@@ -698,12 +777,35 @@ function attachCanvasZoneInteractions(sheetEl) {
 
 // ---- Canvas Zone Interactive Overlays & Click Handling (SVG Mode) ----
 function attachSvgZoneInteractions(scaler, svgEl, layout) {
+  // Exam title double-click to edit
+  const titleEl = svgEl.querySelector('text.omr-title') || svgEl.querySelector('text');
+  if (titleEl) {
+    titleEl.style.cursor = 'pointer';
+    titleEl.addEventListener('dblclick', (e) => {
+      e.stopPropagation();
+      if (els.examTitle) {
+        els.examTitle.focus();
+        els.examTitle.select();
+      }
+    });
+  }
+
   const zoneEls = svgEl.querySelectorAll('g.omr-zone[data-zone-index]');
   for (const zEl of zoneEls) {
     const idx = parseInt(zEl.getAttribute('data-zone-index'), 10);
     if (Number.isNaN(idx)) continue;
 
     zEl.style.cursor = 'pointer';
+
+    zEl.addEventListener('dblclick', (e) => {
+      e.stopPropagation();
+      selectZone(idx);
+      const inspLabel = $('#insp-label');
+      if (inspLabel) {
+        inspLabel.focus();
+        inspLabel.select();
+      }
+    });
 
     if (idx === state.selectedZoneIndex) {
       zEl.classList.add('is-selected');
@@ -941,17 +1043,7 @@ function renderInspector() {
     text_essay: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
     instructions: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>',
   };
-  const typeNames = {
-    student_id: 'ID no.',
-    fields: 'Info & ID no.',
-    mcq: 'Multiple Choice (MCQ)',
-    truefalse: 'True / False',
-    modified_tf: 'Modified True / False',
-    text: 'Written Answer Box',
-    text_short: 'Short Answer Question',
-    text_essay: 'Essay / Long Answer',
-    instructions: 'Instructions & Notes',
-  };
+  const typeNames = ZONE_TYPE_NAMES;
 
   formHtml += `
     <div class="inspector-header">
@@ -1236,7 +1328,7 @@ function renderInspector() {
 
     formHtml += `
       <div class="form-group">
-        <label class="form-label" for="insp-label">${count > 1 ? 'Section Title' : 'Question Prompt / Label'}</label>
+        <label class="form-label" for="insp-label">Section Title</label>
         <input type="text" id="insp-label" class="form-input" value="${safeEscapeHTML(zone.label || '')}">
       </div>
 
@@ -1355,6 +1447,46 @@ function renderInspector() {
   bindInspectorEvents(zone);
 }
 
+// Sync points per item to answer key items if answer key exists
+function syncZonePointsToAnswerKey(zone, pts) {
+  const ptsNum = Number(pts);
+  if (!Number.isFinite(ptsNum)) return;
+
+  const updateMap = (itemsMap, key) => {
+    if (!itemsMap || !key) return;
+    const strKey = String(key);
+    if (itemsMap[strKey]) {
+      if (typeof itemsMap[strKey] === 'object' && itemsMap[strKey] !== null) {
+        itemsMap[strKey].points = ptsNum;
+      } else {
+        itemsMap[strKey] = { answer: itemsMap[strKey], points: ptsNum };
+      }
+    }
+  };
+
+  const count = zone.count ?? 1;
+  const start = zone.start ?? 1;
+  const keys = [];
+  for (let i = 0; i < count; i++) {
+    keys.push(String(start + i));
+    if (zone.id) {
+      keys.push(`${zone.id}_roi_${i + 1}`);
+    }
+  }
+
+  const targets = [
+    state.template?.answerKey?.items,
+    currentAnswerKey?.items,
+  ];
+
+  for (const t of targets) {
+    if (!t) continue;
+    for (const k of keys) {
+      updateMap(t, k);
+    }
+  }
+}
+
 // Stepper input binding helper
 function bindStepper(idPrefix, getter, setter, min = 1, max = 999) {
   const input = $(`#${idPrefix}`);
@@ -1362,17 +1494,44 @@ function bindStepper(idPrefix, getter, setter, min = 1, max = 999) {
   const plus = $(`#${idPrefix}-plus`);
   if (!input) return;
 
-  const clampAndSet = (val) => {
-    let num = parseInt(val, 10);
-    if (Number.isNaN(num)) num = min;
-    num = Math.max(min, Math.min(max, num));
-    input.value = num;
-    setter(num);
+  const getBaseVal = () => {
+    const raw = parseInt(input.value, 10);
+    if (!Number.isNaN(raw)) return raw;
+    if (getter) {
+      const g = getter();
+      if (g != null && !Number.isNaN(Number(g))) return Number(g);
+    }
+    return min;
   };
 
-  minus?.addEventListener('click', () => clampAndSet(parseInt(input.value, 10) - 1));
-  plus?.addEventListener('click', () => clampAndSet(parseInt(input.value, 10) + 1));
-  input.addEventListener('change', () => clampAndSet(input.value));
+  const clampAndSet = (val, skipInspector = false) => {
+    let num = parseInt(val, 10);
+    if (Number.isNaN(num)) num = getBaseVal();
+    num = Math.max(min, Math.min(max, num));
+    input.value = num;
+    setter(num, skipInspector);
+  };
+
+  minus?.addEventListener('click', () => clampAndSet(getBaseVal() - 1, false));
+  plus?.addEventListener('click', () => clampAndSet(getBaseVal() + 1, false));
+  input.addEventListener('input', () => {
+    if (input.value.trim() === '') {
+      setter(undefined, true);
+    } else {
+      let num = parseInt(input.value, 10);
+      if (!Number.isNaN(num)) {
+        num = Math.max(min, Math.min(max, num));
+        setter(num, true);
+      }
+    }
+  });
+  input.addEventListener('change', () => {
+    if (input.value.trim() === '') {
+      setter(undefined, false);
+    } else {
+      clampAndSet(input.value, false);
+    }
+  });
 }
 
 function bindInspectorEvents(zone) {
@@ -1391,7 +1550,7 @@ function bindInspectorEvents(zone) {
       zone.label = labelInput.value;
       update({ skipInspector: true });
       const outlineTitle = document.querySelector(`.outline-item[data-zone-index="${idx}"] .outline-item__title`);
-      if (outlineTitle) outlineTitle.textContent = zone.label || (typeNames[zone.type] || zone.type);
+      if (outlineTitle) outlineTitle.textContent = zone.label || (ZONE_TYPE_NAMES[zone.type] || zone.type);
     });
     labelInput.addEventListener('change', () => {
       update();
@@ -1400,15 +1559,17 @@ function bindInspectorEvents(zone) {
 
   // Count & Start & Points steppers
   if (['mcq', 'truefalse', 'modified_tf', 'text_short', 'text_essay', 'text'].includes(zone.type)) {
-    bindStepper('insp-count', () => zone.count ?? 1, (val) => { zone.count = val; update(); }, 1, 100);
-    bindStepper('insp-start', () => zone.start ?? 1, (val) => { zone.start = val; update(); }, 1, 999);
+    bindStepper('insp-count', () => zone.count ?? 1, (val, skip) => { zone.count = val ?? 1; update({ skipInspector: skip }); }, 1, 100);
+    bindStepper('insp-start', () => zone.start ?? 1, (val, skip) => { zone.start = val ?? 1; update({ skipInspector: skip }); }, 1, 999);
     bindStepper(
       'insp-points',
-      () => zone.pointsPerItem ?? zone.points ?? (zone.type === 'modified_tf' ? 2 : 1),
-      (val) => {
-        zone.pointsPerItem = val;
-        zone.points = val;
-        update();
+      () => zone.pointsPerItem ?? zone.points ?? (zone.type === 'modified_tf' ? 2 : (zone.type === 'text_essay' ? 5 : 1)),
+      (val, skip) => {
+        const pts = val ?? 1;
+        zone.pointsPerItem = pts;
+        zone.points = pts;
+        syncZonePointsToAnswerKey(zone, pts);
+        update({ skipInspector: skip });
       },
       1,
       50,
@@ -1421,10 +1582,11 @@ function bindInspectorEvents(zone) {
     bindStepper(
       'insp-row-gap',
       () => zone.rowGap ?? (zone.type === 'fields' ? (zone.gapY ?? defaultGap) : defaultGap),
-      (val) => {
-        zone.rowGap = val;
-        if (zone.type === 'fields') zone.gapY = val;
-        update();
+      (val, skip) => {
+        const gap = val ?? defaultGap;
+        zone.rowGap = gap;
+        if (zone.type === 'fields') zone.gapY = gap;
+        update({ skipInspector: skip });
       },
       0,
       50,
@@ -1436,14 +1598,18 @@ function bindInspectorEvents(zone) {
     bindStepper(
       'insp-box-width',
       () => zone.boxWidth ?? (zone.type === 'text_essay' ? 170 : 45),
-      (val) => {
-        zone.boxWidth = val;
-        update();
+      (val, skip) => {
+        if (val === undefined) {
+          delete zone.boxWidth;
+        } else {
+          zone.boxWidth = val;
+        }
+        update({ skipInspector: skip });
       },
       15,
-      190
+      190,
     );
-    bindStepper('insp-box-height', () => zone.boxHeight ?? 10, (val) => { zone.boxHeight = val; update(); }, 3, 120);
+    bindStepper('insp-box-height', () => zone.boxHeight ?? (zone.type === 'text_essay' ? 35 : (zone.type === 'text_short' ? 10 : 12)), (val, skip) => { zone.boxHeight = val ?? (zone.type === 'text_essay' ? 35 : 10); update({ skipInspector: skip }); }, 3, 120);
 
     const colsPills = $$('#insp-cols-pills .pill-btn');
     for (const pill of colsPills) {
@@ -1530,11 +1696,12 @@ function bindInspectorEvents(zone) {
     bindStepper(
       'insp-corr-width',
       () => zone.boxWidth ?? zone.correctionWidth ?? zone.corrWidth ?? 42,
-      (val) => {
-        zone.boxWidth = val;
-        zone.corrWidth = val;
-        zone.correctionWidth = val;
-        update();
+      (val, skip) => {
+        const w = val ?? 42;
+        zone.boxWidth = w;
+        zone.corrWidth = w;
+        zone.correctionWidth = w;
+        update({ skipInspector: skip });
       },
       15,
       120
@@ -1542,10 +1709,11 @@ function bindInspectorEvents(zone) {
     bindStepper(
       'insp-corr-height',
       () => zone.boxHeight ?? zone.fieldHeight ?? 6,
-      (val) => {
-        zone.boxHeight = val;
-        zone.fieldHeight = val;
-        update();
+      (val, skip) => {
+        const h = val ?? 6;
+        zone.boxHeight = h;
+        zone.fieldHeight = h;
+        update({ skipInspector: skip });
       },
       3,
       40
@@ -1589,14 +1757,16 @@ function bindInspectorEvents(zone) {
   }
 
   // Columns pills (MCQ, TF, Modified TF)
-  const colPills = $$('#insp-cols-pills .pill-btn');
-  for (const pill of colPills) {
-    pill.addEventListener('click', () => {
-      const colVal = pill.dataset.cols ? parseInt(pill.dataset.cols, 10) : null;
-      if (colVal) zone.columns = colVal;
-      else delete zone.columns;
-      update();
-    });
+  if (['mcq', 'truefalse', 'modified_tf'].includes(zone.type)) {
+    const colPills = $$('#insp-cols-pills .pill-btn');
+    for (const pill of colPills) {
+      pill.addEventListener('click', () => {
+        const colVal = pill.dataset.cols ? parseInt(pill.dataset.cols, 10) : null;
+        if (colVal) zone.columns = colVal;
+        else delete zone.columns;
+        update();
+      });
+    }
   }
 
   if (zone.type === 'fields' || zone.type === 'student_id') {
@@ -1693,17 +1863,7 @@ function renderOutline() {
     text_essay: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
     instructions: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>',
   };
-  const typeNames = {
-    student_id: 'ID no.',
-    fields: 'Info & ID no.',
-    mcq: 'Multiple Choice (MCQ)',
-    truefalse: 'True / False',
-    modified_tf: 'Modified True / False',
-    text: 'Written Answer Box',
-    text_short: 'Short Answer Question',
-    text_essay: 'Essay / Long Answer',
-    instructions: 'Instructions & Notes',
-  };
+  const typeNames = ZONE_TYPE_NAMES;
 
   els.outlineList.innerHTML = zones
     .map((z, i) => {

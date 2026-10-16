@@ -4435,7 +4435,8 @@
       "isInline": true,
       "labelW": 5.6,
       "count": 1,
-      "boxHeight": 8
+      "boxHeight": 8,
+      "rowGap": 3
     },
     {
       "id": "q62",
@@ -4471,7 +4472,8 @@
       "isInline": true,
       "labelW": 5.6,
       "count": 1,
-      "boxHeight": 8
+      "boxHeight": 8,
+      "rowGap": 3
     }
   ],
   "warnings": []

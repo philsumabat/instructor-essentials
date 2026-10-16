@@ -81,7 +81,17 @@ function zoneSVG(zone, layout, zoneIndex) {
     return out.join('');
   }
   out.push(`<rect x="${f(b.x + 0.15)}" y="${f(b.y + 0.15)}" width="${f(b.w - 0.3)}" height="${f(b.h - 0.3)}" rx="1.2" fill="none" stroke="#000" stroke-width="0.3"/>`);
-  if (zone.label) out.push(text(b.x + 2.5, b.y + 2.5 + 2, zone.label, { size: typography.label, weight: 700 }));
+  const isTextType = zone.type === 'text' || zone.type === 'text_short' || zone.type === 'text_essay';
+  const rawLabel = String(zone.label ?? '').trim();
+  const hasPtsInLabel = /\(\s*\d+(\.\d+)?\s*pts?(?:\s+each)?\s*\)/i.test(rawLabel);
+  const pts = zone.pointsPerItem ?? zone.points;
+  const count = zone.count ?? (zone.items ? zone.items.length : 1);
+  const ptsNum = Number(pts);
+  const pointsSuffix = isTextType && !hasPtsInLabel && Number.isFinite(ptsNum) && ptsNum > 0
+    ? `(${ptsNum} pt${ptsNum === 1 ? '' : 's'}${count > 1 ? ' each' : ''})`
+    : '';
+  const fullTitle = rawLabel ? `${rawLabel}${pointsSuffix ? ` ${pointsSuffix}` : ''}` : '';
+  if (fullTitle) out.push(text(b.x + 2.5, b.y + 2.5 + 2, fullTitle, { size: typography.label, weight: 700 }));
   for (const grid of zone.grids) out.push(gridSVG(grid, layout));
   if (zone.type === 'fields') {
     zone.rows.forEach((row, i) => {
@@ -105,7 +115,8 @@ function zoneSVG(zone, layout, zoneIndex) {
     if (zone.items && zone.items.length > 0) {
       zone.items.forEach((item) => {
         const itemLabel = String(item.label ?? '').replace(/\.+$/, '');
-        out.push(text(item.labelX, item.labelY + item.boxH / 2, itemLabel, { size: typography.number, weight: 700 }));
+        const numY = item.boxH > 15 ? item.labelY + 3.5 : item.labelY + item.boxH / 2;
+        out.push(text(item.labelX, numY, itemLabel, { size: typography.number, weight: 700 }));
         out.push(`<rect data-roi="${esc(item.id)}" x="${f(item.boxX + 0.15)}" y="${f(item.boxY + 0.15)}" width="${f(item.boxW - 0.3)}" height="${f(item.boxH - 0.3)}" fill="none" stroke="#000" stroke-width="0.3"/>`);
       });
     } else if (zone.rois && zone.rois.length > 0) {

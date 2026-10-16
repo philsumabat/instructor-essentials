@@ -1316,6 +1316,23 @@ body {
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15) !important;
 }
 
+.omr-sheet [contenteditable="true"] {
+  cursor: text;
+  border-radius: 2px;
+  transition: background-color 120ms ease, outline 120ms ease;
+}
+
+.omr-sheet [contenteditable="true"]:hover {
+  background-color: rgba(37, 99, 235, 0.08);
+  outline: 1px dashed rgba(37, 99, 235, 0.5);
+}
+
+.omr-sheet [contenteditable="true"]:focus {
+  background-color: #fff;
+  outline: 1.5px solid var(--accent) !important;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+}
+
 /* Floating Toolbar on Selected Zone */
 .zone-floating-toolbar {
   position: absolute;

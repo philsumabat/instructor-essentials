@@ -240,3 +240,83 @@ test('Feature 7: Bloom dropdown styling and Short Answer items in Answer Key Edi
   assert.ok(checkerHtml.includes('key-matrix-grid'), 'checker.html separates choice items into key-matrix-grid');
   assert.ok(checkerHtml.includes('key-text-items-list'), 'checker.html renders short answer items into key-text-items-list');
 });
+
+test('Feature 8: Text essay and short answer controls (boxWidth, points, rowGap, start, section title)', () => {
+  // 1. Single-item text_essay retains section title, generates numbered items, preserves boxWidth, rowGap, start, and points
+  const essayTpl = {
+    id: 'essay-test',
+    title: 'Biology Final Exam',
+    paper: 'A4',
+    zones: [
+      {
+        id: 'essay-1',
+        type: 'text_essay',
+        label: 'Part III. Essay / Discussion',
+        count: 1,
+        start: 21,
+        boxWidth: 165,
+        boxHeight: 40,
+        pointsPerItem: 10,
+        rowGap: 5,
+      },
+      {
+        id: 'sa-1',
+        type: 'text_short',
+        label: 'Part IV. Short Answer',
+        count: 4,
+        start: 22,
+        columns: 2,
+        boxWidth: 70,
+        boxHeight: 12,
+        pointsPerItem: 3,
+        rowGap: 4,
+      },
+    ],
+  };
+
+  const layout = buildLayout(essayTpl);
+  assert.ok(layout, 'buildLayout succeeds for essay and short answer blocks');
+
+  // Verify essay zone properties
+  const essayZone = layout.zones.find(z => z.id === 'essay-1');
+  assert.equal(essayZone.label, 'Part III. Essay / Discussion', 'Single-item essay block preserves section title');
+  assert.equal(essayZone.start, 21, 'Essay block preserves start question number');
+  assert.equal(essayZone.pointsPerItem, 10, 'Essay block preserves points per item');
+  assert.equal(essayZone.boxWidth, 165, 'Essay block preserves boxWidth');
+  assert.equal(essayZone.rowGap, 5, 'Essay block preserves rowGap');
+  assert.equal(essayZone.items.length, 1, 'Essay block has 1 item');
+  assert.equal(essayZone.items[0].label, '21', 'Essay item has question label 21');
+  assert.equal(essayZone.items[0].boxW, 165, 'Essay item boxW is 165mm');
+  assert.equal(essayZone.items[0].boxH, 40, 'Essay item boxH is 40mm');
+
+  // Verify short answer zone properties
+  const saZone = layout.zones.find(z => z.id === 'sa-1');
+  assert.equal(saZone.label, 'Part IV. Short Answer', 'Short answer preserves section title');
+  assert.equal(saZone.start, 22, 'Short answer preserves start number');
+  assert.equal(saZone.pointsPerItem, 3, 'Short answer preserves pointsPerItem');
+  assert.equal(saZone.boxWidth, 70, 'Short answer preserves boxWidth');
+  assert.equal(saZone.rowGap, 4, 'Short answer preserves rowGap');
+  assert.equal(saZone.items.length, 4, 'Short answer has 4 items');
+  assert.equal(saZone.items[0].label, '22', 'First short answer item starts at 22');
+  assert.equal(saZone.items[3].label, '25', 'Fourth short answer item is 25');
+
+  // 2. DOM Rendering: Section title, points badge, top-alignment for tall boxes
+  const domHtml = renderStandaloneHTML(layout);
+  assert.ok(domHtml.includes('Part III. Essay / Discussion'), 'DOM contains essay section title');
+  assert.ok(domHtml.includes('(10 pts)'), 'DOM renders single-item essay points badge (10 pts)');
+  assert.ok(domHtml.includes('(3 pts each)'), 'DOM renders multi-item short answer points badge (3 pts each)');
+  assert.match(domHtml, /align-items:\s*flex-start/, 'DOM aligns question number at top for tall boxes (boxH > 15)');
+
+  // 3. SVG Rendering: Section title, points badge, top-alignment
+  const svgContent = renderSVG(layout);
+  assert.ok(svgContent.includes('Part III. Essay / Discussion (10 pts)'), 'SVG renders full title with points suffix');
+  assert.ok(svgContent.includes('Part IV. Short Answer (3 pts each)'), 'SVG renders short answer title with points suffix');
+
+  // 4. app.js code verification: Section Title label, bindStepper live update, contenteditable paper editing
+  const appJs = fs.readFileSync(path.join(rootDir, 'builder/js/app.js'), 'utf8');
+  assert.match(appJs, /<label class="form-label" for="insp-label">Section Title<\/label>/, 'Inspector label standardized to Section Title');
+  assert.match(appJs, /function syncZonePointsToAnswerKey\(/, 'syncZonePointsToAnswerKey helper defined in app.js');
+  assert.match(appJs, /titleTextEl\.setAttribute\('contenteditable',\s*'true'\)/, 'DOM zone title is contenteditable on canvas');
+  assert.match(appJs, /examTitleEl\.setAttribute\('contenteditable',\s*'true'\)/, 'DOM exam title is contenteditable on canvas');
+  assert.match(appJs, /setter\(num,\s*skipInspector\)/, 'bindStepper passes skipInspector to prevent focus loss during live updates');
+});

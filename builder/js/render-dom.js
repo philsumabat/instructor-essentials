@@ -108,6 +108,16 @@ function zoneNode(zone, layout, index = 0) {
     }, zone.text));
     return nodes;
   }
+  const isTextType = zone.type === 'text' || zone.type === 'text_short' || zone.type === 'text_essay';
+  const rawLabel = String(zone.label ?? '').trim();
+  const hasPtsInLabel = /\(\s*\d+(\.\d+)?\s*pts?(?:\s+each)?\s*\)/i.test(rawLabel);
+  const pts = zone.pointsPerItem ?? zone.points;
+  const count = zone.count ?? (zone.items ? zone.items.length : 1);
+  const ptsNum = Number(pts);
+  const pointsSuffix = isTextType && !hasPtsInLabel && Number.isFinite(ptsNum) && ptsNum > 0
+    ? `(${ptsNum} pt${ptsNum === 1 ? '' : 's'}${count > 1 ? ' each' : ''})`
+    : '';
+
   nodes.push(
     h(
       'section',
@@ -119,7 +129,12 @@ function zoneNode(zone, layout, index = 0) {
         'data-zone-type': zone.type,
         style: box(b.x, b.y, b.w, b.h)
       },
-      zone.label ? h('h2', { class: 'omr-zone__title' }, zone.label) : null,
+      rawLabel ? h(
+        'h2',
+        { class: 'omr-zone__title' },
+        h('span', { class: 'omr-zone__title-text' }, rawLabel),
+        pointsSuffix ? h('span', { class: 'omr-points', style: { 'font-weight': 'normal', 'margin-left': '0.4em' } }, pointsSuffix) : null,
+      ) : null,
     ),
   );
   for (const grid of zone.grids) nodes.push(gridNode(grid, layout, zone));
@@ -174,7 +189,17 @@ function zoneNode(zone, layout, index = 0) {
     if (zone.items && zone.items.length > 0) {
       zone.items.forEach((item) => {
         const itemLabel = String(item.label ?? '').replace(/\.+$/, '');
-        nodes.push(h('div', { class: 'omr-field-label omr-item-num', style: box(item.labelX, item.labelY, item.labelW, item.boxH) }, itemLabel));
+        nodes.push(h(
+          'div',
+          {
+            class: 'omr-field-label omr-item-num',
+            style: {
+              ...box(item.labelX, item.labelY, item.labelW, item.boxH),
+              ...(item.boxH > 15 ? { 'align-items': 'flex-start', 'padding-top': '1mm' } : {}),
+            },
+          },
+          itemLabel,
+        ));
         nodes.push(h('div', { class: 'omr-write-box omr-write-box--answer', 'data-roi': item.id, style: box(item.boxX, item.boxY, item.boxW, item.boxH) }));
       });
     } else if (zone.rois && zone.rois.length > 0) {

@@ -507,9 +507,11 @@ function layoutText(zone, ctx, x, y, availW) {
   positiveNumber(boxH, `Zone "${zone.id}" boxHeight`);
   const count = positiveInt(zone.count ?? 1, `Zone "${zone.id}" count`);
   const points = Number(zone.pointsPerItem ?? zone.points ?? 1);
+  const rowGap = parseGap(zone.rowGap ?? zone.rowSpacing ?? zone.itemSpacing) ?? 3;
 
-  // Single-item text box (backwards-compatible)
-  if (count <= 1) {
+  // Single-item legacy prompt box (backwards-compatible: only when unnumbered prompt of type 'text' without count or start from builder)
+  const isLegacyPrompt = zone.type === 'text' && zone.start == null && zone.count == null;
+  if (isLegacyPrompt && count <= 1) {
     const rawPrompt = String(zone.label ?? '');
     const isNum = /^\d+[\.\)]?$/.test(rawPrompt.trim());
     const prompt = isNum ? rawPrompt.trim().replace(/[\.\)]+$/, '') : rawPrompt;
@@ -550,17 +552,32 @@ function layoutText(zone, ctx, x, y, availW) {
       points,
     };
     const h = (isInline ? y + PAD + boxH + PAD : boxY + boxH + PAD) - y;
-    return { bbox: { x, y, w, h }, grids: [], groups: [], rois: [roi], extra: { prompt, points, isInline, labelW, count: 1, boxWidth: zone.boxWidth, boxHeight: boxH } };
+    return {
+      bbox: { x, y, w, h },
+      grids: [],
+      groups: [],
+      rois: [roi],
+      extra: {
+        prompt,
+        points,
+        isInline,
+        labelW,
+        count: 1,
+        boxWidth: zone.boxWidth,
+        boxHeight: boxH,
+        rowGap,
+      },
+    };
   }
 
-  // Multi-item combined module (e.g. 5 or 10 short answer items in 1, 2, or 3 columns)
+  // Multi-item / structured module (e.g. 5 or 10 short answer items in 1, 2, or 3 columns, or essay questions)
   const titleH = zone.label ? TITLE_H : 0;
+  const titleGap = zone.label ? Math.max(1.5, rowGap * 0.5) : 0;
   const start = zone.start == null ? ctx.nextQuestion : positiveInt(zone.start, `Zone "${zone.id}" start`);
   const columns = Math.max(1, zone.columns ? positiveInt(zone.columns, `Zone "${zone.id}" columns`) : 1);
   const rowsPerCol = Math.ceil(count / columns);
   const interColGap = 4;
   const colW = (innerW - (columns - 1) * interColGap) / columns;
-  const rowGap = parseGap(zone.rowGap ?? zone.rowSpacing ?? zone.itemSpacing) ?? 3;
 
   const items = [];
   const rois = [];
@@ -571,7 +588,7 @@ function layoutText(zone, ctx, x, y, availW) {
       const idx = c * rowsPerCol + r;
       if (idx >= count) break;
       const q = start + idx;
-      const itemY = y + PAD + titleH + r * (boxH + rowGap);
+      const itemY = y + PAD + titleH + titleGap + r * (boxH + rowGap);
       const qLabel = `${q}`;
       const labelW = Math.max(5, qLabel.length * 2.8);
       const itemBoxX = colX + labelW;
@@ -610,7 +627,7 @@ function layoutText(zone, ctx, x, y, availW) {
   }
 
   ctx.nextQuestion = start + count;
-  const h = 2 * PAD + titleH + rowsPerCol * (boxH + rowGap) - rowGap;
+  const h = 2 * PAD + titleH + titleGap + rowsPerCol * (boxH + rowGap) - rowGap;
   return {
     bbox: { x, y, w, h },
     grids: [],
@@ -621,6 +638,7 @@ function layoutText(zone, ctx, x, y, availW) {
       start,
       columns,
       boxHeight: boxH,
+      boxWidth: zone.boxWidth,
       pointsPerItem: points,
       items,
       rowGap,
@@ -767,10 +785,11 @@ export function buildLayout(input) {
     }
 
     const isTextType = raw.type === 'text' || raw.type === 'text_short' || raw.type === 'text_essay';
+    const isLegacyPrompt = isTextType && raw.start == null && raw.count == null;
     const zone = {
       id: raw.id,
       type: raw.type,
-      label: isTextType && (!raw.count || raw.count <= 1) ? '' : String(raw.label ?? ''),
+      label: isLegacyPrompt ? '' : String(raw.label ?? ''),
       bbox,
       grids: res.grids,
       groups: res.groups,

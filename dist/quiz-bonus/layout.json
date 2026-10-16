@@ -1029,7 +1029,8 @@
       "isInline": false,
       "labelW": 0,
       "count": 1,
-      "boxHeight": 18
+      "boxHeight": 18,
+      "rowGap": 3
     }
   ],
   "warnings": []

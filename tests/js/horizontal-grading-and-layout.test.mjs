@@ -97,9 +97,12 @@ function extractCheckerFunctions(htmlContent) {
 test('Feature 1: Separate Horizontal Grading Button and Summary Banner', () => {
   const checkerHtml = fs.readFileSync(path.join(rootDir, 'builder/checker.html'), 'utf8');
 
-  // Prominent button in results export bar
-  assert.ok(checkerHtml.includes('id="btn-results-horizontal-grading"'), 'Results export bar contains Horizontal Grading button');
-  assert.ok(checkerHtml.includes('id="badge-header-horizontal-count"'), 'Header count badge exists for horizontal grading');
+  // Horizontal grading button removed from results export bar (per user instruction)
+  assert.ok(!checkerHtml.includes('id="btn-results-horizontal-grading"'), 'Horizontal Grading button removed from results export bar');
+
+  // Ribbon has Export Reports & Graded Sheets dropdown
+  assert.ok(checkerHtml.includes('id="dropdown-export-reports"'), 'Ribbon contains Export Reports & Graded Sheets dropdown');
+  assert.ok(checkerHtml.includes('id="btn-export-reports-toggle"'), 'Ribbon contains export toggle button');
 
   // Summary callout banner
   assert.ok(checkerHtml.includes('id="banner-horizontal-review"'), 'Summary callout banner for horizontal grading exists');
@@ -331,24 +334,25 @@ test('Feature 5: Anonymous / Blind Grading in Review Cards', () => {
   const streamContainer = ctx.document.getElementById('horizontal-submissions-container');
   const activeCardContainer = ctx.document.getElementById('horizontal-active-card-container');
 
-  // Verify Stream Card HTML is 100% blind anonymous
+  // Verify Stream Card HTML is 100% blind anonymous and clutter-free
   const streamHtml = streamContainer.innerHTML;
   assert.ok(streamHtml.includes('Submission #1'), 'Shows anonymous submission index in stream card');
-  assert.ok(streamHtml.includes('Anonymous Blind Review'), 'Shows anonymous review indicator in stream card');
+  assert.ok(!streamHtml.includes('Anonymous Blind Review'), 'Anonymous Blind Review indicator removed from stream card');
   assert.ok(!streamHtml.includes('Eleanor Vance Private'), 'DOES NOT contain student name in stream card');
   assert.ok(!streamHtml.includes('STU-SECRET-9988'), 'DOES NOT contain student ID in stream card');
   assert.ok(!streamHtml.includes('OFFER-RESTRICTED'), 'DOES NOT contain classOffer in stream card');
   assert.ok(!streamHtml.includes('88.5 / 100'), 'DOES NOT contain overall student score in stream card');
 
-  // Verify Flashcard Card HTML is 100% blind anonymous
+  // Verify Flashcard Card HTML is 100% blind anonymous and clutter-free
   const flashcardHtml = activeCardContainer.innerHTML;
-  assert.ok(flashcardHtml.includes('Submission #1'), 'Shows anonymous submission index in flashcard');
-  assert.ok(flashcardHtml.includes('Anonymous Blind Review'), 'Shows anonymous review indicator in flashcard');
+  const stepperLabel = ctx.document.getElementById('flashcard-stepper-label');
+  assert.ok(stepperLabel.textContent.includes('Submission #1'), 'Stepper label retains submission index');
+  assert.ok(!flashcardHtml.includes('Anonymous Blind Review'), 'Anonymous Blind Review label removed from flashcard');
+  assert.ok(!flashcardHtml.includes('OCR Conf:'), 'OCR Conf header removed from flashcard card body');
   assert.ok(!flashcardHtml.includes('Eleanor Vance Private'), 'DOES NOT contain student name in flashcard');
   assert.ok(!flashcardHtml.includes('STU-SECRET-9988'), 'DOES NOT contain student ID in flashcard');
   assert.ok(!flashcardHtml.includes('OFFER-RESTRICTED'), 'DOES NOT contain classOffer in flashcard');
   assert.ok(flashcardHtml.includes('chloroplast'), 'Shows OCR reading in flashcard');
-  assert.ok(flashcardHtml.includes('OCR Conf: 94%'), 'Shows OCR confidence in flashcard');
 });
 
 test('Feature 6: Item Numbers Do Not Have Trailing Dot to Save Horizontal Space', () => {
@@ -506,3 +510,120 @@ test('Feature 8: OCR Transcription Honesty (No Expected Answer Leakage)', () => 
   assert.ok(activeCardContainer.innerHTML.includes('(Handwritten response)'), 'Flashcard displays honest fallback');
   assert.ok(streamContainer.innerHTML.includes('(Handwritten response)'), 'Stream card displays honest fallback');
 });
+
+test('Feature 9: Sheet Builder Block Row/Item Spacing Customization', () => {
+  // 1. MCQ custom rowGap
+  const tplDefaultMCQ = {
+    id: 'mcq-default',
+    paper: 'A4',
+    zones: [{ type: 'mcq', id: 'm1', count: 5, columns: 1 }]
+  };
+  const tplSpacedMCQ = {
+    id: 'mcq-spaced',
+    paper: 'A4',
+    zones: [{ type: 'mcq', id: 'm2', count: 5, columns: 1, rowGap: 8 }]
+  };
+  const layoutDefMCQ = buildLayout(tplDefaultMCQ);
+  const layoutSpacedMCQ = buildLayout(tplSpacedMCQ);
+  const defMCQHeight = layoutDefMCQ.zones[0].bbox.h;
+  const spacedMCQHeight = layoutSpacedMCQ.zones[0].bbox.h;
+  assert.ok(spacedMCQHeight > defMCQHeight, 'Custom rowGap increases MCQ zone height');
+  assert.equal(layoutSpacedMCQ.zones[0].rowGap, 8);
+
+  // 2. Modified T/F custom rowGap
+  const tplDefaultMTF = {
+    id: 'mtf-default',
+    paper: 'A4',
+    zones: [{ type: 'modified_tf', id: 'mtf1', count: 4, columns: 1, boxHeight: 6 }]
+  };
+  const tplSpacedMTF = {
+    id: 'mtf-spaced',
+    paper: 'A4',
+    zones: [{ type: 'modified_tf', id: 'mtf2', count: 4, columns: 1, boxHeight: 6, rowGap: 10 }]
+  };
+  const layoutDefMTF = buildLayout(tplDefaultMTF);
+  const layoutSpacedMTF = buildLayout(tplSpacedMTF);
+  assert.ok(layoutSpacedMTF.zones[0].bbox.h > layoutDefMTF.zones[0].bbox.h, 'Custom rowGap increases Modified T/F zone height');
+  assert.equal(layoutSpacedMTF.zones[0].rowGap, 10);
+
+  // 3. Multi-item Text (Short Answer) custom rowGap
+  const tplDefaultText = {
+    id: 'text-default',
+    paper: 'A4',
+    zones: [{ type: 'text_short', id: 't1', count: 3, boxHeight: 8 }]
+  };
+  const tplSpacedText = {
+    id: 'text-spaced',
+    paper: 'A4',
+    zones: [{ type: 'text_short', id: 't2', count: 3, boxHeight: 8, rowGap: 12 }]
+  };
+  const layoutDefText = buildLayout(tplDefaultText);
+  const layoutSpacedText = buildLayout(tplSpacedText);
+  assert.ok(layoutSpacedText.zones[0].bbox.h > layoutDefText.zones[0].bbox.h, 'Custom rowGap increases Short Answer zone height');
+  assert.equal(layoutSpacedText.zones[0].rowGap, 12);
+  const dy = layoutSpacedText.zones[0].rois[1].y - layoutSpacedText.zones[0].rois[0].y;
+  assert.equal(dy, 8 + 12, 'Vertical distance between items matches boxHeight + rowGap');
+
+  // 4. Fields custom rowGap
+  const tplDefaultFields = {
+    id: 'fields-default',
+    paper: 'A4',
+    zones: [{
+      type: 'fields',
+      id: 'f1',
+      columns: 1,
+      fields: [{ id: 'name', label: 'Name' }, { id: 'date', label: 'Date' }]
+    }]
+  };
+  const tplSpacedFields = {
+    id: 'fields-spaced',
+    paper: 'A4',
+    zones: [{
+      type: 'fields',
+      id: 'f2',
+      columns: 1,
+      rowGap: 7,
+      fields: [{ id: 'name', label: 'Name' }, { id: 'date', label: 'Date' }]
+    }]
+  };
+  const layoutDefFields = buildLayout(tplDefaultFields);
+  const layoutSpacedFields = buildLayout(tplSpacedFields);
+  assert.ok(layoutSpacedFields.zones[0].bbox.h > layoutDefFields.zones[0].bbox.h, 'Custom rowGap increases Fields zone height');
+  assert.equal(layoutSpacedFields.zones[0].rowGap, 7, 'Fields zone exports custom rowGap');
+
+  // 5. Robustness against invalid/string rowGap
+  const tplInvalidGap = {
+    id: 'invalid-gap',
+    paper: 'A4',
+    zones: [{ type: 'mcq', id: 'm_inv', count: 5, columns: 1, rowGap: 'not-a-number' }]
+  };
+  const layoutInvalidGap = buildLayout(tplInvalidGap);
+  assert.ok(Number.isFinite(layoutInvalidGap.zones[0].bbox.h), 'Layout handles invalid rowGap gracefully without NaN');
+});
+
+test('Feature 10: Checker Studio Ribbon Dropdown, Clean Flashcard Header, and Expanded Scan Canvas', () => {
+  const checkerHtml = fs.readFileSync(path.join(rootDir, 'builder/checker.html'), 'utf8');
+
+  // 1. Ribbon Export Dropdown exists in .app-header
+  assert.ok(checkerHtml.includes('id="dropdown-export-reports"'), 'Dropdown container exists in ribbon header');
+  assert.ok(checkerHtml.includes('id="btn-export-reports-toggle"'), 'Dropdown toggle button exists in ribbon');
+  assert.ok(checkerHtml.includes('id="btn-ribbon-export-zip"'), 'ZIP option exists in ribbon dropdown');
+  assert.ok(checkerHtml.includes('id="btn-ribbon-export-csv"'), 'CSV option exists in ribbon dropdown');
+  assert.ok(checkerHtml.includes('id="btn-ribbon-export-html"'), 'HTML option exists in ribbon dropdown');
+  assert.ok(checkerHtml.includes('id="btn-ribbon-save-progress"'), 'Save Progress option exists in ribbon dropdown');
+
+  // 2. Horizontal Grading button removed from results-export-bar
+  assert.ok(!checkerHtml.includes('id="btn-results-horizontal-grading"'), 'Horizontal Grading button removed from export bar');
+
+  // 3. Removed Flashcard Deck cluttered title and tab descriptive subtitle
+  assert.ok(!checkerHtml.includes('Standardized item-level review for identification, short answer, essay, and modified T/F corrections.'), 'Descriptive subtitle removed');
+  assert.ok(!checkerHtml.includes('>Flashcard Deck<'), 'Flashcard Deck section title text removed');
+
+  // 4. Large canvas styling & aspect ratio preservation (no distorting min-height)
+  assert.ok(checkerHtml.includes('max-width: 900px'), 'Flashcard card max-width widened for large scans');
+  assert.ok(checkerHtml.includes('max-width: 860px'), 'Crop container widened for large scans');
+  assert.ok(checkerHtml.includes('scale = 1.6'), 'cropROIFromScan scales up scan image by 1.6x');
+  assert.ok(!checkerHtml.includes('flashcard-crop-canvas" class="horizontal-cutting-canvas" style="width: 100%; max-width: 820px; height: auto; min-height: 120px;'), 'Flashcard canvas does not force artificial min-height distortion');
+  assert.ok(checkerHtml.includes('closeRibbonDropdown'), 'Ribbon dropdown helper defined');
+});
+

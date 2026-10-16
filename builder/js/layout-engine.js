@@ -99,6 +99,12 @@ function positiveInt(value, name) {
   return n;
 }
 
+function parseGap(value) {
+  if (value == null || value === '') return null;
+  const n = Number(value);
+  return Number.isFinite(n) ? Math.max(0, n) : null;
+}
+
 function resolveChoices(zone) {
   if (zone.type === 'truefalse') {
     const c = zone.choices ?? ['T', 'F'];
@@ -261,9 +267,11 @@ function layoutChoices(zone, ctx, x, y, availW) {
     }
   }
 
+  const customRowGap = parseGap(zone.rowGap ?? zone.rowSpacing ?? zone.itemSpacing);
+  const basePitchY = customRowGap != null ? (bubble.diameter + customRowGap) : bubble.pitchY;
   const rowHeights = Array.from({ length: rowsPerCol }, (_, r) => {
     const groupBreak = bubble.groupEvery > 0 && (r + 1) % bubble.groupEvery === 0 && r < rowsPerCol - 1;
-    return bubble.pitchY + (groupBreak ? bubble.groupGap : 0);
+    return basePitchY + (groupBreak ? bubble.groupGap : 0);
   });
 
   const grids = [];
@@ -277,7 +285,7 @@ function layoutChoices(zone, ctx, x, y, availW) {
       grid.cells.push({ row: r, col: 0, kind: 'num', text: String(q) });
       const options = choices.map((choice, j) => {
         grid.cells.push({ row: r, col: j + 1, kind: 'bubble', text: choice });
-        return { value: choice, ...bubbleCenter(grid, r, j + 1, bubble.pitchY) };
+        return { value: choice, ...bubbleCenter(grid, r, j + 1, basePitchY) };
       });
       const points = Number(zone.pointsPerItem ?? zone.points ?? 1);
       groups.push({ key: String(q), kind, label: String(q), options, points });
@@ -287,7 +295,7 @@ function layoutChoices(zone, ctx, x, y, availW) {
   ctx.nextQuestion = start + count;
   const h = 2 * PAD + titleH + sum(rowHeights);
   const pointsPerItem = Number(zone.pointsPerItem ?? zone.points ?? 1);
-  return { bbox: { x, y, w, h }, grids, groups, rois: [], extra: { choices, start, count, columns, pointsPerItem } };
+  return { bbox: { x, y, w, h }, grids, groups, rois: [], extra: { choices, start, count, columns, pointsPerItem, ...(customRowGap != null ? { rowGap: customRowGap } : {}) } };
 }
 
 function layoutModifiedTrueFalse(zone, ctx, x, y, availW) {
@@ -327,7 +335,10 @@ function layoutModifiedTrueFalse(zone, ctx, x, y, availW) {
     }
   }
 
-  const rowH = Math.max(bubble.pitchY, customBoxH ? customBoxH + 1.2 : 7);
+  const customRowGap = parseGap(zone.rowGap ?? zone.rowSpacing ?? zone.itemSpacing);
+  const rowH = customRowGap != null
+    ? Math.max(bubble.diameter, customBoxH ?? 5) + customRowGap
+    : Math.max(bubble.pitchY, customBoxH ? customBoxH + 1.2 : 7);
   const rowHeights = Array(rowsPerCol).fill(rowH);
 
   const grids = [];
@@ -351,7 +362,7 @@ function layoutModifiedTrueFalse(zone, ctx, x, y, availW) {
       const points = Number(zone.pointsPerItem ?? zone.points ?? 1);
       groups.push({ key: String(q), kind: 'tf', label: String(q), options, points });
 
-      const boxH = customBoxH ?? (rowH - 1.2);
+      const boxH = customBoxH ?? (rowH - (customRowGap ?? 1.2));
       const boxX = colX + bubbleBlockW + 1.5;
       const boxY = y + PAD + titleH + r * rowH + (rowH - boxH) / 2;
 
@@ -377,7 +388,7 @@ function layoutModifiedTrueFalse(zone, ctx, x, y, availW) {
   ctx.nextQuestion = start + count;
   const h = 2 * PAD + titleH + sum(rowHeights);
   const pointsPerItem = Number(zone.pointsPerItem ?? zone.points ?? 1);
-  return { bbox: { x, y, w, h }, grids, groups, rois, extra: { start, count, columns, isModified: true, pointsPerItem } };
+  return { bbox: { x, y, w, h }, grids, groups, rois, extra: { start, count, columns, isModified: true, pointsPerItem, ...(customRowGap != null ? { rowGap: customRowGap } : {}) } };
 }
 
 function layoutFields(zone, ctx, x, y, availW) {
@@ -387,7 +398,7 @@ function layoutFields(zone, ctx, x, y, availW) {
   // Student details always span the full available content width
   const w = availW ?? zone.w;
   const fieldH = zone.fieldHeight ?? 7.5;
-  const gapY = zone.gapY ?? 2;
+  const gapY = parseGap(zone.rowGap ?? zone.rowSpacing ?? zone.gapY) ?? 2;
   const innerW = w - 2 * PAD;
 
   // Group fields into rows (supports explicit columns or row property)
@@ -475,7 +486,8 @@ function layoutFields(zone, ctx, x, y, availW) {
   }
 
   const h = curY - gapY + PAD - y;
-  return { bbox: { x, y, w, h }, grids: [], groups: [], rois, extra: { rows, fieldH } };
+  const customRowGap = parseGap(zone.rowGap ?? zone.rowSpacing);
+  return { bbox: { x, y, w, h }, grids: [], groups: [], rois, extra: { rows, fieldH, ...(customRowGap != null ? { rowGap: customRowGap } : (zone.gapY != null ? { rowGap: gapY } : {})) } };
 }
 
 function layoutInstructions(zone, ctx, x, y, availW) {
@@ -548,7 +560,7 @@ function layoutText(zone, ctx, x, y, availW) {
   const rowsPerCol = Math.ceil(count / columns);
   const interColGap = 4;
   const colW = (innerW - (columns - 1) * interColGap) / columns;
-  const rowGap = 3;
+  const rowGap = parseGap(zone.rowGap ?? zone.rowSpacing ?? zone.itemSpacing) ?? 3;
 
   const items = [];
   const rois = [];
@@ -611,6 +623,7 @@ function layoutText(zone, ctx, x, y, availW) {
       boxHeight: boxH,
       pointsPerItem: points,
       items,
+      rowGap,
     },
   };
 }

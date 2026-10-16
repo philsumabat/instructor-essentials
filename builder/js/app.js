@@ -1011,6 +1011,17 @@ function renderInspector() {
         </div>
       </div>
 
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="insp-row-gap">Item / Row Spacing (mm)</label>
+          <div class="stepper-control">
+            <button type="button" class="stepper-btn" id="insp-row-gap-minus" aria-label="Decrease item spacing">−</button>
+            <input type="number" id="insp-row-gap" class="stepper-input" value="${zone.rowGap ?? 1}" min="0" max="50">
+            <button type="button" class="stepper-btn" id="insp-row-gap-plus" aria-label="Increase item spacing">+</button>
+          </div>
+        </div>
+      </div>
+
       ${!isTf ? `
       <div class="form-group">
         <label class="form-label">Choices</label>
@@ -1113,6 +1124,15 @@ function renderInspector() {
             <button type="button" class="stepper-btn" id="insp-corr-height-plus" aria-label="Increase box height">+</button>
           </div>
         </div>
+
+        <div class="form-group">
+          <label class="form-label" for="insp-row-gap">Row Spacing (mm)</label>
+          <div class="stepper-control">
+            <button type="button" class="stepper-btn" id="insp-row-gap-minus" aria-label="Decrease row spacing">−</button>
+            <input type="number" id="insp-row-gap" class="stepper-input" value="${zone.rowGap ?? 2}" min="0" max="50">
+            <button type="button" class="stepper-btn" id="insp-row-gap-plus" aria-label="Increase row spacing">+</button>
+          </div>
+        </div>
       </div>
 
       <div class="form-group">
@@ -1196,6 +1216,16 @@ function renderInspector() {
             <span>Signature</span>
           </label>
         </div>
+        <div class="form-row" style="margin-top: 0.6rem;">
+          <div class="form-group">
+            <label class="form-label" for="insp-row-gap">Row Spacing (mm)</label>
+            <div class="stepper-control">
+              <button type="button" class="stepper-btn" id="insp-row-gap-minus" aria-label="Decrease row spacing">−</button>
+              <input type="number" id="insp-row-gap" class="stepper-input" value="${zone.rowGap ?? zone.gapY ?? 2}" min="0" max="50">
+              <button type="button" class="stepper-btn" id="insp-row-gap-plus" aria-label="Increase row spacing">+</button>
+            </div>
+          </div>
+        </div>
       </div>
     `;
   } else if (zone.type === 'text' || zone.type === 'text_short' || zone.type === 'text_essay') {
@@ -1264,6 +1294,17 @@ function renderInspector() {
             <button type="button" class="stepper-btn" id="insp-points-minus" aria-label="Decrease points">−</button>
             <input type="number" id="insp-points" class="stepper-input" value="${zone.pointsPerItem ?? zone.points ?? defaultPts}" min="1" max="50">
             <button type="button" class="stepper-btn" id="insp-points-plus" aria-label="Increase points">+</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="insp-row-gap">Item Spacing (mm)</label>
+          <div class="stepper-control">
+            <button type="button" class="stepper-btn" id="insp-row-gap-minus" aria-label="Decrease item spacing">−</button>
+            <input type="number" id="insp-row-gap" class="stepper-input" value="${zone.rowGap ?? 3}" min="0" max="50">
+            <button type="button" class="stepper-btn" id="insp-row-gap-plus" aria-label="Increase item spacing">+</button>
           </div>
         </div>
       </div>
@@ -1370,6 +1411,22 @@ function bindInspectorEvents(zone) {
         update();
       },
       1,
+      50,
+    );
+  }
+
+  // Spacing between items/rows stepper
+  if (['mcq', 'truefalse', 'modified_tf', 'text_short', 'text_essay', 'text', 'fields'].includes(zone.type)) {
+    const defaultGap = (zone.type === 'mcq' || zone.type === 'truefalse') ? 1 : (zone.type === 'modified_tf' ? 2 : (zone.type === 'fields' ? 2 : 3));
+    bindStepper(
+      'insp-row-gap',
+      () => zone.rowGap ?? (zone.type === 'fields' ? (zone.gapY ?? defaultGap) : defaultGap),
+      (val) => {
+        zone.rowGap = val;
+        if (zone.type === 'fields') zone.gapY = val;
+        update();
+      },
+      0,
       50,
     );
   }
@@ -2970,6 +3027,7 @@ function generateExamFromGeneratorModal() {
         columns: cols,
         pointsPerItem: pts,
         w: availW,
+        ...(part.rowGap != null ? { rowGap: Number(part.rowGap) } : {}),
       });
       currentQ += count;
     } else if (part.type === 'truefalse') {
@@ -2989,6 +3047,7 @@ function generateExamFromGeneratorModal() {
         columns: cols,
         pointsPerItem: pts,
         w: availW,
+        ...(part.rowGap != null ? { rowGap: Number(part.rowGap) } : {}),
       });
       currentQ += count;
     } else if (part.type === 'modified_tf') {
@@ -3006,6 +3065,7 @@ function generateExamFromGeneratorModal() {
         columns: 1,
         pointsPerItem: pts,
         w: availW,
+        ...(part.rowGap != null ? { rowGap: Number(part.rowGap) } : {}),
       });
       currentQ += count;
     } else if (part.type === 'text_short') {
@@ -3024,6 +3084,7 @@ function generateExamFromGeneratorModal() {
         boxHeight: h,
         pointsPerItem: pts,
         w: availW,
+        ...(part.rowGap != null ? { rowGap: Number(part.rowGap) } : {}),
       });
       currentQ += count;
     } else if (part.type === 'text_essay') {
@@ -3042,6 +3103,7 @@ function generateExamFromGeneratorModal() {
         boxHeight: h,
         pointsPerItem: pts,
         w: availW,
+        ...(part.rowGap != null ? { rowGap: Number(part.rowGap) } : {}),
       });
       currentQ += count;
     }

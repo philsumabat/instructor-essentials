@@ -6,7 +6,7 @@
  * This file can be opened directly by double-clicking in Finder/Windows Explorer
  * (file:// protocol) with ZERO CORS issues, zero web server requirement, and zero npm packages.
  */
-import { readFile, writeFile } from 'node:fs/promises';
+import { readFile, writeFile, cp } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import vm from 'node:vm';
@@ -193,6 +193,87 @@ ${cleanApp}
   const checkerHtml = await readFile(checkerSrc, 'utf8');
   await writeFile(checkerDocs, checkerHtml, 'utf8');
   console.log(`✔ Synchronized docs/checker.html for GitHub Pages: ${checkerDocs}`);
+
+  // Synchronize Desktop App Distribution (apps/desktop/ui/)
+  const desktopUiDir = join(root, 'apps', 'desktop', 'ui');
+
+  // 1. Generate Desktop Sheet Builder (apps/desktop/ui/index.html)
+  let desktopIndexHtml = standaloneHtml;
+  desktopIndexHtml = desktopIndexHtml.replace(
+    '</head>',
+    '  <link rel="stylesheet" href="desktop.css">\n</head>'
+  );
+  desktopIndexHtml = desktopIndexHtml.replace(
+    '<header class="app-header app-chrome">',
+    '<header class="app-header app-chrome window-titlebar" data-tauri-drag-region>'
+  );
+  const desktopNavBuilder = `      <nav class="workflow-nav segmented-control" aria-label="Workflow switcher">
+        <a href="index.html" class="workflow-nav__item seg-btn is-active" id="nav-btn-builder" aria-current="page" onclick="switchView('builder', event); return false;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          <span>Design Exam</span>
+        </a>
+        <a href="checker.html" class="workflow-nav__item seg-btn" id="nav-btn-checker" onclick="switchView('checker', event); return false;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          <span>Grade Scans</span>
+        </a>
+        <a href="checker.html#speed" class="workflow-nav__item seg-btn" id="nav-btn-speed" onclick="switchView('speed', event); return false;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          <span>Speed Grader</span>
+        </a>
+      </nav>`;
+  desktopIndexHtml = desktopIndexHtml.replace(
+    /<nav class="workflow-nav" aria-label="Workflow switcher">[\s\S]*?<\/nav>/,
+    () => desktopNavBuilder
+  );
+  desktopIndexHtml = desktopIndexHtml.replace(
+    /<\/body>\s*<\/html>\s*$/i,
+    '  <script src="desktop.js"></script>\n</body>\n</html>\n'
+  );
+  const desktopIndexPath = join(desktopUiDir, 'index.html');
+  await writeFile(desktopIndexPath, desktopIndexHtml, 'utf8');
+  console.log(`✔ Synchronized apps/desktop/ui/index.html for Desktop Tauri: ${desktopIndexPath}`);
+
+  // 2. Generate Desktop Checker Studio (apps/desktop/ui/checker.html)
+  let desktopCheckerHtml = checkerHtml;
+  desktopCheckerHtml = desktopCheckerHtml.replace(
+    '</head>',
+    '  <link rel="stylesheet" href="desktop.css">\n</head>'
+  );
+  desktopCheckerHtml = desktopCheckerHtml.replace(
+    '<header class="app-header">',
+    '<header class="app-header app-chrome window-titlebar" data-tauri-drag-region>'
+  );
+  const desktopNavChecker = `      <nav class="workflow-nav segmented-control" aria-label="Workflow switcher">
+        <a href="index.html" class="workflow-nav__item seg-btn" id="nav-btn-builder" onclick="switchView('builder', event); return false;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          <span>Design Exam</span>
+        </a>
+        <a href="checker.html" class="workflow-nav__item seg-btn is-active" id="nav-btn-checker" aria-current="page" onclick="switchView('checker', event); return false;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          <span>Grade Scans</span>
+        </a>
+        <a href="checker.html#speed" class="workflow-nav__item seg-btn" id="nav-btn-speed" onclick="switchView('speed', event); return false;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          <span>Speed Grader</span>
+        </a>
+      </nav>`;
+  desktopCheckerHtml = desktopCheckerHtml.replace(
+    /<nav class="workflow-nav" aria-label="Workflow switcher">[\s\S]*?<\/nav>/,
+    () => desktopNavChecker
+  );
+  desktopCheckerHtml = desktopCheckerHtml.replace(
+    /<\/body>\s*<\/html>\s*$/i,
+    '  <script src="desktop.js"></script>\n</body>\n</html>\n'
+  );
+  const desktopCheckerPath = join(desktopUiDir, 'checker.html');
+  await writeFile(desktopCheckerPath, desktopCheckerHtml, 'utf8');
+  console.log(`✔ Synchronized apps/desktop/ui/checker.html for Desktop Tauri: ${desktopCheckerPath}`);
+
+  // 3. Synchronize modular assets into apps/desktop/ui/
+  await cp(join(builderDir, 'js'), join(desktopUiDir, 'js'), { recursive: true });
+  await cp(join(builderDir, 'css'), join(desktopUiDir, 'css'), { recursive: true });
+  await cp(join(builderDir, 'templates'), join(desktopUiDir, 'templates'), { recursive: true });
+  console.log('✔ Synchronized apps/desktop/ui/js/, css/, and templates/ assets');
 }
 
 main().catch((err) => {

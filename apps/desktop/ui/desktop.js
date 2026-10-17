@@ -10,32 +10,61 @@
   // ==========================================================================
   // View Switching (macOS Segmented Navigation)
   // ==========================================================================
-  function switchView(viewName) {
+  function updateSegmentedActive(activeView) {
+    const builderBtn = document.getElementById('nav-btn-builder');
+    const checkerBtn = document.getElementById('nav-btn-checker');
+    const speedBtn = document.getElementById('nav-btn-speed');
+
+    if (builderBtn) {
+      builderBtn.classList.toggle('is-active', activeView === 'builder');
+      if (activeView === 'builder') builderBtn.setAttribute('aria-current', 'page');
+      else builderBtn.removeAttribute('aria-current');
+    }
+    if (checkerBtn) {
+      checkerBtn.classList.toggle('is-active', activeView === 'checker');
+      if (activeView === 'checker') checkerBtn.setAttribute('aria-current', 'page');
+      else checkerBtn.removeAttribute('aria-current');
+    }
+    if (speedBtn) {
+      speedBtn.classList.toggle('is-active', activeView === 'speed');
+      if (activeView === 'speed') speedBtn.setAttribute('aria-current', 'page');
+      else speedBtn.removeAttribute('aria-current');
+    }
+  }
+
+  function switchView(viewName, event) {
+    if (event && typeof event.preventDefault === 'function') {
+      event.preventDefault();
+    }
     const isCheckerPage = window.location.pathname.endsWith('checker.html');
     const isBuilderPage = !isCheckerPage;
 
     if (viewName === 'builder') {
       if (!isBuilderPage) {
         window.location.href = 'index.html';
+      } else {
+        updateSegmentedActive('builder');
       }
     } else if (viewName === 'checker') {
       if (!isCheckerPage) {
         window.location.href = 'checker.html';
+      } else {
+        if (typeof window.switchTab === 'function') {
+          window.switchTab('summary');
+        }
+        updateSegmentedActive('checker');
       }
     } else if (viewName === 'speed') {
       if (isCheckerPage) {
-        const btnWritten = document.getElementById('btn-written-deck') || document.querySelector('[onclick*="Flashcard"]');
-        if (btnWritten) {
-          btnWritten.click();
-        } else if (typeof window.openHorizontalGradingModal === 'function') {
-          window.openHorizontalGradingModal();
-        } else {
-          const deck = document.getElementById('horizontal-flashcard-deck');
-          if (deck) {
-            deck.style.display = 'block';
-            deck.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          }
+        if (typeof window.switchTab === 'function') {
+          window.switchTab('horizontal');
         }
+        const deck = document.getElementById('horizontal-flashcard-deck');
+        if (deck) {
+          deck.style.display = 'block';
+          deck.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        updateSegmentedActive('speed');
       } else {
         window.location.href = 'checker.html#speed';
       }
@@ -69,17 +98,48 @@
   });
 
   window.addEventListener('drop', (e) => {
-    // If drop was outside a specific dropzone, forward files to the scans input if on checker page
-    const scansInput = document.getElementById('input-scans');
-    if (scansInput && e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      if (!e.target.closest('.dropzone') && !e.target.closest('input[type="file"]')) {
-        e.preventDefault();
+    if (!e.dataTransfer || !e.dataTransfer.files || e.dataTransfer.files.length === 0) return;
+    if (e.target.closest('.dropzone') || e.target.closest('input[type="file"]')) return;
+
+    e.preventDefault();
+    const files = e.dataTransfer.files;
+    const firstFile = files[0];
+    const isCheckerPage = window.location.pathname.endsWith('checker.html');
+
+    if (isCheckerPage) {
+      const scansInput = document.getElementById('input-scans');
+      const layoutInput = document.getElementById('input-layout-direct');
+      const rosterInput = document.getElementById('input-roster');
+
+      const isImage = firstFile.type.startsWith('image/') || /\.(png|jpe?g|webp|bmp|tiff?)$/i.test(firstFile.name);
+      const isJsonOrZip = /\.(json|zip)$/i.test(firstFile.name);
+      const isCsv = /\.csv$/i.test(firstFile.name);
+
+      if (isImage && scansInput) {
         try {
-          scansInput.files = e.dataTransfer.files;
+          scansInput.files = files;
           scansInput.dispatchEvent(new Event('change', { bubbles: true }));
-        } catch (_) {
-          // Some browsers restrict programmatic assignment to input.files
-        }
+        } catch (_) {}
+      } else if (isJsonOrZip && layoutInput) {
+        try {
+          layoutInput.files = files;
+          layoutInput.dispatchEvent(new Event('change', { bubbles: true }));
+        } catch (_) {}
+      } else if (isCsv && rosterInput) {
+        try {
+          rosterInput.files = files;
+          rosterInput.dispatchEvent(new Event('change', { bubbles: true }));
+        } catch (_) {}
+      }
+    } else {
+      // On Sheet Builder page: forward .json or .sheet.json to template-file-input
+      const tplInput = document.getElementById('template-file-input');
+      const isJson = /\.(json|sheet\.json|grader)$/i.test(firstFile.name);
+      if (isJson && tplInput) {
+        try {
+          tplInput.files = files;
+          tplInput.dispatchEvent(new Event('change', { bubbles: true }));
+        } catch (_) {}
       }
     }
   });
@@ -124,16 +184,65 @@
         saveProgressBtn.click();
       }
     }
+
+    // Cmd+O: Open Saved Builds Library
+    if (modifier && e.key.toLowerCase() === 'o') {
+      const libraryBtn = document.getElementById('btn-library');
+      if (libraryBtn) {
+        e.preventDefault();
+        libraryBtn.click();
+      } else if (typeof window.openSavedBuildsPicker === 'function') {
+        e.preventDefault();
+        window.openSavedBuildsPicker();
+      }
+    }
+
+    // Escape: close open dialogs
+    if (e.key === 'Escape') {
+      const openDialog = document.querySelector('dialog[open]');
+      if (openDialog && typeof openDialog.close === 'function') {
+        openDialog.close();
+      }
+    }
   });
 
   // ==========================================================================
-  // Speed Grader Deep-link Handler
+  // Lifecycle Initialization
   // ==========================================================================
   window.addEventListener('DOMContentLoaded', () => {
+    const isCheckerPage = window.location.pathname.endsWith('checker.html');
+    if (isCheckerPage) {
+      if (window.location.hash === '#speed') {
+        setTimeout(() => {
+          switchView('speed');
+        }, 150);
+      } else {
+        updateSegmentedActive('checker');
+      }
+    } else {
+      updateSegmentedActive('builder');
+    }
+
+    // Attach click listeners to segmented nav buttons
+    const builderBtn = document.getElementById('nav-btn-builder');
+    const checkerBtn = document.getElementById('nav-btn-checker');
+    const speedBtn = document.getElementById('nav-btn-speed');
+
+    if (builderBtn) {
+      builderBtn.addEventListener('click', (e) => switchView('builder', e));
+    }
+    if (checkerBtn) {
+      checkerBtn.addEventListener('click', (e) => switchView('checker', e));
+    }
+    if (speedBtn) {
+      speedBtn.addEventListener('click', (e) => switchView('speed', e));
+    }
+  });
+
+  // Re-check hash on hashchange
+  window.addEventListener('hashchange', () => {
     if (window.location.hash === '#speed') {
-      setTimeout(() => {
-        switchView('speed');
-      }, 300);
+      switchView('speed');
     }
   });
 

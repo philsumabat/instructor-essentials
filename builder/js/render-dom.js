@@ -69,8 +69,18 @@ function fiducialNode(f) {
   );
 }
 
+function parseGap(value) {
+  if (value == null) return null;
+  const n = typeof value === 'number' ? value : parseFloat(String(value).trim());
+  return Number.isFinite(n) && n >= 0 ? n : null;
+}
+
 function gridNode(grid, layout, zone, index = 0) {
   const { bubble } = layout;
+  const customRowGap = parseGap(zone?.rowGap ?? zone?.rowSpacing ?? zone?.itemSpacing ?? zone?.extra?.rowGap);
+  const basePitchY = grid.pitchY ?? (customRowGap != null ? (bubble.diameter + customRowGap) : bubble.pitchY);
+  const nominalRowH = grid.pitchY ?? basePitchY;
+  const cellBubbleOffset = mm(Math.max(0, (nominalRowH - bubble.diameter) / 2));
   return h(
     'div',
     {
@@ -85,11 +95,9 @@ function gridNode(grid, layout, zone, index = 0) {
     },
     grid.cells.map((cell) => {
       const place = { 'grid-row': cell.row + 1, 'grid-column': cell.col + 1 };
-      const curRowH = grid.rows[cell.row] ?? bubble.pitchY;
-      const cellBubbleOffset = mm((curRowH - bubble.diameter) / 2);
       if (cell.kind === 'bubble') return h('span', { class: 'omr-bubble', style: { ...place, 'margin-top': cellBubbleOffset } }, cell.text);
-      if (cell.kind === 'num') return h('span', { class: 'omr-num', style: { ...place, height: mm(curRowH) } }, cell.text);
-      if (cell.kind === 'box') return h('span', { class: 'omr-digit-box', style: place, 'aria-label': `${zone.label} digit` });
+      if (cell.kind === 'num') return h('span', { class: 'omr-num', style: { ...place, height: mm(nominalRowH) } }, cell.text);
+      if (cell.kind === 'box') return h('span', { class: 'omr-digit-box', style: place, 'aria-label': `${zone?.label ?? ''} digit` });
       return null;
     }),
   );
@@ -110,16 +118,26 @@ function zoneNode(zone, layout, index = 0) {
     return nodes;
   }
   const isTextType = zone.type === 'text' || zone.type === 'text_short' || zone.type === 'text_essay';
+  const isPointsEligible = ['mcq', 'truefalse', 'modified_tf', 'text_short', 'text_essay', 'text'].includes(zone.type);
   const rawLabel = String(zone.label ?? '').trim();
-  const hasPtsInLabel = /\(\s*\d+(\.\d+)?\s*pts?(?:\s+each)?\s*\)/i.test(rawLabel);
+  const hasPtsInLabel = /\(\s*\d+(\.\d+)?\s*(?:pts?|points?)(?:\s+each)?\s*\)/i.test(rawLabel);
   const pts = zone.pointsPerItem ?? zone.points;
   const count = zone.count ?? (zone.items ? zone.items.length : 1);
   const ptsNum = Number(pts);
-  const pointsSuffix = isTextType && !hasPtsInLabel && Number.isFinite(ptsNum) && ptsNum > 0
+
+  const shouldShowPoints = zone.showPoints !== undefined
+    ? Boolean(zone.showPoints)
+    : isTextType;
+
+  const displayLabel = !shouldShowPoints && hasPtsInLabel
+    ? rawLabel.replace(/\s*\(\s*\d+(\.\d+)?\s*(?:pts?|points?)(?:\s+each)?\s*\)/i, '').trim()
+    : rawLabel;
+
+  const pointsSuffix = isPointsEligible && shouldShowPoints && !hasPtsInLabel && Number.isFinite(ptsNum) && ptsNum > 0
     ? `(${ptsNum} pt${ptsNum === 1 ? '' : 's'}${count > 1 ? ' each' : ''})`
     : '';
 
-  const showTitle = Boolean(rawLabel || (isTextType && zone.type !== 'text') || zone.type === 'mcq' || zone.type === 'truefalse' || zone.type === 'modified_tf');
+  const showTitle = Boolean(displayLabel || pointsSuffix || (isTextType && zone.type !== 'text') || zone.type === 'mcq' || zone.type === 'truefalse' || zone.type === 'modified_tf');
   nodes.push(
     h(
       'section',
@@ -134,7 +152,7 @@ function zoneNode(zone, layout, index = 0) {
       showTitle ? h(
         'h2',
         { class: 'omr-zone__title' },
-        h('span', { class: 'omr-zone__title-text', 'data-placeholder': 'Section Title' }, rawLabel),
+        h('span', { class: 'omr-zone__title-text', 'data-placeholder': 'Section Title' }, displayLabel),
         pointsSuffix ? h('span', { class: 'omr-points', style: { 'font-weight': 'normal', 'margin-left': '0.4em' } }, pointsSuffix) : null,
       ) : null,
     ),

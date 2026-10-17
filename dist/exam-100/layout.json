@@ -976,7 +976,8 @@
               "kind": "bubble",
               "text": "D"
             }
-          ]
+          ],
+          "pitchY": 5
         },
         {
           "x": 54.075,
@@ -1611,7 +1612,8 @@
               "kind": "bubble",
               "text": "D"
             }
-          ]
+          ],
+          "pitchY": 5
         },
         {
           "x": 93.65,
@@ -2246,7 +2248,8 @@
               "kind": "bubble",
               "text": "D"
             }
-          ]
+          ],
+          "pitchY": 5
         },
         {
           "x": 133.225,
@@ -2881,7 +2884,8 @@
               "kind": "bubble",
               "text": "D"
             }
-          ]
+          ],
+          "pitchY": 5
         },
         {
           "x": 172.8,
@@ -3516,7 +3520,8 @@
               "kind": "bubble",
               "text": "D"
             }
-          ]
+          ],
+          "pitchY": 5
         }
       ],
       "groups": [

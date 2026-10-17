@@ -528,7 +528,8 @@
               "kind": "bubble",
               "text": "D"
             }
-          ]
+          ],
+          "pitchY": 5.4
         },
         {
           "x": 112.24,
@@ -698,7 +699,8 @@
               "kind": "bubble",
               "text": "D"
             }
-          ]
+          ],
+          "pitchY": 5.4
         }
       ],
       "groups": [
@@ -998,12 +1000,12 @@
     {
       "id": "bonus",
       "type": "text",
-      "label": "",
+      "label": "Part II — Bonus Identification Question (5 pts)",
       "bbox": {
         "x": 12,
         "y": 99.76,
         "w": 186,
-        "h": 28.1
+        "h": 29.9
       },
       "grids": [],
       "groups": [],
@@ -1014,7 +1016,7 @@
           "label": "Part II — Bonus Identification Question (5 pts)",
           "role": null,
           "x": 14.5,
-          "y": 107.36,
+          "y": 109.16,
           "w": 181,
           "h": 18,
           "charset": "alpha",
@@ -1026,9 +1028,12 @@
       ],
       "prompt": "Part II — Bonus Identification Question (5 pts)",
       "points": 5,
+      "pointsPerItem": 5,
       "isInline": false,
       "labelW": 0,
       "count": 1,
+      "start": 11,
+      "maxBoxW": 181,
       "boxHeight": 18,
       "rowGap": 3
     }

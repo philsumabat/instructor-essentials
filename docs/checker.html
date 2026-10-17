@@ -3521,7 +3521,24 @@
     function getSavedBuilds() {
       try {
         const raw = localStorage.getItem('sheet-builder:saved_builds') || localStorage.getItem('grader:saved_builds');
-        return raw ? JSON.parse(raw) : [];
+        const list = raw ? JSON.parse(raw) : [];
+        const activeTplRaw = localStorage.getItem('instructor_sheet_builder_template') || localStorage.getItem('grader_sheet_builder_template');
+        if (activeTplRaw) {
+          try {
+            const activeTpl = JSON.parse(activeTplRaw);
+            if (activeTpl && Array.isArray(activeTpl.zones) && activeTpl.zones.length > 0) {
+              list.unshift({
+                id: 'active-working-build',
+                title: `${activeTpl.title || 'Untitled Exam'} (Active Sheet Builder Draft)`,
+                paper: activeTpl.paper || 'A4',
+                template: activeTpl,
+                timestamp: Date.now(),
+                isDraft: true
+              });
+            }
+          } catch (_) {}
+        }
+        return list;
       } catch {
         return [];
       }
@@ -3550,11 +3567,14 @@
           <div style="display: flex; flex-direction: column; gap: 0.75rem;">
             ${builds.map((b, idx) => {
               const dateStr = b.timestamp ? new Date(b.timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '';
-              const qCount = b.questionCount ?? (b.layout?.bubbles ? new Set(b.layout.bubbles.filter(bb => bb.item && !bb.item.startsWith('sid[')).map(bb => bb.item)).size : 0);
+              const qCount = b.questionCount ?? (b.layout?.bubbles ? new Set(b.layout.bubbles.filter(bb => bb.item && !bb.item.startsWith('sid[')).map(bb => bb.item)).size : (b.template?.zones ? b.template.zones.reduce((acc, z) => acc + (z.count || 1), 0) : 0));
               return `
                 <div style="background: var(--panel-alt); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.75rem 1rem; display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;">
                   <div style="flex: 1; min-width: 0;">
-                    <div style="font-weight: 700; font-size: 0.88rem; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(b.title || 'Untitled Exam')}</div>
+                    <div style="font-weight: 700; font-size: 0.88rem; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 0.4rem;">
+                      <span>${escapeHtml(b.title || 'Untitled Exam')}</span>
+                      ${b.isDraft ? '<span class="badge" style="background: var(--accent-light); color: var(--accent); font-size: 0.68rem; padding: 0.1rem 0.4rem; border-radius: var(--radius-full); font-weight: 600;">Active Draft</span>' : ''}
+                    </div>
                     <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
                       <span>${escapeHtml(b.paper || 'A4')}</span>
                       <span>•</span>

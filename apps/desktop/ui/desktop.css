@@ -93,7 +93,10 @@ body {
 /* ==========================================================================
    macOS Window Title Bar (Draggable, traffic lights space, glassmorphism)
    ========================================================================== */
-.app-header.app-chrome {
+.app-header.app-chrome,
+.app-header.window-titlebar,
+.window-titlebar,
+header.app-header {
   height: var(--titlebar-h) !important;
   background: var(--bg-window) !important;
   backdrop-filter: blur(24px) !important;

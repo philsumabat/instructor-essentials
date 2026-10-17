@@ -132,13 +132,16 @@ export function estimateLines(text, fontSize, width) {
 
 /** Bubble centre for a grid cell: horizontally centred, vertically centred in the first pitchY of the row. */
 function bubbleCenter(grid, row, col, pitchY) {
+  const effectivePitchY = pitchY ?? grid.pitchY ?? grid.rows[row];
   const cx = grid.x + sum(grid.columns.slice(0, col)) + grid.columns[col] / 2;
-  const cy = grid.y + sum(grid.rows.slice(0, row)) + pitchY / 2;
+  const cy = grid.y + sum(grid.rows.slice(0, row)) + effectivePitchY / 2;
   return { cx: r3(cx), cy: r3(cy) };
 }
 
-function makeGrid(x, y, columns, rows) {
-  return { x: r3(x), y: r3(y), columns: columns.map(r3), rows: rows.map(r3), cells: [] };
+function makeGrid(x, y, columns, rows, pitchY) {
+  const g = { x: r3(x), y: r3(y), columns: columns.map(r3), rows: rows.map(r3), cells: [] };
+  if (pitchY != null) g.pitchY = r3(pitchY);
+  return g;
 }
 
 export function normalizeTemplate(input) {
@@ -211,7 +214,7 @@ function layoutStudentId(zone, ctx, x, y, availW) {
   // Shading bubble matrix mode
   const rows = [SID_BOX_H, SID_BOX_GAP, ...Array(10).fill(bubble.pitchY)];
   const gridW = digits * colW;
-  const grid = makeGrid(x + (w - gridW) / 2, y + PAD + titleH, Array(digits).fill(colW), rows);
+  const grid = makeGrid(x + (w - gridW) / 2, y + PAD + titleH, Array(digits).fill(colW), rows, bubble.pitchY);
   const groups = [];
   for (let d = 0; d < digits; d += 1) {
     grid.cells.push({ row: 0, col: d, kind: 'box' });
@@ -277,7 +280,7 @@ function layoutChoices(zone, ctx, x, y, availW) {
   const grids = [];
   const groups = [];
   for (let c = 0; c < columns; c += 1) {
-    const grid = makeGrid(startColX + c * blockPitch, y + PAD + titleH, [numberW, ...choices.map(() => bubble.pitchX)], rowHeights);
+    const grid = makeGrid(startColX + c * blockPitch, y + PAD + titleH, [numberW, ...choices.map(() => bubble.pitchX)], rowHeights, basePitchY);
     for (let r = 0; r < rowsPerCol; r += 1) {
       const idx = c * rowsPerCol + r; // column-major numbering, the convention on paper answer sheets
       if (idx >= count) break;
@@ -295,7 +298,7 @@ function layoutChoices(zone, ctx, x, y, availW) {
   ctx.nextQuestion = start + count;
   const h = 2 * PAD + titleH + sum(rowHeights);
   const pointsPerItem = Number(zone.pointsPerItem ?? zone.points ?? 1);
-  return { bbox: { x, y, w, h }, grids, groups, rois: [], extra: { choices, start, count, columns, pointsPerItem, ...(customRowGap != null ? { rowGap: customRowGap } : {}) } };
+  return { bbox: { x, y, w, h }, grids, groups, rois: [], extra: { choices, start, count, columns, pointsPerItem, ...(zone.showPoints !== undefined ? { showPoints: zone.showPoints } : {}), ...(customRowGap != null ? { rowGap: customRowGap } : {}) } };
 }
 
 function layoutModifiedTrueFalse(zone, ctx, x, y, availW) {
@@ -347,7 +350,7 @@ function layoutModifiedTrueFalse(zone, ctx, x, y, availW) {
 
   for (let c = 0; c < columns; c += 1) {
     const colX = startColX + c * blockPitch;
-    const grid = makeGrid(colX, y + PAD + titleH, [numberW, bubble.pitchX, bubble.pitchX], rowHeights);
+    const grid = makeGrid(colX, y + PAD + titleH, [numberW, bubble.pitchX, bubble.pitchX], rowHeights, rowH);
 
     for (let r = 0; r < rowsPerCol; r += 1) {
       const idx = c * rowsPerCol + r;
@@ -388,7 +391,7 @@ function layoutModifiedTrueFalse(zone, ctx, x, y, availW) {
   ctx.nextQuestion = start + count;
   const h = 2 * PAD + titleH + sum(rowHeights);
   const pointsPerItem = Number(zone.pointsPerItem ?? zone.points ?? 1);
-  return { bbox: { x, y, w, h }, grids, groups, rois, extra: { start, count, columns, isModified: true, pointsPerItem, ...(customRowGap != null ? { rowGap: customRowGap } : {}) } };
+  return { bbox: { x, y, w, h }, grids, groups, rois, extra: { start, count, columns, isModified: true, pointsPerItem, ...(zone.showPoints !== undefined ? { showPoints: zone.showPoints } : {}), ...(customRowGap != null ? { rowGap: customRowGap } : {}) } };
 }
 
 function layoutFields(zone, ctx, x, y, availW) {
@@ -521,18 +524,21 @@ function layoutText(zone, ctx, x, y, availW) {
     let boxY = y + PAD;
     let boxW = innerW;
     let labelW = 0;
+    let maxBoxW = innerW;
 
     if (isInline && prompt) {
       labelW = zone.labelWidth ?? Math.min(18, Math.max(5, prompt.length * 2.8));
       boxX = x + PAD + labelW;
-      const maxBoxW = innerW - labelW;
+      maxBoxW = innerW - labelW;
       boxW = zone.boxWidth != null ? Math.max(12, Math.min(maxBoxW, Number(zone.boxWidth))) : maxBoxW;
     } else if (prompt) {
       const promptLines = estimateLines(prompt, typography.label, innerW);
       promptH = promptLines * typography.label * LINE_HEIGHT;
       boxY = y + PAD + promptH + (rowGap > 0 ? rowGap : 1.5);
+      maxBoxW = innerW;
       boxW = zone.boxWidth != null ? Math.max(12, Math.min(innerW, Number(zone.boxWidth))) : innerW;
     } else {
+      maxBoxW = innerW;
       boxW = zone.boxWidth != null ? Math.max(12, Math.min(innerW, Number(zone.boxWidth))) : innerW;
     }
 
@@ -568,8 +574,10 @@ function layoutText(zone, ctx, x, y, availW) {
         count: 1,
         start: startNum,
         boxWidth: zone.boxWidth,
+        maxBoxW: Math.floor(maxBoxW),
         boxHeight: boxH,
         rowGap,
+        ...(zone.showPoints !== undefined ? { showPoints: zone.showPoints } : {}),
       },
     };
   }
@@ -582,6 +590,7 @@ function layoutText(zone, ctx, x, y, availW) {
   const rowsPerCol = Math.ceil(count / columns);
   const interColGap = 4;
   const colW = (innerW - (columns - 1) * interColGap) / columns;
+  let maxBoxW = colW;
 
   const items = [];
   const rois = [];
@@ -596,7 +605,7 @@ function layoutText(zone, ctx, x, y, availW) {
       const qLabel = `${q}`;
       const labelW = Math.max(5, qLabel.length * 2.8);
       const itemBoxX = colX + labelW;
-      const maxBoxW = colW - labelW;
+      maxBoxW = colW - labelW;
       const itemBoxW = zone.boxWidth != null ? Math.max(12, Math.min(maxBoxW, Number(zone.boxWidth))) : Math.max(12, maxBoxW);
 
       const roi = {
@@ -643,9 +652,11 @@ function layoutText(zone, ctx, x, y, availW) {
       columns,
       boxHeight: boxH,
       boxWidth: zone.boxWidth,
+      maxBoxW: Math.floor(maxBoxW),
       pointsPerItem: points,
       items,
       rowGap,
+      ...(zone.showPoints !== undefined ? { showPoints: zone.showPoints } : {}),
     },
   };
 }
@@ -805,6 +816,7 @@ export function buildLayout(input) {
       groups: res.groups,
       rois: res.rois,
       ...res.extra,
+      ...(raw.showPoints !== undefined ? { showPoints: raw.showPoints } : {}),
     };
     zones.push(zone);
     if (isHalfLeft) {

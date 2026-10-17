@@ -1142,6 +1142,13 @@ function renderInspector() {
         </div>
       </div>
 
+      <div class="form-group" style="margin-top: -0.25rem; margin-bottom: 0.5rem;">
+        <label class="field-checkbox-label">
+          <input type="checkbox" id="insp-show-points" ${zone.showPoints === true ? 'checked' : ''}>
+          <span>Show points on sheet</span>
+        </label>
+      </div>
+
       <div class="form-row">
         <div class="form-group">
           <label class="form-label" for="insp-row-gap">Item / Row Spacing (mm)</label>
@@ -1235,6 +1242,13 @@ function renderInspector() {
             <button type="button" class="stepper-btn" id="insp-points-plus" aria-label="Increase points">+</button>
           </div>
         </div>
+      </div>
+
+      <div class="form-group" style="margin-top: -0.25rem; margin-bottom: 0.5rem;">
+        <label class="field-checkbox-label">
+          <input type="checkbox" id="insp-show-points" ${zone.showPoints === true ? 'checked' : ''}>
+          <span>Show points on sheet</span>
+        </label>
       </div>
 
       <div class="form-row">
@@ -1434,6 +1448,13 @@ function renderInspector() {
             <button type="button" class="stepper-btn" id="insp-points-plus" aria-label="Increase points">+</button>
           </div>
         </div>
+      </div>
+
+      <div class="form-group" style="margin-top: -0.25rem; margin-bottom: 0.5rem;">
+        <label class="field-checkbox-label">
+          <input type="checkbox" id="insp-show-points" ${zone.showPoints !== false ? 'checked' : ''}>
+          <span>Show points on sheet</span>
+        </label>
       </div>
 
       <div class="form-row">
@@ -1657,7 +1678,7 @@ function bindInspectorEvents(zone) {
         zone.pointsPerItem = pts;
         zone.points = pts;
         const count = zone.count ?? 1;
-        const ptsPattern = /\(\s*\d+(\.\d+)?\s*pts?(?:\s+each)?\s*\)/i;
+        const ptsPattern = /\(\s*\d+(\.\d+)?\s*(?:pts?|points?)(?:\s+each)?\s*\)/i;
         if (zone.label && ptsPattern.test(zone.label)) {
           const suffix = `(${pts} pt${pts === 1 ? '' : 's'}${count > 1 ? ' each' : ''})`;
           zone.label = zone.label.replace(ptsPattern, suffix);
@@ -1674,6 +1695,27 @@ function bindInspectorEvents(zone) {
       1,
       50,
     );
+
+    // Show / Hide Points per item on the paper
+    const showPtsEl = $('#insp-show-points');
+    if (showPtsEl) {
+      showPtsEl.addEventListener('change', (e) => {
+        zone.showPoints = e.target.checked;
+        if (!e.target.checked && zone.label) {
+          const ptsPattern = /\s*\(\s*\d+(\.\d+)?\s*(?:pts?|points?)(?:\s+each)?\s*\)/i;
+          if (ptsPattern.test(zone.label)) {
+            zone.label = zone.label.replace(ptsPattern, '').trim();
+            const inspLabel = $('#insp-label');
+            if (inspLabel) inspLabel.value = zone.label;
+            const inspHeaderTitle = $('.inspector-header__title');
+            if (inspHeaderTitle) inspHeaderTitle.textContent = zone.label;
+            const outlineTitle = document.querySelector(`.outline-item[data-zone-index="${idx}"] .outline-item__title`);
+            if (outlineTitle) outlineTitle.textContent = zone.label;
+          }
+        }
+        update({ skipInspector: true });
+      });
+    }
   }
 
   // Spacing between items/rows stepper

@@ -43,24 +43,32 @@ function wrap(content, size, width) {
   return lines;
 }
 
-function gridSVG(grid, layout) {
+function parseGap(value) {
+  if (value == null) return null;
+  const n = typeof value === 'number' ? value : parseFloat(String(value).trim());
+  return Number.isFinite(n) && n >= 0 ? n : null;
+}
+
+function gridSVG(grid, layout, zone) {
   const { bubble, typography } = layout;
   const out = [];
   const colStart = (c) => grid.x + grid.columns.slice(0, c).reduce((a, b) => a + b, 0);
   const rowStart = (r) => grid.y + grid.rows.slice(0, r).reduce((a, b) => a + b, 0);
   const stroke = bubble.stroke ?? 0.25;
+  const customRowGap = zone ? parseGap(zone.rowGap ?? zone.rowSpacing ?? zone.itemSpacing ?? zone.extra?.rowGap) : null;
+  const basePitchY = grid.pitchY ?? (customRowGap != null ? (bubble.diameter + customRowGap) : bubble.pitchY);
+  const nominalRowH = grid.pitchY ?? basePitchY;
   for (const cell of grid.cells) {
     const x0 = colStart(cell.col);
     const y0 = rowStart(cell.row);
     const cw = grid.columns[cell.col];
-    const rowH = grid.rows[cell.row] ?? bubble.pitchY;
     if (cell.kind === 'bubble') {
       const cx = x0 + cw / 2;
-      const cy = y0 + rowH / 2;
+      const cy = y0 + nominalRowH / 2;
       out.push(`<circle class="omr-bubble" cx="${f(cx)}" cy="${f(cy)}" r="${f(bubble.diameter / 2 - stroke / 2)}" fill="none" stroke="#000" stroke-width="${f(stroke)}"/>`);
       out.push(text(cx, cy + 0.05, cell.text, { size: typography.bubble, anchor: 'middle', fill: '#8a8a8a' }));
     } else if (cell.kind === 'num') {
-      out.push(text(x0 + cw - 1.2, y0 + rowH / 2, cell.text, { size: typography.number, anchor: 'end', weight: 700 }));
+      out.push(text(x0 + cw - 1.2, y0 + nominalRowH / 2, cell.text, { size: typography.number, anchor: 'end', weight: 700 }));
     } else if (cell.kind === 'box') {
       out.push(`<rect x="${f(x0 + 0.4 + 0.125)}" y="${f(y0 + 0.125)}" width="${f(cw - 0.8 - 0.25)}" height="${f(grid.rows[cell.row] - 0.25)}" fill="none" stroke="#000" stroke-width="0.25"/>`);
     }
@@ -82,17 +90,27 @@ function zoneSVG(zone, layout, zoneIndex) {
   }
   out.push(`<rect x="${f(b.x + 0.15)}" y="${f(b.y + 0.15)}" width="${f(b.w - 0.3)}" height="${f(b.h - 0.3)}" rx="1.2" fill="none" stroke="#000" stroke-width="0.3"/>`);
   const isTextType = zone.type === 'text' || zone.type === 'text_short' || zone.type === 'text_essay';
+  const isPointsEligible = ['mcq', 'truefalse', 'modified_tf', 'text_short', 'text_essay', 'text'].includes(zone.type);
   const rawLabel = String(zone.label ?? '').trim();
-  const hasPtsInLabel = /\(\s*\d+(\.\d+)?\s*pts?(?:\s+each)?\s*\)/i.test(rawLabel);
+  const hasPtsInLabel = /\(\s*\d+(\.\d+)?\s*(?:pts?|points?)(?:\s+each)?\s*\)/i.test(rawLabel);
   const pts = zone.pointsPerItem ?? zone.points;
   const count = zone.count ?? (zone.items ? zone.items.length : 1);
   const ptsNum = Number(pts);
-  const pointsSuffix = isTextType && !hasPtsInLabel && Number.isFinite(ptsNum) && ptsNum > 0
+
+  const shouldShowPoints = zone.showPoints !== undefined
+    ? Boolean(zone.showPoints)
+    : isTextType;
+
+  const displayLabel = !shouldShowPoints && hasPtsInLabel
+    ? rawLabel.replace(/\s*\(\s*\d+(\.\d+)?\s*(?:pts?|points?)(?:\s+each)?\s*\)/i, '').trim()
+    : rawLabel;
+
+  const pointsSuffix = isPointsEligible && shouldShowPoints && !hasPtsInLabel && Number.isFinite(ptsNum) && ptsNum > 0
     ? `(${ptsNum} pt${ptsNum === 1 ? '' : 's'}${count > 1 ? ' each' : ''})`
     : '';
-  const fullTitle = rawLabel ? `${rawLabel}${pointsSuffix ? ` ${pointsSuffix}` : ''}` : '';
+  const fullTitle = [displayLabel, pointsSuffix].filter(Boolean).join(' ');
   if (fullTitle) out.push(text(b.x + 2.5, b.y + 2.5 + 2, fullTitle, { size: typography.label, weight: 700 }));
-  for (const grid of zone.grids) out.push(gridSVG(grid, layout));
+  for (const grid of zone.grids) out.push(gridSVG(grid, layout, zone));
   if (zone.type === 'fields') {
     zone.rows.forEach((row, i) => {
       const roi = zone.rois[i];

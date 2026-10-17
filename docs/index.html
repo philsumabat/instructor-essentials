@@ -3550,13 +3550,16 @@ function estimateLines(text, fontSize, width) {
 
 /** Bubble centre for a grid cell: horizontally centred, vertically centred in the first pitchY of the row. */
 function bubbleCenter(grid, row, col, pitchY) {
+  const effectivePitchY = pitchY ?? grid.pitchY ?? grid.rows[row];
   const cx = grid.x + sum(grid.columns.slice(0, col)) + grid.columns[col] / 2;
-  const cy = grid.y + sum(grid.rows.slice(0, row)) + pitchY / 2;
+  const cy = grid.y + sum(grid.rows.slice(0, row)) + effectivePitchY / 2;
   return { cx: r3(cx), cy: r3(cy) };
 }
 
-function makeGrid(x, y, columns, rows) {
-  return { x: r3(x), y: r3(y), columns: columns.map(r3), rows: rows.map(r3), cells: [] };
+function makeGrid(x, y, columns, rows, pitchY) {
+  const g = { x: r3(x), y: r3(y), columns: columns.map(r3), rows: rows.map(r3), cells: [] };
+  if (pitchY != null) g.pitchY = r3(pitchY);
+  return g;
 }
 
 function normalizeTemplate(input) {
@@ -3629,7 +3632,7 @@ function layoutStudentId(zone, ctx, x, y, availW) {
   // Shading bubble matrix mode
   const rows = [SID_BOX_H, SID_BOX_GAP, ...Array(10).fill(bubble.pitchY)];
   const gridW = digits * colW;
-  const grid = makeGrid(x + (w - gridW) / 2, y + PAD + titleH, Array(digits).fill(colW), rows);
+  const grid = makeGrid(x + (w - gridW) / 2, y + PAD + titleH, Array(digits).fill(colW), rows, bubble.pitchY);
   const groups = [];
   for (let d = 0; d < digits; d += 1) {
     grid.cells.push({ row: 0, col: d, kind: 'box' });
@@ -3695,7 +3698,7 @@ function layoutChoices(zone, ctx, x, y, availW) {
   const grids = [];
   const groups = [];
   for (let c = 0; c < columns; c += 1) {
-    const grid = makeGrid(startColX + c * blockPitch, y + PAD + titleH, [numberW, ...choices.map(() => bubble.pitchX)], rowHeights);
+    const grid = makeGrid(startColX + c * blockPitch, y + PAD + titleH, [numberW, ...choices.map(() => bubble.pitchX)], rowHeights, basePitchY);
     for (let r = 0; r < rowsPerCol; r += 1) {
       const idx = c * rowsPerCol + r; // column-major numbering, the convention on paper answer sheets
       if (idx >= count) break;
@@ -3713,7 +3716,7 @@ function layoutChoices(zone, ctx, x, y, availW) {
   ctx.nextQuestion = start + count;
   const h = 2 * PAD + titleH + sum(rowHeights);
   const pointsPerItem = Number(zone.pointsPerItem ?? zone.points ?? 1);
-  return { bbox: { x, y, w, h }, grids, groups, rois: [], extra: { choices, start, count, columns, pointsPerItem, ...(customRowGap != null ? { rowGap: customRowGap } : {}) } };
+  return { bbox: { x, y, w, h }, grids, groups, rois: [], extra: { choices, start, count, columns, pointsPerItem, ...(zone.showPoints !== undefined ? { showPoints: zone.showPoints } : {}), ...(customRowGap != null ? { rowGap: customRowGap } : {}) } };
 }
 
 function layoutModifiedTrueFalse(zone, ctx, x, y, availW) {
@@ -3765,7 +3768,7 @@ function layoutModifiedTrueFalse(zone, ctx, x, y, availW) {
 
   for (let c = 0; c < columns; c += 1) {
     const colX = startColX + c * blockPitch;
-    const grid = makeGrid(colX, y + PAD + titleH, [numberW, bubble.pitchX, bubble.pitchX], rowHeights);
+    const grid = makeGrid(colX, y + PAD + titleH, [numberW, bubble.pitchX, bubble.pitchX], rowHeights, rowH);
 
     for (let r = 0; r < rowsPerCol; r += 1) {
       const idx = c * rowsPerCol + r;
@@ -3806,7 +3809,7 @@ function layoutModifiedTrueFalse(zone, ctx, x, y, availW) {
   ctx.nextQuestion = start + count;
   const h = 2 * PAD + titleH + sum(rowHeights);
   const pointsPerItem = Number(zone.pointsPerItem ?? zone.points ?? 1);
-  return { bbox: { x, y, w, h }, grids, groups, rois, extra: { start, count, columns, isModified: true, pointsPerItem, ...(customRowGap != null ? { rowGap: customRowGap } : {}) } };
+  return { bbox: { x, y, w, h }, grids, groups, rois, extra: { start, count, columns, isModified: true, pointsPerItem, ...(zone.showPoints !== undefined ? { showPoints: zone.showPoints } : {}), ...(customRowGap != null ? { rowGap: customRowGap } : {}) } };
 }
 
 function layoutFields(zone, ctx, x, y, availW) {
@@ -3992,6 +3995,7 @@ function layoutText(zone, ctx, x, y, availW) {
         maxBoxW: Math.floor(maxBoxW),
         boxHeight: boxH,
         rowGap,
+        ...(zone.showPoints !== undefined ? { showPoints: zone.showPoints } : {}),
       },
     };
   }
@@ -4070,6 +4074,7 @@ function layoutText(zone, ctx, x, y, availW) {
       pointsPerItem: points,
       items,
       rowGap,
+      ...(zone.showPoints !== undefined ? { showPoints: zone.showPoints } : {}),
     },
   };
 }
@@ -4229,6 +4234,7 @@ function buildLayout(input) {
       groups: res.groups,
       rois: res.rois,
       ...res.extra,
+      ...(raw.showPoints !== undefined ? { showPoints: raw.showPoints } : {}),
     };
     zones.push(zone);
     if (isHalfLeft) {
@@ -4384,8 +4390,18 @@ function fiducialNode(f) {
   );
 }
 
+function parseGap(value) {
+  if (value == null) return null;
+  const n = typeof value === 'number' ? value : parseFloat(String(value).trim());
+  return Number.isFinite(n) && n >= 0 ? n : null;
+}
+
 function gridNode(grid, layout, zone, index = 0) {
   const { bubble } = layout;
+  const customRowGap = parseGap(zone?.rowGap ?? zone?.rowSpacing ?? zone?.itemSpacing ?? zone?.extra?.rowGap);
+  const basePitchY = grid.pitchY ?? (customRowGap != null ? (bubble.diameter + customRowGap) : bubble.pitchY);
+  const nominalRowH = grid.pitchY ?? basePitchY;
+  const cellBubbleOffset = mm(Math.max(0, (nominalRowH - bubble.diameter) / 2));
   return h(
     'div',
     {
@@ -4400,11 +4416,9 @@ function gridNode(grid, layout, zone, index = 0) {
     },
     grid.cells.map((cell) => {
       const place = { 'grid-row': cell.row + 1, 'grid-column': cell.col + 1 };
-      const curRowH = grid.rows[cell.row] ?? bubble.pitchY;
-      const cellBubbleOffset = mm((curRowH - bubble.diameter) / 2);
       if (cell.kind === 'bubble') return h('span', { class: 'omr-bubble', style: { ...place, 'margin-top': cellBubbleOffset } }, cell.text);
-      if (cell.kind === 'num') return h('span', { class: 'omr-num', style: { ...place, height: mm(curRowH) } }, cell.text);
-      if (cell.kind === 'box') return h('span', { class: 'omr-digit-box', style: place, 'aria-label': `${zone.label} digit` });
+      if (cell.kind === 'num') return h('span', { class: 'omr-num', style: { ...place, height: mm(nominalRowH) } }, cell.text);
+      if (cell.kind === 'box') return h('span', { class: 'omr-digit-box', style: place, 'aria-label': `${zone?.label ?? ''} digit` });
       return null;
     }),
   );
@@ -4425,16 +4439,26 @@ function zoneNode(zone, layout, index = 0) {
     return nodes;
   }
   const isTextType = zone.type === 'text' || zone.type === 'text_short' || zone.type === 'text_essay';
+  const isPointsEligible = ['mcq', 'truefalse', 'modified_tf', 'text_short', 'text_essay', 'text'].includes(zone.type);
   const rawLabel = String(zone.label ?? '').trim();
-  const hasPtsInLabel = /\(\s*\d+(\.\d+)?\s*pts?(?:\s+each)?\s*\)/i.test(rawLabel);
+  const hasPtsInLabel = /\(\s*\d+(\.\d+)?\s*(?:pts?|points?)(?:\s+each)?\s*\)/i.test(rawLabel);
   const pts = zone.pointsPerItem ?? zone.points;
   const count = zone.count ?? (zone.items ? zone.items.length : 1);
   const ptsNum = Number(pts);
-  const pointsSuffix = isTextType && !hasPtsInLabel && Number.isFinite(ptsNum) && ptsNum > 0
+
+  const shouldShowPoints = zone.showPoints !== undefined
+    ? Boolean(zone.showPoints)
+    : isTextType;
+
+  const displayLabel = !shouldShowPoints && hasPtsInLabel
+    ? rawLabel.replace(/\s*\(\s*\d+(\.\d+)?\s*(?:pts?|points?)(?:\s+each)?\s*\)/i, '').trim()
+    : rawLabel;
+
+  const pointsSuffix = isPointsEligible && shouldShowPoints && !hasPtsInLabel && Number.isFinite(ptsNum) && ptsNum > 0
     ? `(${ptsNum} pt${ptsNum === 1 ? '' : 's'}${count > 1 ? ' each' : ''})`
     : '';
 
-  const showTitle = Boolean(rawLabel || (isTextType && zone.type !== 'text') || zone.type === 'mcq' || zone.type === 'truefalse' || zone.type === 'modified_tf');
+  const showTitle = Boolean(displayLabel || pointsSuffix || (isTextType && zone.type !== 'text') || zone.type === 'mcq' || zone.type === 'truefalse' || zone.type === 'modified_tf');
   nodes.push(
     h(
       'section',
@@ -4449,7 +4473,7 @@ function zoneNode(zone, layout, index = 0) {
       showTitle ? h(
         'h2',
         { class: 'omr-zone__title' },
-        h('span', { class: 'omr-zone__title-text', 'data-placeholder': 'Section Title' }, rawLabel),
+        h('span', { class: 'omr-zone__title-text', 'data-placeholder': 'Section Title' }, displayLabel),
         pointsSuffix ? h('span', { class: 'omr-points', style: { 'font-weight': 'normal', 'margin-left': '0.4em' } }, pointsSuffix) : null,
       ) : null,
     ),
@@ -4661,24 +4685,32 @@ function wrap(content, size, width) {
   return lines;
 }
 
-function gridSVG(grid, layout) {
+function parseGap(value) {
+  if (value == null) return null;
+  const n = typeof value === 'number' ? value : parseFloat(String(value).trim());
+  return Number.isFinite(n) && n >= 0 ? n : null;
+}
+
+function gridSVG(grid, layout, zone) {
   const { bubble, typography } = layout;
   const out = [];
   const colStart = (c) => grid.x + grid.columns.slice(0, c).reduce((a, b) => a + b, 0);
   const rowStart = (r) => grid.y + grid.rows.slice(0, r).reduce((a, b) => a + b, 0);
   const stroke = bubble.stroke ?? 0.25;
+  const customRowGap = zone ? parseGap(zone.rowGap ?? zone.rowSpacing ?? zone.itemSpacing ?? zone.extra?.rowGap) : null;
+  const basePitchY = grid.pitchY ?? (customRowGap != null ? (bubble.diameter + customRowGap) : bubble.pitchY);
+  const nominalRowH = grid.pitchY ?? basePitchY;
   for (const cell of grid.cells) {
     const x0 = colStart(cell.col);
     const y0 = rowStart(cell.row);
     const cw = grid.columns[cell.col];
-    const rowH = grid.rows[cell.row] ?? bubble.pitchY;
     if (cell.kind === 'bubble') {
       const cx = x0 + cw / 2;
-      const cy = y0 + rowH / 2;
+      const cy = y0 + nominalRowH / 2;
       out.push(`<circle class="omr-bubble" cx="${f(cx)}" cy="${f(cy)}" r="${f(bubble.diameter / 2 - stroke / 2)}" fill="none" stroke="#000" stroke-width="${f(stroke)}"/>`);
       out.push(text(cx, cy + 0.05, cell.text, { size: typography.bubble, anchor: 'middle', fill: '#8a8a8a' }));
     } else if (cell.kind === 'num') {
-      out.push(text(x0 + cw - 1.2, y0 + rowH / 2, cell.text, { size: typography.number, anchor: 'end', weight: 700 }));
+      out.push(text(x0 + cw - 1.2, y0 + nominalRowH / 2, cell.text, { size: typography.number, anchor: 'end', weight: 700 }));
     } else if (cell.kind === 'box') {
       out.push(`<rect x="${f(x0 + 0.4 + 0.125)}" y="${f(y0 + 0.125)}" width="${f(cw - 0.8 - 0.25)}" height="${f(grid.rows[cell.row] - 0.25)}" fill="none" stroke="#000" stroke-width="0.25"/>`);
     }
@@ -4700,17 +4732,27 @@ function zoneSVG(zone, layout, zoneIndex) {
   }
   out.push(`<rect x="${f(b.x + 0.15)}" y="${f(b.y + 0.15)}" width="${f(b.w - 0.3)}" height="${f(b.h - 0.3)}" rx="1.2" fill="none" stroke="#000" stroke-width="0.3"/>`);
   const isTextType = zone.type === 'text' || zone.type === 'text_short' || zone.type === 'text_essay';
+  const isPointsEligible = ['mcq', 'truefalse', 'modified_tf', 'text_short', 'text_essay', 'text'].includes(zone.type);
   const rawLabel = String(zone.label ?? '').trim();
-  const hasPtsInLabel = /\(\s*\d+(\.\d+)?\s*pts?(?:\s+each)?\s*\)/i.test(rawLabel);
+  const hasPtsInLabel = /\(\s*\d+(\.\d+)?\s*(?:pts?|points?)(?:\s+each)?\s*\)/i.test(rawLabel);
   const pts = zone.pointsPerItem ?? zone.points;
   const count = zone.count ?? (zone.items ? zone.items.length : 1);
   const ptsNum = Number(pts);
-  const pointsSuffix = isTextType && !hasPtsInLabel && Number.isFinite(ptsNum) && ptsNum > 0
+
+  const shouldShowPoints = zone.showPoints !== undefined
+    ? Boolean(zone.showPoints)
+    : isTextType;
+
+  const displayLabel = !shouldShowPoints && hasPtsInLabel
+    ? rawLabel.replace(/\s*\(\s*\d+(\.\d+)?\s*(?:pts?|points?)(?:\s+each)?\s*\)/i, '').trim()
+    : rawLabel;
+
+  const pointsSuffix = isPointsEligible && shouldShowPoints && !hasPtsInLabel && Number.isFinite(ptsNum) && ptsNum > 0
     ? `(${ptsNum} pt${ptsNum === 1 ? '' : 's'}${count > 1 ? ' each' : ''})`
     : '';
-  const fullTitle = rawLabel ? `${rawLabel}${pointsSuffix ? ` ${pointsSuffix}` : ''}` : '';
+  const fullTitle = [displayLabel, pointsSuffix].filter(Boolean).join(' ');
   if (fullTitle) out.push(text(b.x + 2.5, b.y + 2.5 + 2, fullTitle, { size: typography.label, weight: 700 }));
-  for (const grid of zone.grids) out.push(gridSVG(grid, layout));
+  for (const grid of zone.grids) out.push(gridSVG(grid, layout, zone));
   if (zone.type === 'fields') {
     zone.rows.forEach((row, i) => {
       const roi = zone.rois[i];
@@ -6165,6 +6207,13 @@ function renderInspector() {
         </div>
       </div>
 
+      <div class="form-group" style="margin-top: -0.25rem; margin-bottom: 0.5rem;">
+        <label class="field-checkbox-label">
+          <input type="checkbox" id="insp-show-points" ${zone.showPoints === true ? 'checked' : ''}>
+          <span>Show points on sheet</span>
+        </label>
+      </div>
+
       <div class="form-row">
         <div class="form-group">
           <label class="form-label" for="insp-row-gap">Item / Row Spacing (mm)</label>
@@ -6258,6 +6307,13 @@ function renderInspector() {
             <button type="button" class="stepper-btn" id="insp-points-plus" aria-label="Increase points">+</button>
           </div>
         </div>
+      </div>
+
+      <div class="form-group" style="margin-top: -0.25rem; margin-bottom: 0.5rem;">
+        <label class="field-checkbox-label">
+          <input type="checkbox" id="insp-show-points" ${zone.showPoints === true ? 'checked' : ''}>
+          <span>Show points on sheet</span>
+        </label>
       </div>
 
       <div class="form-row">
@@ -6457,6 +6513,13 @@ function renderInspector() {
             <button type="button" class="stepper-btn" id="insp-points-plus" aria-label="Increase points">+</button>
           </div>
         </div>
+      </div>
+
+      <div class="form-group" style="margin-top: -0.25rem; margin-bottom: 0.5rem;">
+        <label class="field-checkbox-label">
+          <input type="checkbox" id="insp-show-points" ${zone.showPoints !== false ? 'checked' : ''}>
+          <span>Show points on sheet</span>
+        </label>
       </div>
 
       <div class="form-row">
@@ -6680,7 +6743,7 @@ function bindInspectorEvents(zone) {
         zone.pointsPerItem = pts;
         zone.points = pts;
         const count = zone.count ?? 1;
-        const ptsPattern = /\(\s*\d+(\.\d+)?\s*pts?(?:\s+each)?\s*\)/i;
+        const ptsPattern = /\(\s*\d+(\.\d+)?\s*(?:pts?|points?)(?:\s+each)?\s*\)/i;
         if (zone.label && ptsPattern.test(zone.label)) {
           const suffix = `(${pts} pt${pts === 1 ? '' : 's'}${count > 1 ? ' each' : ''})`;
           zone.label = zone.label.replace(ptsPattern, suffix);
@@ -6697,6 +6760,27 @@ function bindInspectorEvents(zone) {
       1,
       50,
     );
+
+    // Show / Hide Points per item on the paper
+    const showPtsEl = $('#insp-show-points');
+    if (showPtsEl) {
+      showPtsEl.addEventListener('change', (e) => {
+        zone.showPoints = e.target.checked;
+        if (!e.target.checked && zone.label) {
+          const ptsPattern = /\s*\(\s*\d+(\.\d+)?\s*(?:pts?|points?)(?:\s+each)?\s*\)/i;
+          if (ptsPattern.test(zone.label)) {
+            zone.label = zone.label.replace(ptsPattern, '').trim();
+            const inspLabel = $('#insp-label');
+            if (inspLabel) inspLabel.value = zone.label;
+            const inspHeaderTitle = $('.inspector-header__title');
+            if (inspHeaderTitle) inspHeaderTitle.textContent = zone.label;
+            const outlineTitle = document.querySelector(`.outline-item[data-zone-index="${idx}"] .outline-item__title`);
+            if (outlineTitle) outlineTitle.textContent = zone.label;
+          }
+        }
+        update({ skipInspector: true });
+      });
+    }
   }
 
   // Spacing between items/rows stepper

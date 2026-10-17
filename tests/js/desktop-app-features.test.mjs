@@ -15,6 +15,7 @@ test('Desktop App: Sheet Builder index.html preserves 100% of rich capabilities 
   assert.ok(html.includes('data-tauri-drag-region'), 'index.html titlebar must have data-tauri-drag-region');
   assert.ok(html.includes('id="nav-btn-builder"'), 'index.html has builder nav button');
   assert.ok(html.includes('id="nav-btn-checker"'), 'index.html has checker nav button');
+  assert.ok(html.includes('id="nav-btn-speed"'), 'index.html has speed grader nav button');
   assert.ok(html.includes('desktop.css'), 'index.html links to desktop.css');
   assert.ok(html.includes('desktop.js'), 'index.html loads desktop.js');
 
@@ -37,7 +38,12 @@ test('Desktop App: Sheet Builder index.html preserves 100% of rich capabilities 
   assert.ok(html.includes('id="btn-print"'), 'Print Sheet button present');
   assert.ok(html.includes('id="dl-package"'), 'Exam Package export present');
 
-  // 5. Script compilation check (no syntax errors)
+  // 5. Decision 35 Canvas Interactivity & Stepper Robustness Parity
+  assert.ok(html.includes('syncZoneRangeInLabel'), 'index.html has syncZoneRangeInLabel');
+  assert.ok(html.includes('selectZoneNonDestructive'), 'index.html has non-destructive title selection');
+  assert.ok(html.includes('maxBoxW'), 'index.html calculates maxBoxW');
+
+  // 6. Script compilation check (no syntax errors)
   const scriptMatch = html.match(/<script>([\s\S]*?)<\/script>/);
   assert.ok(scriptMatch, 'Inlined script must be present');
   assert.doesNotThrow(() => {
@@ -53,6 +59,7 @@ test('Desktop App: Checker Studio checker.html preserves 100% of CV and psychome
   assert.ok(html.includes('data-tauri-drag-region'), 'checker.html titlebar must have data-tauri-drag-region');
   assert.ok(html.includes('id="nav-btn-builder"'), 'checker.html has builder nav button');
   assert.ok(html.includes('id="nav-btn-checker"'), 'checker.html has checker nav button');
+  assert.ok(html.includes('id="nav-btn-speed"'), 'checker.html has speed grader nav button');
   assert.ok(html.includes('desktop.css'), 'checker.html links to desktop.css');
   assert.ok(html.includes('desktop.js'), 'checker.html loads desktop.js');
 
@@ -77,7 +84,10 @@ test('Desktop App: Checker Studio checker.html preserves 100% of CV and psychome
   assert.ok(html.includes('navigateFlashcard'), 'Flashcard navigation present');
   assert.ok(html.includes('flashcardGradeAction'), 'Flashcard grade actions present');
 
-  // 7. Script compilation check
+  // 7. Cross-tool active Sheet Builder draft detection
+  assert.ok(html.includes('active-working-build'), 'checker.html detects active Sheet Builder draft');
+
+  // 8. Script compilation check
   const scriptMatch = html.match(/<script>([\s\S]*?)<\/script>/);
   assert.ok(scriptMatch, 'Inlined script must be present');
   assert.doesNotThrow(() => {
@@ -93,6 +103,7 @@ test('Desktop App: desktop.css provides clean macOS titlebar and progressive dis
   assert.ok(css.includes('84px'), 'desktop.css must include 84px traffic light clearance');
   assert.ok(css.includes('app-region: drag') || css.includes('-webkit-app-region: drag'), 'desktop.css has drag region');
   assert.ok(css.includes('app-region: no-drag') || css.includes('-webkit-app-region: no-drag'), 'desktop.css has no-drag on interactive elements');
+  assert.ok(css.includes('.window-titlebar') || css.includes('header.app-header'), 'desktop.css titlebar rule covers window-titlebar selector');
 
   // Segmented control pill styles
   assert.ok(css.includes('.segmented-control'), 'desktop.css styles segmented control');
@@ -102,18 +113,29 @@ test('Desktop App: desktop.css provides clean macOS titlebar and progressive dis
   assert.ok(css.includes('@media (prefers-color-scheme: dark)'), 'desktop.css provides dark mode support');
 });
 
-test('Desktop App: desktop.js provides view switching and Tauri Rust bridge', async () => {
+test('Desktop App: desktop.js provides view switching, speed grader deep linking, and Tauri Rust bridge', async () => {
   const jsPath = resolve(root, 'apps/desktop/ui/desktop.js');
   const js = await readFile(jsPath, 'utf8');
 
   // View switcher function
   assert.ok(js.includes('switchView'), 'desktop.js defines switchView');
+  assert.ok(js.includes("switchTab('horizontal')"), 'desktop.js handles speed view via switchTab');
   assert.ok(js.includes('invokeRustGrader') || js.includes('grade_scans'), 'desktop.js bridges to Tauri Rust engine');
   assert.ok(js.includes('dragover') && js.includes('drop'), 'desktop.js handles drag and drop');
+  assert.ok(js.includes('template-file-input'), 'desktop.js forwards dropped json on builder page');
   assert.ok(js.includes('keydown'), 'desktop.js handles keyboard shortcuts');
 
   // Script compiles with zero syntax errors
   assert.doesNotThrow(() => {
     new vm.Script(js);
   }, 'desktop.js must compile cleanly');
+});
+
+test('Desktop App: apps/desktop/ui/js/ assets match builder/js/ modular source files', async () => {
+  const jsFiles = ['app.js', 'layout-engine.js', 'render-dom.js', 'render-svg.js', 'templates.js', 'aruco.js'];
+  for (const f of jsFiles) {
+    const src = await readFile(resolve(root, 'builder/js', f), 'utf8');
+    const dest = await readFile(resolve(root, 'apps/desktop/ui/js', f), 'utf8');
+    assert.equal(dest, src, `apps/desktop/ui/js/${f} must match builder/js/${f}`);
+  }
 });

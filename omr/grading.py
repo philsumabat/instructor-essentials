@@ -111,8 +111,123 @@ class AnswerKey:
 
     @classmethod
     def load(cls, path: str | Path) -> "AnswerKey":
-        with open(path, encoding="utf-8") as fh:
+        p = Path(path)
+        if p.is_dir():
+            for cand in ("answer_key_template.csv", "key.csv", "answer_key.csv"):
+                if (p / cand).is_file():
+                    return cls.from_csv(p / cand)
+            csvs = sorted(p.glob("*key*.csv")) or sorted(p.glob("*.csv"))
+            if csvs:
+                return cls.from_csv(csvs[0])
+            for cand in ("key.json", "answer_key.json"):
+                if (p / cand).is_file():
+                    with open(p / cand, encoding="utf-8") as fh:
+                        return cls.from_dict(json.load(fh))
+            jsons = sorted(p.glob("*key*.json"))
+            if jsons:
+                with open(jsons[0], encoding="utf-8") as fh:
+                    return cls.from_dict(json.load(fh))
+            raise FileNotFoundError(f"No answer key CSV or JSON found in directory {p}")
+
+        if p.suffix.lower() == ".zip" and p.is_file():
+            import io
+            import zipfile
+
+            with zipfile.ZipFile(p, "r") as zf:
+                names = zf.namelist()
+                for n in names:
+                    base = Path(n).name.lower()
+                    if base in ("answer_key_template.csv", "key.csv", "answer_key.csv") or ("key" in base and base.endswith(".csv")):
+                        with zf.open(n) as bfh:
+                            text = io.TextIOWrapper(bfh, encoding="utf-8", errors="replace").read()
+                            return cls.from_csv_text(text, title=Path(n).stem)
+                for n in names:
+                    base = Path(n).name.lower()
+                    if "key" in base and base.endswith(".json"):
+                        with zf.open(n) as bfh:
+                            return cls.from_dict(json.load(bfh))
+                raise FileNotFoundError(f"No answer key CSV or JSON found in zip package {p}")
+
+        if p.suffix.lower() == ".csv":
+            return cls.from_csv(p)
+        with open(p, encoding="utf-8") as fh:
             return cls.from_dict(json.load(fh))
+
+    @classmethod
+    def from_csv_text(cls, csv_text: str, title: str = "") -> "AnswerKey":
+        import csv
+        import io
+
+        items: dict[str, ItemKey] = {}
+        fh = io.StringIO(csv_text)
+        reader = csv.reader(fh)
+        header = next(reader, None)
+        if not header:
+            raise AnswerKeyError("Answer key CSV is empty")
+        h_lower = [col.strip().lower() for col in header]
+
+        item_col = -1
+        for idx, col in enumerate(h_lower):
+            if any(k in col for k in ("item", "question", "#")):
+                item_col = idx
+                break
+
+        ans_col = -1
+        for idx, col in enumerate(h_lower):
+            if any(k in col for k in ("answer", "key")):
+                ans_col = idx
+                break
+        if ans_col == -1:
+            ans_col = 1 if len(h_lower) > 1 else 0
+
+        pts_col = -1
+        for idx, col in enumerate(h_lower):
+            if any(k in col for k in ("point", "pts", "score")):
+                pts_col = idx
+                break
+
+        row_idx = 1
+        for row in reader:
+            if not row or not any(cell.strip() for cell in row):
+                continue
+            key_str = row[item_col].strip() if item_col != -1 and item_col < len(row) else str(row_idx)
+            if not key_str:
+                key_str = str(row_idx)
+            ans = row[ans_col].strip() if ans_col < len(row) else ""
+            pts = 1.0
+            if pts_col != -1 and pts_col < len(row):
+                try:
+                    pts = float(row[pts_col].strip())
+                except ValueError:
+                    pts = 1.0
+
+            norm_ans = ans.strip()
+            if norm_ans.upper() == "TRUE":
+                norm_ans = "T"
+            elif norm_ans.upper() == "FALSE":
+                norm_ans = "F"
+            elif len(norm_ans) == 1 and norm_ans.isalpha():
+                norm_ans = norm_ans.upper()
+
+            is_tf = norm_ans in {"T", "F"}
+            is_mcq = len(norm_ans) == 1 and norm_ans.upper() in "ABCDE"
+            kind = "tf" if is_tf else ("mcq" if is_mcq else "text")
+
+            items[key_str] = ItemKey(
+                key=key_str,
+                kind=kind,
+                correct_answer=norm_ans,
+                points=pts,
+                rubric="exact",
+            )
+            row_idx += 1
+        return cls(items, title=title)
+
+    @classmethod
+    def from_csv(cls, path: str | Path) -> "AnswerKey":
+        p = Path(path)
+        with open(p, encoding="utf-8", errors="replace") as fh:
+            return cls.from_csv_text(fh.read(), title=p.stem)
 
     @classmethod
     def from_dict(cls, data: dict) -> "AnswerKey":

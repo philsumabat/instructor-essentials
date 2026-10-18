@@ -64,6 +64,7 @@ Thumbs.db
 # Pipeline Deliverables (generated grading results)
 output/
 output_rust/
+test-run/
 
 # Rust build artifacts
 target/

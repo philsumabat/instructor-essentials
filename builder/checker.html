@@ -1847,7 +1847,7 @@
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin: 0 auto 0.35rem auto; color: var(--accent); display: block;"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
             <div style="font-weight: 700; font-size: 0.82rem; color: var(--text);">Drop Answer Key Scan or File</div>
             <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.15rem;">or click to upload scan, .json, or .csv</div>
-            <input type="file" id="input-key-scan" accept="image/*,.json,.csv" style="display: none;">
+            <input type="file" id="input-key-scan" accept="image/*,.pdf,application/pdf,.json,.csv" style="display: none;">
           </div>
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem;">
             <button type="button" id="btn-edit-key" class="btn btn--secondary btn--sm" style="justify-content: center; gap: 0.35rem;" title="View or edit answer key values in visual editor">
@@ -1915,8 +1915,8 @@
         <div class="dropzone" id="dropzone-scans">
           <div class="dropzone__icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m16 16-4-4-4 4"/></svg></div>
           <div class="dropzone__text">Drag &amp; drop exam scans here</div>
-          <div class="dropzone__hint">Supports JPG, PNG (Single or Bulk Batch)</div>
-          <input type="file" id="input-scans" class="input-file-hidden" multiple accept="image/jpeg,image/png">
+          <div class="dropzone__hint">Supports JPG, PNG, PDF (Single or Multi-Page Batch)</div>
+          <input type="file" id="input-scans" class="input-file-hidden" multiple accept="image/*,.pdf,application/pdf">
         </div>
         <div class="file-badge-list" id="scans-list">
           <div style="color: var(--text-muted); font-size: 0.75rem; text-align: center; padding: 0.5rem;">No scans uploaded yet.</div>
@@ -3084,6 +3084,10 @@
           handleLayoutUpload(file);
           return;
         }
+        if (fname.endsWith('.pdf') || file.type === 'application/pdf') {
+          handlePdfUpload(file);
+          return;
+        }
         if (!file.type.startsWith('image/')) return;
         const reader = new FileReader();
         reader.onload = (e) => {
@@ -3096,6 +3100,310 @@
         };
         reader.readAsDataURL(file);
       });
+    }
+
+    // PDF Scans Extractor (100% Client-Side, Zero External Dependencies)
+    function extractPdfScansFromBuffer(arrayBuffer) {
+      const bytes = new Uint8Array(arrayBuffer);
+      const latin1 = (typeof Buffer !== 'undefined') ? Buffer.from(arrayBuffer).toString('latin1') : new TextDecoder('iso-8859-1').decode(bytes);
+
+      const objIndex = new Map();
+      const objRegex = /(\d+)\s+(\d+)\s+obj/g;
+      let m;
+      while ((m = objRegex.exec(latin1)) !== null) {
+        const id = parseInt(m[1], 10);
+        const start = m.index + m[0].length;
+        objIndex.set(id, start);
+      }
+
+      function getObjectBody(id) {
+        const start = objIndex.get(id);
+        if (start === undefined) return '';
+        const end = latin1.indexOf('endobj', start);
+        return end === -1 ? latin1.slice(start) : latin1.slice(start, end);
+      }
+
+      function getObjectStream(id) {
+        const start = objIndex.get(id);
+        if (start === undefined) return null;
+        const streamTag = 'stream';
+        const streamPos = latin1.indexOf(streamTag, start);
+        if (streamPos === -1) return null;
+        let dataStart = streamPos + streamTag.length;
+        if (latin1.charCodeAt(dataStart) === 13) dataStart++;
+        if (latin1.charCodeAt(dataStart) === 10) dataStart++;
+        const endstreamPos = latin1.indexOf('endstream', dataStart);
+        if (endstreamPos === -1) return null;
+        let dataEnd = endstreamPos;
+        while (dataEnd > dataStart && (latin1.charCodeAt(dataEnd - 1) === 10 || latin1.charCodeAt(dataEnd - 1) === 13)) {
+          dataEnd--;
+        }
+        return bytes.subarray(dataStart, dataEnd);
+      }
+
+      function getRotationFromCm(contentStr) {
+        if (!contentStr) return 0;
+        const m = contentStr.match(/([-\d.]+)\s+([-\d.]+)\s+([-\d.]+)\s+([-\d.]+)\s+([-\d.]+)\s+([-\d.]+)\s+cm/);
+        if (!m) return 0;
+        const a = parseFloat(m[1]), b = parseFloat(m[2]), c = parseFloat(m[3]), d = parseFloat(m[4]);
+        if (Math.abs(b) > Math.abs(a)) {
+          if (b < 0 && c > 0) return 90;
+          if (b > 0 && c < 0) return 270;
+        } else {
+          if (a < 0 && d < 0) return 180;
+        }
+        return 0;
+      }
+
+      const pageObjs = [];
+      const pageObjsMap = new Map();
+      for (const [id, start] of objIndex.entries()) {
+        const body = getObjectBody(id);
+        if ((body.includes('/Type/Page') || body.includes('/Type /Page')) && (!body.includes('/Type/Pages') && !body.includes('/Type /Pages'))) {
+          let rotate = 0;
+          const rotM = body.match(/\/Rotate\s+(\d+)/);
+          if (rotM) rotate = parseInt(rotM[1], 10);
+
+          let contentsId = null;
+          const contM = body.match(/\/Contents\s+(?:\[\s*)?(\d+)\s+\d+\s+R/);
+          if (contM) contentsId = parseInt(contM[1], 10);
+
+          let imageId = null;
+          const xobjM = body.match(/\/XObject\s*<<[^\/]*\/[A-Za-z0-9_]+\s+(\d+)\s+\d+\s+R/);
+          if (xobjM) {
+            imageId = parseInt(xobjM[1], 10);
+          } else {
+            const anyImg = body.match(/\/Im\w*\s+(\d+)\s+\d+\s+R/);
+            if (anyImg) {
+              imageId = parseInt(anyImg[1], 10);
+            } else {
+              const resM = body.match(/\/Resources\s+(\d+)\s+\d+\s+R/);
+              if (resM) {
+                const resBody = getObjectBody(parseInt(resM[1], 10));
+                const subImg = resBody.match(/\/XObject\s*<<[^\/]*\/[A-Za-z0-9_]+\s+(\d+)\s+\d+\s+R/) || resBody.match(/\/Im\w*\s+(\d+)\s+\d+\s+R/);
+                if (subImg) imageId = parseInt(subImg[1], 10);
+              }
+            }
+          }
+
+          const entry = { id, rotate, contentsId, imageId };
+          pageObjs.push(entry);
+          pageObjsMap.set(id, entry);
+        }
+      }
+
+      // Recursive tree traversal for /Kids
+      function collectPageIds(nodeId, visited = new Set()) {
+        if (visited.has(nodeId)) return [];
+        visited.add(nodeId);
+        const b = getObjectBody(nodeId);
+        if (!b) return [];
+        if ((b.includes('/Type/Page') || b.includes('/Type /Page')) && (!b.includes('/Type/Pages') && !b.includes('/Type /Pages'))) {
+          return [nodeId];
+        }
+        if (b.includes('/Type/Pages') || b.includes('/Type /Pages')) {
+          const km = b.match(/\/Kids\s*\[([^\]]+)\]/);
+          if (!km) return [];
+          const kIds = [...km[1].matchAll(/(\d+)\s+\d+\s+R/g)].map(k => parseInt(k[1], 10));
+          const result = [];
+          for (const kid of kIds) {
+            result.push(...collectPageIds(kid, visited));
+          }
+          return result;
+        }
+        return [];
+      }
+
+      // Find root /Pages object
+      let ordered = pageObjs;
+      let rootPagesId = null;
+      for (const [id] of objIndex.entries()) {
+        const body = getObjectBody(id);
+        if (body.includes('/Type/Catalog') || body.includes('/Type /Catalog')) {
+          const pm = body.match(/\/Pages\s+(\d+)\s+\d+\s+R/);
+          if (pm) {
+            rootPagesId = parseInt(pm[1], 10);
+            break;
+          }
+        }
+      }
+      if (!rootPagesId) {
+        for (const [id] of objIndex.entries()) {
+          const body = getObjectBody(id);
+          if ((body.includes('/Type/Pages') || body.includes('/Type /Pages')) && !body.includes('/Parent')) {
+            rootPagesId = id;
+            break;
+          }
+        }
+      }
+
+      if (rootPagesId) {
+        const leafIds = collectPageIds(rootPagesId);
+        const resolved = [];
+        for (const leafId of leafIds) {
+          if (pageObjsMap.has(leafId)) {
+            resolved.push(pageObjsMap.get(leafId));
+          }
+        }
+        if (resolved.length === pageObjs.length) {
+          ordered = resolved;
+        }
+      }
+
+      const results = [];
+      const pad = Math.max(3, String(ordered.length).length);
+
+      for (let i = 0; i < ordered.length; i++) {
+        const p = ordered[i];
+        let rot = p.rotate || 0;
+        if (p.contentsId) {
+          const cBody = getObjectBody(p.contentsId);
+          rot = (rot + getRotationFromCm(cBody)) % 360;
+        }
+        if (p.imageId) {
+          const stream = getObjectStream(p.imageId);
+          if (stream && stream[0] === 0xFF && stream[1] === 0xD8) {
+            results.push({ pageNum: i + 1, pad, rotation: rot, bytes: stream, format: 'image/jpeg' });
+          } else if (stream && stream[0] === 0x89 && stream[1] === 0x50) {
+            results.push({ pageNum: i + 1, pad, rotation: rot, bytes: stream, format: 'image/png' });
+          }
+        }
+      }
+
+      // Fallback: If no pages resolved via page objects, scan for direct image streams
+      if (results.length === 0) {
+        let imgIdx = 0;
+        for (const [id, start] of objIndex.entries()) {
+          const body = getObjectBody(id);
+          if (body.includes('/Subtype/Image') || body.includes('/Subtype /Image')) {
+            const stream = getObjectStream(id);
+            if (stream && stream[0] === 0xFF && stream[1] === 0xD8) {
+              imgIdx++;
+              results.push({ pageNum: imgIdx, pad: 3, rotation: 0, bytes: stream, format: 'image/jpeg' });
+            } else if (stream && stream[0] === 0x89 && stream[1] === 0x50) {
+              imgIdx++;
+              results.push({ pageNum: imgIdx, pad: 3, rotation: 0, bytes: stream, format: 'image/png' });
+            }
+          }
+        }
+      }
+
+      return results;
+    }
+
+    function handlePdfUpload(file) {
+      const baseName = file.name.replace(/\.[^/.]+$/, "");
+      const reader = new FileReader();
+      const container = $('scans-list');
+      if (container) {
+        container.innerHTML = `<div style="color: var(--accent); font-size: 0.75rem; text-align: center; padding: 0.5rem;">Extracting scan pages from ${escapeHtml(file.name)}...</div>`;
+      }
+      reader.onload = (e) => {
+        try {
+          const pages = extractPdfScansFromBuffer(e.target.result);
+          if (pages.length === 0) {
+            alert(`No scan pages could be extracted from "${file.name}". Please ensure this is a scanned exam PDF (e.g., from Adobe Scan, phone scanner, or scanner app).`);
+            renderScansList();
+            return;
+          }
+
+          const orderedScans = new Array(pages.length);
+          let loadedCount = 0;
+
+          function checkAllDone() {
+            if (loadedCount === pages.length) {
+              state.scans.push(...orderedScans.filter(Boolean));
+              renderScansList();
+            } else if (container) {
+              container.innerHTML = `<div style="color: var(--accent); font-size: 0.75rem; text-align: center; padding: 0.5rem;">Extracting scan pages from ${escapeHtml(file.name)} (${loadedCount}/${pages.length})...</div>`;
+            }
+          }
+
+          pages.forEach((p, idx) => {
+            const blob = new Blob([p.bytes], { type: p.format || 'image/jpeg' });
+            const url = URL.createObjectURL(blob);
+            const rawImg = new Image();
+            rawImg.onload = () => {
+              URL.revokeObjectURL(url);
+              if (p.rotation !== 0) {
+                const rotCanvas = document.createElement('canvas');
+                if (p.rotation === 90 || p.rotation === 270) {
+                  rotCanvas.width = rawImg.height;
+                  rotCanvas.height = rawImg.width;
+                } else {
+                  rotCanvas.width = rawImg.width;
+                  rotCanvas.height = rawImg.height;
+                }
+                const rotCtx = rotCanvas.getContext('2d');
+                if (p.rotation === 90) {
+                  rotCtx.translate(rotCanvas.width, 0);
+                  rotCtx.rotate(Math.PI / 2);
+                } else if (p.rotation === 180) {
+                  rotCtx.translate(rotCanvas.width, rotCanvas.height);
+                  rotCtx.rotate(Math.PI);
+                } else if (p.rotation === 270) {
+                  rotCtx.translate(0, rotCanvas.height);
+                  rotCtx.rotate(3 * Math.PI / 2);
+                }
+                rotCtx.drawImage(rawImg, 0, 0);
+                rotCanvas.toBlob((rotBlob) => {
+                  if (!rotBlob) {
+                    orderedScans[idx] = {
+                      file,
+                      img: rotCanvas,
+                      name: `${baseName}_p${String(p.pageNum).padStart(p.pad, '0')}.jpg`
+                    };
+                    loadedCount++;
+                    checkAllDone();
+                    return;
+                  }
+                  const finalImg = new Image();
+                  const rotUrl = URL.createObjectURL(rotBlob);
+                  finalImg.onload = () => {
+                    URL.revokeObjectURL(rotUrl);
+                    orderedScans[idx] = {
+                      file,
+                      img: finalImg,
+                      name: `${baseName}_p${String(p.pageNum).padStart(p.pad, '0')}.jpg`
+                    };
+                    loadedCount++;
+                    checkAllDone();
+                  };
+                  finalImg.onerror = () => {
+                    URL.revokeObjectURL(rotUrl);
+                    orderedScans[idx] = {
+                      file,
+                      img: rotCanvas,
+                      name: `${baseName}_p${String(p.pageNum).padStart(p.pad, '0')}.jpg`
+                    };
+                    loadedCount++;
+                    checkAllDone();
+                  };
+                  finalImg.src = rotUrl;
+                }, 'image/jpeg', 0.95);
+              } else {
+                orderedScans[idx] = {
+                  file,
+                  img: rawImg,
+                  name: `${baseName}_p${String(p.pageNum).padStart(p.pad, '0')}.jpg`
+                };
+                loadedCount++;
+                checkAllDone();
+              }
+            };
+            rawImg.onerror = () => {
+              URL.revokeObjectURL(url);
+              loadedCount++;
+              checkAllDone();
+            };
+            rawImg.src = url;
+          });
+        } catch (err) {
+          alert(`Error reading PDF scans from "${file.name}": ` + err.message);
+          renderScansList();
+        }
+      };
+      reader.readAsArrayBuffer(file);
     }
 
     function renderScansList() {
@@ -5124,6 +5432,80 @@
     function handleAnswerKeyUpload(file) {
       if (!file) return;
       const fname = file.name.toLowerCase();
+
+      // Case 0: Master Answer Key in PDF format
+      if (fname.endsWith('.pdf') || file.type === 'application/pdf') {
+        ensureActiveLayout();
+        if (!state.layout) {
+          alert("Please upload or choose an exam layout first so question bubbles can be located on the scanned answer sheet.");
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          try {
+            const pages = extractPdfScansFromBuffer(evt.target.result);
+            if (pages.length === 0) {
+              alert(`Could not extract image from answer key PDF "${file.name}".`);
+              return;
+            }
+            const p = pages[0];
+            const blob = new Blob([p.bytes], { type: p.format || 'image/jpeg' });
+            const url = URL.createObjectURL(blob);
+            const img = new Image();
+            img.onload = () => {
+              URL.revokeObjectURL(url);
+              if (p.rotation !== 0) {
+                const rotCanvas = document.createElement('canvas');
+                if (p.rotation === 90 || p.rotation === 270) {
+                  rotCanvas.width = img.height;
+                  rotCanvas.height = img.width;
+                } else {
+                  rotCanvas.width = img.width;
+                  rotCanvas.height = img.height;
+                }
+                const rotCtx = rotCanvas.getContext('2d');
+                if (p.rotation === 90) rotCtx.translate(rotCanvas.width, 0), rotCtx.rotate(Math.PI / 2);
+                else if (p.rotation === 180) rotCtx.translate(rotCanvas.width, rotCanvas.height), rotCtx.rotate(Math.PI);
+                else if (p.rotation === 270) rotCtx.translate(0, rotCanvas.height), rotCtx.rotate(3 * Math.PI / 2);
+                rotCtx.drawImage(img, 0, 0);
+                const finalImg = new Image();
+                finalImg.onload = () => {
+                  try {
+                    const decodedKey = decodeMasterKeyFromScan(finalImg, state.layout);
+                    state.key = decodedKey;
+                    updateKeyDisplay();
+                    validatePreflightKeyLayout();
+                    const count = Object.keys(decodedKey.items).length;
+                    alert(`✔ Master Answer Key Decoded!\n\nRecognized ${count} question answers from "${file.name}".\n\nYou can click 'Edit Key' to verify or adjust point values.`);
+                    if (state.scans.length > 0) $('btn-grade-now').click();
+                  } catch (err) {
+                    alert("Error decoding answer key from PDF: " + err.message);
+                  }
+                };
+                finalImg.src = rotCanvas.toDataURL('image/jpeg', 0.95);
+              } else {
+                try {
+                  const decodedKey = decodeMasterKeyFromScan(img, state.layout);
+                  state.key = decodedKey;
+                  updateKeyDisplay();
+                  validatePreflightKeyLayout();
+                  const count = Object.keys(decodedKey.items).length;
+                  alert(`✔ Master Answer Key Decoded!\n\nRecognized ${count} question answers from "${file.name}".\n\nYou can click 'Edit Key' to verify or adjust point values.`);
+                  if (state.scans.length > 0) $('btn-grade-now').click();
+                } catch (err) {
+                  alert("Error decoding answer key from PDF: " + err.message);
+                }
+              }
+            };
+            img.onerror = () => alert("Could not load image from answer key PDF.");
+            img.src = url;
+          } catch (err) {
+            alert("Error processing answer key PDF: " + err.message);
+          }
+        };
+        reader.readAsArrayBuffer(file);
+        return;
+      }
 
       // Case 1: Master Answer Key Scan Image
       if (file.type.startsWith('image/') || fname.endsWith('.jpg') || fname.endsWith('.jpeg') || fname.endsWith('.png') || fname.endsWith('.webp')) {

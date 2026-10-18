@@ -27,7 +27,7 @@ def main(argv: list[str] | None = None) -> int:
         "--key",
         "-k",
         required=True,
-        help="Path to answer key JSON file",
+        help="Path to answer key JSON or CSV file",
     )
     parser.add_argument(
         "--roster",
@@ -39,7 +39,7 @@ def main(argv: list[str] | None = None) -> int:
         "-s",
         nargs="+",
         required=True,
-        help="Paths or glob patterns to scanned exam images (JPEG, PNG)",
+        help="Paths or glob patterns to scanned exam images or PDFs (JPEG, PNG, PDF)",
     )
     parser.add_argument(
         "--out",
@@ -57,15 +57,25 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     # 1. Expand input scan file paths
-    scan_files: list[Path] = []
+    raw_paths: list[Path] = []
     for pattern in args.scans:
         matches = glob.glob(pattern)
         if matches:
-            scan_files.extend(Path(m) for m in matches)
+            raw_paths.extend(Path(m) for m in matches)
         else:
             p = Path(pattern)
             if p.exists():
-                scan_files.append(p)
+                raw_paths.append(p)
+
+    scan_files: list[Path] = []
+    valid_extensions = {".jpg", ".jpeg", ".png", ".pdf"}
+    for p in raw_paths:
+        if p.is_dir():
+            for child in sorted(p.iterdir()):
+                if child.is_file() and child.suffix.lower() in valid_extensions:
+                    scan_files.append(child)
+        elif p.is_file():
+            scan_files.append(p)
 
     # Deduplicate and sort for deterministic processing order
     scan_files = sorted(set(scan_files))

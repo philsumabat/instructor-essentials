@@ -23,6 +23,7 @@ from omr.annotator import ExamAnnotator
 from omr.grading import AnswerKey, ExamGrade, GradingEngine
 from omr.layout import Layout
 from omr.ocr import OCREngine, ROIExtractor
+from omr.pdf import extract_pdf_pages, is_pdf
 from omr.report import BatchPsychometrics, PsychometricAnalyzer, ReportGenerator
 from omr.roster import Roster
 from omr.vision import BubbleScanner, SheetWarper, VisionError
@@ -106,19 +107,42 @@ class OMRPipeline:
         return grade, annotated_bgr
 
     def process_file(self, file_path: str | Path) -> tuple[ExamGrade, np.ndarray]:
-        """Loads and processes a single image file."""
+        """Loads and processes a single image or single-page PDF file."""
         path = Path(file_path)
+        if is_pdf(path):
+            dpi = max(150.0, self.px_per_mm * 25.4)
+            pages = extract_pdf_pages(path, dpi=dpi)
+            if not pages:
+                raise VisionError(f"No pages extracted from PDF {path}")
+            exam_id = path.stem if len(pages) == 1 else pages[0][0]
+            return self.process_image(pages[0][1], exam_id=exam_id)
+
         img = cv2.imread(str(path))
         if img is None:
             raise VisionError(f"Failed to decode image file {path}")
         return self.process_image(img, exam_id=path.stem)
+
+    def process_pdf(
+        self,
+        pdf_path: str | Path,
+        dpi: float | None = None,
+    ) -> list[tuple[str, ExamGrade, np.ndarray]]:
+        """Processes all pages of a scanned PDF document."""
+        path = Path(pdf_path)
+        actual_dpi = dpi if dpi is not None else max(150.0, self.px_per_mm * 25.4)
+        pages = extract_pdf_pages(path, dpi=actual_dpi)
+        results = []
+        for page_name, page_img in pages:
+            grade, annotated = self.process_image(page_img, exam_id=page_name)
+            results.append((page_name, grade, annotated))
+        return results
 
     def process_batch(
         self,
         image_paths: Sequence[str | Path],
         output_dir: str | Path,
     ) -> PipelineResult:
-        """Processes an entire batch of exams and outputs all derivatives."""
+        """Processes an entire batch of exams (images and/or PDFs) and outputs all derivatives."""
         out = Path(output_dir)
         annotated_dir = out / "annotated"
         annotated_dir.mkdir(parents=True, exist_ok=True)
@@ -126,19 +150,40 @@ class OMRPipeline:
         grades: list[ExamGrade] = []
         annotated_paths: list[Path] = []
         failed: list[tuple[str, str]] = []
+        total_scans_attempted = 0
 
         for p in image_paths:
             path = Path(p)
-            try:
-                grade, annotated = self.process_file(path)
-                save_p = self.annotator.save(annotated, annotated_dir / f"{path.stem}_graded.jpg")
-                grades.append(grade)
-                annotated_paths.append(save_p)
-            except Exception as exc:
-                failed.append((path.name, str(exc)))
+            if is_pdf(path):
+                try:
+                    dpi = max(150.0, self.px_per_mm * 25.4)
+                    pages = extract_pdf_pages(path, dpi=dpi)
+                except Exception as exc:
+                    failed.append((path.name, f"Failed to extract PDF: {exc}"))
+                    total_scans_attempted += 1
+                    continue
+
+                total_scans_attempted += len(pages)
+                for page_name, page_img in pages:
+                    try:
+                        grade, annotated = self.process_image(page_img, exam_id=page_name)
+                        save_p = self.annotator.save(annotated, annotated_dir / f"{page_name}_graded.jpg")
+                        grades.append(grade)
+                        annotated_paths.append(save_p)
+                    except Exception as exc:
+                        failed.append((page_name, str(exc)))
+            else:
+                total_scans_attempted += 1
+                try:
+                    grade, annotated = self.process_file(path)
+                    save_p = self.annotator.save(annotated, annotated_dir / f"{path.stem}_graded.jpg")
+                    grades.append(grade)
+                    annotated_paths.append(save_p)
+                except Exception as exc:
+                    failed.append((path.name, str(exc)))
 
         if not grades:
-            raise RuntimeError(f"All {len(image_paths)} scans failed to process. Errors: {failed}")
+            raise RuntimeError(f"All {total_scans_attempted} scans failed to process. Errors: {failed}")
 
         # Compute psychometrics
         psychometrics = self.analyzer.analyze(grades)

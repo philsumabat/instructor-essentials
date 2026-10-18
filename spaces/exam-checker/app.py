@@ -98,7 +98,7 @@ def run_grading_pipeline(
         if use_sample_fallback and SAMPLE_SCANS:
             scan_paths = list(SAMPLE_SCANS)
         else:
-            empty_err = "<div style='color: #dc2626; padding: 16px; border: 1px solid #f87171; border-radius: 8px; background: #fef2f2;'><strong>Error:</strong> No scan images uploaded. Please upload exam scan images or enable the sample fallback option.</div>"
+            empty_err = "<div style='color: #dc2626; padding: 16px; border: 1px solid #f87171; border-radius: 8px; background: #fef2f2;'><strong>Error:</strong> No scan images or PDFs uploaded. Please upload exam scan files (JPEG, PNG, PDF) or enable the sample fallback option.</div>"
             return (
                 empty_err,
                 [],
@@ -124,7 +124,7 @@ def run_grading_pipeline(
         if use_sample_fallback and SAMPLE_KEY.exists():
             key_path = SAMPLE_KEY
         else:
-            err_html = "<div style='color: #dc2626; padding: 16px; border: 1px solid #f87171; border-radius: 8px; background: #fef2f2;'><strong>Error:</strong> Missing Answer Key JSON file. Please upload an answer key or enable sample fallback.</div>"
+            err_html = "<div style='color: #dc2626; padding: 16px; border: 1px solid #f87171; border-radius: 8px; background: #fef2f2;'><strong>Error:</strong> Missing Answer Key file (JSON or CSV). Please upload an answer key or enable sample fallback.</div>"
             return err_html, [], [], None, "", None, None
 
     # 4. Resolve Roster (Optional)
@@ -150,7 +150,7 @@ def run_grading_pipeline(
         key = AnswerKey.load(str(key_path))
     except Exception as exc:
         return (
-            f"<div style='color:#dc2626; padding:12px; background:#fef2f2; border-radius:8px;'>Failed to parse Answer Key JSON: {html.escape(str(exc))}</div>",
+            f"<div style='color:#dc2626; padding:12px; background:#fef2f2; border-radius:8px;'>Failed to parse Answer Key file: {html.escape(str(exc))}</div>",
             [],
             [],
             None,
@@ -374,9 +374,9 @@ def create_demo():
                         )
 
                         scans_file_input = gr.File(
-                            label="Upload Scanned Exam Images (JPEG / PNG)",
+                            label="Upload Scanned Exam Images / PDFs (JPEG, PNG, PDF)",
                             file_count="multiple",
-                            file_types=["image"],
+                            file_types=["image", ".pdf"],
                         )
 
                         with gr.Accordion("📋 Custom Layout, Answer Key & Roster", open=False):
@@ -385,8 +385,8 @@ def create_demo():
                                 file_types=[".json"],
                             )
                             key_file_input = gr.File(
-                                label="Answer Key JSON",
-                                file_types=[".json"],
+                                label="Answer Key JSON or CSV",
+                                file_types=[".json", ".csv"],
                             )
                             roster_file_input = gr.File(
                                 label="Student Roster CSV (Optional)",

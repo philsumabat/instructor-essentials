@@ -154,7 +154,39 @@ class Layout:
     # ---- loading -----------------------------------------------------------
     @classmethod
     def load(cls, path: str | Path) -> "Layout":
-        with open(path, encoding="utf-8") as fh:
+        p = Path(path)
+        if p.is_dir():
+            direct = p / "layout.json"
+            if direct.is_file():
+                with open(direct, encoding="utf-8") as fh:
+                    return cls.from_dict(json.load(fh))
+            layouts = sorted(p.glob("*.layout.json")) or sorted(p.glob("*layout*.json"))
+            if layouts:
+                with open(layouts[0], encoding="utf-8") as fh:
+                    return cls.from_dict(json.load(fh))
+            raise FileNotFoundError(f"No layout.json found in exam package directory {p}")
+
+        if p.suffix.lower() == ".zip" and p.is_file():
+            import zipfile
+
+            with zipfile.ZipFile(p, "r") as zf:
+                names = zf.namelist()
+                target = None
+                for n in names:
+                    if Path(n).name.lower() == "layout.json":
+                        target = n
+                        break
+                if not target:
+                    for n in names:
+                        if "layout" in Path(n).name.lower() and n.endswith(".json"):
+                            target = n
+                            break
+                if not target:
+                    raise FileNotFoundError(f"No layout.json found in zip package {p}")
+                with zf.open(target) as fh:
+                    return cls.from_dict(json.load(fh))
+
+        with open(p, encoding="utf-8") as fh:
             return cls.from_dict(json.load(fh))
 
     @classmethod

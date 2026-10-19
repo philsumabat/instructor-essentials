@@ -49,10 +49,16 @@ function extractCheckerFunctions(htmlContent) {
     clear: () => { Object.keys(fakeStorage).forEach(k => delete fakeStorage[k]); }
   };
 
+  const elementMap = new Map();
+  const getOrCreateEl = (id) => {
+    if (!elementMap.has(id)) elementMap.set(id, createMockEl());
+    return elementMap.get(id);
+  };
+
   const context = {
     window: {},
     document: {
-      getElementById: (id) => createMockEl(),
+      getElementById: (id) => getOrCreateEl(id),
       querySelector: () => createMockEl(),
       querySelectorAll: () => [createMockEl()],
       createElement: () => createMockEl(),
@@ -357,3 +363,98 @@ test('Feature 5: Anti-Slop & UI Quality Standards', () => {
   // 4. Low OCR Conf badge uses inline SVG icon
   assert.match(checkerHtml, /Low OCR Conf[\s\S]*?<svg/, 'Low OCR confidence badge contains SVG icon');
 });
+
+test('Feature 6: Asynchronous batch grading execution, UI progress updating, and main-thread non-blocking guarantee', async () => {
+  const checkerHtml = fs.readFileSync(path.join(rootDir, 'builder/checker.html'), 'utf8');
+
+  // 1. Progress DOM element structure present
+  assert.ok(checkerHtml.includes('id="grading-progress"'), 'grading-progress bar container present');
+  assert.ok(checkerHtml.includes('id="grading-progress-inner"'), 'grading-progress-inner fill element present');
+  assert.ok(checkerHtml.includes('id="grading-progress-text"'), 'grading-progress-text status label present');
+
+  // 2. Verified across standalone files
+  const docsCheckerHtml = fs.readFileSync(path.join(rootDir, 'docs/checker.html'), 'utf8');
+  assert.ok(docsCheckerHtml.includes('id="grading-progress-text"'), 'docs/checker.html contains grading-progress-text');
+  const desktopCheckerHtml = fs.readFileSync(path.join(rootDir, 'apps/desktop/ui/checker.html'), 'utf8');
+  assert.ok(desktopCheckerHtml.includes('id="grading-progress-text"'), 'apps/desktop/ui/checker.html contains grading-progress-text');
+
+  // 3. Execution of async grading in VM sandbox
+  const ctx = extractCheckerFunctions(checkerHtml);
+  assert.equal(typeof ctx.window.yieldToMain, 'function', 'yieldToMain function must be exported and callable');
+
+  let yieldCount = 0;
+  const origYield = ctx.window.yieldToMain;
+  ctx.window.yieldToMain = async () => {
+    yieldCount++;
+    return origYield();
+  };
+
+  // Mock layout, key, and scans
+  ctx.state.layout = {
+    page: { width: 210, height: 297 },
+    markers: {
+      "0": { center: [10, 10] },
+      "1": { center: [200, 10] },
+      "2": { center: [200, 280] },
+      "3": { center: [10, 280] }
+    },
+    bubbles: [
+      { item: "1", choice: "A", center: [30, 40], radius: 2 },
+      { item: "1", choice: "B", center: [35, 40], radius: 2 }
+    ]
+  };
+  ctx.state.key = {
+    items: {
+      "1": { answer: "A", points: 1, kind: "mcq" }
+    }
+  };
+  ctx.state.scans = [
+    { name: "scan_01.jpg", img: { width: 400, height: 600 } },
+    { name: "scan_02.jpg", img: { width: 400, height: 600 } }
+  ];
+
+  const btnGrade = ctx.document.getElementById('btn-grade-now');
+  assert.equal(typeof btnGrade.onclick, 'function', 'btn-grade-now onclick handler must be attached');
+
+  // Trigger grading
+  const promise = btnGrade.onclick();
+  assert.ok(promise && typeof promise.then === 'function', 'btn-grade-now.onclick must return a Promise (async function)');
+
+  // Verify concurrency locks while grading is active
+  assert.equal(ctx.state.isGrading, true, 'isGrading flag must be true during active grading');
+  const initialScanCount = ctx.state.scans.length;
+  if (typeof ctx.window.removeScan === 'function') {
+    ctx.window.removeScan(0);
+    assert.equal(ctx.state.scans.length, initialScanCount, 'removeScan must be ignored while grading is active');
+  }
+
+  await promise;
+
+  // Verify non-blocking yields happened (initial yield + 2 per scan + finalization yield)
+  assert.ok(yieldCount >= 5, `Expected at least 5 cooperative yields to main thread, got ${yieldCount}`);
+  assert.equal(ctx.state.isGrading, false, 'isGrading flag must be reset to false after completion');
+  assert.ok(ctx.state.results, 'Grading results must be populated');
+  assert.equal(ctx.state.results.grades.length, 2, 'Two scans must be graded');
+
+  // 4. Test error resilience: a scan failure does not crash the entire batch
+  const badCtx = extractCheckerFunctions(checkerHtml);
+  badCtx.state.layout = ctx.state.layout;
+  badCtx.state.key = ctx.state.key;
+  badCtx.state.scans = [
+    { name: "corrupt_scan.jpg", img: null }, // Corrupt scan: null img
+    { name: "valid_scan.jpg", img: { width: 400, height: 600 } }
+  ];
+  const badBtnGrade = badCtx.document.getElementById('btn-grade-now');
+  await badBtnGrade.onclick();
+  assert.equal(badCtx.state.isGrading, false, 'isGrading reset even when a scan fails');
+  assert.equal(badCtx.state.results.grades.length, 2, 'Both scans processed without throwing exception');
+  assert.equal(badCtx.state.results.grades[0].reviewFlags.needsReview, true, 'Corrupt scan marked for review');
+  assert.ok(badCtx.state.results.grades[0].reviewFlags.reasons.some(r => r.includes('Scan processing error')), 'Review reasons include error description');
+
+  // 5. Test fast auto-save in serializeProgressSession
+  const autoSaved = badCtx.serializeProgressSession();
+  assert.equal(autoSaved.results.grades[0].scanData, null, 'Auto-save avoids expensive base64 encoding by default');
+  const exportSaved = badCtx.serializeProgressSession({ includeImages: true });
+  assert.ok(exportSaved, 'Explicit image export option supported');
+});
+

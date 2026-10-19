@@ -1929,6 +1929,7 @@
         <div class="progress-bar" id="grading-progress">
           <div class="progress-bar-inner" id="grading-progress-inner"></div>
         </div>
+        <div id="grading-progress-text" style="display: none; font-size: 0.72rem; color: var(--accent); margin-top: 0.35rem; text-align: center; font-weight: 600;"></div>
         <div class="sidebar-actions-wrap" style="margin-top: 0.75rem; display: flex; flex-direction: column; gap: 0.5rem;">
           <button type="button" id="btn-sidebar-grade" class="btn btn--primary" style="width: 100%; font-weight: 700; padding: 0.55rem 1rem;" title="Execute computer-vision OMR grading on loaded scans">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
@@ -3436,6 +3437,7 @@
     }
 
     window.removeScan = (idx) => {
+      if (state.isGrading) return;
       state.scans.splice(idx, 1);
       renderScansList();
     };
@@ -5903,9 +5905,14 @@
     }
 
     // Stage 1: True ArUco Square & 4x4 Bit-Grid Decoder + Auto-Rotation + 3-Marker Parallelogram Recovery
-    function detectCornerMarkers(ctx, w, h) {
-      const imgData = ctx.getImageData(0, 0, w, h);
-      const data = imgData ? imgData.data : null;
+    function detectCornerMarkers(ctx, w, h, scanData) {
+      let data = (scanData && scanData.length >= w * h * 4) ? scanData : null;
+      if (!data && ctx && typeof ctx.getImageData === 'function') {
+        try {
+          const imgData = ctx.getImageData(0, 0, w, h);
+          data = imgData ? imgData.data : null;
+        } catch (e) {}
+      }
 
       // Define 4 quadrant search windows (aspect-aware for 90/270 deg landscape scans while isolated from student ID bubbles)
       const xFrac = 0.16;
@@ -6196,8 +6203,14 @@
       const offCtx = offscreen.getContext('2d', { willReadFrequently: true });
       offCtx.drawImage(img, 0, 0);
 
+      let scanData = null;
+      try {
+        const fullImg = offCtx.getImageData(0, 0, img.width, img.height);
+        if (fullImg && fullImg.data) scanData = fullImg.data;
+      } catch (e) {}
+
       // Detect 4 corner markers in source image
-      const srcCorners = detectCornerMarkers(offCtx, img.width, img.height);
+      const srcCorners = detectCornerMarkers(offCtx, img.width, img.height, scanData);
       const dstCorners = [
         { x: layout.markers["0"].center[0] * pxPerMm, y: layout.markers["0"].center[1] * pxPerMm },
         { x: layout.markers["1"].center[0] * pxPerMm, y: layout.markers["1"].center[1] * pxPerMm },
@@ -6643,9 +6656,18 @@
     window.cropROIFromScan = cropROIFromScan;
 
     // Stage 2: Local Section Box & Student ID Grid Snapping via Horizontal/Vertical Projection Profiles
-    function snapZoneOffsets(offCtx, imgW, imgH, layout, H_canToSrc, pxPerMm) {
+    function snapZoneOffsets(offCtx, imgW, imgH, layout, H_canToSrc, pxPerMm, scanData) {
       const offsets = {};
       if (!layout || !Array.isArray(layout.zones) || layout.zones.length === 0) return offsets;
+
+      if (!scanData && offCtx && typeof offCtx.getImageData === 'function') {
+        try {
+          const full = offCtx.getImageData(0, 0, imgW, imgH);
+          if (full && full.data && full.data.length >= imgW * imgH * 4) {
+            scanData = full.data;
+          }
+        } catch (e) {}
+      }
 
       const searchMm = 3.0;
       const maxClampMm = 2.5;
@@ -6663,11 +6685,18 @@
             const srcPt = applyHomography(H_canToSrc, canPt);
             const sx = Math.round(srcPt.x), sy = Math.round(srcPt.y);
             if (sx >= 0 && sx < imgW && sy >= 0 && sy < imgH) {
-              const p = offCtx.getImageData(sx, sy, 1, 1).data;
-              if (p && p.length >= 3) {
-                const lum = 0.299 * p[0] + 0.587 * p[1] + 0.114 * p[2];
+              if (scanData && scanData.length >= (sy * imgW + sx + 1) * 4) {
+                const idx = (sy * imgW + sx) * 4;
+                const lum = 0.299 * scanData[idx] + 0.587 * scanData[idx + 1] + 0.114 * scanData[idx + 2];
                 if (lum < 155) dark++;
                 tot++;
+              } else if (offCtx && offCtx.getImageData) {
+                const p = offCtx.getImageData(sx, sy, 1, 1).data;
+                if (p && p.length >= 3) {
+                  const lum = 0.299 * p[0] + 0.587 * p[1] + 0.114 * p[2];
+                  if (lum < 155) dark++;
+                  tot++;
+                }
               }
             }
           }
@@ -6772,6 +6801,12 @@
     }
     window.classifyBubbleMorphology = classifyBubbleMorphology;
 
+    // Precomputed 16-ray outward radial unit vectors for ring gradient alignment
+    const RAY_COS_SIN_16 = Array.from({ length: 16 }, (_, k) => {
+      const ang = (k * Math.PI) / 8;
+      return [Math.cos(ang), Math.sin(ang)];
+    });
+
     // Process a single scanned exam image using the 4-Stage Coarse-to-Fine Pipeline
     function processExamScan(scan, layout, key, bubbleThreshold) {
       // Target canonical canvas resolution: 4.0 px/mm (A4 = 840 x 1188 px)
@@ -6785,8 +6820,14 @@
       const offCtx = offscreen.getContext('2d', { willReadFrequently: true });
       offCtx.drawImage(scan.img, 0, 0);
 
+      let scanData = null;
+      try {
+        const fullImg = offCtx.getImageData(0, 0, scan.img.width, scan.img.height);
+        if (fullImg && fullImg.data) scanData = fullImg.data;
+      } catch (e) {}
+
       // Stage 1: Detect 4 corner ArUco markers in source image (with auto-rotation & 3-marker recovery)
-      const srcCorners = detectCornerMarkers(offCtx, scan.img.width, scan.img.height);
+      const srcCorners = detectCornerMarkers(offCtx, scan.img.width, scan.img.height, scanData);
 
       // Target marker positions from layout (mm * pxPerMm)
       // markers: 0: TL, 1: TR, 2: BR, 3: BL
@@ -6801,7 +6842,7 @@
       const H_canToSrc = computeHomography(dstCorners, srcCorners);
 
       // Stage 2: Local Section Box & Student ID Grid Snapping
-      const zoneOffsets = snapZoneOffsets(offCtx, scan.img.width, scan.img.height, layout, H_canToSrc, pxPerMm);
+      const zoneOffsets = snapZoneOffsets(offCtx, scan.img.width, scan.img.height, layout, H_canToSrc, pxPerMm, scanData);
 
       // Stage 3: Sample each bubble with Column-Tracked Joint Group Ring Alignment, 16-Point Ring Snap, Paper Halo Normalization, & 4-Quadrant Morphology
       const bubbleDiagnostics = [];
@@ -6819,17 +6860,27 @@
         const rIn = Math.max(2, ringRad * 0.98);
         const rOut = Math.max(rIn + 1.5, ringRad * 1.28);
         const pad = Math.ceil(rOut) + 2;
-        if (cx < pad || cx >= scan.img.width - pad || cy < pad || cy >= scan.img.height - pad) return -1e6;
+        const w = scan.img.width;
+        const h = scan.img.height;
+        if (cx < pad || cx >= w - pad || cy < pad || cy >= h - pad) return -1e6;
         let gradSum = 0;
+        const hasScanData = scanData && scanData.length >= w * h * 4;
         for (let k = 0; k < 16; k++) {
-          const ang = (k * Math.PI) / 8;
-          const ca = Math.cos(ang), sa = Math.sin(ang);
+          const ca = RAY_COS_SIN_16[k][0], sa = RAY_COS_SIN_16[k][1];
           const rx = Math.round(cx + rIn * ca), ry = Math.round(cy + rIn * sa);
           const hx = Math.round(cx + rOut * ca), hy = Math.round(cy + rOut * sa);
-          const pR = offCtx.getImageData(rx, ry, 1, 1).data;
-          const pH = offCtx.getImageData(hx, hy, 1, 1).data;
-          const lumR = 0.299 * pR[0] + 0.587 * pR[1] + 0.114 * pR[2];
-          const lumH = 0.299 * pH[0] + 0.587 * pH[1] + 0.114 * pH[2];
+          let lumR = 255, lumH = 255;
+          if (hasScanData) {
+            const rIdx = (ry * w + rx) * 4;
+            const hIdx = (hy * w + hx) * 4;
+            lumR = 0.299 * scanData[rIdx] + 0.587 * scanData[rIdx + 1] + 0.114 * scanData[rIdx + 2];
+            lumH = 0.299 * scanData[hIdx] + 0.587 * scanData[hIdx + 1] + 0.114 * scanData[hIdx + 2];
+          } else {
+            const pR = offCtx.getImageData(rx, ry, 1, 1).data;
+            const pH = offCtx.getImageData(hx, hy, 1, 1).data;
+            lumR = 0.299 * pR[0] + 0.587 * pR[1] + 0.114 * pR[2];
+            lumH = 0.299 * pH[0] + 0.587 * pH[1] + 0.114 * pH[2];
+          }
           const diff = lumH - lumR;
           if (diff > 0) gradSum += Math.min(60, diff);
         }
@@ -6918,9 +6969,10 @@
           let optSy = sy;
 
           if (sx >= totalW && sx < scan.img.width - totalW && sy >= totalW && sy < scan.img.height - totalW) {
-            const searchBlock = offCtx.getImageData(sx - totalW, sy - totalW, totalW * 2 + 1, totalW * 2 + 1).data;
+            const hasScanData = scanData && scanData.length >= scan.img.width * scan.img.height * 4;
             const sBlockSize = totalW * 2 + 1;
-            if (searchBlock && searchBlock.length >= sBlockSize * sBlockSize * 4) {
+            const searchBlock = hasScanData ? null : (offCtx && offCtx.getImageData ? offCtx.getImageData(sx - totalW, sy - totalW, sBlockSize, sBlockSize).data : null);
+            if (hasScanData || (searchBlock && searchBlock.length >= sBlockSize * sBlockSize * 4)) {
               const rIn = Math.max(2, rad * 0.98);
               const rOut = Math.max(rIn + 1.5, rad * 1.28);
               let maxGradScore = -Infinity;
@@ -6930,14 +6982,21 @@
                   let gradSum = 0;
                   let posRays = 0;
                   for (let k = 0; k < 16; k++) {
-                    const ang = (k * Math.PI) / 8;
-                    const ca = Math.cos(ang), sa = Math.sin(ang);
+                    const ca = RAY_COS_SIN_16[k][0], sa = RAY_COS_SIN_16[k][1];
                     const rx = Math.round(odx + rIn * ca), ry = Math.round(ody + rIn * sa);
                     const hx = Math.round(odx + rOut * ca), hy = Math.round(ody + rOut * sa);
-                    const pRIdx = ((ry + totalW) * sBlockSize + (rx + totalW)) * 4;
-                    const pHIdx = ((hy + totalW) * sBlockSize + (hx + totalW)) * 4;
-                    const lumR = 0.299 * searchBlock[pRIdx] + 0.587 * searchBlock[pRIdx + 1] + 0.114 * searchBlock[pRIdx + 2];
-                    const lumH = 0.299 * searchBlock[pHIdx] + 0.587 * searchBlock[pHIdx + 1] + 0.114 * searchBlock[pHIdx + 2];
+                    let lumR = 255, lumH = 255;
+                    if (hasScanData) {
+                      const pRIdx = ((sy + ry) * scan.img.width + (sx + rx)) * 4;
+                      const pHIdx = ((sy + hy) * scan.img.width + (sx + hx)) * 4;
+                      lumR = 0.299 * scanData[pRIdx] + 0.587 * scanData[pRIdx + 1] + 0.114 * scanData[pRIdx + 2];
+                      lumH = 0.299 * scanData[pHIdx] + 0.587 * scanData[pHIdx + 1] + 0.114 * scanData[pHIdx + 2];
+                    } else {
+                      const pRIdx = ((ry + totalW) * sBlockSize + (rx + totalW)) * 4;
+                      const pHIdx = ((hy + totalW) * sBlockSize + (hx + totalW)) * 4;
+                      lumR = 0.299 * searchBlock[pRIdx] + 0.587 * searchBlock[pRIdx + 1] + 0.114 * searchBlock[pRIdx + 2];
+                      lumH = 0.299 * searchBlock[pHIdx] + 0.587 * searchBlock[pHIdx + 1] + 0.114 * searchBlock[pHIdx + 2];
+                    }
                     const diff = lumH - lumR;
                     if (diff > 0) {
                       gradSum += Math.min(60, diff);
@@ -6972,10 +7031,11 @@
           let midOuterStrokeCount = 0;
 
           if (optSx >= bgR && optSx < scan.img.width - bgR && optSy >= bgR && optSy < scan.img.height - bgR) {
-            const block = offCtx.getImageData(optSx - bgR, optSy - bgR, bgR * 2 + 1, bgR * 2 + 1).data;
+            const hasScanData = scanData && scanData.length >= scan.img.width * scan.img.height * 4;
             const bSize = bgR * 2 + 1;
+            const block = hasScanData ? null : (offCtx && offCtx.getImageData ? offCtx.getImageData(optSx - bgR, optSy - bgR, bSize, bSize).data : null);
 
-            if (block && block.length >= bSize * bSize * 4) {
+            if (hasScanData || (block && block.length >= bSize * bSize * 4)) {
               // Pass 1: Measure local paper halo luminance in [1.15r, 1.40r] using 75th percentile
               // (immune to thick checkmark tails or adjacent question numbers spilling into annulus)
               const haloLums = [];
@@ -6983,8 +7043,14 @@
                 for (let dx = -bgR; dx <= bgR; dx++) {
                   const d2 = dx * dx + dy * dy;
                   if (d2 >= haloInR * haloInR && d2 <= bgR * bgR) {
-                    const idx = ((dy + bgR) * bSize + (dx + bgR)) * 4;
-                    const lum = 0.299 * block[idx] + 0.587 * block[idx + 1] + 0.114 * block[idx + 2];
+                    let lum = 255;
+                    if (hasScanData) {
+                      const idx = ((optSy + dy) * scan.img.width + (optSx + dx)) * 4;
+                      lum = 0.299 * scanData[idx] + 0.587 * scanData[idx + 1] + 0.114 * scanData[idx + 2];
+                    } else {
+                      const idx = ((dy + bgR) * bSize + (dx + bgR)) * 4;
+                      lum = 0.299 * block[idx] + 0.587 * block[idx + 1] + 0.114 * block[idx + 2];
+                    }
                     haloLums.push(lum);
                   }
                 }
@@ -7003,8 +7069,14 @@
                 for (let dx = -sampleR; dx <= sampleR; dx++) {
                   const d2 = dx * dx + dy * dy;
                   if (d2 > sampleR * sampleR) continue;
-                  const idx = ((dy + bgR) * bSize + (dx + bgR)) * 4;
-                  const lum = 0.299 * block[idx] + 0.587 * block[idx + 1] + 0.114 * block[idx + 2];
+                  let lum = 255;
+                  if (hasScanData) {
+                    const idx = ((optSy + dy) * scan.img.width + (optSx + dx)) * 4;
+                    lum = 0.299 * scanData[idx] + 0.587 * scanData[idx + 1] + 0.114 * scanData[idx + 2];
+                  } else {
+                    const idx = ((dy + bgR) * bSize + (dx + bgR)) * 4;
+                    lum = 0.299 * block[idx] + 0.587 * block[idx + 1] + 0.114 * block[idx + 2];
+                  }
 
                   bubbleLumSum += lum;
                   bubbleCount++;
@@ -7549,8 +7621,32 @@
       };
     }
 
-    // Run Batch Grading
+    // Cooperative yielding to browser event loop to prevent UI freezing during heavy CV tasks
+    function yieldToMain() {
+      if (typeof scheduler !== 'undefined' && typeof scheduler.yield === 'function') {
+        return scheduler.yield();
+      }
+      return new Promise(resolve => {
+        if (typeof requestAnimationFrame === 'function') {
+          requestAnimationFrame(() => {
+            if (typeof setTimeout === 'function') {
+              setTimeout(resolve, 0);
+            } else {
+              resolve();
+            }
+          });
+        } else if (typeof setTimeout === 'function') {
+          setTimeout(resolve, 0);
+        } else {
+          resolve();
+        }
+      });
+    }
+
+    // Run Batch Grading (Asynchronous & Non-Blocking)
     $('btn-grade-now').onclick = async () => {
+      if (state.isGrading) return;
+
       if (state.scans.length === 0) {
         alert("Please upload at least one exam scan or click '1-Click Sample Test'.");
         return;
@@ -7564,39 +7660,155 @@
 
       validatePreflightKeyLayout();
 
-      const passThreshold = parseFloat($('input-threshold').value) || 60;
-      const bubbleThreshold = parseFloat($('input-bubble-threshold').value) || 0.20;
+      const passThreshold = parseFloat($('input-threshold')?.value) || 60;
+      const bubbleThreshold = parseFloat($('input-bubble-threshold')?.value) || 0.20;
 
-      $('grading-progress').style.display = 'block';
-      $('grading-progress-inner').style.width = '20%';
+      state.isGrading = true;
+      const btnHeader = $('btn-grade-now');
+      const btnSidebar = $('btn-sidebar-grade');
+      const btnSample = $('btn-sample-grade');
+      const btnSidebarSample = $('btn-sidebar-sample');
+      const btnEmptySample = $('btn-empty-sample');
+      const progressWrap = $('grading-progress');
+      const progressBar = $('grading-progress-inner');
+      const progressText = $('grading-progress-text');
+
+      const origHeaderHtml = btnHeader ? btnHeader.innerHTML : '';
+      const origSidebarHtml = btnSidebar ? btnSidebar.innerHTML : '';
+
+      if (btnHeader) {
+        btnHeader.disabled = true;
+        btnHeader.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation: spin 1s linear infinite;"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg><span>Grading Scans...</span>`;
+      }
+      if (btnSidebar) {
+        btnSidebar.disabled = true;
+        btnSidebar.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation: spin 1s linear infinite;"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg><span>Grading Scans...</span>`;
+      }
+      if (btnSample) btnSample.disabled = true;
+      if (btnSidebarSample) btnSidebarSample.disabled = true;
+      if (btnEmptySample) btnEmptySample.disabled = true;
+
+      if (progressWrap) progressWrap.style.display = 'block';
+      if (progressBar) progressBar.style.width = '0%';
+      if (progressText) {
+        progressText.style.display = 'block';
+        progressText.textContent = `Preparing ${state.scans.length} scan${state.scans.length > 1 ? 's' : ''}...`;
+      }
+
+      // Initial yield to allow browser to render the busy state, progress bar, and spinner
+      await yieldToMain();
 
       try {
         const grades = [];
-        for (let i = 0; i < state.scans.length; i++) {
-          const grade = processExamScan(state.scans[i], state.layout, state.key, bubbleThreshold);
+        const total = state.scans.length;
+
+        for (let i = 0; i < total; i++) {
+          const scan = state.scans[i];
+          const pctStart = Math.round((i / total) * 100);
+          if (progressBar) progressBar.style.width = `${pctStart}%`;
+          if (progressText) {
+            const scanName = (scan && scan.name) ? scan.name : `Scan ${i + 1}`;
+            progressText.textContent = `Grading scan ${i + 1} of ${total} (${scanName})...`;
+          }
+          if (btnHeader) {
+            const span = btnHeader.querySelector('span');
+            if (span) span.textContent = `Grading (${i + 1}/${total})...`;
+          }
+          if (btnSidebar) {
+            const span = btnSidebar.querySelector('span');
+            if (span) span.textContent = `Grading (${i + 1}/${total})...`;
+          }
+
+          // Yield to event loop so DOM updates and progress repaint before heavy CV computation
+          await yieldToMain();
+
+          let grade;
+          try {
+            grade = processExamScan(scan, state.layout, state.key, bubbleThreshold);
+          } catch (scanErr) {
+            console.error(`Error processing scan ${i + 1} (${scan?.name || 'unknown'}):`, scanErr);
+            const totalPts = Object.values(state.key?.items || {}).reduce((s, it) => s + (it.points || 1.0), 0);
+            const gradedItemsFallback = {};
+            for (const [k, it] of Object.entries(state.key?.items || {})) {
+              gradedItemsFallback[k] = {
+                expected: it.answer || 'A',
+                actual: 'ERROR',
+                isCorrect: false,
+                pointsAwarded: 0,
+                maxPoints: it.points || 1.0
+              };
+            }
+            grade = {
+              examId: scan?.name || `scan_${i + 1}`,
+              studentId: `ERR-${i + 1}`,
+              studentName: scan?.name || `Scan ${i + 1} (Processing Error)`,
+              classOffer: '',
+              rawScore: 0,
+              maxScore: totalPts || 1,
+              percentage: 0,
+              gradedItems: gradedItemsFallback,
+              bubbleDiagnostics: [],
+              H_canToSrc: null,
+              rotationDeg: 0,
+              targetW: Math.round((state.layout?.page?.width || 210) * 4.0),
+              targetH: Math.round((state.layout?.page?.height || 297) * 4.0),
+              scanImg: scan?.img || null,
+              reviewFlags: {
+                needsReview: true,
+                reasons: [`Scan processing error: ${scanErr?.message || String(scanErr)}`],
+                isUnmatchedId: true
+              }
+            };
+          }
           grades.push(grade);
-          $('grading-progress-inner').style.width = `${Math.round(((i + 1) / state.scans.length) * 100)}%`;
+
+          const pctEnd = Math.round(((i + 1) / total) * 100);
+          if (progressBar) progressBar.style.width = `${pctEnd}%`;
+          if (progressText) {
+            progressText.textContent = `Completed scan ${i + 1} of ${total} (${pctEnd}%)`;
+          }
+
+          // Yield to event loop after each scan so UI stays responsive and paints updated progress
+          await yieldToMain();
         }
+
+        if (progressText) {
+          progressText.textContent = "Analyzing psychometrics and rendering reports...";
+        }
+        await yieldToMain();
 
         const duplicates = detectDuplicateScans(grades);
         const uniqueGrades = grades.filter(g => !g.isDuplicate);
         const psychometrics = computePsychometrics(uniqueGrades.length > 0 ? uniqueGrades : grades, state.key);
         state.results = { grades, psychometrics, passThreshold, duplicates };
 
-        setTimeout(() => {
-          $('grading-progress').style.display = 'none';
-          renderResults();
-          saveCheckerProgress({ downloadFile: false, silent: true });
-        }, 200);
+        renderResults();
+        saveCheckerProgress({ downloadFile: false, silent: true });
       } catch (err) {
-        $('grading-progress').style.display = 'none';
         console.error("Grading failed:", err);
         alert("An error occurred during grading: " + (err && err.message ? err.message : String(err)));
+      } finally {
+        state.isGrading = false;
+        if (progressWrap) progressWrap.style.display = 'none';
+        if (progressText) progressText.style.display = 'none';
+        if (progressBar) progressBar.style.width = '0%';
+        if (btnHeader) {
+          btnHeader.disabled = false;
+          if (origHeaderHtml) btnHeader.innerHTML = origHeaderHtml;
+        }
+        if (btnSidebar) {
+          btnSidebar.disabled = false;
+          if (origSidebarHtml) btnSidebar.innerHTML = origSidebarHtml;
+        }
+        if (btnSample) btnSample.disabled = false;
+        if (btnSidebarSample) btnSidebarSample.disabled = false;
+        if (btnEmptySample) btnEmptySample.disabled = false;
       }
     };
 
     // 1-Click Sample Test
     $('btn-sample-grade').onclick = async () => {
+      if (state.isGrading) return;
       if (!state.layout || !state.key) {
         state.layout = PRESETS['exam-50'].layout;
         state.key = PRESETS['exam-50'].key;
@@ -10559,28 +10771,38 @@
     window.showToast = showToast;
 
     function serializeProgressSession() {
+      const options = (typeof arguments[0] === 'object' && arguments[0] !== null) ? arguments[0] : {};
+      const includeImages = options.includeImages ?? false;
+
       if (!state.results || !state.results.grades) {
         return null;
       }
       const serializedGrades = state.results.grades.map((g) => {
         let scanData = null;
-        try {
-          if (g.scanImg) {
-            if (g.scanImg instanceof HTMLCanvasElement) {
-              scanData = g.scanImg.toDataURL('image/jpeg', 0.65);
-            } else if (g.scanImg.src && g.scanImg.src.startsWith('data:')) {
-              scanData = g.scanImg.src;
-            } else if (g.scanImg.width && g.scanImg.height) {
-              const c = document.createElement('canvas');
-              c.width = g.scanImg.width;
-              c.height = g.scanImg.height;
-              const ctx = c.getContext('2d');
-              ctx.drawImage(g.scanImg, 0, 0);
-              scanData = c.toDataURL('image/jpeg', 0.65);
+        if (includeImages) {
+          if (g._cachedScanData) {
+            scanData = g._cachedScanData;
+          } else {
+            try {
+              if (g.scanImg) {
+                if (g.scanImg instanceof HTMLCanvasElement) {
+                  scanData = g.scanImg.toDataURL('image/jpeg', 0.65);
+                } else if (g.scanImg.src && g.scanImg.src.startsWith('data:')) {
+                  scanData = g.scanImg.src;
+                } else if (g.scanImg.width && g.scanImg.height) {
+                  const c = document.createElement('canvas');
+                  c.width = g.scanImg.width;
+                  c.height = g.scanImg.height;
+                  const ctx = c.getContext('2d');
+                  ctx.drawImage(g.scanImg, 0, 0);
+                  scanData = c.toDataURL('image/jpeg', 0.65);
+                }
+              }
+              if (scanData) g._cachedScanData = scanData;
+            } catch {
+              // ignore error
             }
           }
-        } catch {
-          // ignore error
         }
 
         return {
@@ -10620,7 +10842,7 @@
     }
 
     function saveCheckerProgress({ downloadFile: shouldDownload = false, silent = false, exportFile = false } = {}) {
-      const data = serializeProgressSession();
+      const data = serializeProgressSession({ includeImages: shouldDownload || exportFile });
       if (!data) {
         if (!silent) alert('No active grading results to save. Grade some scans first!');
         return;
@@ -10763,6 +10985,7 @@
     window.serializeProgressSession = serializeProgressSession;
     window.computePsychometrics = computePsychometrics;
     window.processExamScan = processExamScan;
+    window.yieldToMain = yieldToMain;
     window.updateKeyDisplay = updateKeyDisplay;
     window.updateRosterDisplay = updateRosterDisplay;
     window.validatePreflightKeyLayout = validatePreflightKeyLayout;

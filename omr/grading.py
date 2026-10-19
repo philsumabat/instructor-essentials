@@ -63,6 +63,8 @@ class ExamGrade:
     percentage: float = 0.0
     bubble_results: dict[str, GroupResult] = field(default_factory=dict, repr=False)
     ocr_results: dict[str, OCRResult] = field(default_factory=dict, repr=False)
+    is_duplicate: bool = False
+    duplicate_note: str = ""
 
     @property
     def student_name(self) -> str:
@@ -85,6 +87,8 @@ class ExamGrade:
             "score": round(self.score, 2),
             "max_score": round(self.max_score, 2),
             "percentage": round(self.percentage, 2),
+            "is_duplicate": self.is_duplicate,
+            "duplicate_note": self.duplicate_note,
             "items": {
                 k: {
                     "response": v.student_response,

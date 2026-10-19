@@ -206,8 +206,8 @@ class ROIExtractor:
 
         digits_count = max(1, roi.digits if roi.digits > 0 else (int(round(roi.w / (roi.h * 0.9))) if roi.h > 0 else 1))
         col_w = w / digits_count
-        margin_x = min(int(round(1.1 * self.px_per_mm)), max(0, int(round(col_w * 0.2))))
-        margin_y = min(int(round(1.0 * self.px_per_mm)), max(0, int(round(h * 0.2))))
+        margin_x = min(int(round(1.2 * self.px_per_mm)), max(0, int(round(col_w * 0.18))))
+        margin_y = min(int(round(1.2 * self.px_per_mm)), max(0, int(round(h * 0.18))))
 
         decoded_chars: list[str] = []
         confs: list[float] = []
@@ -233,6 +233,15 @@ class ROIExtractor:
                 cell_gray = cv2.cvtColor(cell, cv2.COLOR_BGR2GRAY)
             else:
                 cell_gray = cell.copy()
+
+            # Clean cell background & check if essentially blank (suppress OCR hallucination on blank cells in real engines)
+            if not isinstance(self.engine, MockOCREngine):
+                _, b_cell = cv2.threshold(cell_gray, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
+                dark_ratio = np.count_nonzero(b_cell < 128) / float(b_cell.size)
+                if dark_ratio < 0.015:
+                    decoded_chars.append("?")
+                    confs.append(0.0)
+                    continue
 
             padded = cv2.copyMakeBorder(cell_gray, 10, 10, 10, 10, cv2.BORDER_CONSTANT, value=255)
             char, conf = self.engine.recognize(padded, charset="digits", multiline=False)
@@ -288,10 +297,12 @@ class ROIExtractor:
             preprocessed_gray=preprocessed,
         )
 
-    def process_all(self, image: np.ndarray) -> dict[str, OCRResult]:
-        """Processes all ROIs marked for OCR."""
+    def process_all(self, image: np.ndarray, skip_keys: set[str] | None = None) -> dict[str, OCRResult]:
+        """Processes all ROIs marked for OCR, skipping specified keys (e.g. True statements in modified T/F)."""
         results: dict[str, OCRResult] = {}
         for roi in self.layout.rois:
             if roi.ocr:
+                if skip_keys and roi.key in skip_keys:
+                    continue
                 results[roi.key] = self.process_roi(image, roi)
         return results

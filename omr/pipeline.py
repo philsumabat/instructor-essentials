@@ -75,8 +75,21 @@ class OMRPipeline:
         binary = self.scanner.preprocess(warp_res.warped_gray)
         bubble_results, decoded_sid = self.scanner.scan_all(warp_res.warped_gray, binary)
 
+        # In modified T/F, don't scan the write-in box if the statement is true
+        skip_ocr_keys: set[str] = set()
+        for q_key, b_res in bubble_results.items():
+            corr_key = f"{q_key}_corr"
+            key_spec = self.answer_key.items.get(q_key)
+            is_key_true = False
+            if key_spec:
+                ans_str = str(key_spec.correct_answer).strip().upper()
+                is_key_true = ans_str in {"T", "TRUE"}
+            is_student_true = b_res.resolved_value == "T"
+            if is_key_true or is_student_true:
+                skip_ocr_keys.add(corr_key)
+
         # 3. Handwritten text OCR
-        ocr_results = self.extractor.process_all(warp_res.warped_bgr)
+        ocr_results = self.extractor.process_all(warp_res.warped_bgr, skip_keys=skip_ocr_keys)
 
         # If Student ID uses handwritten digit recognition (shading: false)
         if self.layout.sid_roi and not self.layout.sid_groups:
@@ -185,8 +198,12 @@ class OMRPipeline:
         if not grades:
             raise RuntimeError(f"All {total_scans_attempted} scans failed to process. Errors: {failed}")
 
-        # Compute psychometrics
-        psychometrics = self.analyzer.analyze(grades)
+        # Check for duplicates across the batch
+        duplicates = self.detect_duplicates(grades)
+
+        # Compute psychometrics (using non-duplicate exams to prevent statistical skew)
+        eval_grades = [g for g in grades if not g.is_duplicate] or grades
+        psychometrics = self.analyzer.analyze(eval_grades)
 
         # Save HTML report
         report_path = out / "item_analysis_report.html"
@@ -198,6 +215,8 @@ class OMRPipeline:
             "template_id": self.layout.template_id,
             "exam_title": self.answer_key.title,
             "processed_count": len(grades),
+            "duplicate_count": len(duplicates),
+            "duplicates": duplicates,
             "failed_count": len(failed),
             "failures": [{"file": f, "error": err} for f, err in failed],
             "grades": [g.to_dict() for g in grades],
@@ -214,3 +233,66 @@ class OMRPipeline:
             grades_json_path=grades_json_path,
             failed_scans=failed,
         )
+
+    def detect_duplicates(self, grades: list[ExamGrade]) -> list[dict[str, Any]]:
+        """Identifies duplicate scans in a batch based on student ID collisions and bubble answer matches."""
+        duplicates: list[dict[str, Any]] = []
+        n = len(grades)
+
+        # 1. Student ID collisions (for non-empty, non-anonymous IDs)
+        by_sid: dict[str, list[int]] = {}
+        for idx, g in enumerate(grades):
+            sid = g.student_id.strip() if g.student_id else ""
+            if sid and not sid.startswith("STU-") and set(sid) > {"?"}:
+                by_sid.setdefault(sid, []).append(idx)
+
+        for sid, indices in by_sid.items():
+            if len(indices) > 1:
+                dup_exams = [grades[i].exam_id for i in indices]
+                name = grades[indices[0]].student_name
+                duplicates.append({
+                    "type": "student_id_collision",
+                    "student_id": sid,
+                    "student_name": name,
+                    "exam_ids": dup_exams,
+                    "message": f"Student ID {sid} ({name}) appears on multiple sheets: {', '.join(dup_exams)}",
+                })
+                for i in indices:
+                    grades[i].is_duplicate = True
+                    other_sheets = [e for e in dup_exams if e != grades[i].exam_id]
+                    grades[i].duplicate_note = f"Duplicate scan: Student ID {sid} also on {', '.join(other_sheets)}"
+
+        # 2. Bubble response vector collisions (>= 96% identical answers across MCQs)
+        for i in range(n):
+            for j in range(i + 1, n):
+                g1, g2 = grades[i], grades[j]
+                common_keys = [
+                    k for k in g1.items
+                    if g1.items[k].kind in {"mcq", "tf"} and k in g2.items and g2.items[k].kind in {"mcq", "tf"}
+                ]
+                if len(common_keys) >= 10:
+                    matches = sum(
+                        1 for k in common_keys
+                        if g1.items[k].student_response == g2.items[k].student_response
+                        and g1.items[k].student_response not in {"", "?", "BLANK"}
+                    )
+                    ratio = matches / len(common_keys)
+                    if ratio >= 0.96:
+                        already = any(
+                            d["type"] == "student_id_collision" and g1.exam_id in d["exam_ids"] and g2.exam_id in d["exam_ids"]
+                            for d in duplicates
+                        )
+                        if not already:
+                            pct_str = f"{round(ratio * 100, 1)}%"
+                            duplicates.append({
+                                "type": "identical_responses",
+                                "exam_ids": [g1.exam_id, g2.exam_id],
+                                "match_ratio": round(ratio * 100, 1),
+                                "message": f"{g1.exam_id} and {g2.exam_id} share {pct_str} identical bubble answers (likely double-scan)",
+                            })
+                            g1.is_duplicate = True
+                            g2.is_duplicate = True
+                            g1.duplicate_note = f"Likely duplicate scan: {pct_str} identical answers to {g2.exam_id}"
+                            g2.duplicate_note = f"Likely duplicate scan: {pct_str} identical answers to {g1.exam_id}"
+
+        return duplicates

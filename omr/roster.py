@@ -110,7 +110,21 @@ class Roster:
     @classmethod
     def load(cls, path: str | Path) -> "Roster":
         path = Path(path)
-        with open(path, newline="", encoding="utf-8-sig") as fh:  # utf-8-sig strips Excel's BOM
+        for enc in ("utf-8-sig", "cp1252", "latin-1"):
+            try:
+                with open(path, newline="", encoding=enc) as fh:
+                    sample = fh.read(4096)
+                    fh.seek(0)
+                    try:
+                        dialect = csv.Sniffer().sniff(sample, delimiters=",;\t|")
+                    except csv.Error:
+                        dialect = csv.excel
+                    reader = csv.DictReader(fh, dialect=dialect)
+                    return cls.from_rows(reader, reader.fieldnames or [], source=str(path))
+            except UnicodeDecodeError:
+                continue
+
+        with open(path, newline="", encoding="utf-8-sig", errors="replace") as fh:
             sample = fh.read(4096)
             fh.seek(0)
             try:
@@ -118,8 +132,7 @@ class Roster:
             except csv.Error:
                 dialect = csv.excel
             reader = csv.DictReader(fh, dialect=dialect)
-            roster = cls.from_rows(reader, reader.fieldnames or [], source=str(path))
-        return roster
+            return cls.from_rows(reader, reader.fieldnames or [], source=str(path))
 
     @classmethod
     def from_rows(cls, rows: Iterable[dict], fieldnames: list[str], source: str | None = None) -> "Roster":

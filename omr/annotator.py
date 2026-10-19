@@ -52,12 +52,16 @@ class ExamAnnotator:
         canvas[banner_y1:banner_y2, banner_x1:banner_x2] = sub
 
         # Outline
-        status_color = COLOR_CORRECT if grade.percentage >= 60.0 else COLOR_INCORRECT
+        if grade.is_duplicate:
+            status_color = (0, 140, 255)  # Orange
+        else:
+            status_color = COLOR_CORRECT if grade.percentage >= 60.0 else COLOR_INCORRECT
         cv2.rectangle(canvas, (banner_x1, banner_y1), (banner_x2, banner_y2), status_color, 2)
 
         # Content text
         font = cv2.FONT_HERSHEY_SIMPLEX
-        student_label = f"Student: {grade.student_name} (ID: {grade.student_id})"
+        dup_tag = " [DUPLICATE]" if grade.is_duplicate else ""
+        student_label = f"Student: {grade.student_name} (ID: {grade.student_id}){dup_tag}"
         score_label = f"Score: {grade.score:.1f} / {grade.max_score:.1f}  ({grade.percentage:.1f}%)"
 
         cv2.putText(
@@ -81,8 +85,11 @@ class ExamAnnotator:
             cv2.LINE_AA,
         )
 
-        # Right-aligned Pass/Fail stamp
-        stamp = "PASS" if grade.percentage >= 60.0 else "NEEDS REVIEW"
+        # Right-aligned Pass/Fail/Duplicate stamp
+        if grade.is_duplicate:
+            stamp = "DUPLICATE SCAN"
+        else:
+            stamp = "PASS" if grade.percentage >= 60.0 else "NEEDS REVIEW"
         (sw, _), _ = cv2.getTextSize(stamp, font, 0.8, 2)
         cv2.putText(
             canvas,
@@ -114,29 +121,25 @@ class ExamAnnotator:
         cv2.rectangle(canvas, (rx, ry), (rx + rw, ry + rh), status_color, 2)
 
         font = cv2.FONT_HERSHEY_SIMPLEX
-        score_text = f"{grade.score:.1f}/{grade.max_score:.1f}"
-        pct_text = f"{grade.percentage:.1f}%"
-        stamp = "PASS" if grade.percentage >= 60.0 else "REVIEW"
+        score_text = f"{grade.score:g}/{grade.max_score:g}"
+        scale = 0.65
+        thick = 2
+        (tw, th), _ = cv2.getTextSize(score_text, font, scale, thick)
+        if tw > rw - 8:
+            scale = scale * (rw - 8) / tw
+            (tw, th), _ = cv2.getTextSize(score_text, font, scale, thick)
 
-        # Fit typography inside box height rh
+        tx = rx + max(4, (rw - tw) // 2)
+        ty = ry + int((rh + th) / 2)
+
         cv2.putText(
             canvas,
-            f"Score: {score_text}",
-            (rx + 6, ry + int(rh * 0.46)),
+            score_text,
+            (tx, ty),
             font,
-            0.48,
+            scale,
             status_color,
-            2,
-            cv2.LINE_AA,
-        )
-        cv2.putText(
-            canvas,
-            f"{pct_text}  {stamp}",
-            (rx + 6, ry + int(rh * 0.86)),
-            font,
-            0.40,
-            COLOR_TEXT,
-            1,
+            thick,
             cv2.LINE_AA,
         )
 
@@ -236,20 +239,6 @@ class ExamAnnotator:
             1,
             cv2.LINE_AA,
         )
-
-        # Subtitle OCR recognition feedback if wrong
-        if not item_grade.is_correct and item_grade.student_response:
-            ocr_note = f"Read: '{item_grade.student_response}'"
-            cv2.putText(
-                canvas,
-                ocr_note,
-                (x + 6, y + h - 6),
-                font,
-                0.40,
-                COLOR_INCORRECT,
-                1,
-                cv2.LINE_AA,
-            )
 
     def annotate(self, warped_bgr: np.ndarray, grade: ExamGrade) -> np.ndarray:
         """Produces a derivative visual feedback image."""

@@ -159,8 +159,8 @@ export function normalizeTemplate(input) {
     throw new TemplateError('bubble.diameter must be smaller than both pitches (bubbles would touch)');
   }
   const ids = tpl.fiducial.ids;
-  if (!Array.isArray(ids) || ids.length !== 4 || ids.some((id) => !SUPPORTED_MARKER_IDS.includes(id)) || new Set(ids).size !== 4) {
-    throw new TemplateError(`fiducial.ids must be 4 distinct ids from [${SUPPORTED_MARKER_IDS.join(', ')}]`);
+  if (!Array.isArray(ids) || (ids.length !== 4 && ids.length !== 6) || ids.some((id) => !SUPPORTED_MARKER_IDS.includes(id)) || new Set(ids).size !== ids.length) {
+    throw new TemplateError(`fiducial.ids must be 4 or 6 distinct ids from [${SUPPORTED_MARKER_IDS.join(', ')}]`);
   }
   return tpl;
 }
@@ -691,9 +691,23 @@ export function buildLayout(input) {
   const warnings = [];
 
   const fiducials = tpl.fiducial.ids.map((id, i) => {
-    const corner = CORNERS[i];
-    const fx = corner === 'tl' || corner === 'bl' ? inset : page.width - inset - size;
-    const fy = corner === 'tl' || corner === 'tr' ? inset : page.height - inset - size;
+    let corner;
+    let fx, fy;
+    if (tpl.fiducial.ids.length === 6) {
+      const posMap = ['tl', 'tr', 'ml', 'mr', 'br', 'bl'];
+      corner = posMap[i] || 'c';
+      const midY = (page.height - size) / 2;
+      if (corner === 'tl') { fx = inset; fy = inset; }
+      else if (corner === 'tr') { fx = page.width - inset - size; fy = inset; }
+      else if (corner === 'ml') { fx = inset; fy = midY; }
+      else if (corner === 'mr') { fx = page.width - inset - size; fy = midY; }
+      else if (corner === 'br') { fx = page.width - inset - size; fy = page.height - inset - size; }
+      else { fx = inset; fy = page.height - inset - size; }
+    } else {
+      corner = CORNERS[i];
+      fx = corner === 'tl' || corner === 'bl' ? inset : page.width - inset - size;
+      fy = corner === 'tl' || corner === 'tr' ? inset : page.height - inset - size;
+    }
     return {
       id,
       corner,

@@ -267,9 +267,9 @@ class BubbleScanner:
         return binary
 
     def _refine_bubble_center(
-        self, binary: np.ndarray, expected_cx: int, expected_cy: int, search_radius: int
+        self, gray: np.ndarray, binary: np.ndarray, expected_cx: int, expected_cy: int, search_radius: int
     ) -> tuple[int, int, int, bool]:
-        """Uses contour analysis within a local ROI to pinpoint the true bubble circle."""
+        """Uses contour analysis and circular ring alignment to pinpoint the true bubble circle."""
         h, w = binary.shape[:2]
         x1 = max(0, expected_cx - search_radius)
         y1 = max(0, expected_cy - search_radius)
@@ -277,35 +277,58 @@ class BubbleScanner:
         y2 = min(h, expected_cy + search_radius)
 
         roi = binary[y1:y2, x1:x2]
-        if roi.size == 0:
-            return expected_cx, expected_cy, self.expected_radius_px, False
-
-        contours, _ = cv2.findContours(roi, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-
         best_center = (expected_cx, expected_cy)
         best_radius = self.expected_radius_px
         best_score = float("inf")
         found = False
 
         exp_r = self.expected_radius_px
-        for cnt in contours:
-            area = cv2.contourArea(cnt)
-            # Filter contours by expected bubble bounding area
-            if area < math.pi * (exp_r * 0.4) ** 2:
-                continue
+        if roi.size > 0:
+            contours, _ = cv2.findContours(roi, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+            for cnt in contours:
+                area = cv2.contourArea(cnt)
+                # Filter contours by expected bubble bounding area
+                if area < math.pi * (exp_r * 0.4) ** 2:
+                    continue
 
-            (cx_rel, cy_rel), r = cv2.minEnclosingCircle(cnt)
-            # Proximity to nominal center + size ratio score
-            dist = math.hypot(cx_rel - (expected_cx - x1), cy_rel - (expected_cy - y1))
-            size_diff = abs(r - exp_r) / exp_r
+                (cx_rel, cy_rel), r = cv2.minEnclosingCircle(cnt)
+                # Proximity to nominal center + size ratio score
+                dist = math.hypot(cx_rel - (expected_cx - x1), cy_rel - (expected_cy - y1))
+                size_diff = abs(r - exp_r) / exp_r
 
-            if dist < search_radius * 0.8 and size_diff < 0.45:
-                score = dist + size_diff * 10
-                if score < best_score:
-                    best_score = score
-                    best_center = (int(round(x1 + cx_rel)), int(round(y1 + cy_rel)))
-                    best_radius = int(round(r))
-                    found = True
+                if dist < search_radius * 0.8 and size_diff < 0.45:
+                    score = dist + size_diff * 10
+                    if score < best_score:
+                        best_score = score
+                        best_center = (int(round(x1 + cx_rel)), int(round(y1 + cy_rel)))
+                        best_radius = int(round(r))
+                        found = True
+
+        # Fallback/refinement via circular ring intensity on gray:
+        # Especially valuable for empty or lightly marked bubbles on wavy paper
+        if not found and gray is not None and gray.size > 0:
+            angles = [2 * math.pi * k / 12 for k in range(12)]
+            cos_sin = [(math.cos(a) * exp_r, math.sin(a) * exp_r) for a in angles]
+            best_ring_lum = float("inf")
+            step = max(1, search_radius // 6)
+            for dy in range(-search_radius, search_radius + 1, step):
+                for dx in range(-search_radius, search_radius + 1, step):
+                    cx = expected_cx + dx
+                    cy = expected_cy + dy
+                    lum_sum = 0
+                    valid = True
+                    for ca, sa in cos_sin:
+                        px = int(round(cx + ca))
+                        py = int(round(cy + sa))
+                        if 0 <= px < w and 0 <= py < h:
+                            lum_sum += int(gray[py, px])
+                        else:
+                            valid = False
+                            break
+                    if valid and lum_sum < best_ring_lum:
+                        best_ring_lum = lum_sum
+                        best_center = (cx, cy)
+                        found = True
 
         return best_center[0], best_center[1], best_radius, found
 
@@ -324,7 +347,7 @@ class BubbleScanner:
         # Search window for contour alignment (~0.5x diameter)
         search_r = max(4, int(round(self.expected_radius_px * 0.8)))
         det_cx, det_cy, det_r, contour_found = self._refine_bubble_center(
-            binary, target_cx, target_cy, search_r
+            gray, binary, target_cx, target_cy, search_r
         )
 
         # Core mask: measure density within 75% of bubble radius to avoid the printed border

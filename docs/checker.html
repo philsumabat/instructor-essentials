@@ -2215,6 +2215,13 @@
                   </span>
                   <span class="filter-count count-pill count-pill--warning" id="count-roster-mismatches" style="margin-left: 0.25rem; font-weight: 700;">(0)</span>
                 </button>
+                <button type="button" class="btn btn--secondary btn-xs" data-filter="duplicates" id="filter-roster-duplicates" title="Filter to duplicate scans (same student or identical answers)">
+                  <span style="display: inline-flex; align-items: center; gap: 0.25rem; color: #ea580c;">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                    Duplicates
+                  </span>
+                  <span class="filter-count count-pill count-pill--warning" id="count-roster-duplicates" style="margin-left: 0.25rem; font-weight: 700; background:#ffedd5; color:#c2410c;">(0)</span>
+                </button>
                 <button type="button" class="btn btn--secondary btn-xs" data-filter="clean" id="filter-roster-clean" title="Filter to sheets with unambiguous reads and verified IDs">
                   <span style="display: inline-flex; align-items: center; gap: 0.25rem; color: var(--success);">
                     <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
@@ -6154,8 +6161,39 @@
         const sx = Math.round(srcPt.x);
         const sy = Math.round(srcPt.y);
 
-        if (sx >= bgR && sx < scan.img.width - bgR && sy >= bgR && sy < scan.img.height - bgR) {
-          const block = offCtx.getImageData(sx - bgR, sy - bgR, bgR * 2 + 1, bgR * 2 + 1).data;
+        // Adaptive bubble centering (snaps to physical circle under wavy scans)
+        const searchW = Math.max(2, Math.round(rad * 0.75));
+        const totalW = bgR + searchW;
+        let optSx = sx;
+        let optSy = sy;
+
+        if (sx >= totalW && sx < scan.img.width - totalW && sy >= totalW && sy < scan.img.height - totalW) {
+          const searchBlock = offCtx.getImageData(sx - totalW, sy - totalW, totalW * 2 + 1, totalW * 2 + 1).data;
+          const sBlockSize = totalW * 2 + 1;
+          const ringRad = Math.round(rad);
+          let minRingScore = Infinity;
+
+          for (let ody = -searchW; ody <= searchW; ody += 2) {
+            for (let odx = -searchW; odx <= searchW; odx += 2) {
+              let rSum = 0;
+              for (let k = 0; k < 8; k++) {
+                const ang = (k * Math.PI) / 4;
+                const rpx = Math.round(odx + ringRad * Math.cos(ang));
+                const rpy = Math.round(ody + ringRad * Math.sin(ang));
+                const pIdx = ((rpy + totalW) * sBlockSize + (rpx + totalW)) * 4;
+                rSum += 0.299 * searchBlock[pIdx] + 0.587 * searchBlock[pIdx + 1] + 0.114 * searchBlock[pIdx + 2];
+              }
+              if (rSum < minRingScore) {
+                minRingScore = rSum;
+                optSx = sx + odx;
+                optSy = sy + ody;
+              }
+            }
+          }
+        }
+
+        if (optSx >= bgR && optSx < scan.img.width - bgR && optSy >= bgR && optSy < scan.img.height - bgR) {
+          const block = offCtx.getImageData(optSx - bgR, optSy - bgR, bgR * 2 + 1, bgR * 2 + 1).data;
           const bSize = bgR * 2 + 1;
 
           for (let dy = -bgR; dy <= bgR; dy++) {
@@ -6241,6 +6279,16 @@
       // Initialize handwritten / horizontal grading items
       const horizontalItems = getHorizontalGradingItems();
       for (const hItem of horizontalItems) {
+        // In modified T/F, don't scan the box if the statement is true
+        if (hItem.type === 'correction' || hItem.role === 'correction' || (hItem.key && hItem.key.endsWith('_corr'))) {
+          const qNum = hItem.key.replace(/_corr$/, '');
+          const keyItem = state.key?.items?.[qNum];
+          const isKeyTrue = keyItem && (String(keyItem.answer || keyItem.correct || '').toUpperCase() === 'T');
+          const isMarkedTrue = gradedItems[qNum]?.actual === 'T';
+          if (isKeyTrue || isMarkedTrue) {
+            continue;
+          }
+        }
         if (!gradedItems[hItem.key]) {
           gradedItems[hItem.key] = {
             expected: hItem.expected,
@@ -6337,6 +6385,94 @@
         reviewFlags
       };
     }
+
+    // Duplicate Scan Detection Pass
+    function detectDuplicateScans(grades) {
+      if (!Array.isArray(grades) || grades.length <= 1) return [];
+      const duplicates = [];
+
+      // 1. Check duplicate Student IDs (when not placeholder STU-)
+      const sidMap = {};
+      grades.forEach((g, idx) => {
+        const sid = String(g.studentId || '').trim();
+        if (sid && !sid.startsWith('STU-') && !sid.includes('?')) {
+          if (!sidMap[sid]) sidMap[sid] = [];
+          sidMap[sid].push({ idx, examId: g.examId, name: g.studentName });
+        }
+      });
+
+      for (const [sid, entries] of Object.entries(sidMap)) {
+        if (entries.length > 1) {
+          const pageNames = entries.map(e => e.examId);
+          duplicates.push({
+            type: 'student_id',
+            studentId: sid,
+            indices: entries.map(e => e.idx),
+            message: `Student ID ${sid} appears on ${entries.length} scans: ${pageNames.join(', ')}`
+          });
+          entries.forEach(e => {
+            const g = grades[e.idx];
+            g.isDuplicate = true;
+            if (!g.reviewFlags) g.reviewFlags = { needsReview: true, reasons: [] };
+            g.reviewFlags.needsReview = true;
+            g.reviewFlags.isDuplicate = true;
+            const otherPages = pageNames.filter(p => p !== e.examId);
+            const dupMsg = `Duplicate scan: Student ID ${sid} also on ${otherPages.join(', ')}`;
+            if (!g.reviewFlags.reasons.includes(dupMsg)) {
+              g.reviewFlags.reasons.unshift(dupMsg);
+            }
+          });
+        }
+      }
+
+      // 2. Check identical non-blank bubble responses (>= 96% match)
+      for (let i = 0; i < grades.length; i++) {
+        for (let j = i + 1; j < grades.length; j++) {
+          const g1 = grades[i];
+          const g2 = grades[j];
+          const items1 = g1.gradedItems || {};
+          const items2 = g2.gradedItems || {};
+          const commonKeys = Object.keys(items1).filter(k => items1[k].kind !== 'text' && items2[k] && items2[k].kind !== 'text');
+          if (commonKeys.length >= 10) {
+            let matches = 0;
+            let answered = 0;
+            commonKeys.forEach(k => {
+              const a1 = items1[k].actual;
+              const a2 = items2[k].actual;
+              if (a1 && a2 && a1 !== 'BLANK' && a2 !== 'BLANK') {
+                answered++;
+                if (a1 === a2) matches++;
+              }
+            });
+            if (answered >= 10 && (matches / answered) >= 0.96) {
+              const pct = Math.round((matches / answered) * 100);
+              const already = duplicates.some(d => d.type === 'student_id' && d.indices.includes(i) && d.indices.includes(j));
+              if (!already) {
+                duplicates.push({
+                  type: 'identical_answers',
+                  indices: [i, j],
+                  message: `${g1.examId} and ${g2.examId} share ${pct}% identical bubble answers (likely double-scan)`
+                });
+                g1.isDuplicate = true;
+                g2.isDuplicate = true;
+                if (!g1.reviewFlags) g1.reviewFlags = { needsReview: true, reasons: [] };
+                if (!g2.reviewFlags) g2.reviewFlags = { needsReview: true, reasons: [] };
+                g1.reviewFlags.needsReview = true;
+                g2.reviewFlags.needsReview = true;
+                g1.reviewFlags.isDuplicate = true;
+                g2.reviewFlags.isDuplicate = true;
+                const m1 = `Likely duplicate scan: ${pct}% identical answers to ${g2.examId}`;
+                const m2 = `Likely duplicate scan: ${pct}% identical answers to ${g1.examId}`;
+                if (!g1.reviewFlags.reasons.includes(m1)) g1.reviewFlags.reasons.unshift(m1);
+                if (!g2.reviewFlags.reasons.includes(m2)) g2.reviewFlags.reasons.unshift(m2);
+              }
+            }
+          }
+        }
+      }
+      return duplicates;
+    }
+    window.detectDuplicateScans = detectDuplicateScans;
 
     // Psychometric Analysis (Cronbach's Alpha, Item Difficulty P, Discrimination r_pbis, Bloom Stats)
     function computePsychometrics(grades, key) {
@@ -6503,8 +6639,10 @@
           $('grading-progress-inner').style.width = `${Math.round(((i + 1) / state.scans.length) * 100)}%`;
         }
 
-        const psychometrics = computePsychometrics(grades, state.key);
-        state.results = { grades, psychometrics, passThreshold };
+        const duplicates = detectDuplicateScans(grades);
+        const uniqueGrades = grades.filter(g => !g.isDuplicate);
+        const psychometrics = computePsychometrics(uniqueGrades.length > 0 ? uniqueGrades : grades, state.key);
+        state.results = { grades, psychometrics, passThreshold, duplicates };
 
         setTimeout(() => {
           $('grading-progress').style.display = 'none';
@@ -6632,16 +6770,19 @@
     function renderSummaryTable() {
       if (!state.results || !state.results.grades) return;
       const { grades, passThreshold } = state.results;
-      $('tbody-summary').innerHTML = grades.map((g, idx) => `
+      $('tbody-summary').innerHTML = grades.map((g, idx) => {
+        const dupBadge = g.isDuplicate ? `<span class="badge-review" style="background:#fff7ed; color:#c2410c; border:1px solid #fed7aa; padding:1px 6px; border-radius:4px; font-size:0.7rem; font-weight:700; margin-left:6px;" title="Duplicate scan detected">DUPLICATE</span>` : '';
+        return `
         <tr onclick="inspectStudent(${idx}); switchTab('roster');" class="${state.selectedStudentIdx === idx ? 'is-selected' : ''}">
           <td><strong>${escapeHtml(g.studentId)}</strong></td>
-          <td>${escapeHtml(g.studentName)}</td>
+          <td>${escapeHtml(g.studentName)}${dupBadge}</td>
           <td>${g.rawScore.toFixed(1)} / ${g.maxScore.toFixed(1)}</td>
           <td>${g.percentage.toFixed(1)}%</td>
           <td><span class="${g.percentage >= passThreshold ? 'badge-pass' : 'badge-fail'}">${g.percentage >= passThreshold ? 'PASS' : 'FAIL'}</span></td>
           <td><button type="button" class="btn btn--secondary btn--sm" onclick="event.stopPropagation(); inspectStudent(${idx}); switchTab('roster');">Sheet Inspector</button></td>
         </tr>
-      `).join('');
+      `;
+      }).join('');
       updateSummaryReviewCallout();
     }
 
@@ -6655,8 +6796,11 @@
       if (filter === 'mismatches') {
         return state.results.grades.filter(g => g.reviewFlags && g.reviewFlags.isMismatch);
       }
+      if (filter === 'duplicates') {
+        return state.results.grades.filter(g => g.isDuplicate);
+      }
       if (filter === 'clean') {
-        return state.results.grades.filter(g => !g.reviewFlags || !g.reviewFlags.needsReview);
+        return state.results.grades.filter(g => (!g.reviewFlags || !g.reviewFlags.needsReview) && !g.isDuplicate);
       }
       return state.results.grades;
     }
@@ -6667,11 +6811,13 @@
       const totalCount = allGrades.length;
       const reviewCount = allGrades.filter(g => g.reviewFlags && g.reviewFlags.needsReview).length;
       const mismatchCount = allGrades.filter(g => g.reviewFlags && g.reviewFlags.isMismatch).length;
-      const cleanCount = totalCount - reviewCount;
+      const duplicateCount = allGrades.filter(g => g.isDuplicate).length;
+      const cleanCount = allGrades.filter(g => (!g.reviewFlags || !g.reviewFlags.needsReview) && !g.isDuplicate).length;
 
       if ($('count-roster-all')) $('count-roster-all').textContent = `(${totalCount})`;
       if ($('count-roster-review')) $('count-roster-review').textContent = `(${reviewCount})`;
       if ($('count-roster-mismatches')) $('count-roster-mismatches').textContent = `(${mismatchCount})`;
+      if ($('count-roster-duplicates')) $('count-roster-duplicates').textContent = `(${duplicateCount})`;
       if ($('count-roster-clean')) $('count-roster-clean').textContent = `(${cleanCount})`;
       if ($('roster-count-badge')) $('roster-count-badge').textContent = `${totalCount} student${totalCount === 1 ? '' : 's'}`;
       if ($('roster-total-count')) $('roster-total-count').textContent = `${totalCount} student${totalCount === 1 ? '' : 's'}`;
@@ -6818,6 +6964,10 @@
           emptyMsg = `<div style="padding: 1.5rem; text-align: center; color: var(--success); font-weight: 600;">
             <div>✓ No student name or ID mismatches found against roster!</div>
           </div>`;
+        } else if (filter === 'duplicates') {
+          emptyMsg = `<div style="padding: 1.5rem; text-align: center; color: var(--success); font-weight: 600;">
+            <div>✓ No duplicate scans detected! All student submissions appear unique.</div>
+          </div>`;
         } else if (filter === 'clean') {
           emptyMsg = `<div style="padding: 1.5rem; text-align: center; color: var(--text-muted);">No unflagged sheets.</div>`;
         }
@@ -6832,7 +6982,15 @@
         const manuallyReviewed = g.reviewFlags && g.reviewFlags.manuallyReviewed && !needsReview;
 
         let reviewBadgeHtml = '';
-        if (needsReview) {
+        if (g.isDuplicate) {
+          const reasonsTitle = escapeHtml((g.reviewFlags?.reasons || []).filter(r => r.includes('Duplicate') || r.includes('duplicate')).join('; ') || 'Duplicate scan detected');
+          reviewBadgeHtml = `
+            <span class="badge-review" style="background:#fff7ed; color:#c2410c; border:1px solid #fed7aa;" title="${reasonsTitle}">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+              <span>Duplicate</span>
+            </span>
+          `;
+        } else if (needsReview) {
           const reasonsTitle = escapeHtml((g.reviewFlags.reasons || []).join('; '));
           reviewBadgeHtml = `
             <span class="badge-review" title="${reasonsTitle}">

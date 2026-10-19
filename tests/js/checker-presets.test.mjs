@@ -733,5 +733,81 @@ test('processExamScan calculates reviewFlags for blanks, multi-marks, and unmatc
   assert.ok(grade.reviewFlags.reasons.length > 0, 'reviewFlags must provide clear reasons');
 });
 
+test('processExamScan succeeds seamlessly when state.roster is null or empty', async () => {
+  const checkerHtml = await readFile(resolve(root, 'builder/checker.html'), 'utf8');
+  const scriptMatch = checkerHtml.match(/<script>([\s\S]*?)<\/script>/);
+  const code = scriptMatch[1];
+
+  const sandbox = {
+    document: {
+      getElementById: () => ({ addEventListener: () => {}, style: {} }),
+      querySelectorAll: () => [],
+      createElement: () => ({
+        width: 100,
+        height: 100,
+        getContext: () => ({
+          drawImage: () => {},
+          getImageData: () => ({ data: new Uint8ClampedArray(400) })
+        }),
+        style: {}
+      })
+    },
+    window: {},
+    console: console,
+    Uint8Array,
+    Uint32Array,
+    DataView,
+    TextEncoder,
+    Image: class {},
+    FileReader: class {}
+  };
+  sandbox.window = sandbox;
+
+  const script = new vm.Script(code);
+  const context = vm.createContext(sandbox);
+  script.runInContext(context);
+
+  const state = vm.runInContext('state', context);
+  const processExamScan = vm.runInContext('processExamScan', context);
+
+  const mockLayout = {
+    page: { width: 210, height: 297 },
+    markers: {
+      "0": { center: [10, 10] },
+      "1": { center: [200, 10] },
+      "2": { center: [200, 280] },
+      "3": { center: [10, 280] }
+    },
+    bubbles: [
+      { item: "1", choice: "A", center: [30, 40], radius: 2 }
+    ]
+  };
+
+  const mockKey = {
+    items: {
+      "1": { answer: "A", points: 1, kind: "mcq" }
+    }
+  };
+
+  const mockScan = {
+    name: "scan_01_10482901.jpg",
+    img: { width: 400, height: 600 }
+  };
+
+  // 1. When state.roster is null (default state when user never uploads a roster)
+  state.roster = null;
+  const gradeNoRoster = processExamScan(mockScan, mockLayout, mockKey, 0.20);
+  assert.ok(gradeNoRoster, 'Must return grade object when state.roster is null');
+  assert.equal(gradeNoRoster.studentId, '10482901');
+  assert.equal(gradeNoRoster.studentName, 'Student 10482901');
+
+  // 2. When state.roster is empty array []
+  state.roster = [];
+  const gradeEmptyRoster = processExamScan(mockScan, mockLayout, mockKey, 0.20);
+  assert.ok(gradeEmptyRoster, 'Must return grade object when state.roster is []');
+  assert.equal(gradeEmptyRoster.studentId, '10482901');
+  assert.equal(gradeEmptyRoster.studentName, 'Student 10482901');
+});
+
 
 

@@ -6234,7 +6234,7 @@
       const studentId = (bubbleSid && bubbleSid.length >= 6)
         ? bubbleSid
         : (matchedId ? matchedId[0] : `STU-${Math.floor(100000 + Math.random() * 900000)}`);
-      const rosterEntry = state.roster.find(r => String(r.id).trim() === String(studentId).trim());
+      const rosterEntry = (Array.isArray(state.roster)) ? state.roster.find(r => String(r.id).trim() === String(studentId).trim()) : null;
       const studentName = rosterEntry ? rosterEntry.name : (scan.studentName || `Student ${studentId}`);
       const classOffer = rosterEntry?.classOffer || scan.classOffer || '';
 
@@ -6299,8 +6299,10 @@
           matchScore = best.score;
           matchField = best.field;
           reviewReasons.push(`Roster Mismatch: Suggested "${best.student.name}" (${(best.score * 100).toFixed(0)}% match)`);
-        } else {
+        } else if (state.roster && state.roster.length > 0) {
           reviewReasons.push(`Unmatched Student ID`);
+        } else {
+          reviewReasons.push(`No Student ID detected on sheet`);
         }
       }
 
@@ -6493,21 +6495,27 @@
       $('grading-progress').style.display = 'block';
       $('grading-progress-inner').style.width = '20%';
 
-      const grades = [];
-      for (let i = 0; i < state.scans.length; i++) {
-        const grade = processExamScan(state.scans[i], state.layout, state.key, bubbleThreshold);
-        grades.push(grade);
-        $('grading-progress-inner').style.width = `${Math.round(((i + 1) / state.scans.length) * 100)}%`;
-      }
+      try {
+        const grades = [];
+        for (let i = 0; i < state.scans.length; i++) {
+          const grade = processExamScan(state.scans[i], state.layout, state.key, bubbleThreshold);
+          grades.push(grade);
+          $('grading-progress-inner').style.width = `${Math.round(((i + 1) / state.scans.length) * 100)}%`;
+        }
 
-      const psychometrics = computePsychometrics(grades, state.key);
-      state.results = { grades, psychometrics, passThreshold };
+        const psychometrics = computePsychometrics(grades, state.key);
+        state.results = { grades, psychometrics, passThreshold };
 
-      setTimeout(() => {
+        setTimeout(() => {
+          $('grading-progress').style.display = 'none';
+          renderResults();
+          saveCheckerProgress({ downloadFile: false, silent: true });
+        }, 200);
+      } catch (err) {
         $('grading-progress').style.display = 'none';
-        renderResults();
-        saveCheckerProgress({ downloadFile: false, silent: true });
-      }, 200);
+        console.error("Grading failed:", err);
+        alert("An error occurred during grading: " + (err && err.message ? err.message : String(err)));
+      }
     };
 
     // 1-Click Sample Test

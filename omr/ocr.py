@@ -144,16 +144,115 @@ class ROIExtractor:
         else:
             self.engine = engine
 
+    @staticmethod
+    def strip_box_walls(gray: np.ndarray) -> np.ndarray:
+        """Stage 4: Morphological box-wall stripping.
+
+        Scans the outer 20% perimeter of a cell/box for continuous straight horizontal or
+        vertical dark runs spanning >75% of the width or height, replacing detected border
+        walls with background white (255) while preserving interior-connected handwriting strokes.
+        """
+        if gray is None or gray.size == 0:
+            return gray
+        out = gray.copy()
+        if len(out.shape) == 3:
+            out = cv2.cvtColor(out, cv2.COLOR_BGR2GRAY)
+
+        h, w = out.shape[:2]
+        if h < 6 or w < 6:
+            return out
+
+        dark_mask = out < 165
+        band_y = max(1, int(round(h * 0.20)))
+        band_x = max(1, int(round(w * 0.20)))
+
+        # Helper to check longest continuous run or high line density (>75% of span)
+        def _is_border_run(line_bool: np.ndarray) -> bool:
+            n = line_bool.size
+            if n == 0:
+                return False
+            if np.count_nonzero(line_bool) > 0.75 * n:
+                return True
+            # Also check longest contiguous dark segment (allows slight corner inset)
+            padded = np.concatenate(([False], line_bool, [False]))
+            starts = np.where(padded[1:] & ~padded[:-1])[0]
+            ends = np.where(~padded[1:] & padded[:-1])[0]
+            if starts.size > 0 and np.max(ends - starts) >= 0.72 * n:
+                return True
+            return False
+
+        # 1. Horizontal walls in top 20% and bottom 20% bands
+        top_rows = [y for y in range(band_y) if _is_border_run(dark_mask[y, :])]
+        bot_rows = [y for y in range(h - band_y, h) if _is_border_run(dark_mask[y, :])]
+
+        if top_rows:
+            ref_y = min(h - 1, max(top_rows) + 2)
+            # A handwriting stroke crossing the top wall continues at ref_y with narrow horizontal width
+            if not _is_border_run(dark_mask[ref_y, :]):
+                conn = dark_mask[ref_y, :].copy()
+                interior_conn = conn | np.pad(conn[:-1], (1, 0)) | np.pad(conn[1:], (0, 1))
+            else:
+                interior_conn = np.zeros(w, dtype=bool)
+            for y in range(0, min(h, max(top_rows) + 2)):
+                if y in top_rows or (y > 0 and (y - 1) in top_rows):
+                    erase_cols = ~interior_conn
+                    out[y, erase_cols] = 255
+
+        if bot_rows:
+            ref_y = max(0, min(bot_rows) - 2)
+            if not _is_border_run(dark_mask[ref_y, :]):
+                conn = dark_mask[ref_y, :].copy()
+                interior_conn = conn | np.pad(conn[:-1], (1, 0)) | np.pad(conn[1:], (0, 1))
+            else:
+                interior_conn = np.zeros(w, dtype=bool)
+            for y in range(max(0, min(bot_rows) - 1), h):
+                if y in bot_rows or (y + 1 < h and (y + 1) in bot_rows):
+                    erase_cols = ~interior_conn
+                    out[y, erase_cols] = 255
+
+        # Refresh dark_mask after horizontal wall removal
+        dark_mask = out < 165
+
+        # 2. Vertical walls in left 20% and right 20% bands
+        left_cols = [x for x in range(band_x) if _is_border_run(dark_mask[:, x])]
+        right_cols = [x for x in range(w - band_x, w) if _is_border_run(dark_mask[:, x])]
+
+        if left_cols:
+            ref_x = min(w - 1, max(left_cols) + 2)
+            if not _is_border_run(dark_mask[:, ref_x]):
+                conn = dark_mask[:, ref_x].copy()
+                interior_conn = conn | np.pad(conn[:-1], (1, 0)) | np.pad(conn[1:], (0, 1))
+            else:
+                interior_conn = np.zeros(h, dtype=bool)
+            for x in range(0, min(w, max(left_cols) + 2)):
+                if x in left_cols or (x > 0 and (x - 1) in left_cols):
+                    erase_rows = ~interior_conn
+                    out[erase_rows, x] = 255
+
+        if right_cols:
+            ref_x = max(0, min(right_cols) - 2)
+            if not _is_border_run(dark_mask[:, ref_x]):
+                conn = dark_mask[:, ref_x].copy()
+                interior_conn = conn | np.pad(conn[:-1], (1, 0)) | np.pad(conn[1:], (0, 1))
+            else:
+                interior_conn = np.zeros(h, dtype=bool)
+            for x in range(max(0, min(right_cols) - 1), w):
+                if x in right_cols or (x + 1 < w and (x + 1) in right_cols):
+                    erase_rows = ~interior_conn
+                    out[erase_rows, x] = 255
+
+        return out
+
     def crop_roi(self, image: np.ndarray, roi: TextROI) -> np.ndarray:
-        """Crops an ROI with border margin suppression to eliminate outer box lines."""
+        """Crops an ROI with minimal 4% safety inset and morphological border wall stripping."""
         x1 = int(round(roi.x * self.px_per_mm))
         y1 = int(round(roi.y * self.px_per_mm))
         w = int(round(roi.w * self.px_per_mm))
         h = int(round(roi.h * self.px_per_mm))
 
-        # Clamp inset to at most 15% of box dimension to avoid collapsing small single-digit boxes
-        max_inset = max(0, int(round(min(w, h) * 0.15)))
-        inset_px = min(int(round(1.2 * self.px_per_mm)), max_inset)
+        # Minimal 4% safety inset (prevents clipping edge handwriting; Stage 4 strips residual walls)
+        max_inset = max(0, int(round(min(w, h) * 0.04)))
+        inset_px = min(int(round(0.4 * self.px_per_mm)), max_inset)
         x1_in = min(image.shape[1], x1 + inset_px)
         y1_in = min(image.shape[0], y1 + inset_px)
         x2_in = max(x1_in, min(image.shape[1], x1 + w - inset_px))
@@ -169,7 +268,7 @@ class ROIExtractor:
         return image[y1_in:y2_in, x1_in:x2_in].copy()
 
     def preprocess_for_ocr(self, cropped: np.ndarray) -> np.ndarray:
-        """Cleans handwriting strokes for OCR extraction."""
+        """Cleans handwriting strokes and strips residual box walls for OCR extraction."""
         if cropped.size == 0:
             return cropped.copy()
 
@@ -177,6 +276,9 @@ class ROIExtractor:
             gray = cv2.cvtColor(cropped, cv2.COLOR_BGR2GRAY)
         else:
             gray = cropped.copy()
+
+        # Stage 4: Strip straight perimeter border lines before resizing
+        gray = self.strip_box_walls(gray)
 
         # Enlarge small handwritten text for better Tesseract OCR recognition
         h, w = gray.shape[:2]
@@ -191,14 +293,16 @@ class ROIExtractor:
         _, binary = cv2.threshold(filtered, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
 
         # Check if text is black-on-white (normal)
-        # If mean is low (inverted), invert it back to black-on-white
         if np.mean(binary) < 127:
             binary = cv2.bitwise_not(binary)
+
+        # Final perimeter wall pass on binarized image
+        binary = self.strip_box_walls(binary)
 
         return binary
 
     def process_partitioned_digits(self, image: np.ndarray, roi: TextROI) -> tuple[str, float]:
-        """Extracts individual digits from partitioned write-in boxes (e.g. Student ID)."""
+        """Extracts individual digits from partitioned write-in boxes using Stage 4 wall stripping."""
         x1 = int(round(roi.x * self.px_per_mm))
         y1 = int(round(roi.y * self.px_per_mm))
         w = int(round(roi.w * self.px_per_mm))
@@ -206,8 +310,9 @@ class ROIExtractor:
 
         digits_count = max(1, roi.digits if roi.digits > 0 else (int(round(roi.w / (roi.h * 0.9))) if roi.h > 0 else 1))
         col_w = w / digits_count
-        margin_x = min(int(round(1.2 * self.px_per_mm)), max(0, int(round(col_w * 0.18))))
-        margin_y = min(int(round(1.2 * self.px_per_mm)), max(0, int(round(h * 0.18))))
+        # Minimal 4% safety inset so digits touching cell edges are not clipped
+        margin_x = min(int(round(0.35 * self.px_per_mm)), max(0, int(round(col_w * 0.04))))
+        margin_y = min(int(round(0.35 * self.px_per_mm)), max(0, int(round(h * 0.04))))
 
         decoded_chars: list[str] = []
         confs: list[float] = []
@@ -234,9 +339,13 @@ class ROIExtractor:
             else:
                 cell_gray = cell.copy()
 
+            # Stage 4: Strip straight box divider walls from outer 20% perimeter while keeping digit strokes
+            cell_gray = self.strip_box_walls(cell_gray)
+
             # Clean cell background & check if essentially blank (suppress OCR hallucination on blank cells in real engines)
             if not isinstance(self.engine, MockOCREngine):
                 _, b_cell = cv2.threshold(cell_gray, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
+                b_cell = self.strip_box_walls(b_cell)
                 dark_ratio = np.count_nonzero(b_cell < 128) / float(b_cell.size)
                 if dark_ratio < 0.015:
                     decoded_chars.append("?")

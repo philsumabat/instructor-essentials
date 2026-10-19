@@ -113,6 +113,8 @@ class OMRPipeline:
             decoded_sid=decoded_sid,
             roster_match=roster_match,
         )
+        if warp_res.review_notes:
+            grade.review_notes = list(warp_res.review_notes) + grade.review_notes
 
         # 6. Annotation
         annotated_bgr = self.annotator.annotate(warp_res.warped_bgr, grade)

@@ -63,6 +63,9 @@ class ExamGrade:
     percentage: float = 0.0
     bubble_results: dict[str, GroupResult] = field(default_factory=dict, repr=False)
     ocr_results: dict[str, OCRResult] = field(default_factory=dict, repr=False)
+    is_duplicate: bool = False
+    duplicate_note: str = ""
+    review_notes: list[str] = field(default_factory=list)
 
     @property
     def student_name(self) -> str:
@@ -85,6 +88,9 @@ class ExamGrade:
             "score": round(self.score, 2),
             "max_score": round(self.max_score, 2),
             "percentage": round(self.percentage, 2),
+            "is_duplicate": self.is_duplicate,
+            "duplicate_note": self.duplicate_note,
+            "review_notes": list(self.review_notes),
             "items": {
                 k: {
                     "response": v.student_response,
@@ -92,6 +98,7 @@ class ExamGrade:
                     "is_correct": v.is_correct,
                     "points": v.points_awarded,
                     "max_points": v.max_points,
+                    "details": v.details,
                 }
                 for k, v in self.items.items()
             },
@@ -274,6 +281,7 @@ class GradingEngine:
         response: str,
         is_blank: bool = False,
         is_multi: bool = False,
+        review_reason: str = "",
     ) -> ItemGrade:
         """Grades a single item based on response and rubric."""
         if is_blank or response in {"?", ""}:
@@ -287,7 +295,7 @@ class GradingEngine:
                 max_points=key_spec.points,
                 is_blank=True,
                 is_multi=False,
-                details="Unanswered",
+                details=review_reason or "Unanswered",
             )
 
         if is_multi or response == "*":
@@ -301,7 +309,7 @@ class GradingEngine:
                 max_points=key_spec.points,
                 is_blank=False,
                 is_multi=True,
-                details="Multiple answers filled",
+                details=review_reason or "Multiple answers filled",
             )
 
         # Standard MCQ/TF evaluation
@@ -324,6 +332,7 @@ class GradingEngine:
                 max_points=key_spec.points,
                 is_blank=False,
                 is_multi=False,
+                details=review_reason,
             )
 
         # Handwritten text item evaluation
@@ -396,6 +405,7 @@ class GradingEngine:
                         grp.resolved_value,
                         is_blank=grp.is_blank,
                         is_multi=grp.is_multi,
+                        review_reason=grp.review_reason,
                     )
                 else:
                     grade = self.evaluate_item(key_spec, "?", is_blank=True)
@@ -410,6 +420,12 @@ class GradingEngine:
 
         pct = (total_points / max_points * 100.0) if max_points > 0 else 0.0
 
+        review_notes = [
+            grp.review_reason
+            for grp in bubble_results.values()
+            if grp.review_reason
+        ]
+
         return ExamGrade(
             exam_id=exam_id,
             decoded_sid=decoded_sid,
@@ -420,4 +436,5 @@ class GradingEngine:
             percentage=pct,
             bubble_results=bubble_results,
             ocr_results=ocr_results,
+            review_notes=review_notes,
         )

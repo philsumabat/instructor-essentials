@@ -109,3 +109,34 @@ def test_crop_roi_small_single_digit_box_no_collapse(dummy_layout):
 
     text, conf = extractor.process_partitioned_digits(img, compact_roi)
     assert text == "3"
+
+
+def test_stage4_strip_box_walls_removes_borders_and_preserves_handwriting(dummy_layout):
+    """Stage 4: Morphological box-wall stripping removes >75% perimeter walls while keeping interior strokes."""
+    gray = np.full((60, 120), 255, dtype=np.uint8)
+
+    # Draw printed box borders along top (y=2), bottom (y=57), left (x=2), right (x=117)
+    gray[2, 2:118] = 30
+    gray[57, 2:118] = 30
+    gray[2:58, 2] = 30
+    gray[2:58, 117] = 30
+
+    # Draw a vertical handwriting stroke at x=50 that touches the top border wall at y=2..45
+    gray[2:45, 50:52] = 20
+    # Draw handwriting near the left edge (x=10, well inside the 4% inset, which an old 15% inset would clip)
+    gray[15:45, 10:13] = 25
+
+    cleaned = ROIExtractor.strip_box_walls(gray)
+
+    # Unconnected top/bottom/left/right border pixels should be erased to white (255)
+    assert cleaned[2, 25] == 255
+    assert cleaned[57, 25] == 255
+    assert cleaned[30, 2] == 255
+    assert cleaned[30, 117] == 255
+
+    # The vertical handwriting stroke at x=50..51 (including where it meets the top wall) is preserved
+    assert cleaned[2, 50] < 50
+    assert cleaned[25, 50] < 50
+    # Handwriting near the left margin (x=10) is preserved
+    assert cleaned[25, 11] < 50
+

@@ -809,5 +809,290 @@ test('processExamScan succeeds seamlessly when state.roster is null or empty', a
   assert.equal(gradeEmptyRoster.studentName, 'Student 10482901');
 });
 
+test('4-Stage Coarse-to-Fine Smart Detection Pipeline & Strict Shading Policy in checker.html', async () => {
+  const checkerHtml = await readFile(resolve(root, 'builder/checker.html'), 'utf8');
+  const scriptMatch = checkerHtml.match(/<script>([\s\S]*?)<\/script>/);
+  const code = scriptMatch[1];
+
+  const sandbox = {
+    document: {
+      getElementById: () => ({ addEventListener: () => {}, style: {} }),
+      querySelectorAll: () => [],
+      createElement: () => ({
+        width: 100,
+        height: 100,
+        getContext: () => ({
+          drawImage: () => {},
+          getImageData: () => ({ data: new Uint8ClampedArray(400) }),
+          putImageData: () => {}
+        }),
+        style: {}
+      })
+    },
+    window: {},
+    console,
+    Uint8Array,
+    Uint8ClampedArray,
+    Int32Array,
+    Float32Array,
+    Float64Array,
+    Uint32Array,
+    DataView,
+    TextEncoder,
+    Image: class {},
+    FileReader: class {}
+  };
+  sandbox.window = sandbox;
+
+  const context = vm.createContext(sandbox);
+  new vm.Script(code).runInContext(context);
+
+  const getAruco6x6Matrix = vm.runInContext('getAruco6x6Matrix', context);
+  const detectCornerMarkers = vm.runInContext('detectCornerMarkers', context);
+  const snapZoneOffsets = vm.runInContext('snapZoneOffsets', context);
+  const classifyBubbleMorphology = vm.runInContext('classifyBubbleMorphology', context);
+  const stripBoxWallsFromImageData = vm.runInContext('stripBoxWallsFromImageData', context);
+
+  // --- Stage 1: ArUco 6x6 Bit-Grid Detection, Desk-Border Rejection & 3-Marker Recovery ---
+  const W = 420, H = 594; // 2 px/mm on A4 (210x297)
+  const layout = {
+    page: { width: 210, height: 297 },
+    markers: {
+      "0": { center: [15, 15], size: 12 },
+      "1": { center: [195, 15], size: 12 },
+      "2": { center: [195, 282], size: 12 },
+      "3": { center: [15, 282], size: 12 }
+    }
+  };
+
+  function buildScanRgba(includeIds = [0, 1, 2, 3]) {
+    const rgba = new Uint8ClampedArray(W * H * 4);
+    rgba.fill(255);
+
+    // Draw dark desk edge along top/left outermost 3px (should be rejected by Stage 1)
+    for (let y = 0; y < H; y++) {
+      for (let x = 0; x < W; x++) {
+        if (x < 3 || y < 3) {
+          const idx = (y * W + x) * 4;
+          rgba[idx] = rgba[idx + 1] = rgba[idx + 2] = 20;
+        }
+      }
+    }
+
+    // Draw 6x6 ArUco markers at expected positions (2 px/mm -> size = 24px, 4px per cell)
+    for (const id of includeIds) {
+      const m = layout.markers[String(id)];
+      const cx = Math.round(m.center[0] * 2);
+      const cy = Math.round(m.center[1] * 2);
+      const sizePx = 24;
+      const x0 = cx - 12;
+      const y0 = cy - 12;
+      const mat = getAruco6x6Matrix(id);
+      for (let r = 0; r < 6; r++) {
+        for (let c = 0; c < 6; c++) {
+          const val = mat[r][c] === 0 ? 15 : 255;
+          for (let dy = 0; dy < 4; dy++) {
+            for (let dx = 0; dx < 4; dx++) {
+              const px = x0 + c * 4 + dx;
+              const py = y0 + r * 4 + dy;
+              const idx = (py * W + px) * 4;
+              rgba[idx] = rgba[idx + 1] = rgba[idx + 2] = val;
+            }
+          }
+        }
+      }
+    }
+    return rgba;
+  }
+
+  const makeCtx = (rgba, w, h) => ({
+    getImageData: (sx = 0, sy = 0, sw = w, sh = h) => {
+      if (sx === 0 && sy === 0 && sw === w && sh === h) {
+        return { data: rgba, width: w, height: h };
+      }
+      const sub = new Uint8ClampedArray(sw * sh * 4);
+      for (let dy = 0; dy < sh; dy++) {
+        for (let dx = 0; dx < sw; dx++) {
+          const px = Math.min(w - 1, Math.max(0, sx + dx));
+          const py = Math.min(h - 1, Math.max(0, sy + dy));
+          const sIdx = (py * w + px) * 4;
+          const dIdx = (dy * sw + dx) * 4;
+          sub[dIdx] = rgba[sIdx];
+          sub[dIdx + 1] = rgba[sIdx + 1];
+          sub[dIdx + 2] = rgba[sIdx + 2];
+          sub[dIdx + 3] = rgba[sIdx + 3];
+        }
+      }
+      return { data: sub, width: sw, height: sh };
+    }
+  });
+
+  const rgba4 = buildScanRgba([0, 1, 2, 3]);
+  const det4 = detectCornerMarkers(makeCtx(rgba4, W, H), W, H);
+  assert.equal(det4.foundCount, 4, 'Must detect all 4 ArUco corner markers');
+  assert.equal(det4.reviewNote, '', 'No review note when all 4 markers are visible');
+  assert.ok(Math.hypot(det4[0].x - 30, det4[0].y - 30) <= 2.5, 'TL marker center must match');
+  assert.ok(Math.hypot(det4[2].x - 390, det4[2].y - 564) <= 2.5, 'BR marker center must match');
+
+  // 3-marker parallelogram recovery (missing marker 3 BL)
+  const rgba3 = buildScanRgba([0, 1, 2]);
+  const det3 = detectCornerMarkers(makeCtx(rgba3, W, H), W, H);
+  assert.equal(det3.foundCount, 3, 'Must detect 3 markers');
+  assert.equal(det3.recoveredMissingCorner, true, 'Must recover missing marker 3');
+  assert.equal(det3.missingCornerIndex, 3, 'Missing corner index must be 3 (BL)');
+  assert.equal(det3.reviewNote, 'Aligned using 3 of 4 corner markers');
+  assert.ok(Math.hypot(det3[3].x - 30, det3[3].y - 564) <= 3.0, 'Recovered BL corner must complete parallelogram');
+
+  // <= 2 markers -> flagged for review
+  const rgba2 = buildScanRgba([0, 1]);
+  const det2 = detectCornerMarkers(makeCtx(rgba2, W, H), W, H);
+  assert.equal(det2.lowConfidenceMarkers, true);
+  assert.equal(det2.reviewNote, 'Needs Review: Corner markers not clearly visible');
+
+  // --- Stage 2: Local Zone Border Snapping ---
+  const rgbaZone = new Uint8ClampedArray(W * H * 4).fill(255);
+  const zoneLayout = {
+    zones: [{ id: 'mcq_zone', bbox: [20, 40, 80, 100] }]
+  };
+  const shiftDxMm = 1.5, shiftDyMm = -1.0; // in mm at 2 px/mm
+  const zx1 = Math.round((20 + shiftDxMm) * 2), zy1 = Math.round((40 + shiftDyMm) * 2);
+  const zx2 = Math.round((20 + 80 + shiftDxMm) * 2), zy2 = Math.round((40 + 100 + shiftDyMm) * 2);
+  for (let x = zx1; x <= zx2; x++) {
+    for (const y of [zy1, zy2]) {
+      const idx = (y * W + x) * 4;
+      rgbaZone[idx] = rgbaZone[idx + 1] = rgbaZone[idx + 2] = 20;
+    }
+  }
+  for (let y = zy1; y <= zy2; y++) {
+    for (const x of [zx1, zx2]) {
+      const idx = (y * W + x) * 4;
+      rgbaZone[idx] = rgbaZone[idx + 1] = rgbaZone[idx + 2] = 20;
+    }
+  }
+  const H_identity = [1, 0, 0, 0, 1, 0, 0, 0, 1];
+  const snappedOffsets = snapZoneOffsets(makeCtx(rgbaZone, W, H), W, H, zoneLayout, H_identity, 2.0);
+  assert.ok(snappedOffsets.mcq_zone, 'Zone offset must be computed');
+  assert.ok(Math.abs(snappedOffsets.mcq_zone.dxMm - shiftDxMm) <= 0.5, 'Must snap horizontal zone shift');
+  assert.ok(Math.abs(snappedOffsets.mcq_zone.dyMm - shiftDyMm) <= 0.5, 'Must snap vertical zone shift');
+
+  // --- Stage 3: Ring-Locked 4-Quadrant Bubble Morphology ---
+  // 3a. Properly shaded bubble
+  const morphShaded = classifyBubbleMorphology({
+    fillDensity: 0.68,
+    quadrantDensities: [0.65, 0.70, 0.66, 0.71],
+    sectorFills: [0.64, 0.68, 0.70, 0.65, 0.69, 0.66, 0.67, 0.71],
+    strokeContrast: 0.62,
+    midOuterFill: 0.67,
+    centerFill: 0.72,
+    midOuterStrokeCount: 18
+  }, 0.25);
+  assert.equal(morphShaded.markType, 'shaded', 'Uniformly filled bubble must classify as shaded');
+  assert.equal(morphShaded.isShaded, true);
+
+  // 3b. Crisp diagonal cross ('X') mark inside bubble
+  const morphCross = classifyBubbleMorphology({
+    fillDensity: 0.28,
+    quadrantDensities: [0.28, 0.27, 0.29, 0.28],
+    sectorFills: [0.55, 0.04, 0.52, 0.05, 0.54, 0.03, 0.51, 0.04],
+    strokeContrast: 0.55,
+    midOuterFill: 0.24,
+    centerFill: 0.58,
+    midOuterStrokeCount: 5
+  }, 0.25);
+  assert.equal(morphCross.markType, 'check_or_cross', 'Thin X mark must classify as check_or_cross under Strict Shading Policy');
+  assert.equal(morphCross.isShaded, false, 'Check/Cross must NOT be auto-scored as shaded');
+
+  // 3c. Faint pencil mark inside bubble
+  const morphFaint = classifyBubbleMorphology({
+    fillDensity: 0.17,
+    quadrantDensities: [0.16, 0.18, 0.17, 0.17],
+    sectorFills: [0.16, 0.17, 0.18, 0.16, 0.17, 0.18, 0.16, 0.17],
+    strokeContrast: 0.05,
+    midOuterFill: 0.16,
+    centerFill: 0.18,
+    midOuterStrokeCount: 0
+  }, 0.25);
+  assert.equal(morphFaint.markType, 'faint', 'Light pencil mark must classify as faint');
+  assert.equal(morphFaint.isShaded, false);
+
+  // --- Stage 4: Morphological Box-Wall Stripping for OCR ---
+  const roiW = 100, roiH = 50;
+  const roiRgba = new Uint8ClampedArray(roiW * roiH * 4).fill(255);
+  // Draw printed border lines at y=2, y=47, x=2, x=97
+  for (let x = 2; x < 98; x++) {
+    for (const y of [2, 47]) {
+      const i = (y * roiW + x) * 4;
+      roiRgba[i] = roiRgba[i + 1] = roiRgba[i + 2] = 25;
+    }
+  }
+  for (let y = 2; y < 48; y++) {
+    for (const x of [2, 97]) {
+      const i = (y * roiW + x) * 4;
+      roiRgba[i] = roiRgba[i + 1] = roiRgba[i + 2] = 25;
+    }
+  }
+  // Draw interior handwriting stroke at x=45 crossing the top border wall (y=2..35)
+  for (let y = 2; y <= 35; y++) {
+    const i = (y * roiW + 45) * 4;
+    roiRgba[i] = roiRgba[i + 1] = roiRgba[i + 2] = 15;
+  }
+  stripBoxWallsFromImageData({ data: roiRgba, width: roiW, height: roiH });
+  assert.equal(roiRgba[(2 * roiW + 20) * 4], 255, 'Top border wall away from handwriting must be stripped to white');
+  assert.equal(roiRgba[(47 * roiW + 20) * 4], 255, 'Bottom border wall must be stripped to white');
+  assert.equal(roiRgba[(25 * roiW + 2) * 4], 255, 'Left border wall must be stripped to white');
+  assert.ok(roiRgba[(2 * roiW + 45) * 4] < 50, 'Handwriting stroke crossing top border wall must be preserved');
+  assert.ok(roiRgba[(20 * roiW + 45) * 4] < 50, 'Interior handwriting stroke must be preserved');
+
+  // --- Edge Case 1: 90 deg Landscape-Rotated Scan in detectCornerMarkers (including single-ID & 3-marker recovery) ---
+  const W90 = H, H90 = W; // 594 x 420 landscape scan rotated 90 deg CW
+  const rgba90 = new Uint8ClampedArray(W90 * H90 * 4).fill(255);
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      const sIdx = (y * W + x) * 4;
+      // 90 deg CW rotation: (x, y) in WxH -> (H - 1 - y, x) in W90xH90
+      const rx = H - 1 - y;
+      const ry = x;
+      const dIdx = (ry * W90 + rx) * 4;
+      rgba90[dIdx] = rgba4[sIdx];
+      rgba90[dIdx + 1] = rgba4[sIdx + 1];
+      rgba90[dIdx + 2] = rgba4[sIdx + 2];
+      rgba90[dIdx + 3] = 255;
+    }
+  }
+  const det90 = detectCornerMarkers(makeCtx(rgba90, W90, H90), W90, H90);
+  assert.equal(det90.foundCount, 4, 'Must detect all 4 corner markers on a 90 deg landscape scan');
+  assert.equal(det90.rotationDeg, 90, 'Must infer 90 deg CW rotation from rotated ArUco markers');
+  // Canonical marker 0 (was at 30, 30 in WxH) is at (H - 1 - 30, 30) = (563, 30) in W90xH90
+  assert.ok(Math.hypot(det90[0].x - (H - 30), det90[0].y - 30) <= 3.0, 'Reordered marker 0 must point to TR of rotated scan');
+
+  // --- Edge Case 2: Stage 2 Bottom/Right Border Fallback when Top/Left Borders are Missing ---
+  const rgbaBotRight = new Uint8ClampedArray(W * H * 4).fill(255);
+  for (let x = zx1; x <= zx2; x++) {
+    const idx = (zy2 * W + x) * 4; // Only bottom border drawn
+    rgbaBotRight[idx] = rgbaBotRight[idx + 1] = rgbaBotRight[idx + 2] = 20;
+  }
+  for (let y = zy1; y <= zy2; y++) {
+    const idx = (y * W + zx2) * 4; // Only right border drawn
+    rgbaBotRight[idx] = rgbaBotRight[idx + 1] = rgbaBotRight[idx + 2] = 20;
+  }
+  const snappedBR = snapZoneOffsets(makeCtx(rgbaBotRight, W, H), W, H, zoneLayout, H_identity, 2.0);
+  assert.ok(Math.abs(snappedBR.mcq_zone.dxMm - shiftDxMm) <= 0.5, 'Must snap dx from right border alone');
+  assert.ok(Math.abs(snappedBR.mcq_zone.dyMm - shiftDyMm) <= 0.5, 'Must snap dy from bottom border alone');
+
+  // --- Edge Case 3: Thick Cross ('X') with High Center Fill & Alternating Sector Contrast ---
+  const morphThickCross = classifyBubbleMorphology({
+    fillDensity: 0.66,
+    quadrantDensities: [0.65, 0.67, 0.66, 0.66],
+    sectorFills: [0.22, 0.82, 0.24, 0.80, 0.20, 0.84, 0.25, 0.79],
+    strokeContrast: 0.85,
+    midOuterFill: 0.52,
+    centerFill: 0.92,
+    midOuterStrokeCount: 16
+  }, 0.25);
+  assert.equal(morphThickCross.markType, 'check_or_cross', 'Thick felt-tip X mark with open cardinal wedges must classify as check_or_cross');
+  assert.equal(morphThickCross.isShaded, false);
+});
+
+
 
 

@@ -149,7 +149,7 @@ class ExamAnnotator:
         item_grade: ItemGrade,
         group_res: GroupResult,
     ):
-        """Draws green/red rings and correction markers on multiple choice bubbles."""
+        """Draws green/red rings, review warnings, and correction markers on multiple choice bubbles."""
         corr_ans = (
             item_grade.correct_answer
             if isinstance(item_grade.correct_answer, list)
@@ -162,7 +162,7 @@ class ExamAnnotator:
 
             is_opt_correct = meas.value in corr_ans
             was_selected = meas.value == item_grade.student_response or (
-                meas.is_filled and not item_grade.is_multi
+                meas.is_filled and not item_grade.is_multi and not item_grade.is_blank
             )
 
             if item_grade.is_correct:
@@ -177,6 +177,10 @@ class ExamAnnotator:
                     d = int(r * 0.65)
                     cv2.line(canvas, (cx - d, cy - d), (cx + d, cy + d), COLOR_INCORRECT, 2, cv2.LINE_AA)
                     cv2.line(canvas, (cx - d, cy + d), (cx + d, cy - d), COLOR_INCORRECT, 2, cv2.LINE_AA)
+                elif meas.mark_type in {"check_or_cross", "erasure", "faint"}:
+                    # Ambiguous / non-standard mark flagged for review: Amber/Purple warning ring
+                    warn_color = (247, 85, 168) if meas.mark_type == "check_or_cross" else COLOR_MISSED
+                    cv2.circle(canvas, (cx, cy), r, warn_color, 2, cv2.LINE_AA)
                 elif is_opt_correct:
                     # Missed correct answer: Green dashed/thick ring
                     cv2.circle(canvas, (cx, cy), r, COLOR_CORRECT, 2, cv2.LINE_AA)
@@ -184,14 +188,15 @@ class ExamAnnotator:
                     cv2.circle(canvas, (cx, cy), max(2, int(r * 0.3)), COLOR_CORRECT, -1, cv2.LINE_AA)
 
         if item_grade.is_blank:
-            # Indicate missed answer with an amber box near the question number
+            # Indicate missed or review-held answer near the question number
             if group_res.measurements:
                 first_m = group_res.measurements[0]
                 qx = first_m.detected_cx_px - int(round(8 * self.px_per_mm))
                 qy = first_m.detected_cy_px
+                tag = "REV" if group_res.review_reason else "MISS"
                 cv2.putText(
                     canvas,
-                    "MISS",
+                    tag,
                     (qx - 25, qy + 4),
                     cv2.FONT_HERSHEY_SIMPLEX,
                     0.38,

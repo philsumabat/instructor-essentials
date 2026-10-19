@@ -4693,7 +4693,7 @@
       ctx.fillStyle = "#ffffff";
       ctx.fillRect(0, 0, targetW, targetH);
 
-      // Draw ArUco fiducials
+      // Draw ArUco fiducials (6x6 DICT_4X4_50 bit grid)
       ctx.fillStyle = "#000000";
       for (const cid of ["0", "1", "2", "3"]) {
         const m = layout.markers ? layout.markers[cid] : null;
@@ -4701,7 +4701,11 @@
           const mx = m.center[0] * pxPerMm;
           const my = m.center[1] * pxPerMm;
           const mSize = (m.size || 10) * pxPerMm;
-          ctx.fillRect(mx - mSize / 2, my - mSize / 2, mSize, mSize);
+          if (typeof drawArucoMarkerOnCanvas === 'function') {
+            drawArucoMarkerOnCanvas(ctx, Number(cid), mx, my, mSize);
+          } else {
+            ctx.fillRect(mx - mSize / 2, my - mSize / 2, mSize, mSize);
+          }
         }
       }
 
@@ -5705,27 +5709,94 @@
 
     // ---- Homography & Canvas Vision OMR Engine ----
 
-    // Compute 3x3 homography matrix mapping src 4 points to dst 4 points
+    // Canonical 4x4 bit payloads for OpenCV DICT_4X4_50 markers (1 = white, 0 = black)
+    const ARUCO_4X4_PAYLOADS = {
+      0: [[1, 0, 1, 1], [0, 1, 0, 1], [0, 0, 1, 1], [0, 0, 1, 0]],
+      1: [[0, 0, 0, 0], [1, 1, 1, 1], [1, 0, 0, 1], [1, 0, 1, 0]],
+      2: [[0, 0, 1, 1], [0, 0, 1, 1], [0, 0, 1, 0], [1, 1, 0, 1]],
+      3: [[1, 0, 0, 1], [1, 0, 0, 1], [0, 1, 0, 0], [0, 1, 1, 0]],
+      4: [[0, 1, 0, 1], [0, 1, 0, 0], [1, 0, 0, 1], [1, 1, 1, 0]],
+      5: [[0, 1, 1, 1], [1, 0, 0, 1], [1, 1, 0, 0], [1, 1, 0, 1]]
+    };
+    window.ARUCO_4X4_PAYLOADS = ARUCO_4X4_PAYLOADS;
+
+    function getAruco6x6Matrix(id) {
+      const p = ARUCO_4X4_PAYLOADS[id] || ARUCO_4X4_PAYLOADS[0];
+      const cells = Array.from({ length: 6 }, () => new Array(6).fill(0));
+      for (let r = 0; r < 4; r++) {
+        for (let c = 0; c < 4; c++) cells[r + 1][c + 1] = p[r][c];
+      }
+      return cells;
+    }
+
+    function drawArucoMarkerOnCanvas(ctx, id, centerX, centerY, sizePx) {
+      const cells = getAruco6x6Matrix(id);
+      const x0 = centerX - sizePx / 2;
+      const y0 = centerY - sizePx / 2;
+      const cellS = sizePx / 6;
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(x0, y0, sizePx, sizePx);
+      ctx.fillStyle = "#000000";
+      for (let r = 0; r < 6; r++) {
+        for (let c = 0; c < 6; c++) {
+          if (cells[r][c] === 0) {
+            ctx.fillRect(x0 + c * cellS, y0 + r * cellS, Math.ceil(cellS), Math.ceil(cellS));
+          }
+        }
+      }
+    }
+    window.drawArucoMarkerOnCanvas = drawArucoMarkerOnCanvas;
+
+    function rotate4x4GridCW(grid, stepsCW) {
+      let g = grid;
+      const s = ((stepsCW % 4) + 4) % 4;
+      for (let k = 0; k < s; k++) {
+        const next = Array.from({ length: 4 }, () => new Array(4).fill(0));
+        for (let r = 0; r < 4; r++) {
+          for (let c = 0; c < 4; c++) next[c][3 - r] = g[r][c];
+        }
+        g = next;
+      }
+      return g;
+    }
+
+    // Compute 3x3 homography matrix mapping src N points (N >= 4) to dst N points
     function computeHomography(src, dst) {
-      // Direct Linear Transformation (DLT) for 4 points
+      const nPts = Math.min(src.length, dst.length);
       const A = [];
-      for (let i = 0; i < 4; i++) {
+      for (let i = 0; i < nPts; i++) {
         const x = src[i].x, y = src[i].y;
         const u = dst[i].x, v = dst[i].y;
         A.push([-x, -y, -1, 0, 0, 0, x * u, y * u, u]);
         A.push([0, 0, 0, -x, -y, -1, x * v, y * v, v]);
       }
-      // Solve via Gaussian elimination / SVD approximation
-      // For standard rect-to-rect or slight affine/perspective:
-      const h = solveDLT8(A);
-      return h;
+      return solveDLT8(A);
     }
 
     function solveDLT8(A) {
-      // 8x8 system setting h[8] = 1
-      const M = A.map(row => row.slice(0, 8));
-      const b = A.map(row => -row[8]);
-      const h8 = gaussianElimination(M, b);
+      // Supports exact 8x8 system (4 points) or overdetermined least-squares normal equations (e.g. 16 points)
+      if (A.length === 8) {
+        const M = A.map(row => row.slice(0, 8));
+        const b = A.map(row => -row[8]);
+        const h8 = gaussianElimination(M, b);
+        return [...h8, 1];
+      }
+      const ATA = Array.from({ length: 8 }, () => new Array(8).fill(0));
+      const ATb = new Array(8).fill(0);
+      for (let r = 0; r < A.length; r++) {
+        const row = A[r];
+        const rhs = -row[8];
+        for (let i = 0; i < 8; i++) {
+          ATb[i] += row[i] * rhs;
+          for (let j = i; j < 8; j++) {
+            ATA[i][j] += row[i] * row[j];
+          }
+        }
+      }
+      for (let i = 0; i < 8; i++) {
+        for (let j = 0; j < i; j++) ATA[i][j] = ATA[j][i];
+      }
+      const h8 = gaussianElimination(ATA, ATb);
       return [...h8, 1];
     }
 
@@ -5763,53 +5834,358 @@
       };
     }
 
-    // Detect 4 dark corner markers in the 4 quadrants of the scanned image
+    // Decode 6x6 ArUco bit grid inside a candidate square bounding box [bx1, by1, bx2, by2]
+    function decodeArucoBoxBitGrid(data, w, h, bx1, by1, bx2, by2, threshLum) {
+      const bw = bx2 - bx1 + 1;
+      const bh = by2 - by1 + 1;
+      if (bw < 10 || bh < 10) return null;
+
+      const grid = Array.from({ length: 6 }, () => new Array(6).fill(0));
+      let borderBlack = 0;
+
+      for (let r = 0; r < 6; r++) {
+        for (let c = 0; c < 6; c++) {
+          const cx1 = Math.floor(bx1 + (c + 0.22) * (bw / 6));
+          const cx2 = Math.max(cx1, Math.floor(bx1 + (c + 0.78) * (bw / 6)));
+          const cy1 = Math.floor(by1 + (r + 0.22) * (bh / 6));
+          const cy2 = Math.max(cy1, Math.floor(by1 + (r + 0.78) * (bh / 6)));
+          let lumSum = 0, cnt = 0;
+          for (let py = cy1; py <= cy2; py++) {
+            for (let px = cx1; px <= cx2; px++) {
+              if (px >= 0 && px < w && py >= 0 && py < h) {
+                const idx = (py * w + px) * 4;
+                if (idx + 2 < data.length) {
+                  lumSum += 0.299 * data[idx] + 0.587 * data[idx + 1] + 0.114 * data[idx + 2];
+                  cnt++;
+                }
+              }
+            }
+          }
+          const cellLum = cnt > 0 ? lumSum / cnt : 255;
+          const bit = cellLum > threshLum ? 1 : 0;
+          grid[r][c] = bit;
+          if (r === 0 || r === 5 || c === 0 || c === 5) {
+            if (bit === 0) borderBlack++;
+          }
+        }
+      }
+
+      // Outer 1-cell border has 20 cells; require at least 15 black cells
+      if (borderBlack < 15) return null;
+
+      let bestId = null;
+      let bestRot = 0;
+      let bestDist = 3; // Allow up to 2 bit errors out of 16
+
+      for (const [idStr, payload] of Object.entries(ARUCO_4X4_PAYLOADS)) {
+        const mid = Number(idStr);
+        if (mid > 3) continue;
+        for (let rot = 0; rot < 4; rot++) {
+          const rotPayload = rotate4x4GridCW(payload, rot);
+          let dist = 0;
+          for (let r = 0; r < 4; r++) {
+            for (let c = 0; c < 4; c++) {
+              if (grid[r + 1][c + 1] !== rotPayload[r][c]) dist++;
+            }
+          }
+          if (dist < bestDist) {
+            bestDist = dist;
+            bestId = mid;
+            bestRot = rot * 90;
+          }
+        }
+      }
+
+      if (bestId !== null) {
+        return { id: bestId, rotationDeg: bestRot, bitErrors: bestDist };
+      }
+      return null;
+    }
+
+    // Stage 1: True ArUco Square & 4x4 Bit-Grid Decoder + Auto-Rotation + 3-Marker Parallelogram Recovery
     function detectCornerMarkers(ctx, w, h) {
       const imgData = ctx.getImageData(0, 0, w, h);
-      const data = imgData.data;
+      const data = imgData ? imgData.data : null;
 
-      // Define 4 quadrant search windows (isolated from student ID bubbles and content)
+      // Define 4 quadrant search windows (aspect-aware for 90/270 deg landscape scans while isolated from student ID bubbles)
+      const xFrac = 0.16;
+      const yFrac = w > h ? 0.16 : 0.13;
       const quads = [
-        { name: "TL", x1: 0, y1: 0, x2: Math.floor(w * 0.16), y2: Math.floor(h * 0.13) },
-        { name: "TR", x1: Math.floor(w * 0.84), y1: 0, x2: w, y2: Math.floor(h * 0.13) },
-        { name: "BR", x1: Math.floor(w * 0.84), y1: Math.floor(h * 0.87), x2: w, y2: h },
-        { name: "BL", x1: 0, y1: Math.floor(h * 0.87), x2: Math.floor(w * 0.16), y2: h }
+        { name: "TL", qIdx: 0, expectedId: 0, x1: 0, y1: 0, x2: Math.floor(w * xFrac), y2: Math.floor(h * yFrac) },
+        { name: "TR", qIdx: 1, expectedId: 1, x1: Math.floor(w * (1 - xFrac)), y1: 0, x2: w, y2: Math.floor(h * yFrac) },
+        { name: "BR", qIdx: 2, expectedId: 2, x1: Math.floor(w * (1 - xFrac)), y1: Math.floor(h * (1 - yFrac)), x2: w, y2: h },
+        { name: "BL", qIdx: 3, expectedId: 3, x1: 0, y1: Math.floor(h * (1 - yFrac)), x2: Math.floor(w * xFrac), y2: h }
       ];
 
-      const corners = [];
+      const defaultCornerFor = (q) => ({
+        x: q.name.includes("L") ? w * 0.06 : w * 0.94,
+        y: q.name.includes("T") ? h * 0.04 : h * 0.96
+      });
+
+      // Guard against mock/empty test buffers smaller than w * h * 4
+      if (!data || data.length < w * h * 4) {
+        const fallback = quads.map(defaultCornerFor);
+        fallback.foundCount = 0;
+        fallback.rotationDeg = 0;
+        fallback.recoveredMissingCorner = false;
+        fallback.lowConfidenceMarkers = false;
+        fallback.reviewNote = "";
+        return fallback;
+      }
+
+      const quadDetections = [null, null, null, null];
 
       for (const q of quads) {
-        // Find minimum brightness / center of dark square in quadrant
-        let sumX = 0, sumY = 0, darkCount = 0;
-        let minLum = 255;
+        const qw = q.x2 - q.x1;
+        const qh = q.y2 - q.y1;
+        if (qw <= 4 || qh <= 4) continue;
 
-        // Sample every 2 pixels for speed
+        // 1. Sample luminance range in quadrant for adaptive thresholding
+        let minLum = 255, maxLum = 0;
         for (let y = q.y1; y < q.y2; y += 2) {
           for (let x = q.x1; x < q.x2; x += 2) {
             const idx = (y * w + x) * 4;
             const lum = 0.299 * data[idx] + 0.587 * data[idx + 1] + 0.114 * data[idx + 2];
             if (lum < minLum) minLum = lum;
-            if (lum < 90) { // Dark marker threshold
-              sumX += x;
-              sumY += y;
-              darkCount += 1;
-            }
+            if (lum > maxLum) maxLum = lum;
           }
         }
 
-        if (darkCount > 20) {
-          corners.push({ x: sumX / darkCount, y: sumY / darkCount });
-        } else {
-          // Fallback to geometric corners with typical inset
-          corners.push({
-            x: q.name.includes("L") ? w * 0.06 : w * 0.94,
-            y: q.name.includes("T") ? h * 0.04 : h * 0.96
+        // Require meaningful dark-on-light contrast in the quadrant
+        if (maxLum - minLum < 40 || minLum > 140) continue;
+        const darkThresh = Math.min(115, minLum + (maxLum - minLum) * 0.45);
+
+        // 2. Connected-component blob clustering on 2px coarse grid to isolate candidate squares from desk edges/staples
+        const step = 2;
+        const gw = Math.ceil(qw / step);
+        const gh = Math.ceil(qh / step);
+        const visited = new Uint8Array(gw * gh);
+        const candidates = [];
+
+        for (let gy = 0; gy < gh; gy++) {
+          for (let gx = 0; gx < gw; gx++) {
+            const vIdx = gy * gw + gx;
+            if (visited[vIdx]) continue;
+            const px = q.x1 + gx * step;
+            const py = q.y1 + gy * step;
+            const idx = (py * w + px) * 4;
+            const lum = 0.299 * data[idx] + 0.587 * data[idx + 1] + 0.114 * data[idx + 2];
+            if (lum >= darkThresh) continue;
+
+            // Flood-fill 8-connected dark component
+            const queue = [vIdx];
+            visited[vIdx] = 1;
+            let sumX = 0, sumY = 0, count = 0;
+            let bx1 = px, by1 = py, bx2 = px, by2 = py;
+
+            while (queue.length > 0) {
+              const curr = queue.pop();
+              const cy = Math.floor(curr / gw);
+              const cx = curr % gw;
+              const rx = q.x1 + cx * step;
+              const ry = q.y1 + cy * step;
+              sumX += rx;
+              sumY += ry;
+              count++;
+              if (rx < bx1) bx1 = rx;
+              if (rx > bx2) bx2 = rx;
+              if (ry < by1) by1 = ry;
+              if (ry > by2) by2 = ry;
+
+              for (let dy = -1; dy <= 1; dy++) {
+                for (let dx = -1; dx <= 1; dx++) {
+                  if (dx === 0 && dy === 0) continue;
+                  const nx = cx + dx, ny = cy + dy;
+                  if (nx >= 0 && nx < gw && ny >= 0 && ny < gh) {
+                    const nIdx = ny * gw + nx;
+                    if (!visited[nIdx]) {
+                      const npx = q.x1 + nx * step;
+                      const npy = q.y1 + ny * step;
+                      const pI = (npy * w + npx) * 4;
+                      const nLum = 0.299 * data[pI] + 0.587 * data[pI + 1] + 0.114 * data[pI + 2];
+                      if (nLum < darkThresh) {
+                        visited[nIdx] = 1;
+                        queue.push(nIdx);
+                      }
+                    }
+                  }
+                }
+              }
+            }
+
+            if (count < 16) continue; // Ignore tiny noise/specks
+
+            // Refine bounding box to 1px precision
+            bx1 = Math.max(q.x1, bx1 - 1);
+            by1 = Math.max(q.y1, by1 - 1);
+            bx2 = Math.min(q.x2 - 1, bx2 + 1);
+            by2 = Math.min(q.y2 - 1, by2 + 1);
+
+            const bw = bx2 - bx1 + 1;
+            const bh = by2 - by1 + 1;
+            const aspect = bw / Math.max(1, bh);
+
+            // Must be square-like and fit within quadrant
+            if (bw < 8 || bh < 8 || bw > qw * 0.90 || bh > qh * 0.90) continue;
+            if (aspect < 0.55 || aspect > 1.80) continue;
+
+            // Reject desk/scanner borders flush with outer canvas boundaries
+            const touchesOuterEdge = (bx1 <= 1 || by1 <= 1 || bx2 >= w - 2 || by2 >= h - 2);
+            if (touchesOuterEdge && (bw > qw * 0.65 || bh > qh * 0.65)) continue;
+
+            // Decode 6x6 ArUco bit pattern if present
+            const arucoInfo = decodeArucoBoxBitGrid(data, w, h, bx1, by1, bx2, by2, darkThresh);
+
+            // Fine 1px centroid over bounding box border/interior for subpixel accuracy
+            let fineSumX = 0, fineSumY = 0, fineCount = 0;
+            for (let fy = by1; fy <= by2; fy++) {
+              for (let fx = bx1; fx <= bx2; fx++) {
+                const fIdx = (fy * w + fx) * 4;
+                const fLum = 0.299 * data[fIdx] + 0.587 * data[fIdx + 1] + 0.114 * data[fIdx + 2];
+                if (fLum < darkThresh) {
+                  fineSumX += fx;
+                  fineSumY += fy;
+                  fineCount++;
+                }
+              }
+            }
+
+            const centerX = arucoInfo ? (bx1 + bx2) / 2.0 : (fineCount > 0 ? fineSumX / fineCount : sumX / count);
+            const centerY = arucoInfo ? (by1 + by2) / 2.0 : (fineCount > 0 ? fineSumY / fineCount : sumY / count);
+            const squareness = 1.0 - Math.min(1.0, Math.abs(1.0 - aspect));
+            const score = (arucoInfo ? 1000 - arucoInfo.bitErrors * 100 : 0) + squareness * 100 + Math.min(200, count);
+
+            candidates.push({
+              x: centerX,
+              y: centerY,
+              bx1, by1, bx2, by2,
+              boxCorners: [
+                { x: bx1, y: by1 },
+                { x: bx2, y: by1 },
+                { x: bx2, y: by2 },
+                { x: bx1, y: by2 }
+              ],
+              arucoId: arucoInfo ? arucoInfo.id : null,
+              rotationDeg: arucoInfo ? arucoInfo.rotationDeg : 0,
+              score
+            });
+          }
+        }
+
+        if (candidates.length > 0) {
+          candidates.sort((a, b) => b.score - a.score);
+          quadDetections[q.qIdx] = candidates[0];
+        }
+      }
+
+      const foundDetections = quadDetections.filter(Boolean);
+      const foundCount = foundDetections.length;
+
+      // Determine rotation if ArUco IDs were decoded
+      // Canonical quadrant assignment at 0 deg: Q0=ID0(TL), Q1=ID1(TR), Q2=ID2(BR), Q3=ID3(BL)
+      let rotationDeg = 0;
+      const byDecodedId = {};
+      for (let qi = 0; qi < 4; qi++) {
+        const det = quadDetections[qi];
+        if (det && det.arucoId !== null && byDecodedId[det.arucoId] === undefined) {
+          byDecodedId[det.arucoId] = { det, quadIdx: qi };
+        }
+      }
+
+      const decodedIdsCount = Object.keys(byDecodedId).length;
+      let orderedDetections = [...quadDetections];
+
+      if (decodedIdsCount >= 1) {
+        // Infer sheet rotation from both quadrant shifts of decoded marker IDs and internal 4x4 bit-grid orientation
+        const rotVotes = {};
+        for (const [idStr, info] of Object.entries(byDecodedId)) {
+          const mid = Number(idStr);
+          const shiftSteps = (info.quadIdx - mid + 4) % 4;
+          const quadDeg = shiftSteps * 90;
+          rotVotes[quadDeg] = (rotVotes[quadDeg] || 0) + 2;
+          if (info.det && typeof info.det.rotationDeg === "number") {
+            const bitDeg = ((info.det.rotationDeg % 360) + 360) % 360;
+            rotVotes[bitDeg] = (rotVotes[bitDeg] || 0) + 1;
+          }
+        }
+        let bestDeg = 0, bestVotes = -1;
+        for (const [degStr, v] of Object.entries(rotVotes)) {
+          if (v > bestVotes) {
+            bestVotes = v;
+            bestDeg = Number(degStr);
+          }
+        }
+        rotationDeg = bestDeg;
+
+        if (rotationDeg !== 0) {
+          const shiftSteps = (rotationDeg / 90) % 4;
+          // Marker `mid` sits in quadrant `(mid + shiftSteps) % 4`
+          orderedDetections = [0, 1, 2, 3].map(mid => {
+            const d = byDecodedId[mid] ? byDecodedId[mid].det : quadDetections[(mid + shiftSteps) % 4];
+            if (d && Array.isArray(d.boxCorners) && d.boxCorners.length === 4) {
+              const rolled = [0, 1, 2, 3].map(k => d.boxCorners[(k + shiftSteps) % 4]);
+              return { ...d, boxCorners: rolled };
+            }
+            return d;
           });
         }
       }
 
-      return corners; // [TL, TR, BR, BL]
+      let recoveredMissingCorner = false;
+      let missingCornerIndex = -1;
+      let lowConfidenceMarkers = false;
+      let reviewNote = "";
+
+      // Stage 1.4: 3-Marker Parallelogram Recovery (TL + BR = TR + BL)
+      if (foundCount === 3) {
+        missingCornerIndex = orderedDetections.findIndex(d => d === null);
+        if (missingCornerIndex !== -1) {
+          const tl = orderedDetections[0];
+          const tr = orderedDetections[1];
+          const br = orderedDetections[2];
+          const bl = orderedDetections[3];
+          let est = null;
+          if (missingCornerIndex === 0 && tr && br && bl) {
+            est = { x: tr.x + bl.x - br.x, y: tr.y + bl.y - br.y };
+          } else if (missingCornerIndex === 1 && tl && br && bl) {
+            est = { x: tl.x + br.x - bl.x, y: tl.y + br.y - bl.y };
+          } else if (missingCornerIndex === 2 && tl && tr && bl) {
+            est = { x: tr.x + bl.x - tl.x, y: tr.y + bl.y - tl.y };
+          } else if (missingCornerIndex === 3 && tl && tr && br) {
+            est = { x: tl.x + br.x - tr.x, y: tl.y + br.y - tr.y };
+          }
+          if (est) {
+            orderedDetections[missingCornerIndex] = {
+              x: est.x,
+              y: est.y,
+              recovered: true
+            };
+            recoveredMissingCorner = true;
+            reviewNote = "Aligned using 3 of 4 corner markers";
+          }
+        }
+      } else if (foundCount <= 2) {
+        lowConfidenceMarkers = true;
+        reviewNote = "Needs Review: Corner markers not clearly visible";
+      }
+
+      const corners = [0, 1, 2, 3].map(i => {
+        if (orderedDetections[i]) {
+          return { x: orderedDetections[i].x, y: orderedDetections[i].y };
+        }
+        return defaultCornerFor(quads[i]);
+      });
+
+      corners.foundCount = foundCount;
+      corners.rotationDeg = rotationDeg;
+      corners.recoveredMissingCorner = recoveredMissingCorner;
+      corners.missingCornerIndex = missingCornerIndex;
+      corners.lowConfidenceMarkers = lowConfidenceMarkers;
+      corners.reviewNote = reviewNote;
+      corners.detections = orderedDetections;
+      return corners; // [TL, TR, BR, BL] with Stage 1 metadata attached
     }
+    window.detectCornerMarkers = detectCornerMarkers;
 
     // Decode a filled physical exam sheet as a master answer key
     function decodeMasterKeyFromScan(img, layout, bubbleThreshold = 0.16) {
@@ -6071,7 +6447,145 @@
     }
     window.getHorizontalGradingItems = getHorizontalGradingItems;
 
-    // Crop ROI from rectified scan image into HTMLCanvasElement
+    // Stage 4: Morphological Box-Wall Stripping for OCR & ROI Crops
+    function stripBoxWallsFromImageData(imgData) {
+      if (!imgData || !imgData.data || !imgData.width || !imgData.height) return imgData;
+      const w = imgData.width;
+      const h = imgData.height;
+      const data = imgData.data;
+      if (w < 6 || h < 6 || data.length < w * h * 4) return imgData;
+
+      const isDark = (x, y) => {
+        const idx = (y * w + x) * 4;
+        const lum = 0.299 * data[idx] + 0.587 * data[idx + 1] + 0.114 * data[idx + 2];
+        return lum < 165;
+      };
+      const setWhite = (x, y) => {
+        const idx = (y * w + x) * 4;
+        data[idx] = 255;
+        data[idx + 1] = 255;
+        data[idx + 2] = 255;
+        data[idx + 3] = 255;
+      };
+
+      const bandY = Math.max(1, Math.round(h * 0.20));
+      const bandX = Math.max(1, Math.round(w * 0.20));
+
+      const isRowWall = (y) => {
+        let darkCnt = 0, maxRun = 0, curRun = 0;
+        for (let x = 0; x < w; x++) {
+          if (isDark(x, y)) {
+            darkCnt++;
+            curRun++;
+            if (curRun > maxRun) maxRun = curRun;
+          } else {
+            curRun = 0;
+          }
+        }
+        return (darkCnt > w * 0.75) || (maxRun >= w * 0.72);
+      };
+
+      const isColWall = (x) => {
+        let darkCnt = 0, maxRun = 0, curRun = 0;
+        for (let y = 0; y < h; y++) {
+          if (isDark(x, y)) {
+            darkCnt++;
+            curRun++;
+            if (curRun > maxRun) maxRun = curRun;
+          } else {
+            curRun = 0;
+          }
+        }
+        return (darkCnt > h * 0.75) || (maxRun >= h * 0.72);
+      };
+
+      // 1. Strip horizontal border walls in top 20% and bottom 20% perimeter bands
+      const topWallRows = [];
+      for (let y = 0; y < bandY; y++) {
+        if (isRowWall(y)) topWallRows.push(y);
+      }
+      if (topWallRows.length > 0) {
+        const refY = Math.min(h - 1, Math.max(...topWallRows) + 2);
+        const refIsWall = isRowWall(refY);
+        for (const y of topWallRows) {
+          for (let x = 0; x < w; x++) {
+            const connectedToStroke = !refIsWall && isDark(x, refY);
+            if (!connectedToStroke) setWhite(x, y);
+          }
+        }
+      }
+
+      const botWallRows = [];
+      for (let y = h - bandY; y < h; y++) {
+        if (isRowWall(y)) botWallRows.push(y);
+      }
+      if (botWallRows.length > 0) {
+        const refY = Math.max(0, Math.min(...botWallRows) - 2);
+        const refIsWall = isRowWall(refY);
+        for (const y of botWallRows) {
+          for (let x = 0; x < w; x++) {
+            const connectedToStroke = !refIsWall && isDark(x, refY);
+            if (!connectedToStroke) setWhite(x, y);
+          }
+        }
+      }
+
+      // 2. Strip vertical border walls in left 20% and right 20% perimeter bands
+      const leftWallCols = [];
+      for (let x = 0; x < bandX; x++) {
+        if (isColWall(x)) leftWallCols.push(x);
+      }
+      if (leftWallCols.length > 0) {
+        const refX = Math.min(w - 1, Math.max(...leftWallCols) + 2);
+        const refIsWall = isColWall(refX);
+        for (const x of leftWallCols) {
+          for (let y = 0; y < h; y++) {
+            const connectedToStroke = !refIsWall && isDark(refX, y);
+            if (!connectedToStroke) setWhite(x, y);
+          }
+        }
+      }
+
+      const rightWallCols = [];
+      for (let x = w - bandX; x < w; x++) {
+        if (isColWall(x)) rightWallCols.push(x);
+      }
+      if (rightWallCols.length > 0) {
+        const refX = Math.max(0, Math.min(...rightWallCols) - 2);
+        const refIsWall = isColWall(refX);
+        for (const x of rightWallCols) {
+          for (let y = 0; y < h; y++) {
+            const connectedToStroke = !refIsWall && isDark(refX, y);
+            if (!connectedToStroke) setWhite(x, y);
+          }
+        }
+      }
+
+      return imgData;
+    }
+    window.stripBoxWallsFromImageData = stripBoxWallsFromImageData;
+
+    // Helper to draw grade.scanImg into a canonical upright canvas (undoing 90/180/270 deg scan rotation)
+    function drawUprightScanImage(ctx, scanImg, targetW, targetH, rotationDeg) {
+      if (!ctx || !ctx.drawImage || !scanImg) return;
+      const rot = ((Number(rotationDeg) || 0) % 360 + 360) % 360;
+      if (rot === 0 || !ctx.save || !ctx.translate || !ctx.rotate) {
+        ctx.drawImage(scanImg, 0, 0, targetW, targetH);
+        return;
+      }
+      ctx.save();
+      const unrotRad = -rot * (Math.PI / 180);
+      ctx.translate(targetW / 2, targetH / 2);
+      ctx.rotate(unrotRad);
+      if (rot === 90 || rot === 270) {
+        ctx.drawImage(scanImg, -targetH / 2, -targetW / 2, targetH, targetW);
+      } else {
+        ctx.drawImage(scanImg, -targetW / 2, -targetH / 2, targetW, targetH);
+      }
+      ctx.restore();
+    }
+
+    // Crop ROI from rectified scan image into HTMLCanvasElement (with Stage 4 wall stripping)
     function cropROIFromScan(grade, roi, destCanvas) {
       if (!grade || !roi || !destCanvas) return;
       const pxPerMm = 4.0;
@@ -6079,6 +6593,13 @@
       const canY = Math.round(roi.y * pxPerMm);
       const canW = Math.round(roi.w * pxPerMm);
       const canH = Math.round(roi.h * pxPerMm);
+
+      // Minimal 4% safety inset so edge handwriting is preserved
+      const insetPx = Math.max(0, Math.round(Math.min(canW, canH) * 0.04));
+      const cropX = canX + insetPx;
+      const cropY = canY + insetPx;
+      const cropW = Math.max(1, canW - insetPx * 2);
+      const cropH = Math.max(1, canH - insetPx * 2);
 
       const scale = 1.6;
       destCanvas.width = Math.max(200, Math.round(canW * scale));
@@ -6097,8 +6618,13 @@
           off.height = grade.targetH || 1188;
           const offCtx = off.getContext('2d');
           if (offCtx && offCtx.drawImage) {
-            offCtx.drawImage(grade.scanImg, 0, 0, off.width, off.height);
-            destCtx.drawImage(off, canX, canY, canW, canH, 0, 0, destCanvas.width, destCanvas.height);
+            drawUprightScanImage(offCtx, grade.scanImg, off.width, off.height, grade.rotationDeg);
+            destCtx.drawImage(off, cropX, cropY, cropW, cropH, 0, 0, destCanvas.width, destCanvas.height);
+            if (destCtx.getImageData && destCtx.putImageData) {
+              const croppedData = destCtx.getImageData(0, 0, destCanvas.width, destCanvas.height);
+              stripBoxWallsFromImageData(croppedData);
+              destCtx.putImageData(croppedData, 0, 0);
+            }
           }
         } catch (_) {
           destCtx.fillStyle = '#333333';
@@ -6116,7 +6642,137 @@
     }
     window.cropROIFromScan = cropROIFromScan;
 
-    // Process a single scanned exam image
+    // Stage 2: Local Section Box & Student ID Grid Snapping via Horizontal/Vertical Projection Profiles
+    function snapZoneOffsets(offCtx, imgW, imgH, layout, H_canToSrc, pxPerMm) {
+      const offsets = {};
+      if (!layout || !Array.isArray(layout.zones) || layout.zones.length === 0) return offsets;
+
+      const searchMm = 3.0;
+      const maxClampMm = 2.5;
+      const stepMm = 0.5;
+
+      const sampleEdgeShift = (isHorizontal, baseCoordMm, spanStartMm, spanLenMm) => {
+        let bestShift = 0, bestRatio = 0;
+        const profile = [];
+        for (let delta = -searchMm; delta <= searchMm; delta += stepMm) {
+          let dark = 0, tot = 0;
+          for (let frac = 0.12; frac <= 0.88; frac += 0.04) {
+            const canPt = isHorizontal
+              ? { x: (spanStartMm + spanLenMm * frac) * pxPerMm, y: (baseCoordMm + delta) * pxPerMm }
+              : { x: (baseCoordMm + delta) * pxPerMm, y: (spanStartMm + spanLenMm * frac) * pxPerMm };
+            const srcPt = applyHomography(H_canToSrc, canPt);
+            const sx = Math.round(srcPt.x), sy = Math.round(srcPt.y);
+            if (sx >= 0 && sx < imgW && sy >= 0 && sy < imgH) {
+              const p = offCtx.getImageData(sx, sy, 1, 1).data;
+              if (p && p.length >= 3) {
+                const lum = 0.299 * p[0] + 0.587 * p[1] + 0.114 * p[2];
+                if (lum < 155) dark++;
+                tot++;
+              }
+            }
+          }
+          const ratio = tot > 0 ? dark / tot : 0;
+          profile.push(ratio);
+          if (ratio > bestRatio) {
+            bestRatio = ratio;
+            bestShift = delta;
+          }
+        }
+        const avgRatio = profile.length > 0 ? profile.reduce((s, r) => s + r, 0) / profile.length : 0;
+        if (bestRatio >= 0.45 && (bestRatio - avgRatio) >= 0.20 && Math.abs(bestShift) <= maxClampMm) {
+          return bestShift;
+        }
+        return null;
+      };
+
+      for (const z of layout.zones) {
+        const b = z.bbox;
+        if (!b) continue;
+        const zx = Array.isArray(b) ? b[0] : b.x;
+        const zy = Array.isArray(b) ? b[1] : b.y;
+        const zw = Array.isArray(b) ? b[2] : b.w;
+        const zh = Array.isArray(b) ? b[3] : b.h;
+        if (!(zw > 10 && zh > 8)) continue;
+
+        const dyCandidates = [];
+        const dxCandidates = [];
+
+        const topShift = sampleEdgeShift(true, zy, zx, zw);
+        if (topShift !== null) dyCandidates.push(topShift);
+        const botShift = sampleEdgeShift(true, zy + zh, zx, zw);
+        if (botShift !== null) dyCandidates.push(botShift);
+
+        const leftShift = sampleEdgeShift(false, zx, zy, zh);
+        if (leftShift !== null) dxCandidates.push(leftShift);
+        const rightShift = sampleEdgeShift(false, zx + zw, zy, zh);
+        if (rightShift !== null) dxCandidates.push(rightShift);
+
+        const validDy = dyCandidates.length > 0
+          ? Math.max(-maxClampMm, Math.min(maxClampMm, dyCandidates.reduce((a, c) => a + c, 0) / dyCandidates.length))
+          : 0;
+        const validDx = dxCandidates.length > 0
+          ? Math.max(-maxClampMm, Math.min(maxClampMm, dxCandidates.reduce((a, c) => a + c, 0) / dxCandidates.length))
+          : 0;
+
+        offsets[z.id] = { dxMm: validDx, dyMm: validDy };
+      }
+      return offsets;
+    }
+    window.snapZoneOffsets = snapZoneOffsets;
+
+    // Stage 3: Classify a single bubble's 4-quadrant & 8-sector morphology
+    function classifyBubbleMorphology(diag, bubbleThreshold) {
+      const D = diag.fillDensity || 0;
+      const q = diag.quadrantDensities || [D, D, D, D];
+      const maxQ = Math.max(...q, 0);
+      const sortedQ = [...q].sort((a, b) => a - b);
+      const secondLowestQ = sortedQ.length >= 2 ? sortedQ[1] : sortedQ[0];
+      const uniformity = maxQ > 1e-4 ? (secondLowestQ / maxQ) : 0;
+      const filledQuads = q.filter(v => v >= Math.max(0.14, maxQ * 0.42)).length;
+
+      const sectorFills = diag.sectorFills || [];
+      const maxSec = sectorFills.length > 0 ? Math.max(...sectorFills, 0) : 0;
+      const hollowSectors = sectorFills.filter(v => v < Math.max(0.18, maxSec * 0.35)).length;
+      const strokeContrast = diag.strokeContrast ?? D;
+      const midOuterFill = diag.midOuterFill ?? D;
+      const centerFill = diag.centerFill ?? D;
+
+      let altSectorGap = 0;
+      let minAxisMean = 1;
+      if (sectorFills.length === 8) {
+        const cardinalMean = (sectorFills[0] + sectorFills[2] + sectorFills[4] + sectorFills[6]) / 4;
+        const diagonalMean = (sectorFills[1] + sectorFills[3] + sectorFills[5] + sectorFills[7]) / 4;
+        altSectorGap = Math.abs(diagonalMean - cardinalMean);
+        minAxisMean = Math.min(cardinalMean, diagonalMean);
+      }
+
+      // Detect check_or_cross:
+      // High-contrast ink/pencil stroke crossing center/ring with lopsided quadrants or hollow angular sectors / alternating axes
+      const hasSharpStroke = strokeContrast >= 0.35 && (diag.midOuterStrokeCount == null || diag.midOuterStrokeCount >= 2);
+      const isLopsided = (filledQuads <= 2 || uniformity < 0.35) && (centerFill >= 0.15 || (diag.midOuterStrokeCount ?? 3) >= 3);
+      const isUniformPencilShading = filledQuads === 4 && uniformity >= 0.40 && D >= 0.44 && altSectorGap < 0.28;
+      const isCrosshair = !isUniformPencilShading && sectorFills.length === 8 && (
+        (hollowSectors >= 3 && midOuterFill < 0.58 && (centerFill >= 0.30 || maxSec >= 0.38)) ||
+        (centerFill >= 0.60 && altSectorGap >= 0.28 && minAxisMean < 0.40)
+      );
+
+      if (hasSharpStroke && D >= 0.09 && D < 0.72 && (isLopsided || isCrosshair)) {
+        return { markType: 'check_or_cross', isShaded: false, uniformity, filledQuads };
+      }
+
+      if (D >= bubbleThreshold && filledQuads >= 3 && uniformity >= 0.35) {
+        return { markType: 'shaded', isShaded: true, uniformity, filledQuads };
+      }
+
+      if (D >= 0.13) {
+        return { markType: 'faint', isShaded: false, uniformity, filledQuads };
+      }
+
+      return { markType: 'blank', isShaded: false, uniformity, filledQuads };
+    }
+    window.classifyBubbleMorphology = classifyBubbleMorphology;
+
+    // Process a single scanned exam image using the 4-Stage Coarse-to-Fine Pipeline
     function processExamScan(scan, layout, key, bubbleThreshold) {
       // Target canonical canvas resolution: 4.0 px/mm (A4 = 840 x 1188 px)
       const pxPerMm = 4.0;
@@ -6129,10 +6785,10 @@
       const offCtx = offscreen.getContext('2d', { willReadFrequently: true });
       offCtx.drawImage(scan.img, 0, 0);
 
-      // 1. Detect 4 corner markers in source image
+      // Stage 1: Detect 4 corner ArUco markers in source image (with auto-rotation & 3-marker recovery)
       const srcCorners = detectCornerMarkers(offCtx, scan.img.width, scan.img.height);
 
-      // 2. Target marker positions from layout (mm * pxPerMm)
+      // Target marker positions from layout (mm * pxPerMm)
       // markers: 0: TL, 1: TR, 2: BR, 3: BL
       const dstCorners = [
         { x: layout.markers["0"].center[0] * pxPerMm, y: layout.markers["0"].center[1] * pxPerMm },
@@ -6141,103 +6797,377 @@
         { x: layout.markers["3"].center[0] * pxPerMm, y: layout.markers["3"].center[1] * pxPerMm }
       ];
 
-      // 3. Compute homography mapping canonical coords -> source scan coords
+      // Compute homography mapping canonical coords -> source scan coords
       const H_canToSrc = computeHomography(dstCorners, srcCorners);
 
-      // 4. Sample each bubble in layout
-      const itemAnswers = {};
+      // Stage 2: Local Section Box & Student ID Grid Snapping
+      const zoneOffsets = snapZoneOffsets(offCtx, scan.img.width, scan.img.height, layout, H_canToSrc, pxPerMm);
+
+      // Stage 3: Sample each bubble with Column-Tracked Joint Group Ring Alignment, 16-Point Ring Snap, Paper Halo Normalization, & 4-Quadrant Morphology
       const bubbleDiagnostics = [];
+      const itemDiagMap = {};
 
+      // Group bubbles by item so each row of options can be jointly aligned against 3D page curvature
+      const itemBubblesMap = new Map();
       for (const b of layout.bubbles) {
-        const canX = b.center[0] * pxPerMm;
-        const canY = b.center[1] * pxPerMm;
-        const rad = b.radius * pxPerMm;
+        if (!itemBubblesMap.has(b.item)) itemBubblesMap.set(b.item, []);
+        itemBubblesMap.get(b.item).push(b);
+      }
 
-        // Map canonical center to source image pixels
-        const srcPt = applyHomography(H_canToSrc, { x: canX, y: canY });
+      // Helper to score a 16-ray outward-gradient ring at source coordinate (cx, cy) with radius ringRad
+      const scoreBubbleRingGrad = (cx, cy, ringRad) => {
+        const rIn = Math.max(2, ringRad * 0.98);
+        const rOut = Math.max(rIn + 1.5, ringRad * 1.28);
+        const pad = Math.ceil(rOut) + 2;
+        if (cx < pad || cx >= scan.img.width - pad || cy < pad || cy >= scan.img.height - pad) return -1e6;
+        let gradSum = 0;
+        for (let k = 0; k < 16; k++) {
+          const ang = (k * Math.PI) / 8;
+          const ca = Math.cos(ang), sa = Math.sin(ang);
+          const rx = Math.round(cx + rIn * ca), ry = Math.round(cy + rIn * sa);
+          const hx = Math.round(cx + rOut * ca), hy = Math.round(cy + rOut * sa);
+          const pR = offCtx.getImageData(rx, ry, 1, 1).data;
+          const pH = offCtx.getImageData(hx, hy, 1, 1).data;
+          const lumR = 0.299 * pR[0] + 0.587 * pR[1] + 0.114 * pR[2];
+          const lumH = 0.299 * pH[0] + 0.587 * pH[1] + 0.114 * pH[2];
+          const diff = lumH - lumR;
+          if (diff > 0) gradSum += Math.min(60, diff);
+        }
+        return gradSum;
+      };
 
-        // Sample bubble interior (radius * 0.65) vs background annulus (radius * 1.0 to 1.25)
-        const sampleR = Math.max(2, Math.round(rad * 0.65));
-        const bgR = Math.max(4, Math.round(rad * 1.25));
+      // Pre-index rows by (group, columnX) for local 3-row constellation snapping
+      const colRowsMap = new Map();
+      for (const [, rbList] of itemBubblesMap.entries()) {
+        if (rbList.length < 2) continue;
+        const b0 = rbList[0];
+        const colKey = `${b0.group || ''}_${Math.round(b0.center[0] / 5.0) * 5}`;
+        if (!colRowsMap.has(colKey)) colRowsMap.set(colKey, []);
+        colRowsMap.get(colKey).push(rbList);
+      }
 
-        let bubbleLumSum = 0, bubbleCount = 0;
-        let bgLumSum = 0, bgCount = 0;
+      for (const [itemKey, rowBubbles] of itemBubblesMap.entries()) {
+        // Stage 3.0: Local 3-Row Constellation Ring Alignment
+        let rowDxPx = 0, rowDyPx = 0;
+        if (rowBubbles.length >= 2) {
+          const b0 = rowBubbles[0];
+          const zOff0 = (b0.group && zoneOffsets[b0.group]) ? zoneOffsets[b0.group] : { dxMm: 0, dyMm: 0 };
+          const colKey = `${b0.group || ''}_${Math.round(b0.center[0] / 5.0) * 5}`;
+          const peerRows = colRowsMap.get(colKey) || [rowBubbles];
+          const localBubbles = [];
+          for (const pr of peerRows) {
+            if (Math.abs(pr[0].center[1] - b0.center[1]) <= 7.5) {
+              localBubbles.push(...pr);
+            }
+          }
+          // Estimate local source px per canonical mm
+          const pA = applyHomography(H_canToSrc, { x: (b0.center[0] + zOff0.dxMm) * pxPerMm, y: (b0.center[1] + zOff0.dyMm) * pxPerMm });
+          const pB = applyHomography(H_canToSrc, { x: (b0.center[0] + zOff0.dxMm + 1.0) * pxPerMm, y: (b0.center[1] + zOff0.dyMm) * pxPerMm });
+          const srcPxPerMm = Math.max(1.0, Math.hypot(pB.x - pA.x, pB.y - pA.y));
+          const searchR = Math.max(3, Math.round(2.4 * srcPxPerMm));
 
-        const sx = Math.round(srcPt.x);
-        const sy = Math.round(srcPt.y);
+          const baseCenters = localBubbles.map(rb => {
+            const zo = (rb.group && zoneOffsets[rb.group]) ? zoneOffsets[rb.group] : { dxMm: 0, dyMm: 0 };
+            const sp = applyHomography(H_canToSrc, { x: (rb.center[0] + zo.dxMm) * pxPerMm, y: (rb.center[1] + zo.dyMm) * pxPerMm });
+            return { x: Math.round(sp.x), y: Math.round(sp.y), r: Math.max(2, Math.round((rb.radius || 2.1) * srcPxPerMm)) };
+          });
 
-        // Adaptive bubble centering (snaps to physical circle under wavy scans)
-        const searchW = Math.max(2, Math.round(rad * 0.75));
-        const totalW = bgR + searchW;
-        let optSx = sx;
-        let optSy = sy;
-
-        if (sx >= totalW && sx < scan.img.width - totalW && sy >= totalW && sy < scan.img.height - totalW) {
-          const searchBlock = offCtx.getImageData(sx - totalW, sy - totalW, totalW * 2 + 1, totalW * 2 + 1).data;
-          const sBlockSize = totalW * 2 + 1;
-          const ringRad = Math.round(rad);
-          let minRingScore = Infinity;
-
-          for (let ody = -searchW; ody <= searchW; ody += 2) {
-            for (let odx = -searchW; odx <= searchW; odx += 2) {
-              let rSum = 0;
-              for (let k = 0; k < 8; k++) {
-                const ang = (k * Math.PI) / 4;
-                const rpx = Math.round(odx + ringRad * Math.cos(ang));
-                const rpy = Math.round(ody + ringRad * Math.sin(ang));
-                const pIdx = ((rpy + totalW) * sBlockSize + (rpx + totalW)) * 4;
-                rSum += 0.299 * searchBlock[pIdx] + 0.587 * searchBlock[pIdx + 1] + 0.114 * searchBlock[pIdx + 2];
+          let bestScore = -Infinity;
+          let bestDx = 0, bestDy = 0;
+          const step = searchR > 6 ? 2 : 1;
+          for (let dy = -searchR; dy <= searchR; dy += step) {
+            for (let dx = -searchR; dx <= searchR; dx += step) {
+              let sumScore = 0;
+              for (const bc of baseCenters) {
+                sumScore += scoreBubbleRingGrad(bc.x + dx, bc.y + dy, bc.r);
               }
-              if (rSum < minRingScore) {
-                minRingScore = rSum;
-                optSx = sx + odx;
-                optSy = sy + ody;
+              const meanScore = sumScore / baseCenters.length;
+              const regScore = meanScore - Math.hypot(dx, dy) * 2.5;
+              if (regScore > bestScore) {
+                bestScore = regScore;
+                bestDx = dx;
+                bestDy = dy;
               }
             }
           }
+          rowDxPx = bestDx;
+          rowDyPx = bestDy;
         }
 
-        if (optSx >= bgR && optSx < scan.img.width - bgR && optSy >= bgR && optSy < scan.img.height - bgR) {
-          const block = offCtx.getImageData(optSx - bgR, optSy - bgR, bgR * 2 + 1, bgR * 2 + 1).data;
-          const bSize = bgR * 2 + 1;
+        for (const b of rowBubbles) {
+          const zOff = (b.group && zoneOffsets[b.group]) ? zoneOffsets[b.group] : { dxMm: 0, dyMm: 0 };
+          const canX = (b.center[0] + zOff.dxMm) * pxPerMm;
+          const canY = (b.center[1] + zOff.dyMm) * pxPerMm;
+          const rad = (b.radius || 2.1) * pxPerMm;
 
-          for (let dy = -bgR; dy <= bgR; dy++) {
-            for (let dx = -bgR; dx <= bgR; dx++) {
-              const d2 = dx * dx + dy * dy;
-              const idx = ((dy + bgR) * bSize + (dx + bgR)) * 4;
-              const lum = 0.299 * block[idx] + 0.587 * block[idx + 1] + 0.114 * block[idx + 2];
+          // Map canonical center to source image pixels + joint row offset
+          const srcPt = applyHomography(H_canToSrc, { x: canX, y: canY });
 
-              if (d2 <= sampleR * sampleR) {
-                bubbleLumSum += lum;
-                bubbleCount++;
-              } else if (d2 > (rad * rad) && d2 <= (bgR * bgR)) {
-                bgLumSum += lum;
-                bgCount++;
+          // Inner core (0.70r) vs immediate white paper halo annulus (1.15r to 1.40r)
+          const sampleR = Math.max(2, Math.round(rad * 0.70));
+          const haloInR = rad * 1.15;
+          const bgR = Math.max(4, Math.round(rad * 1.40));
+
+          const sx = Math.round(srcPt.x) + rowDxPx;
+          const sy = Math.round(srcPt.y) + rowDyPx;
+
+          // Stage 3.1: Fine Per-Bubble 16-Ray Outward-Gradient Ring Snap within +/- 0.45mm
+          const searchW = Math.max(1, Math.round(Math.min(0.45 * pxPerMm, rad * 0.35)));
+          const totalW = bgR + searchW + 2;
+          let optSx = sx;
+          let optSy = sy;
+
+          if (sx >= totalW && sx < scan.img.width - totalW && sy >= totalW && sy < scan.img.height - totalW) {
+            const searchBlock = offCtx.getImageData(sx - totalW, sy - totalW, totalW * 2 + 1, totalW * 2 + 1).data;
+            const sBlockSize = totalW * 2 + 1;
+            if (searchBlock && searchBlock.length >= sBlockSize * sBlockSize * 4) {
+              const rIn = Math.max(2, rad * 0.98);
+              const rOut = Math.max(rIn + 1.5, rad * 1.28);
+              let maxGradScore = -Infinity;
+
+              for (let ody = -searchW; ody <= searchW; ody += 1) {
+                for (let odx = -searchW; odx <= searchW; odx += 1) {
+                  let gradSum = 0;
+                  let posRays = 0;
+                  for (let k = 0; k < 16; k++) {
+                    const ang = (k * Math.PI) / 8;
+                    const ca = Math.cos(ang), sa = Math.sin(ang);
+                    const rx = Math.round(odx + rIn * ca), ry = Math.round(ody + rIn * sa);
+                    const hx = Math.round(odx + rOut * ca), hy = Math.round(ody + rOut * sa);
+                    const pRIdx = ((ry + totalW) * sBlockSize + (rx + totalW)) * 4;
+                    const pHIdx = ((hy + totalW) * sBlockSize + (hx + totalW)) * 4;
+                    const lumR = 0.299 * searchBlock[pRIdx] + 0.587 * searchBlock[pRIdx + 1] + 0.114 * searchBlock[pRIdx + 2];
+                    const lumH = 0.299 * searchBlock[pHIdx] + 0.587 * searchBlock[pHIdx + 1] + 0.114 * searchBlock[pHIdx + 2];
+                    const diff = lumH - lumR;
+                    if (diff > 0) {
+                      gradSum += Math.min(60, diff);
+                      if (diff >= 8) posRays++;
+                    }
+                  }
+                  const regScore = gradSum - Math.hypot(odx, ody) * 3.5;
+                  if (posRays >= 8 && regScore > maxGradScore) {
+                    maxGradScore = regScore;
+                    optSx = sx + odx;
+                    optSy = sy + ody;
+                  }
+                }
               }
             }
           }
-        }
 
-        const bubbleLum = bubbleCount > 0 ? (bubbleLumSum / bubbleCount) : 255;
-        const bgLum = bgCount > 0 ? (bgLumSum / bgCount) : 240;
-        const fillDensity = bgLum > 0 ? Math.max(0, (bgLum - bubbleLum) / bgLum) : 0;
-        const isMarked = fillDensity >= bubbleThreshold;
+          let bubbleLumSum = 0, bubbleCount = 0;
+          let haloBgLum = 240;
+          let minCoreLum = 255;
 
-        bubbleDiagnostics.push({
-          item: b.item,
-          choice: b.choice,
-          canX, canY, rad,
-          fillDensity,
-          isMarked
-        });
+          // 4 quadrants: TL (0), TR (1), BL (2), BR (3)
+          const qLumSum = [0, 0, 0, 0];
+          const qCount = [0, 0, 0, 0];
 
-        if (isMarked) {
-          if (!itemAnswers[b.item]) itemAnswers[b.item] = [];
-          itemAnswers[b.item].push(b.choice);
+          // 8 angular sectors in mid-outer core (0.42 * sampleR <= d <= sampleR) and center crosshair
+          const secDarkCount = new Array(8).fill(0);
+          const secLumSum = new Array(8).fill(0);
+          const secTotalCount = new Array(8).fill(0);
+          let centerLumSum = 0, centerCount = 0;
+          let midOuterLumSum = 0, midOuterCount = 0;
+          let midOuterStrokeCount = 0;
+
+          if (optSx >= bgR && optSx < scan.img.width - bgR && optSy >= bgR && optSy < scan.img.height - bgR) {
+            const block = offCtx.getImageData(optSx - bgR, optSy - bgR, bgR * 2 + 1, bgR * 2 + 1).data;
+            const bSize = bgR * 2 + 1;
+
+            if (block && block.length >= bSize * bSize * 4) {
+              // Pass 1: Measure local paper halo luminance in [1.15r, 1.40r] using 75th percentile
+              // (immune to thick checkmark tails or adjacent question numbers spilling into annulus)
+              const haloLums = [];
+              for (let dy = -bgR; dy <= bgR; dy++) {
+                for (let dx = -bgR; dx <= bgR; dx++) {
+                  const d2 = dx * dx + dy * dy;
+                  if (d2 >= haloInR * haloInR && d2 <= bgR * bgR) {
+                    const idx = ((dy + bgR) * bSize + (dx + bgR)) * 4;
+                    const lum = 0.299 * block[idx] + 0.587 * block[idx + 1] + 0.114 * block[idx + 2];
+                    haloLums.push(lum);
+                  }
+                }
+              }
+              if (haloLums.length > 0) {
+                haloLums.sort((a, b) => a - b);
+                const p75Idx = Math.min(haloLums.length - 1, Math.floor(haloLums.length * 0.75));
+                haloBgLum = Math.max(80, haloLums[p75Idx]);
+              }
+              const darkPixelThresh = haloBgLum * 0.76;
+              const sharpStrokeThresh = haloBgLum * 0.58;
+              const centerR2 = Math.pow(sampleR * 0.42, 2);
+
+              // Pass 2: Decompose inner core (d <= sampleR)
+              for (let dy = -sampleR; dy <= sampleR; dy++) {
+                for (let dx = -sampleR; dx <= sampleR; dx++) {
+                  const d2 = dx * dx + dy * dy;
+                  if (d2 > sampleR * sampleR) continue;
+                  const idx = ((dy + bgR) * bSize + (dx + bgR)) * 4;
+                  const lum = 0.299 * block[idx] + 0.587 * block[idx + 1] + 0.114 * block[idx + 2];
+
+                  bubbleLumSum += lum;
+                  bubbleCount++;
+                  if (lum < minCoreLum) minCoreLum = lum;
+
+                  const qIdx = (dy < 0 ? 0 : 2) + (dx < 0 ? 0 : 1);
+                  qLumSum[qIdx] += lum;
+                  qCount[qIdx]++;
+
+                  if (d2 < centerR2) {
+                    centerLumSum += lum;
+                    centerCount++;
+                  } else {
+                    midOuterLumSum += lum;
+                    midOuterCount++;
+                    if (lum < sharpStrokeThresh) midOuterStrokeCount++;
+                    const ang = (Math.atan2(dy, dx) + Math.PI * 2 + Math.PI / 8) % (Math.PI * 2);
+                    const sIdx = Math.min(7, Math.floor(ang / (Math.PI / 4)));
+                    secTotalCount[sIdx]++;
+                    secLumSum[sIdx] += lum;
+                    if (lum < darkPixelThresh) secDarkCount[sIdx]++;
+                  }
+                }
+              }
+            }
+          }
+
+          const bubbleLum = bubbleCount > 0 ? (bubbleLumSum / bubbleCount) : 255;
+          const bgLum = haloBgLum;
+          const fillDensity = bgLum > 0 ? Math.max(0, (bgLum - bubbleLum) / bgLum) : 0;
+
+          const quadrantDensities = qLumSum.map((s, idx) => {
+            if (qCount[idx] === 0 || bgLum <= 0) return fillDensity;
+            return Math.max(0, (bgLum - (s / qCount[idx])) / bgLum);
+          });
+
+          const sectorFills = secTotalCount.map((tot, idx) => {
+            if (tot <= 0) return 0;
+            const binF = secDarkCount[idx] / tot;
+            const conF = bgLum > 0 ? Math.max(0, (bgLum - (secLumSum[idx] / tot)) / bgLum - 0.025) : 0;
+            return Math.max(binF, conF);
+          });
+          const centerFill = (centerCount > 0 && bgLum > 0) ? Math.max(0, (bgLum - (centerLumSum / centerCount)) / bgLum) : fillDensity;
+          const midOuterFill = (midOuterCount > 0 && bgLum > 0) ? Math.max(0, (bgLum - (midOuterLumSum / midOuterCount)) / bgLum) : fillDensity;
+          const strokeContrast = (bubbleCount > 0 && bgLum > 0) ? Math.max(0, (bgLum - minCoreLum) / bgLum) : 0;
+
+          const diag = {
+            item: b.item,
+            choice: b.choice,
+            canX, canY, rad,
+            optSx, optSy,
+            fillDensity,
+            quadrantDensities,
+            sectorFills,
+            centerFill,
+            midOuterFill,
+            strokeContrast,
+            midOuterStrokeCount: bubbleCount > 0 ? midOuterStrokeCount : null,
+            paperHaloLum: bgLum,
+            markType: 'blank',
+            isMarked: false
+          };
+
+          const morph = classifyBubbleMorphology(diag, bubbleThreshold);
+          diag.markType = morph.markType;
+          diag.uniformity = morph.uniformity;
+          diag.isMarked = morph.isShaded;
+
+          bubbleDiagnostics.push(diag);
+          if (!itemDiagMap[b.item]) itemDiagMap[b.item] = [];
+          itemDiagMap[b.item].push(diag);
         }
       }
 
-      // 5. Score student answers against answer key
+      // Row-level evaluation for erasures, faint marks, and check/cross flags under Strict Shading Policy
+      const itemAnswers = {};
+      const nonStandardQuestions = [];
+      const erasureQuestions = [];
+      const faintQuestions = [];
+      const specificReviewReasons = [];
+
+      if (srcCorners.reviewNote) {
+        specificReviewReasons.push(srcCorners.reviewNote);
+      }
+
+      for (const [itemKey, rowDiags] of Object.entries(itemDiagMap)) {
+        const sortedRow = [...rowDiags].sort((a, b) => b.fillDensity - a.fillDensity);
+        const top = sortedRow[0];
+        const second = sortedRow.length > 1 ? sortedRow[1] : null;
+        const rowBaseline = sortedRow.length >= 3
+          ? sortedRow[Math.floor(sortedRow.length / 2)].fillDensity
+          : (second ? second.fillDensity : 0);
+
+        const isSid = itemKey.startsWith('sid[');
+        const qLabel = isSid ? itemKey : `Q${itemKey}`;
+
+        const shadedList = rowDiags.filter(d => d.markType === 'shaded');
+        const checkCrossList = (shadedList.length >= 1 && top.markType === 'shaded')
+          ? []
+          : rowDiags.filter(
+              d => d.markType === 'check_or_cross' && d.fillDensity >= 0.12 && (d.fillDensity - rowBaseline) >= 0.07
+            );
+
+        if (checkCrossList.length > 0) {
+          // Strict Shading Policy: Checkmarks and crosses are NOT auto-scored; flag for review
+          for (const d of rowDiags) d.isMarked = false;
+          if (!isSid) {
+            nonStandardQuestions.push(itemKey);
+            specificReviewReasons.push(`Needs Review: Non-standard mark (Check/Cross) on ${qLabel}`);
+          }
+          continue;
+        }
+
+        if (shadedList.length === 1) {
+          // Check if runner-up bubble has an erasure smudge (0.14 <= D2 < D1 and >= 0.08 above row baseline)
+          if (
+            second &&
+            second.fillDensity >= 0.14 &&
+            (second.fillDensity - rowBaseline) >= 0.08 &&
+            !(top.fillDensity >= 0.65 && second.fillDensity < 0.22)
+          ) {
+            second.markType = 'erasure';
+            second.isMarked = false;
+            if (!isSid) {
+              // Do not silently guess on erasure; hold for instructor review
+              top.isMarked = false;
+              erasureQuestions.push(itemKey);
+              specificReviewReasons.push(`Needs Review: Possible erasure on ${qLabel}`);
+            } else {
+              itemAnswers[itemKey] = [shadedList[0].choice];
+            }
+          } else {
+            itemAnswers[itemKey] = [shadedList[0].choice];
+          }
+        } else if (shadedList.length > 1) {
+          // Check if one mark is much darker than the second (erasure profile) vs double-shaded
+          if (second && (top.fillDensity - second.fillDensity) >= 0.15) {
+            second.markType = 'erasure';
+            second.isMarked = false;
+            if (!isSid) {
+              erasureQuestions.push(itemKey);
+              specificReviewReasons.push(`Needs Review: Possible erasure on ${qLabel}`);
+            }
+            itemAnswers[itemKey] = shadedList.map(d => d.choice);
+          } else {
+            itemAnswers[itemKey] = shadedList.map(d => d.choice);
+          }
+        } else {
+          // Zero shaded bubbles: check for faint borderline mark (0.13 <= D < threshold and delta >= 0.08)
+          if (top && top.fillDensity >= 0.13 && (top.fillDensity - rowBaseline) >= 0.08) {
+            top.markType = 'faint';
+            top.isMarked = false;
+            if (!isSid) {
+              faintQuestions.push(itemKey);
+              specificReviewReasons.push(`Needs Review: Faint mark on ${qLabel}`);
+            }
+          } else if (top) {
+            top.markType = 'blank';
+          }
+        }
+      }
+
+      // 5. Score student answers against answer key (Strict Shading Policy)
       let rawScore = 0;
       let maxScore = 0;
       const gradedItems = {};
@@ -6317,7 +7247,7 @@
 
       const percentage = maxScore > 0 ? (rawScore / maxScore) * 100 : 0;
 
-      // Check Review Flags: blank responses, multiple marks, unmatched ID
+      // Check Review Flags: non-standard marks, erasures, faint marks, blank responses, multiple marks, unmatched ID
       let blankCount = 0;
       let multiMarkCount = 0;
       const blankQuestions = [];
@@ -6340,7 +7270,7 @@
       let matchField = '';
       const isUnmatchedId = (!rosterEntry && state.roster && state.roster.length > 0) || String(studentId).startsWith("STU-");
 
-      const reviewReasons = [];
+      const reviewReasons = [...specificReviewReasons];
       if (blankCount > 0) reviewReasons.push(`${blankCount} blank response${blankCount > 1 ? 's' : ''}`);
       if (multiMarkCount > 0) reviewReasons.push(`${multiMarkCount} multiple mark${multiMarkCount > 1 ? 's' : ''}`);
 
@@ -6366,6 +7296,9 @@
         blankQuestions,
         multiMarkCount,
         multiMarkQuestions,
+        nonStandardQuestions,
+        erasureQuestions,
+        faintQuestions,
         isUnmatchedId,
         isMismatch,
         suggestedMatch,
@@ -6384,6 +7317,7 @@
         gradedItems,
         bubbleDiagnostics,
         H_canToSrc,
+        rotationDeg: srcCorners.rotationDeg || 0,
         targetW,
         targetH,
         scanImg: scan.img,
@@ -6696,15 +7630,14 @@
         ctx.fillStyle = "#ffffff";
         ctx.fillRect(0, 0, targetW, targetH);
 
-        // Draw 4 corner fiducial markers exactly from layout.markers
-        ctx.fillStyle = "#000000";
+        // Draw 4 corner fiducial markers with DICT_4X4_50 6x6 bit pattern
         for (const cid of ["0", "1", "2", "3"]) {
           const m = state.layout.markers[cid];
           if (m && m.center) {
             const mx = m.center[0] * pxPerMm;
             const my = m.center[1] * pxPerMm;
             const mSize = (m.size || 10) * pxPerMm;
-            ctx.fillRect(mx - mSize / 2, my - mSize / 2, mSize, mSize);
+            drawArucoMarkerOnCanvas(ctx, mx - mSize / 2, my - mSize / 2, mSize, parseInt(cid, 10));
           }
         }
 
@@ -8894,8 +9827,8 @@
       canvas.width = grade.targetW || 840;
       canvas.height = grade.targetH || 1188;
 
-      // Draw rectified/warped scan image
-      ctx.drawImage(grade.scanImg, 0, 0, canvas.width, canvas.height);
+      // Draw rectified/warped scan image (undoing 90/180/270 deg scan rotation when present)
+      drawUprightScanImage(ctx, grade.scanImg, canvas.width, canvas.height, grade.rotationDeg);
 
       // Semi-transparent overlay layer for markup
       for (const b of (grade.bubbleDiagnostics || [])) {
@@ -8921,6 +9854,17 @@
           ctx.fillStyle = "rgba(239, 68, 68, 0.35)";
           ctx.fill();
           ctx.stroke();
+        } else if (b.markType === 'check_or_cross' || b.markType === 'erasure' || b.markType === 'faint') {
+          // Ambiguous / non-standard mark flagged for review: Purple/Amber warning ring
+          ctx.beginPath();
+          ctx.arc(b.canX, b.canY, b.rad + 2, 0, Math.PI * 2);
+          ctx.lineWidth = 2.5;
+          ctx.setLineDash([4, 2]);
+          ctx.strokeStyle = b.markType === 'check_or_cross' ? "#a855f7" : "#f59e0b";
+          ctx.fillStyle = b.markType === 'check_or_cross' ? "rgba(168, 85, 247, 0.22)" : "rgba(245, 158, 11, 0.22)";
+          ctx.fill();
+          ctx.stroke();
+          ctx.setLineDash([]);
         } else if (!b.isMarked && isKeyTarget) {
           // Missed correct answer: Amber target outline
           ctx.beginPath();

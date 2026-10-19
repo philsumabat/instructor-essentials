@@ -396,6 +396,28 @@ flowchart LR
   3. **Stage 3 — 16-Point Circumference Ring Snap, 75th-Percentile Paper Halo & 4-Quadrant/8-Sector Bubble Morphology (Strict Shading Policy)**: Locks onto each bubble's printed circle within $\pm 1.5\text{ mm}$, normalizes contrast against the 75th percentile of its immediate $1.15r\text{–}1.40r$ paper halo, and decomposes the inner $0.70r\text{–}0.72r$ core into 4 quadrants + 8 angular sectors. Under the **Strict Shading Policy**, only uniformly shaded bubbles (`shaded`) are auto-scored; checkmarks/crosses (`check_or_cross`), erasures (`erasure`), and faint marks (`faint`) are held from auto-scoring (`BLANK`/`?`) and flagged in the Review Queue with specific reason badges and Sheet Inspector diagnostic rings.
   4. **Stage 4 — Morphological Box-Wall Stripping**: Replaces the legacy 15% blind ROI inset with a minimal 4% safety inset plus `strip_box_walls` (`omr/ocr.py`) and `stripBoxWallsFromCanvas` (`builder/checker.html`), erasing continuous straight border lines ($>75\%$ span in the outer 20% perimeter) while preserving interior-connected handwriting strokes.
 
+### Decision 37: Non-Intrusive Session Restoration, Topbar Button De-duplication, Visual Save/Resume Highlighting, and Client-Side Google Drive Integration
+- **Context**:
+  1. On page load, Checker Studio previously prompted the instructor with an intrusive modal/confirm dialog asking whether to resume auto-saved sessions, interrupting initial page exploration.
+  2. Duplicate action buttons in the topbar ribbon ("1-Click Sample Test" and "Grade Scans") duplicated primary controls in the sidebar "Exam Scans" card (`#btn-sidebar-grade` / `#btn-sidebar-sample`), causing visual noise and user confusion over which trigger to press.
+  3. Save Progress and Resume Progress buttons lacked real-time state cues, making it ambiguous whether uncommitted grading results existed or if an auto-saved session was stored in browser memory.
+  4. Instructors frequently grade across multiple devices (e.g. laptop and lab workstation) and requested an optional cloud backup mechanism without violating the zero-cost, zero-account offline guarantees defined in Decision 29 and `AGENTS.md`.
+- **Decision & Architecture**:
+  1. **Non-Intrusive Inline Resume Banner**: Removed modal dialogs and `window.confirm` blockers on session detection. Replaced with an unobtrusive inline notification banner (`#banner-resume-session`) that alerts the instructor on load, offers one-click "Resume Session", "Open File", and "Dismiss", and automatically clears when dismissed or resumed. Clicking "Resume Progress" in the header immediately restores without confirmation if a valid auto-save exists, falling back to JSON file upload if empty.
+  2. **Topbar Action De-duplication**: Removed visible "1-Click Sample Test" and "Grade Scans" action buttons from the topbar ribbon (`.header-actions`), funneling all scanning workflows to the primary buttons inside the sidebar Exam Scans card (`#btn-sidebar-grade` / `#btn-sidebar-sample`). Preserved hidden DOM elements with identical IDs and handlers (`#btn-grade-now`, `#btn-sample-grade`) to ensure backwards compatibility with automated test fixtures and programmatic scripts.
+  3. **Real-Time Visual State Highlighting**:
+     - `.btn-save-progress`: Dynamically gains `.is-unsaved` styling (amber warning border and badge `#badge-save-status` showing "Unsaved") as soon as grading results exist or when manual review flags are changed, and transitions to `.is-saved` (green check badge "Saved ✓") upon saving.
+     - `.btn-resume-progress`: Displays an emerald dot indicator (`#badge-resume-dot` / `.has-saved-session`) and rich hover title when valid session data is present in localStorage.
+  4. **Client-Side Google Identity Services & Drive Integration**:
+     - Embedded a purely client-side Google OAuth 2.0 Token Client integration (`#btn-google-drive` and `<dialog id="modal-google-drive">`) using dynamic GIS library injection (`https://accounts.google.com/gsi/client`) loaded only when invoked.
+     - Performs zero-server, direct client-to-Google REST calls via `XMLHttpRequest` (preserving the strict "zero `fetch()` calls in `checker.html`" contract).
+     - Automatically creates and manages a dedicated `"Instructor Essentials"` folder on the instructor's personal Google Drive to store JSON grading sessions and exam packages (layout + answer key) with ISO timestamps and exam metadata.
+     - Performs in-place updates (`PATCH /upload/drive/v3/files/{id}?uploadType=media`) when a file with matching name already exists, preventing duplicate file proliferation and leveraging Google Drive revision history.
+     - Debounces background auto-syncs (3.5s) to avoid exceeding Google Drive rate limits during rapid Review Queue triage.
+     - Includes robust 401 Unauthorized token expiry handling, resetting UI state and prompting reconnection when OAuth access tokens expire.
+     - Offers one-click save for both Graded Sessions and Exam Packages, as well as an interactive file picker to restore sessions or layout/key configurations from Google Drive.
+     - 100% optional: when offline or unconfigured, the application continues to run completely self-contained with full local storage and file import/export capabilities.
+
 ---
 
 ## 8. Multi-Agent Development Mandate

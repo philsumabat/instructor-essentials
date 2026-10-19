@@ -292,12 +292,101 @@
       font-size: 0.75rem;
     }
 
+    /* Highlighting for Save & Resume buttons */
+    .btn-save-progress {
+      position: relative;
+      transition: all 180ms var(--ease);
+    }
+    .btn-save-progress.is-unsaved {
+      border-color: var(--warning, #d97706) !important;
+      background: color-mix(in srgb, var(--warning, #d97706) 12%, var(--panel)) !important;
+      color: var(--warning, #d97706) !important;
+      font-weight: 700;
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--warning, #d97706) 25%, transparent);
+    }
+    .btn-save-progress.is-saved {
+      border-color: var(--success, #059669) !important;
+      color: var(--success, #059669) !important;
+    }
+    .badge-save-status {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.12rem 0.42rem;
+      border-radius: var(--radius-full);
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      margin-left: 0.25rem;
+      background: var(--warning, #d97706);
+      color: #fff;
+      line-height: 1;
+    }
+    .badge-save-status.is-saved {
+      background: var(--success, #059669);
+      color: #fff;
+    }
+    .btn-resume-progress {
+      position: relative;
+      transition: all 180ms var(--ease);
+    }
+    .btn-resume-progress.has-saved-session {
+      border-color: color-mix(in srgb, var(--success, #059669) 55%, var(--border)) !important;
+      background: color-mix(in srgb, var(--success, #059669) 8%, var(--panel)) !important;
+      color: var(--text) !important;
+    }
+    .badge-resume-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--success, #059669);
+      box-shadow: 0 0 6px var(--success, #059669);
+      display: inline-block;
+      margin-left: 0.25rem;
+      flex-shrink: 0;
+      animation: pulse-dot 2s infinite ease-in-out;
+    }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.55; transform: scale(0.85); }
+    }
+
+    /* Google Drive Integration Button & Status */
+    .btn-google-drive {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      font-weight: 600;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: var(--text);
+      transition: all 140ms var(--ease);
+    }
+    .btn-google-drive:hover {
+      border-color: #4285F4;
+      background: color-mix(in srgb, #4285F4 8%, var(--panel));
+    }
+    .btn-google-drive.is-connected {
+      border-color: #34A853 !important;
+      background: color-mix(in srgb, #34A853 10%, var(--panel)) !important;
+      color: var(--text) !important;
+    }
+    .google-status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #34A853;
+      box-shadow: 0 0 6px rgba(52, 168, 83, 0.7);
+      display: inline-block;
+      margin-left: 0.2rem;
+      flex-shrink: 0;
+    }
+
     /* Main Workspace Layout */
     .workspace {
       display: grid;
       grid-template-columns: 360px 1fr;
       flex: 1;
-      height: calc(100vh - 56px);
+      min-height: 0;
       overflow: hidden;
     }
 
@@ -1730,17 +1819,9 @@
     </div>
 
     <div class="header-actions">
-      <!-- Quick 1-Click Sample Test -->
-      <button type="button" id="btn-sample-grade" class="btn btn--accent" title="Pre-load BIO 101 Midterm sample data and grade instantly">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-        <span>1-Click Sample Test</span>
-      </button>
-
-      <!-- Grade Button -->
-      <button type="button" id="btn-grade-now" class="btn btn--primary" title="Execute computer-vision OMR grading on loaded scans">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-        <span>Grade Scans</span>
-      </button>
+      <!-- Hidden compatibility hooks for automated tests and programmatic triggers -->
+      <button type="button" id="btn-grade-now" style="display: none;" aria-hidden="true"></button>
+      <button type="button" id="btn-sample-grade" style="display: none;" aria-hidden="true"></button>
 
       <!-- Export Reports & Graded Sheets Dropdown -->
       <div class="dropdown-menu" id="dropdown-export-reports">
@@ -1769,18 +1850,32 @@
         </div>
       </div>
 
-      <!-- Save Progress Button -->
-      <button type="button" id="btn-save-progress" class="btn btn--secondary" title="Save current grading session and download progress backup">
+      <!-- Save Progress Button (Highlighted with visual indicator & status badge) -->
+      <button type="button" id="btn-save-progress" class="btn btn--secondary btn-save-progress" title="Save current grading session and download progress backup">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
         <span>Save Progress</span>
+        <span id="badge-save-status" class="badge-save-status" style="display: none;"></span>
       </button>
 
-      <!-- Resume Progress Button -->
-      <button type="button" id="btn-resume-progress" class="btn btn--secondary" title="Resume previous grading session from browser storage or file">
+      <!-- Resume Progress Button (Highlighted with dot indicator when auto-saved progress exists) -->
+      <button type="button" id="btn-resume-progress" class="btn btn--secondary btn-resume-progress" title="Resume previous grading session from browser storage or file">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6 6h10M6 10h10"/></svg>
         <span>Resume Progress</span>
+        <span id="badge-resume-dot" class="badge-resume-dot" style="display: none;" title="Auto-saved session available"></span>
       </button>
       <input type="file" id="input-progress-file" accept=".json" style="display: none;">
+
+      <!-- Google Drive Online Backup -->
+      <button type="button" id="btn-google-drive" class="btn btn--secondary btn-google-drive" title="Google Drive: Connect account to backup sessions online">
+        <svg class="google-icon" width="14" height="14" viewBox="0 0 24 24">
+          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+        </svg>
+        <span id="label-google-drive">Google Drive</span>
+        <span id="google-drive-dot" class="google-status-dot" style="display: none;" title="Connected to Google Drive"></span>
+      </button>
     </div>
   </header>
 
@@ -1795,6 +1890,7 @@
     </div>
     <div style="display: flex; gap: 0.45rem; align-items: center; flex-shrink: 0;">
       <button type="button" id="btn-banner-resume" class="btn btn--primary btn-xs">Resume Session</button>
+      <button type="button" id="btn-banner-load-file" class="btn btn--secondary btn-xs" title="Load session from a saved .json file">Open File</button>
       <button type="button" id="btn-banner-clear" class="btn btn--secondary btn-xs" title="Clear auto-saved progress from browser storage">Clear</button>
       <button type="button" id="btn-banner-dismiss" class="btn btn--secondary btn-xs">Dismiss</button>
     </div>
@@ -2979,6 +3075,104 @@
       <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 1.25rem; border-top: 1px solid var(--border); background: var(--panel-alt);">
         <span style="font-size: 0.75rem; color: var(--text-muted);">Saved exam sheets in Sheet Builder</span>
         <button type="button" id="btn-cancel-saved-builds" class="btn btn--secondary btn--sm">Close</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Modal: Google Drive Online Cloud Backup (Zero external server, client-side OAuth) -->
+  <dialog id="modal-google-drive" style="border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 0; background: var(--panel); color: var(--text); max-width: 540px; width: 95vw; box-shadow: var(--shadow-xl); overflow: hidden;">
+    <div style="display: flex; align-items: center; justify-content: space-between; padding: 1.1rem 1.4rem; border-bottom: 1px solid var(--border); background: var(--panel-header);">
+      <div style="display: flex; align-items: center; gap: 0.65rem;">
+        <svg class="google-icon" width="20" height="20" viewBox="0 0 24 24">
+          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+        </svg>
+        <h3 style="font-size: 1.05rem; font-weight: 700; margin: 0;">Google Drive Online Save</h3>
+      </div>
+      <button type="button" class="btn btn--secondary btn-xs" onclick="$('modal-google-drive')?.close();" aria-label="Close dialog">✕</button>
+    </div>
+
+    <!-- Body when NOT connected -->
+    <div id="gdrive-view-disconnected" style="padding: 1.35rem 1.4rem; display: flex; flex-direction: column; gap: 1rem;">
+      <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin: 0;">
+        Save your exam builds, answer keys, and graded sessions directly to your personal Google Drive in an <strong>"Instructor Essentials"</strong> folder. 100% free, private to your account, and with zero external server tracking.
+      </p>
+
+      <div>
+        <label for="input-gdrive-client-id" style="display: block; font-size: 0.78rem; font-weight: 600; margin-bottom: 0.35rem; color: var(--text);">
+          Google OAuth 2.0 Web Client ID:
+        </label>
+        <input type="text" id="input-gdrive-client-id" placeholder="e.g. 1234567890-abcdef.apps.googleusercontent.com" style="width: 100%; padding: 0.45rem 0.65rem; font-size: 0.8rem; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--panel-alt); color: var(--text); box-sizing: border-box;">
+        <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.35rem;">
+          Saved in your browser’s local storage. Stays completely private.
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 0.5rem; justify-content: flex-end; align-items: center; margin-top: 0.5rem;">
+        <button type="button" class="btn btn--secondary btn-sm" onclick="$('modal-google-drive')?.close();">Cancel</button>
+        <button type="button" id="btn-gdrive-connect" class="btn btn--primary btn-sm" style="background: #1a73e8; border-color: #1a73e8; color: #fff;">
+          <svg class="google-icon" width="13" height="13" viewBox="0 0 24 24"><path fill="#fff" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#fff" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#fff" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#fff" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
+          <span>Sign In &amp; Connect Drive</span>
+        </button>
+      </div>
+
+      <details style="font-size: 0.74rem; color: var(--text-muted); background: var(--panel-alt); padding: 0.6rem 0.8rem; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+        <summary style="cursor: pointer; font-weight: 600; color: var(--text);">How to obtain a Google OAuth Client ID</summary>
+        <ol style="margin: 0.4rem 0 0 1.2rem; padding: 0; line-height: 1.4;">
+          <li>Visit Google Cloud Console (<a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener" style="color: var(--accent);">console.cloud.google.com</a>).</li>
+          <li>Create a project &gt; APIs &amp; Services &gt; Credentials.</li>
+          <li>Click <em>Create Credentials &gt; OAuth Client ID</em> (Web application).</li>
+          <li>Add Authorized JavaScript origin (e.g., <code>https://philsumabat.github.io</code> or your local address).</li>
+          <li>Paste the generated Client ID above. Free forever.</li>
+        </ol>
+      </details>
+    </div>
+
+    <!-- Body when CONNECTED -->
+    <div id="gdrive-view-connected" style="display: none; padding: 1.35rem 1.4rem; flex-direction: column; gap: 1rem;">
+      <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; background: var(--panel-alt); border-radius: var(--radius-sm); border: 1px solid var(--border);">
+        <div style="display: flex; align-items: center; gap: 0.65rem;">
+          <img id="gdrive-user-avatar" src="" alt="Avatar" style="width: 32px; height: 32px; border-radius: 50%; display: none;">
+          <div>
+            <div id="gdrive-user-name" style="font-size: 0.85rem; font-weight: 700; color: var(--text);">Google User</div>
+            <div id="gdrive-user-email" style="font-size: 0.74rem; color: var(--text-muted);">user@example.com</div>
+          </div>
+        </div>
+        <span class="badge-pass" style="background: rgba(52, 168, 83, 0.15); color: #2e7d32; display: inline-flex; align-items: center; gap: 0.35rem;">
+          <span class="google-status-dot"></span> Connected
+        </span>
+      </div>
+
+      <div style="font-size: 0.82rem; color: var(--text); display: flex; flex-direction: column; gap: 0.5rem;">
+        <div><strong>Google Drive Target:</strong> Folder <code style="padding: 0.15rem 0.35rem; background: var(--panel-alt); border-radius: var(--radius-xs);">Instructor Essentials</code></div>
+        <div style="font-size: 0.74rem; color: var(--text-muted);">Graded sessions and answer keys can be uploaded and restored directly from Google Drive.</div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.25rem;">
+        <button type="button" id="btn-gdrive-save-now" class="btn btn--primary" style="justify-content: center; gap: 0.45rem;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          <span>Save Current Session to Google Drive</span>
+        </button>
+        <button type="button" id="btn-gdrive-save-package" class="btn btn--secondary" style="justify-content: center; gap: 0.45rem;" title="Save active exam layout and answer key package to Google Drive">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="8" height="8" x="2" y="2" rx="1"/><rect width="8" height="8" x="14" y="2" rx="1"/><rect width="8" height="8" x="2" y="14" rx="1"/><rect width="8" height="8" x="14" y="14" rx="1"/></svg>
+          <span>Save Exam Package (Layout &amp; Key) to Drive</span>
+        </button>
+        <button type="button" id="btn-gdrive-list-files" class="btn btn--secondary" style="justify-content: center; gap: 0.45rem;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6 6h10M6 10h10"/></svg>
+          <span>Browse &amp; Restore from Google Drive...</span>
+        </button>
+      </div>
+
+      <!-- File list area (populated when Browse clicked) -->
+      <div id="gdrive-files-list-wrap" style="display: none; max-height: 180px; overflow-y: auto; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.5rem; background: var(--panel-alt);">
+        <div id="gdrive-files-list" style="display: flex; flex-direction: column; gap: 0.35rem; font-size: 0.76rem;"></div>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border); padding-top: 0.85rem; margin-top: 0.5rem;">
+        <button type="button" id="btn-gdrive-disconnect" class="btn btn--secondary btn-xs" style="color: var(--danger);">Disconnect Account</button>
+        <button type="button" class="btn btn--secondary btn-xs" onclick="$('modal-google-drive')?.close();">Close</button>
       </div>
     </div>
   </dialog>
@@ -10756,12 +10950,13 @@
       }
       toast.textContent = msg;
       toast.style.opacity = '1';
-      toast.style.transform = 'translateY(0)';
-      clearTimeout(toast._timeout);
-      toast._timeout = setTimeout(() => {
-        toast.style.opacity = '0';
-        toast.style.transform = 'translateY(10px)';
-      }, 3500);
+      if (typeof clearTimeout === 'function') clearTimeout(toast._timeout);
+      if (typeof setTimeout === 'function') {
+        toast._timeout = setTimeout(() => {
+          toast.style.opacity = '0';
+          toast.style.transform = 'translateY(10px)';
+        }, 3500);
+      }
     }
     window.showToast = showToast;
 
@@ -10862,12 +11057,50 @@
         }
       }
 
+      // Sync to Google Drive if connected
+      if (googleDriveState.isConnected && googleDriveState.accessToken) {
+        if (shouldDownload || exportFile || !silent) {
+          if (typeof clearTimeout === 'function' && window._gdriveSyncTimeout) clearTimeout(window._gdriveSyncTimeout);
+          saveSessionToGoogleDrive(googleDriveState.accessToken, data, (err, file) => {
+            if (!err) {
+              showToast('✓ Progress synced to Google Drive ("Instructor Essentials")');
+            }
+          });
+        } else {
+          // Debounce background auto-sync so rapid flag review or multi-scan steps batch cleanly
+          if (typeof clearTimeout === 'function' && window._gdriveSyncTimeout) clearTimeout(window._gdriveSyncTimeout);
+          if (typeof setTimeout === 'function') {
+            window._gdriveSyncTimeout = setTimeout(() => {
+              if (googleDriveState.isConnected && googleDriveState.accessToken) {
+                saveSessionToGoogleDrive(googleDriveState.accessToken, data, (err, file) => {
+                  if (!err) {
+                    showToast('✓ Progress synced to Google Drive');
+                  }
+                });
+              }
+            }, 3500);
+          }
+        }
+      }
+
       // Download backup JSON file if requested (.grader.progress.json)
       if (shouldDownload || exportFile) {
         const title = (state.layout?.title || 'exam').replace(/[^a-zA-Z0-9_-]+/g, '_').toLowerCase();
         const filename = `${title}.grader.progress.json`;
         downloadFile(filename, JSON.stringify(data, null, 2), 'application/json');
       }
+
+      // Highlighting & Visual State:
+      // If deliberate save (user clicked save or exported file), mark as saved.
+      // If auto-save/background persist, mark as unsaved if grading results exist.
+      if (shouldDownload || exportFile || !silent) {
+        updateSaveStatusUI('saved');
+      } else if (data && data.results && data.results.grades && data.results.grades.length > 0) {
+        updateSaveStatusUI('unsaved');
+      } else {
+        updateSaveStatusUI('default');
+      }
+      updateResumeStatusUI(true, data);
 
       if (!silent) {
         showToast(`💾 Progress saved (${data.results.grades.length} students)`);
@@ -10951,6 +11184,8 @@
       }
 
       if ($('banner-resume-session')) $('banner-resume-session').style.display = 'none';
+      updateSaveStatusUI('saved');
+      updateResumeStatusUI(true, data);
       showToast(`✓ Session restored: ${restoredGrades.length} students graded`);
     }
     window.restoreCheckerProgress = restoreCheckerProgress;
@@ -10958,9 +11193,13 @@
     function checkAutoSavedProgress() {
       try {
         const raw = localStorage.getItem(PROGRESS_STORAGE_KEY);
-        if (!raw) return;
+        if (!raw) {
+          updateResumeStatusUI(false);
+          return;
+        }
         const parsed = JSON.parse(raw);
         if (parsed && parsed.results && parsed.results.grades && parsed.results.grades.length > 0) {
+          updateResumeStatusUI(true, parsed);
           const banner = $('banner-resume-session');
           const details = $('banner-resume-details');
           if (banner && details) {
@@ -10969,10 +11208,640 @@
             details.textContent = `${title} (${parsed.results.grades.length} students, saved ${dateStr})`;
             banner.style.display = 'flex';
           }
+        } else {
+          updateResumeStatusUI(false);
         }
       } catch {
-        // ignore
+        updateResumeStatusUI(false);
       }
+    }
+
+    // Highlighting & Visual State Helpers
+    function updateSaveStatusUI(status) {
+      const btnSave = $('btn-save-progress');
+      const badge = $('badge-save-status');
+      const btnResultsSave = $('btn-results-save-progress');
+      if (!btnSave) return;
+
+      if (status === 'unsaved') {
+        btnSave.classList?.add?.('is-unsaved');
+        btnSave.classList?.remove?.('is-saved');
+        btnSave.title = 'You have unsaved grading progress. Click to save backup.';
+        if (badge) {
+          badge.textContent = 'Unsaved';
+          badge.className = 'badge-save-status';
+          badge.style.display = 'inline-flex';
+        }
+        if (btnResultsSave) {
+          btnResultsSave.classList?.add?.('btn--accent');
+        }
+      } else if (status === 'saved') {
+        btnSave.classList?.remove?.('is-unsaved');
+        btnSave.classList?.add?.('is-saved');
+        btnSave.title = 'Grading session saved to storage.';
+        if (badge) {
+          badge.textContent = 'Saved ✓';
+          badge.className = 'badge-save-status is-saved';
+          badge.style.display = 'inline-flex';
+          if (typeof setTimeout === 'function') {
+            setTimeout(() => {
+              if (btnSave.classList?.contains?.('is-saved')) {
+                btnSave.classList?.remove?.('is-saved');
+                if (badge) badge.style.display = 'none';
+              }
+            }, 3500);
+          }
+        }
+        if (btnResultsSave) {
+          btnResultsSave.classList?.remove?.('btn--accent');
+        }
+      } else {
+        btnSave.classList?.remove?.('is-unsaved');
+        btnSave.classList?.remove?.('is-saved');
+        if (badge) badge.style.display = 'none';
+      }
+    }
+    window.updateSaveStatusUI = updateSaveStatusUI;
+
+    function updateResumeStatusUI(hasSession, parsed = null) {
+      const btnResume = $('btn-resume-progress');
+      const dot = $('badge-resume-dot');
+      if (!btnResume) return;
+
+      if (hasSession) {
+        btnResume.classList?.add?.('has-saved-session');
+        if (dot) dot.style.display = 'inline-block';
+        const title = parsed?.layout?.title || 'Exam';
+        const count = parsed?.results?.grades?.length || 0;
+        btnResume.title = `Resume auto-saved session (${title}, ${count} students). Click to restore.`;
+      } else {
+        btnResume.classList?.remove?.('has-saved-session');
+        if (dot) dot.style.display = 'none';
+        btnResume.title = 'Resume previous grading session from browser storage or file (.json)';
+      }
+    }
+    window.updateResumeStatusUI = updateResumeStatusUI;
+
+    // ==========================================
+    // Client-Side Google Identity Services & Google Drive Cloud Backup
+    // (Adheres to DECISIONS.md Decision 29: zero-cost, 100% private, offline-first fallback)
+    // ==========================================
+    const googleDriveState = {
+      clientId: (typeof localStorage !== 'undefined' ? localStorage.getItem('instructor_gdrive_client_id') : '') || '',
+      accessToken: null,
+      user: null,
+      tokenClient: null,
+      folderId: null,
+      isConnected: false,
+    };
+
+    function getGoogleClientId() {
+      return googleDriveState.clientId || (typeof localStorage !== 'undefined' ? localStorage.getItem('instructor_gdrive_client_id') : '') || '';
+    }
+
+    function setGoogleClientId(id) {
+      googleDriveState.clientId = (id || '').trim();
+      if (typeof localStorage !== 'undefined') {
+        if (googleDriveState.clientId) {
+          localStorage.setItem('instructor_gdrive_client_id', googleDriveState.clientId);
+        } else {
+          localStorage.removeItem('instructor_gdrive_client_id');
+        }
+      }
+    }
+
+    function loadGoogleGis(callback, onError) {
+      if (typeof window === 'undefined') return;
+      if (window.google && window.google.accounts && window.google.accounts.oauth2) {
+        callback();
+        return;
+      }
+      const existing = document.querySelector('script[data-gis]');
+      if (existing) {
+        existing.addEventListener('load', callback);
+        return;
+      }
+      const s = document.createElement('script');
+      s.src = 'https://accounts.google.com/gsi/client';
+      s.async = true;
+      s.setAttribute('data-gis', 'true');
+      s.onload = () => callback();
+      s.onerror = () => {
+        if (onError) onError(new Error('Failed to load Google Identity Services library. Please check your internet connection.'));
+      };
+      document.head.appendChild(s);
+    }
+
+    function initGoogleDriveAuth() {
+      const clientId = getGoogleClientId();
+      if (!clientId) {
+        showToast('Please enter your Google OAuth Client ID first.');
+        openGoogleDriveModal();
+        return;
+      }
+
+      loadGoogleGis(() => {
+        try {
+          if (!googleDriveState.tokenClient) {
+            googleDriveState.tokenClient = window.google.accounts.oauth2.initTokenClient({
+              client_id: clientId,
+              scope: 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email',
+              callback: (resp) => {
+                if (resp && resp.error) {
+                  showToast('Google Sign-In failed: ' + (resp.error_description || resp.error));
+                  return;
+                }
+                if (resp && resp.access_token) {
+                  handleGoogleAuthSuccess(resp.access_token);
+                }
+              },
+            });
+          }
+          googleDriveState.tokenClient.requestAccessToken({ prompt: '' });
+        } catch (err) {
+          showToast('Could not initialize Google authentication: ' + err.message);
+        }
+      }, (err) => {
+        showToast(err.message);
+      });
+    }
+
+    function handleGoogleAuthSuccess(token) {
+      googleDriveState.accessToken = token;
+      googleDriveState.isConnected = true;
+
+      // Fetch user profile info via XHR
+      const xhr = new XMLHttpRequest();
+      xhr.open('GET', 'https://www.googleapis.com/oauth2/v3/userinfo');
+      xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+      xhr.onload = function() {
+        if (xhr.status === 200) {
+          try {
+            googleDriveState.user = JSON.parse(xhr.responseText);
+          } catch {
+            googleDriveState.user = { name: 'Google User' };
+          }
+        } else {
+          googleDriveState.user = { name: 'Google User' };
+        }
+        updateGoogleUiState();
+        showToast('✓ Connected to Google Drive (' + (googleDriveState.user.email || googleDriveState.user.name || 'Account') + ')');
+      };
+      xhr.onerror = function() {
+        googleDriveState.user = { name: 'Google User' };
+        updateGoogleUiState();
+        showToast('✓ Connected to Google Drive');
+      };
+      xhr.send();
+    }
+
+    function updateGoogleUiState() {
+      const btn = $('btn-google-drive');
+      const label = $('label-google-drive');
+      const dot = $('google-drive-dot');
+      const viewDisc = $('gdrive-view-disconnected');
+      const viewConn = $('gdrive-view-connected');
+      const userName = $('gdrive-user-name');
+      const userEmail = $('gdrive-user-email');
+      const userAvatar = $('gdrive-user-avatar');
+
+      if (googleDriveState.isConnected && googleDriveState.user) {
+        btn?.classList?.add?.('is-connected');
+        if (dot) dot.style.display = 'inline-block';
+        if (label) label.textContent = googleDriveState.user.email || 'Drive: Connected';
+        if (viewDisc) viewDisc.style.display = 'none';
+        if (viewConn) viewConn.style.display = 'flex';
+        if (userName) userName.textContent = googleDriveState.user.name || 'Google User';
+        if (userEmail) userEmail.textContent = googleDriveState.user.email || 'Online Storage Active';
+        if (userAvatar) {
+          if (googleDriveState.user.picture) {
+            userAvatar.src = googleDriveState.user.picture;
+            userAvatar.style.display = 'inline-block';
+          } else {
+            userAvatar.style.display = 'none';
+          }
+        }
+      } else {
+        btn?.classList?.remove?.('is-connected');
+        if (dot) dot.style.display = 'none';
+        if (label) label.textContent = 'Google Drive';
+        if (viewDisc) viewDisc.style.display = 'flex';
+        if (viewConn) viewConn.style.display = 'none';
+      }
+    }
+
+    function openGoogleDriveModal() {
+      const modal = $('modal-google-drive');
+      if (!modal) return;
+      const inp = $('input-gdrive-client-id');
+      if (inp) {
+        inp.value = getGoogleClientId();
+      }
+      updateGoogleUiState();
+      modal.showModal();
+    }
+
+    function disconnectGoogleDrive() {
+      if (googleDriveState.accessToken && window.google?.accounts?.oauth2?.revoke) {
+        try {
+          window.google.accounts.oauth2.revoke(googleDriveState.accessToken, () => {});
+        } catch {}
+      }
+      googleDriveState.accessToken = null;
+      googleDriveState.user = null;
+      googleDriveState.folderId = null;
+      googleDriveState.isConnected = false;
+      updateGoogleUiState();
+      showToast('Google Drive disconnected.');
+    }
+
+    function handleGoogleTokenExpired() {
+      googleDriveState.accessToken = null;
+      googleDriveState.isConnected = false;
+      updateGoogleUiState();
+      showToast('Google session expired. Please reconnect your account.');
+    }
+
+    function getOrCreateDriveFolder(token, callback) {
+      if (googleDriveState.folderId) {
+        callback(null, googleDriveState.folderId);
+        return;
+      }
+      const searchXhr = new XMLHttpRequest();
+      const query = encodeURIComponent("name = 'Instructor Essentials' and mimeType = 'application/vnd.google-apps.folder' and trashed = false");
+      searchXhr.open('GET', 'https://www.googleapis.com/drive/v3/files?q=' + query + '&fields=files(id,name)');
+      searchXhr.setRequestHeader('Authorization', 'Bearer ' + token);
+      searchXhr.onload = function() {
+        if (searchXhr.status === 401) {
+          handleGoogleTokenExpired();
+          if (callback) callback(new Error('Google session expired. Please reconnect your account.'));
+          return;
+        }
+        if (searchXhr.status === 200) {
+          try {
+            const res = JSON.parse(searchXhr.responseText);
+            if (res.files && res.files.length > 0) {
+              googleDriveState.folderId = res.files[0].id;
+              callback(null, googleDriveState.folderId);
+              return;
+            }
+          } catch {}
+        }
+        createDriveFolder(token, callback);
+      };
+      searchXhr.onerror = function() {
+        createDriveFolder(token, callback);
+      };
+      searchXhr.send();
+    }
+
+    function createDriveFolder(token, callback) {
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', 'https://www.googleapis.com/drive/v3/files');
+      xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.onload = function() {
+        if (xhr.status === 401) {
+          handleGoogleTokenExpired();
+          if (callback) callback(new Error('Google session expired. Please reconnect your account.'));
+          return;
+        }
+        if (xhr.status === 200 || xhr.status === 201) {
+          try {
+            const folder = JSON.parse(xhr.responseText);
+            googleDriveState.folderId = folder.id;
+            callback(null, folder.id);
+          } catch (e) {
+            callback(e);
+          }
+        } else {
+          callback(new Error('Failed to create Instructor Essentials folder in Google Drive: ' + xhr.statusText));
+        }
+      };
+      xhr.onerror = function() {
+        callback(new Error('Network error creating Google Drive folder'));
+      };
+      xhr.send(JSON.stringify({
+        name: 'Instructor Essentials',
+        mimeType: 'application/vnd.google-apps.folder',
+      }));
+    }
+
+    function saveSessionToGoogleDrive(token, sessionData, callback) {
+      getOrCreateDriveFolder(token, function(err, folderId) {
+        if (err) {
+          if (callback) callback(err);
+          return;
+        }
+        const title = (sessionData.layout && sessionData.layout.title) || 'Grading-Session';
+        const cleanTitle = title.replace(/[^a-zA-Z0-9_\-\s]/g, '').trim() || 'Session';
+        const dateStr = new Date().toISOString().slice(0, 10);
+        const fileName = `[Graded Session] ${cleanTitle} (${dateStr}).json`;
+        const fileContent = JSON.stringify(sessionData, null, 2);
+
+        // Check if an existing file with this name already exists in the Instructor Essentials folder
+        const checkXhr = new XMLHttpRequest();
+        const query = encodeURIComponent(`'${folderId}' in parents and name = '${fileName.replace(/'/g, "\\'")}' and trashed = false`);
+        checkXhr.open('GET', 'https://www.googleapis.com/drive/v3/files?q=' + query + '&fields=files(id,name)');
+        checkXhr.setRequestHeader('Authorization', 'Bearer ' + token);
+        checkXhr.onload = function() {
+          if (checkXhr.status === 401) {
+            handleGoogleTokenExpired();
+            if (callback) callback(new Error('Google session expired. Please reconnect your account.'));
+            return;
+          }
+          let existingFileId = null;
+          if (checkXhr.status === 200) {
+            try {
+              const res = JSON.parse(checkXhr.responseText);
+              if (res.files && res.files.length > 0) {
+                existingFileId = res.files[0].id;
+              }
+            } catch {}
+          }
+
+          if (existingFileId) {
+            // Update existing file in-place with PATCH to preserve revision history and prevent duplicate files
+            const patchXhr = new XMLHttpRequest();
+            patchXhr.open('PATCH', 'https://www.googleapis.com/upload/drive/v3/files/' + existingFileId + '?uploadType=media');
+            patchXhr.setRequestHeader('Authorization', 'Bearer ' + token);
+            patchXhr.setRequestHeader('Content-Type', 'application/json');
+            patchXhr.onload = function() {
+              if (patchXhr.status === 401) {
+                handleGoogleTokenExpired();
+                if (callback) callback(new Error('Google session expired. Please reconnect your account.'));
+                return;
+              }
+              if (patchXhr.status === 200) {
+                try {
+                  const file = JSON.parse(patchXhr.responseText);
+                  if (callback) callback(null, file);
+                } catch {
+                  if (callback) callback(null, { id: existingFileId, name: fileName });
+                }
+              } else {
+                if (callback) callback(new Error('Drive update failed: ' + patchXhr.statusText));
+              }
+            };
+            patchXhr.onerror = function() {
+              if (callback) callback(new Error('Network error updating Google Drive file'));
+            };
+            patchXhr.send(fileContent);
+          } else {
+            // Create new file via multipart POST
+            const boundary = '-------314159265358979323846';
+            const delimiter = "\r\n--" + boundary + "\r\n";
+            const closeDelim = "\r\n--" + boundary + "--";
+
+            const metadata = {
+              name: fileName,
+              mimeType: 'application/json',
+              parents: folderId ? [folderId] : []
+            };
+
+            const multipartRequestBody =
+              delimiter +
+              'Content-Type: application/json; charset=UTF-8\r\n\r\n' +
+              JSON.stringify(metadata) +
+              delimiter +
+              'Content-Type: application/json\r\n\r\n' +
+              fileContent +
+              closeDelim;
+
+            const postXhr = new XMLHttpRequest();
+            postXhr.open('POST', 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart');
+            postXhr.setRequestHeader('Authorization', 'Bearer ' + token);
+            postXhr.setRequestHeader('Content-Type', 'multipart/related; boundary=' + boundary);
+            postXhr.onload = function() {
+              if (postXhr.status === 401) {
+                handleGoogleTokenExpired();
+                if (callback) callback(new Error('Google session expired. Please reconnect your account.'));
+                return;
+              }
+              if (postXhr.status === 200 || postXhr.status === 201) {
+                try {
+                  const file = JSON.parse(postXhr.responseText);
+                  if (callback) callback(null, file);
+                } catch {
+                  if (callback) callback(null, { name: fileName });
+                }
+              } else {
+                if (callback) callback(new Error('Drive upload failed: ' + postXhr.statusText));
+              }
+            };
+            postXhr.onerror = function() {
+              if (callback) callback(new Error('Network error uploading to Google Drive'));
+            };
+            postXhr.send(multipartRequestBody);
+          }
+        };
+        checkXhr.onerror = function() {
+          if (callback) callback(new Error('Network error communicating with Google Drive'));
+        };
+        checkXhr.send();
+      });
+    }
+
+    function saveExamPackageToGoogleDrive(token, callback) {
+      if (!state.layout && !state.key) {
+        if (callback) callback(new Error('Please load an exam layout or answer key first.'));
+        return;
+      }
+      getOrCreateDriveFolder(token, function(err, folderId) {
+        if (err) {
+          if (callback) callback(err);
+          return;
+        }
+        const title = (state.layout && state.layout.title) || (state.key && state.key.title) || 'Exam-Package';
+        const cleanTitle = title.replace(/[^a-zA-Z0-9_\-\s]/g, '').trim() || 'Package';
+        const dateStr = new Date().toISOString().slice(0, 10);
+        const fileName = `[Exam Package] ${cleanTitle} (${dateStr}).json`;
+        const packageData = {
+          version: 1,
+          type: 'exam-package',
+          savedAt: new Date().toISOString(),
+          layout: state.layout || null,
+          key: state.key || null,
+          roster: state.roster || null
+        };
+        const fileContent = JSON.stringify(packageData, null, 2);
+
+        const checkXhr = new XMLHttpRequest();
+        const query = encodeURIComponent(`'${folderId}' in parents and name = '${fileName.replace(/'/g, "\\'")}' and trashed = false`);
+        checkXhr.open('GET', 'https://www.googleapis.com/drive/v3/files?q=' + query + '&fields=files(id,name)');
+        checkXhr.setRequestHeader('Authorization', 'Bearer ' + token);
+        checkXhr.onload = function() {
+          if (checkXhr.status === 401) {
+            handleGoogleTokenExpired();
+            if (callback) callback(new Error('Google session expired. Please reconnect your account.'));
+            return;
+          }
+          let existingFileId = null;
+          if (checkXhr.status === 200) {
+            try {
+              const res = JSON.parse(checkXhr.responseText);
+              if (res.files && res.files.length > 0) {
+                existingFileId = res.files[0].id;
+              }
+            } catch {}
+          }
+
+          if (existingFileId) {
+            const patchXhr = new XMLHttpRequest();
+            patchXhr.open('PATCH', 'https://www.googleapis.com/upload/drive/v3/files/' + existingFileId + '?uploadType=media');
+            patchXhr.setRequestHeader('Authorization', 'Bearer ' + token);
+            patchXhr.setRequestHeader('Content-Type', 'application/json');
+            patchXhr.onload = function() {
+              if (patchXhr.status === 401) {
+                handleGoogleTokenExpired();
+                if (callback) callback(new Error('Google session expired. Please reconnect your account.'));
+                return;
+              }
+              if (patchXhr.status === 200) {
+                try {
+                  const file = JSON.parse(patchXhr.responseText);
+                  if (callback) callback(null, file);
+                } catch {
+                  if (callback) callback(null, { id: existingFileId, name: fileName });
+                }
+              } else {
+                if (callback) callback(new Error('Drive update failed: ' + patchXhr.statusText));
+              }
+            };
+            patchXhr.onerror = function() {
+              if (callback) callback(new Error('Network error updating Google Drive file'));
+            };
+            patchXhr.send(fileContent);
+          } else {
+            const boundary = '-------314159265358979323846';
+            const delimiter = "\r\n--" + boundary + "\r\n";
+            const closeDelim = "\r\n--" + boundary + "--";
+            const metadata = {
+              name: fileName,
+              mimeType: 'application/json',
+              parents: folderId ? [folderId] : []
+            };
+            const multipartRequestBody =
+              delimiter +
+              'Content-Type: application/json; charset=UTF-8\r\n\r\n' +
+              JSON.stringify(metadata) +
+              delimiter +
+              'Content-Type: application/json\r\n\r\n' +
+              fileContent +
+              closeDelim;
+
+            const postXhr = new XMLHttpRequest();
+            postXhr.open('POST', 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart');
+            postXhr.setRequestHeader('Authorization', 'Bearer ' + token);
+            postXhr.setRequestHeader('Content-Type', 'multipart/related; boundary=' + boundary);
+            postXhr.onload = function() {
+              if (postXhr.status === 401) {
+                handleGoogleTokenExpired();
+                if (callback) callback(new Error('Google session expired. Please reconnect your account.'));
+                return;
+              }
+              if (postXhr.status === 200 || postXhr.status === 201) {
+                try {
+                  const file = JSON.parse(postXhr.responseText);
+                  if (callback) callback(null, file);
+                } catch {
+                  if (callback) callback(null, { name: fileName });
+                }
+              } else {
+                if (callback) callback(new Error('Drive upload failed: ' + postXhr.statusText));
+              }
+            };
+            postXhr.onerror = function() {
+              if (callback) callback(new Error('Network error uploading to Google Drive'));
+            };
+            postXhr.send(multipartRequestBody);
+          }
+        };
+        checkXhr.onerror = function() {
+          if (callback) callback(new Error('Network error communicating with Google Drive'));
+        };
+        checkXhr.send();
+      });
+    }
+
+    function listGoogleDriveSessions(token, callback) {
+      getOrCreateDriveFolder(token, function(err, folderId) {
+        if (err) {
+          if (callback) callback(err);
+          return;
+        }
+        const xhr = new XMLHttpRequest();
+        const query = encodeURIComponent(`'${folderId}' in parents and trashed = false and mimeType = 'application/json'`);
+        xhr.open('GET', 'https://www.googleapis.com/drive/v3/files?q=' + query + '&fields=files(id,name,modifiedTime,size)&orderBy=modifiedTime desc');
+        xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+        xhr.onload = function() {
+          if (xhr.status === 401) {
+            handleGoogleTokenExpired();
+            if (callback) callback(new Error('Google session expired. Please reconnect your account.'));
+            return;
+          }
+          if (xhr.status === 200) {
+            try {
+              const res = JSON.parse(xhr.responseText);
+              callback(null, res.files || []);
+            } catch (e) {
+              callback(e);
+            }
+          } else {
+            callback(new Error('Failed to list sessions from Google Drive: ' + xhr.statusText));
+          }
+        };
+        xhr.onerror = function() {
+          callback(new Error('Network error connecting to Google Drive'));
+        };
+        xhr.send();
+      });
+    }
+
+    function restoreSessionFromGoogleDrive(token, fileId, fileName) {
+      const xhr = new XMLHttpRequest();
+      xhr.open('GET', 'https://www.googleapis.com/drive/v3/files/' + fileId + '?alt=media');
+      xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+      xhr.onload = function() {
+        if (xhr.status === 401) {
+          handleGoogleTokenExpired();
+          alert('Google session expired. Please reconnect your account.');
+          return;
+        }
+        if (xhr.status === 200) {
+          try {
+            const parsed = JSON.parse(xhr.responseText);
+            if (parsed.type === 'exam-package' || (!parsed.results && parsed.layout)) {
+              if (parsed.layout) {
+                state.layout = parsed.layout;
+                updateLayoutDisplay(state.layout.title || fileName);
+              }
+              if (parsed.key) {
+                state.key = parsed.key;
+                updateKeyDisplay();
+              }
+              if (parsed.roster) {
+                state.roster = parsed.roster;
+                updateRosterDisplay();
+              }
+              $('modal-google-drive')?.close();
+              showToast(`✓ Restored Exam Package from Google Drive: ${fileName}`);
+            } else {
+              restoreCheckerProgress(parsed);
+              $('modal-google-drive')?.close();
+              showToast(`✓ Restored session from Google Drive: ${fileName}`);
+            }
+          } catch (e) {
+            alert('Could not restore session: ' + e.message);
+          }
+        } else {
+          alert('Failed to download session file from Google Drive: ' + xhr.statusText);
+        }
+      };
+      xhr.onerror = function() {
+        alert('Network error downloading file from Google Drive.');
+      };
+      xhr.send();
     }
 
     // Attach core functions to window for testing and external access
@@ -10992,6 +11861,14 @@
     window.openReviewQueue = openReviewQueue;
     window.resolveReviewFlag = resolveReviewFlag;
     window.reopenReviewFlag = reopenReviewFlag;
+    window.googleDriveState = googleDriveState;
+    window.initGoogleDriveAuth = initGoogleDriveAuth;
+    window.saveSessionToGoogleDrive = saveSessionToGoogleDrive;
+    window.saveExamPackageToGoogleDrive = saveExamPackageToGoogleDrive;
+    window.listGoogleDriveSessions = listGoogleDriveSessions;
+    window.restoreSessionFromGoogleDrive = restoreSessionFromGoogleDrive;
+    window.disconnectGoogleDrive = disconnectGoogleDrive;
+    window.handleGoogleTokenExpired = handleGoogleTokenExpired;
 
     // Sidebar & Results Export button listeners
     $('btn-sidebar-grade')?.addEventListener('click', () => $('btn-grade-now').click());
@@ -11056,10 +11933,7 @@
       if (saved) {
         try {
           const parsed = JSON.parse(saved);
-          const studentCount = parsed.results?.grades?.length || 0;
-          const dateStr = parsed.savedAt ? new Date(parsed.savedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
-          const choice = confirm(`Found auto-saved progress in browser for "${parsed.layout?.title || 'Exam'}" (${studentCount} students, ${dateStr}).\n\nClick OK to resume from browser, or Cancel to open a saved .json file.`);
-          if (choice) {
+          if (parsed && parsed.results && parsed.results.grades && parsed.results.grades.length > 0) {
             restoreCheckerProgress(parsed);
             return;
           }
@@ -11068,6 +11942,127 @@
         }
       }
       $('input-progress-file')?.click();
+    });
+
+    $('btn-banner-load-file')?.addEventListener('click', () => {
+      $('input-progress-file')?.click();
+    });
+
+    $('btn-google-drive')?.addEventListener('click', () => {
+      openGoogleDriveModal();
+    });
+
+    $('btn-gdrive-connect')?.addEventListener('click', () => {
+      const inp = $('input-gdrive-client-id');
+      const val = (inp?.value || '').trim();
+      if (!val) {
+        alert('Please enter a valid Google OAuth Client ID.');
+        return;
+      }
+      setGoogleClientId(val);
+      initGoogleDriveAuth();
+    });
+
+    $('btn-gdrive-disconnect')?.addEventListener('click', () => {
+      disconnectGoogleDrive();
+    });
+
+    $('btn-gdrive-save-now')?.addEventListener('click', () => {
+      if (!googleDriveState.accessToken) {
+        alert('Please connect your Google Drive first.');
+        return;
+      }
+      const data = serializeProgressSession({ includeImages: false });
+      if (!data) {
+        alert('No active grading results to save. Grade some scans first!');
+        return;
+      }
+      const saveBtn = $('btn-gdrive-save-now');
+      const origHtml = saveBtn ? saveBtn.innerHTML : '';
+      if (saveBtn) {
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<span>Uploading to Google Drive...</span>';
+      }
+      saveSessionToGoogleDrive(googleDriveState.accessToken, data, (err, file) => {
+        if (saveBtn) {
+          saveBtn.disabled = false;
+          saveBtn.innerHTML = origHtml;
+        }
+        if (err) {
+          alert('Could not save to Google Drive: ' + err.message);
+        } else {
+          updateSaveStatusUI('saved');
+          showToast(`✓ Saved "${file?.name || 'session'}" to Google Drive!`);
+          $('modal-google-drive')?.close();
+        }
+      });
+    });
+
+    $('btn-gdrive-save-package')?.addEventListener('click', () => {
+      if (!googleDriveState.accessToken) {
+        alert('Please connect your Google Drive first.');
+        return;
+      }
+      if (!state.layout && !state.key) {
+        alert('No active exam layout or answer key loaded. Load or choose a layout first!');
+        return;
+      }
+      const saveBtn = $('btn-gdrive-save-package');
+      const origHtml = saveBtn ? saveBtn.innerHTML : '';
+      if (saveBtn) {
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<span>Uploading Package to Google Drive...</span>';
+      }
+      saveExamPackageToGoogleDrive(googleDriveState.accessToken, (err, file) => {
+        if (saveBtn) {
+          saveBtn.disabled = false;
+          saveBtn.innerHTML = origHtml;
+        }
+        if (err) {
+          alert('Could not save to Google Drive: ' + err.message);
+        } else {
+          showToast(`✓ Saved "${file?.name || 'Exam Package'}" to Google Drive!`);
+          $('modal-google-drive')?.close();
+        }
+      });
+    });
+
+    $('btn-gdrive-list-files')?.addEventListener('click', () => {
+      if (!googleDriveState.accessToken) return;
+      const listWrap = $('gdrive-files-list-wrap');
+      const listEl = $('gdrive-files-list');
+      if (!listEl) return;
+
+      listEl.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 0.5rem;">Loading sessions from Google Drive...</div>';
+      if (listWrap) listWrap.style.display = 'block';
+
+      listGoogleDriveSessions(googleDriveState.accessToken, (err, files) => {
+        if (err) {
+          listEl.innerHTML = `<div style="color: var(--danger); padding: 0.4rem;">Error: ${err.message}</div>`;
+          return;
+        }
+        if (!files || files.length === 0) {
+          listEl.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 0.5rem;">No saved sessions found in "Instructor Essentials" folder.</div>';
+          return;
+        }
+        listEl.innerHTML = '';
+        files.forEach((f) => {
+          const item = document.createElement('div');
+          item.style.cssText = 'display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; padding: 0.35rem 0.5rem; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-xs);';
+          const dateStr = f.modifiedTime ? new Date(f.modifiedTime).toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+          item.innerHTML = `
+            <div style="min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+              <strong style="color: var(--text); font-size: 0.78rem;">${f.name}</strong>
+              <div style="font-size: 0.68rem; color: var(--text-muted);">${dateStr}</div>
+            </div>
+            <button type="button" class="btn btn--primary btn-xs btn-restore-file" style="flex-shrink: 0;">Restore</button>
+          `;
+          item.querySelector('.btn-restore-file').addEventListener('click', () => {
+            restoreSessionFromGoogleDrive(googleDriveState.accessToken, f.id, f.name);
+          });
+          listEl.appendChild(item);
+        });
+      });
     });
 
     $('input-progress-file')?.addEventListener('change', (e) => {
@@ -11103,6 +12098,7 @@
         localStorage.removeItem(PROGRESS_STORAGE_KEY);
       } catch {}
       if ($('banner-resume-session')) $('banner-resume-session').style.display = 'none';
+      updateResumeStatusUI(false);
       showToast('Saved session cleared from browser storage');
     });
 

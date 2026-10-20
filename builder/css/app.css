@@ -330,7 +330,7 @@ body {
 }
 
 .btn:active {
-  transform: scale(0.97);
+  transform: translateY(1px);
 }
 
 .btn:focus-visible {
@@ -376,6 +376,55 @@ body {
   background: var(--panel-alt);
   color: var(--text);
 }
+
+.btn--danger,
+.btn.is-danger {
+  color: var(--danger, #ef4444);
+  border-color: rgba(239, 68, 68, 0.35);
+  background: var(--panel);
+}
+.btn--danger:hover,
+.btn.is-danger:hover {
+  background: rgba(239, 68, 68, 0.08);
+  border-color: var(--danger, #ef4444);
+  color: #dc2626;
+}
+.btn--danger.btn--solid,
+.btn.is-danger.btn--solid {
+  background: var(--danger, #ef4444);
+  border-color: var(--danger, #ef4444);
+  color: #fff;
+}
+.btn--danger.btn--solid:hover,
+.btn.is-danger.btn--solid:hover {
+  background: #dc2626;
+  border-color: #dc2626;
+  color: #fff;
+}
+
+.btn--ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--text-muted);
+  box-shadow: none;
+}
+.btn--ghost:hover {
+  background: var(--panel-alt);
+  color: var(--text);
+}
+
+.btn--sm {
+  padding: 0.28rem 0.62rem;
+  font-size: 0.76rem;
+}
+
+.btn--xs,
+.btn-xs {
+  font-size: 0.72rem;
+  padding: 0.22rem 0.52rem;
+  border-radius: var(--radius-xs, 4px);
+}
+
 
 /* Export Dropdown */
 .dropdown-menu {

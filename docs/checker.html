@@ -292,6 +292,50 @@
       font-size: 0.75rem;
     }
 
+    .btn--xs,
+    .btn-xs {
+      font-size: 0.72rem;
+      padding: 0.22rem 0.52rem;
+      border-radius: var(--radius-xs);
+    }
+
+    .btn--danger,
+    .btn.is-danger {
+      color: var(--danger, #ef4444);
+      border-color: rgba(239, 68, 68, 0.35);
+      background: var(--panel);
+    }
+    .btn--danger:hover,
+    .btn.is-danger:hover {
+      background: rgba(239, 68, 68, 0.08);
+      border-color: var(--danger, #ef4444);
+      color: #dc2626;
+    }
+    .btn--danger.btn--solid,
+    .btn.is-danger.btn--solid {
+      background: var(--danger, #ef4444);
+      border-color: var(--danger, #ef4444);
+      color: #fff;
+    }
+    .btn--danger.btn--solid:hover,
+    .btn.is-danger.btn--solid:hover {
+      background: #dc2626;
+      border-color: #dc2626;
+      color: #fff;
+    }
+
+    .btn--ghost {
+      background: transparent;
+      border-color: transparent;
+      color: var(--text-muted);
+      box-shadow: none;
+    }
+    .btn--ghost:hover {
+      background: var(--panel-alt);
+      color: var(--text);
+    }
+
+
     /* Highlighting for Save & Resume buttons */
     .btn-save-progress {
       position: relative;
@@ -1845,11 +1889,15 @@
         <h1 class="app-brand__title">Instructor Essentials</h1>
       </div>
       <nav class="workflow-nav" aria-label="Workflow switcher">
-        <a href="index.html" class="workflow-nav__item">
+        <a href="home.html" class="workflow-nav__item" id="nav-btn-home">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          <span>Home</span>
+        </a>
+        <a href="index.html" class="workflow-nav__item" id="nav-btn-builder">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
           <span>Sheet Builder</span>
         </a>
-        <a href="checker.html" class="workflow-nav__item is-active" aria-current="page">
+        <a href="checker.html" class="workflow-nav__item is-active" id="nav-btn-checker" aria-current="page">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
           <span>Checker Studio</span>
         </a>
@@ -1860,6 +1908,12 @@
       <!-- Hidden compatibility hooks for automated tests and programmatic triggers -->
       <button type="button" id="btn-grade-now" style="display: none;" aria-hidden="true"></button>
       <button type="button" id="btn-sample-grade" style="display: none;" aria-hidden="true"></button>
+
+      <!-- Clear Workspace / New Exam Session -->
+      <button type="button" id="btn-clear-workspace" class="btn btn--secondary" title="Start a fresh grading session: clear all scans, student roster, keys, and cached results">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+        <span>New Session</span>
+      </button>
 
       <!-- Export Reports & Graded Sheets Dropdown -->
       <div class="dropdown-menu" id="dropdown-export-reports">
@@ -2032,15 +2086,6 @@
             <button type="button" class="btn-step" id="btn-thresh-dec">−</button>
             <input type="number" id="input-threshold" value="60" min="0" max="100" step="5">
             <button type="button" class="btn-step" id="btn-thresh-inc">+</button>
-          </div>
-        </div>
-
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <label style="font-size: 0.78rem;">Bubble Mark Threshold:</label>
-          <div class="stepper">
-            <button type="button" class="btn-step" id="btn-bthresh-dec">−</button>
-            <input type="number" id="input-bubble-threshold" value="0.20" min="0.05" max="0.80" step="0.05">
-            <button type="button" class="btn-step" id="btn-bthresh-inc">+</button>
           </div>
         </div>
       </div>
@@ -2294,10 +2339,22 @@
           <div class="roster-table-col">
             <!-- Roster Header & Filter Toolbar -->
             <div class="roster-toolbar" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
-              <div style="display: flex; align-items: center; gap: 0.55rem;">
+              <div style="display: flex; align-items: center; gap: 0.55rem; flex-wrap: wrap;">
                 <h3 style="margin: 0; font-size: 0.96rem; font-weight: 700; color: var(--text);">Student Roster</h3>
                 <span id="roster-total-count" class="badge" style="font-size: 0.72rem; padding: 0.15rem 0.5rem; background: var(--panel-alt); border: 1px solid var(--border); border-radius: var(--radius-full); font-weight: 600; color: var(--text-muted);">0 students</span>
                 <span id="roster-count-badge" style="display: none;">0 students</span>
+                <span id="roster-active-badge" class="badge" style="display: none; font-size: 0.72rem; padding: 0.15rem 0.55rem; background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; border-radius: var(--radius-full); font-weight: 600;">
+                  Roster: <span id="roster-loaded-count" style="font-weight: 700; margin: 0 2px;">0</span> loaded
+                </span>
+                <button type="button" id="btn-upload-roster-csv" class="btn btn--secondary btn-xs" title="Upload student roster CSV (Student ID, Name)">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  <span>Upload Roster</span>
+                </button>
+                <button type="button" id="btn-clear-roster" class="btn btn--secondary btn-xs is-danger" style="display: none;" title="Remove uploaded student roster list from previous class">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  <span>Remove Roster</span>
+                </button>
+                <input type="file" id="input-roster-file" accept=".csv" style="display: none;">
               </div>
               <div style="display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap;" id="roster-review-filters">
                 <button type="button" class="btn btn--secondary btn-xs is-active" data-filter="all" id="filter-roster-all" title="Show all graded student sheets">
@@ -3257,10 +3314,8 @@
     });
 
     // Steppers
-    $('btn-thresh-dec').onclick = () => { $('input-threshold').value = Math.max(0, parseInt($('input-threshold').value) - 5); };
-    $('btn-thresh-inc').onclick = () => { $('input-threshold').value = Math.min(100, parseInt($('input-threshold').value) + 5); };
-    $('btn-bthresh-dec').onclick = () => { $('input-bubble-threshold').value = Math.max(0.05, (parseFloat($('input-bubble-threshold').value) - 0.05).toFixed(2)); };
-    $('btn-bthresh-inc').onclick = () => { $('input-bubble-threshold').value = Math.min(0.80, (parseFloat($('input-bubble-threshold').value) + 0.05).toFixed(2)); };
+    if ($('btn-thresh-dec')) $('btn-thresh-dec').onclick = () => { $('input-threshold').value = Math.max(0, parseInt($('input-threshold').value) - 5); };
+    if ($('btn-thresh-inc')) $('btn-thresh-inc').onclick = () => { $('input-threshold').value = Math.min(100, parseInt($('input-threshold').value) + 5); };
 
     // File Dropzone
     const dropzone = $('dropzone-scans');
@@ -4474,9 +4529,6 @@
       if (!state.key) {
         state.key = PRESETS['exam-50'].key;
       }
-      if (!state.roster || state.roster.length === 0) {
-        state.roster = SAMPLE_ROSTER;
-      }
     }
 
     // Update Active Answer Key Status Box & Dropzone State
@@ -4506,23 +4558,28 @@
       if (typeof updateHorizontalBadges === 'function') updateHorizontalBadges();
     }
 
-    // Update Student Roster Status Box & Dropzone State
+    // Update Student Roster Status Box & Toolbar State
     function updateRosterDisplay() {
-      const emptyStateEl = $('roster-empty-state');
-      const statusBoxEl = $('roster-status-box');
-      const titleEl = $('roster-title-display');
-      const statsEl = $('roster-stats-display');
+      const activeBadge = $('roster-active-badge');
+      const loadedCount = $('roster-loaded-count');
+      const btnClearRoster = $('btn-clear-roster');
+      const btnUploadRoster = $('btn-upload-roster-csv');
 
-      if (!state.roster || state.roster.length === 0) {
-        if (emptyStateEl) emptyStateEl.style.display = 'flex';
-        if (statusBoxEl) statusBoxEl.style.display = 'none';
+      const hasRoster = Array.isArray(state.roster) && state.roster.length > 0;
+
+      if (!hasRoster) {
+        if (activeBadge) activeBadge.style.display = 'none';
+        if (btnClearRoster) btnClearRoster.style.display = 'none';
+        const span = btnUploadRoster?.querySelector?.('span');
+        if (span) span.textContent = 'Upload Roster';
         return;
       }
-      if (emptyStateEl) emptyStateEl.style.display = 'none';
-      if (statusBoxEl) statusBoxEl.style.display = 'block';
 
-      if (titleEl) titleEl.textContent = 'Student Roster Loaded';
-      if (statsEl) statsEl.textContent = `${state.roster.length} Students`;
+      if (activeBadge) activeBadge.style.display = 'inline-flex';
+      if (loadedCount) loadedCount.textContent = `${state.roster.length}`;
+      if (btnClearRoster) btnClearRoster.style.display = 'inline-flex';
+      const span = btnUploadRoster?.querySelector?.('span');
+      if (span) span.textContent = 'Change Roster';
     }
 
     // Preflight Mismatch Validation between Key and Layout
@@ -5955,9 +6012,10 @@
             });
             renderResults();
           }
-          alert(`Successfully loaded custom roster: ${state.roster.length} students.`);
+          showToast(`✓ Successfully loaded custom roster: ${state.roster.length} students.`);
         } catch (err) {
-          alert("Error parsing roster CSV: " + err.message);
+          showToast("Error parsing roster CSV: " + err.message);
+
         }
       };
       reader.readAsText(file);
@@ -6015,11 +6073,37 @@
 
     // Student Roster Actions
     $('btn-download-roster-template')?.addEventListener('click', downloadRosterTemplateCSV);
-    $('btn-change-roster')?.addEventListener('click', () => $('input-roster-direct')?.click());
+    $('btn-change-roster')?.addEventListener('click', () => $('input-roster-file')?.click());
+    $('btn-upload-roster-csv')?.addEventListener('click', () => $('input-roster-file')?.click());
+    $('input-roster-file')?.addEventListener('change', (e) => {
+      const file = e.target.files?.[0];
+      if (file) {
+        handleRosterUpload(file);
+        e.target.value = '';
+      }
+    });
     $('btn-clear-roster')?.addEventListener('click', () => {
       state.roster = [];
+      const rosterInput = $('input-roster-file');
+      if (rosterInput) rosterInput.value = '';
+      if (state.results && state.results.grades) {
+        state.results.grades.forEach(g => {
+          g.studentName = (g.rawId && g.rawId !== 'UNREAD') ? g.rawId : (g.studentId || 'Student');
+        });
+        renderResults();
+      }
       updateRosterDisplay();
+      if (state.results && state.results.grades && state.results.grades.length > 0) {
+        saveCheckerProgress({ downloadFile: false, silent: true });
+      }
+      showToast('✓ Previous class student roster removed.');
     });
+
+    // Clear Workspace / New Exam Session Action
+    $('btn-clear-workspace')?.addEventListener('click', () => {
+      clearWorkspace();
+    });
+
 
     $('btn-close-saved-builds')?.addEventListener('click', () => $('modal-saved-builds-picker')?.close());
     $('btn-cancel-saved-builds')?.addEventListener('click', () => $('modal-saved-builds-picker')?.close());
@@ -7380,7 +7464,7 @@
       validatePreflightKeyLayout();
 
       const passThreshold = parseFloat($('input-threshold')?.value) || 60;
-      const bubbleThreshold = parseFloat($('input-bubble-threshold')?.value) || 0.20;
+      const bubbleThreshold = 0.20;
 
       state.isGrading = true;
       const btnHeader = $('btn-grade-now');
@@ -10722,8 +10806,8 @@
         updateRosterDisplay();
       }
 
-      document.querySelector('.workspace')?.classList.add('has-data');
       document.body.classList.add('has-data');
+      document.querySelector('.main-content')?.classList.add('has-data');
       renderResults();
 
       if (data.activeTab && typeof window.switchTab === 'function') {
@@ -10742,7 +10826,173 @@
     }
     window.restoreCheckerProgress = restoreCheckerProgress;
 
+    function clearWorkspace({ silent = false } = {}) {
+      state.scans = [];
+      state.roster = [];
+      state.key = null;
+      state.layout = null;
+      state.results = null;
+      state.reviewQueue = [];
+      state.selectedStudentIdx = null;
+      state.selectedStudentIndex = null;
+      state.activePresetId = null;
+      state.isGrading = false;
+
+      const scansInput = $('input-scans');
+      if (scansInput) scansInput.value = '';
+      const keyScanInput = $('input-key-scan');
+      if (keyScanInput) keyScanInput.value = '';
+      const layoutInput = $('input-layout-direct');
+      if (layoutInput) layoutInput.value = '';
+      const rosterInput = $('input-roster-file');
+      if (rosterInput) rosterInput.value = '';
+      const progInput = $('input-progress-file');
+      if (progInput) progInput.value = '';
+
+      const scansList = $('scans-list');
+      if (scansList) {
+        scansList.innerHTML = '<div style="color: var(--text-muted); font-size: 0.75rem; text-align: center; padding: 0.5rem;">No scans uploaded yet.</div>';
+      }
+      const progressBar = $('grading-progress');
+      if (progressBar) progressBar.style.display = 'none';
+      const progressInner = $('grading-progress-inner');
+      if (progressInner) progressInner.style.width = '0%';
+      const progressText = $('grading-progress-text');
+      if (progressText) progressText.style.display = 'none';
+
+      try {
+        localStorage.removeItem(PROGRESS_STORAGE_KEY);
+      } catch {}
+
+      updateLayoutDisplay();
+      updateKeyDisplay();
+      updateRosterDisplay();
+      updateResumeStatusUI(false);
+      updateSaveStatusUI('saved');
+      const badge = $('badge-save-status');
+      if (badge) badge.style.display = 'none';
+      const resumeDot = $('badge-resume-dot');
+      if (resumeDot) resumeDot.style.display = 'none';
+
+      document.body?.classList?.remove?.('has-data');
+      document.querySelector('.main-content')?.classList?.remove?.('has-data');
+      document.querySelector('.workspace')?.classList?.remove?.('has-data');
+
+      const emptyState = $('checker-empty-state');
+      if (emptyState) emptyState.style.display = 'flex';
+      const resultsBar = $('results-export-bar');
+      if (resultsBar) resultsBar.style.display = 'none';
+
+      // Reset Summary metrics
+      if ($('metric-count')) $('metric-count').textContent = '0';
+      if ($('metric-count-sub')) $('metric-count-sub').textContent = '0 submitted';
+      if ($('metric-mean')) $('metric-mean').textContent = '0.0';
+      if ($('metric-mean-sub')) $('metric-mean-sub').textContent = '0.0%';
+      if ($('metric-passrate')) $('metric-passrate').textContent = '0.0%';
+      if ($('metric-passrate-sub')) $('metric-passrate-sub').textContent = '0 passed / 0 failed';
+      if ($('metric-alpha')) $('metric-alpha').textContent = '—';
+      if ($('metric-stddev')) $('metric-stddev').textContent = '0.0';
+      if ($('metric-median')) $('metric-median').textContent = 'Median: 0.0';
+
+      // Reset Pass/Fail Distribution Bar & Bell Curve
+      if ($('dist-bar-pass')) $('dist-bar-pass').style.width = '0%';
+      if ($('dist-bar-fail')) $('dist-bar-fail').style.width = '0%';
+      if ($('dist-label-pass')) $('dist-label-pass').textContent = 'Pass: 0 (0.0%)';
+      if ($('dist-label-fail')) $('dist-label-fail').textContent = 'Fail: 0 (0.0%)';
+      if ($('dist-label-threshold')) $('dist-label-threshold').textContent = 'Threshold: 60%';
+      if (typeof renderBellCurve === 'function') {
+        renderBellCurve([], 60);
+      }
+
+      // Reset Tables
+      const tbodySummary = $('tbody-summary');
+      if (tbodySummary) {
+        tbodySummary.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-muted);">No student grades available.</td></tr>';
+      }
+      const tbodyRoster = $('tbody-roster');
+      if (tbodyRoster) {
+        tbodyRoster.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-muted);">No student grades available.</td></tr>';
+      }
+      const tbodyItems = $('tbody-items');
+      if (tbodyItems) {
+        tbodyItems.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-muted);">No item analysis available.</td></tr>';
+      }
+      const tbodyTopStudents = $('tbody-top-students');
+      if (tbodyTopStudents) {
+        tbodyTopStudents.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 1.5rem; color: var(--text-muted);">No student data available.</td></tr>';
+      }
+
+      // Reset Roster Counts
+      const rosterCount = $('roster-total-count');
+      if (rosterCount) rosterCount.textContent = '0 students';
+      const rosterCountBadge = $('roster-count-badge');
+      if (rosterCountBadge) rosterCountBadge.textContent = '0 students';
+      const countAll = $('count-roster-all');
+      if (countAll) countAll.textContent = '(0)';
+      const countReview = $('count-roster-review');
+      if (countReview) countReview.textContent = '(0)';
+      const countDup = $('count-roster-duplicates');
+      if (countDup) countDup.textContent = '(0)';
+      const countClean = $('count-roster-clean');
+      if (countClean) countClean.textContent = '(0)';
+
+      // Reset Sheet Inspector / Preview Pane
+      const previewCanvas = $('roster-preview-canvas');
+      if (previewCanvas) {
+        const ctx = previewCanvas.getContext('2d');
+        ctx?.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+      }
+      const currentBadge = $('student-badge-current');
+      if (currentBadge) currentBadge.textContent = 'No Student Selected';
+      const badgeReview = $('roster-badge-review');
+      if (badgeReview) badgeReview.style.display = 'none';
+      const reviewAlert = $('roster-review-alert');
+      if (reviewAlert) reviewAlert.style.display = 'none';
+      const badgeScore = $('roster-badge-score');
+      if (badgeScore) badgeScore.style.display = 'none';
+      const badgeOffer = $('roster-badge-class-offer');
+      if (badgeOffer) badgeOffer.style.display = 'none';
+
+      // Reset Student select in viewer
+      const sel = $('viewer-student-select');
+      if (sel) sel.innerHTML = '<option value="">No student sheets</option>';
+
+      // Disable all export buttons
+      ['btn-export-csv', 'btn-export-html', 'btn-export-zip', 'btn-download-sheet-jpeg',
+       'btn-export-progress', 'btn-viewer-download-zip', 'btn-results-export-zip',
+       'btn-results-export-csv', 'btn-results-export-html', 'btn-results-save-progress',
+       'btn-ribbon-export-zip', 'btn-ribbon-export-csv', 'btn-ribbon-export-html'].forEach((id) => {
+        const b = $(id);
+        if (b) b.disabled = true;
+      });
+
+      // Reset horizontal badge
+      const horizBadge = $('badge-horizontal-count');
+      if (horizBadge) horizBadge.style.display = 'none';
+
+      if (typeof window.switchTab === 'function') {
+        window.switchTab('summary');
+      }
+
+      if (!silent) {
+        showToast('✓ Workspace cleared. Ready for a new exam session.');
+      }
+    }
+    window.clearWorkspace = clearWorkspace;
+
     function checkAutoSavedProgress() {
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('action') === 'new' || urlParams.get('clear') === '1') {
+          clearWorkspace({ silent: true });
+          return;
+        }
+        if (urlParams.get('action') === 'sample') {
+          setTimeout(() => $('btn-sample-grade')?.click(), 100);
+          return;
+        }
+      } catch {}
+
       try {
         const raw = localStorage.getItem(PROGRESS_STORAGE_KEY);
         if (!raw) {
@@ -10996,13 +11246,23 @@
           if (userStr) {
             try {
               googleDriveState.user = JSON.parse(userStr);
-            } catch {}
+            } catch {
+              googleDriveState.user = { name: 'Google User' };
+            }
+          } else {
+            googleDriveState.user = { name: 'Google User' };
           }
           updateGoogleUiState();
-        } else if (token && expiry <= Date.now()) {
-          localStorage.removeItem('instructor_google_token');
-          localStorage.removeItem('instructor_google_token_expiry');
-          localStorage.removeItem('instructor_google_user');
+        } else {
+          if (token && expiry <= Date.now()) {
+            localStorage.removeItem('instructor_google_token');
+            localStorage.removeItem('instructor_google_token_expiry');
+            localStorage.removeItem('instructor_google_user');
+          }
+          googleDriveState.accessToken = null;
+          googleDriveState.isConnected = false;
+          googleDriveState.user = null;
+          updateGoogleUiState();
         }
       } catch {}
     }
@@ -11847,6 +12107,19 @@
     updateRosterDisplay();
     restoreGoogleAuthState();
     checkAutoSavedProgress();
+
+    // Cross-tab synchronization for Google Auth and session progress
+    if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
+      window.addEventListener('storage', (e) => {
+        if (e.key === 'instructor_google_token' || e.key === 'instructor_google_user') {
+          restoreGoogleAuthState();
+        }
+        if (e.key === PROGRESS_STORAGE_KEY && !state.isGrading) {
+          checkAutoSavedProgress();
+        }
+      });
+    }
   </script>
+
 </body>
 </html>

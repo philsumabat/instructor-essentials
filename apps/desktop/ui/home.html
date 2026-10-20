@@ -1,0 +1,986 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Instructor Essentials — Portal &amp; Projects</title>
+  <meta name="description" content="Instructor Essentials — Unified portal for OMR exam sheet design, automated camera grading, and assessment analytics.">
+  <meta name="application-name" content="Instructor Essentials">
+  <meta name="apple-mobile-web-app-title" content="Instructor Essentials">
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --bg-alt: #111827;
+      --panel: #161f30;
+      --panel-alt: #1e293b;
+      --border: #283548;
+      --border-focus: #3b82f6;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --accent-light: rgba(37, 99, 235, 0.12);
+      --success: #059669;
+      --success-hover: #047857;
+      --warning: #d97706;
+      --danger: #ef4444;
+      --danger-hover: #dc2626;
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 16px;
+      --radius-full: 9999px;
+      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.25);
+      --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.35);
+      --shadow-lg: 0 10px 25px -3px rgba(0, 0, 0, 0.45);
+      --ease: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top Navigation Bar */
+    .app-header {
+      height: 56px;
+      background: var(--panel);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1.5rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .app-brand {
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+    }
+
+    .app-brand__main {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .app-brand__logo {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, var(--accent), #4f46e5);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
+    }
+
+    .app-brand__title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: var(--text);
+    }
+
+    /* Segmented Navigation */
+    .workflow-nav {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      background: var(--bg);
+      padding: 0.2rem;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+    }
+
+    .workflow-nav__item {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.32rem 0.75rem;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: all 140ms var(--ease);
+    }
+
+    .workflow-nav__item:hover {
+      color: var(--text);
+      background: var(--panel-alt);
+    }
+
+    .workflow-nav__item.is-active {
+      background: var(--panel);
+      color: #fff;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border);
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.42rem;
+      font-family: inherit;
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 0.45rem 0.95rem;
+      border-radius: var(--radius-sm);
+      border: 1px solid transparent;
+      cursor: pointer;
+      user-select: none;
+      text-decoration: none;
+      transition: background 140ms var(--ease), border-color 140ms var(--ease), color 140ms var(--ease), box-shadow 140ms var(--ease), transform 80ms var(--ease);
+      white-space: nowrap;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn:active {
+      transform: translateY(1px);
+    }
+
+    .btn:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    .btn--primary {
+      background: var(--accent);
+      color: #fff;
+      box-shadow: 0 2px 6px -1px rgba(37, 99, 235, 0.35);
+    }
+    .btn--primary:hover {
+      background: var(--accent-hover);
+      box-shadow: 0 4px 12px -2px rgba(37, 99, 235, 0.45);
+    }
+
+    .btn--accent {
+      background: var(--success);
+      color: #fff;
+      box-shadow: 0 2px 6px -1px rgba(5, 150, 105, 0.35);
+    }
+    .btn--accent:hover {
+      background: var(--success-hover);
+      box-shadow: 0 4px 12px -2px rgba(5, 150, 105, 0.45);
+    }
+
+    .btn--secondary {
+      background: var(--panel-alt);
+      color: var(--text);
+      border-color: var(--border);
+      box-shadow: var(--shadow-sm);
+    }
+    .btn--secondary:hover {
+      border-color: var(--border-focus);
+      background: #27354a;
+      color: #fff;
+    }
+
+    .btn--danger,
+    .btn.is-danger {
+      color: var(--danger);
+      border-color: rgba(239, 68, 68, 0.35);
+      background: var(--panel-alt);
+    }
+    .btn--danger:hover,
+    .btn.is-danger:hover {
+      background: rgba(239, 68, 68, 0.15);
+      border-color: var(--danger);
+      color: #fca5a5;
+    }
+
+    .btn--sm {
+      padding: 0.3rem 0.65rem;
+      font-size: 0.76rem;
+    }
+
+    .btn--xs {
+      padding: 0.2rem 0.5rem;
+      font-size: 0.72rem;
+      border-radius: 4px;
+    }
+
+    /* Google Auth Chip */
+    .user-auth-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .google-user-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.25rem 0.65rem;
+      background: var(--panel-alt);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-full);
+      font-size: 0.78rem;
+    }
+
+    .user-avatar {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .sync-status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 6px rgba(5, 150, 105, 0.8);
+    }
+
+    /* Main Container */
+    .main-wrap {
+      max-width: 1120px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 4rem;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2.25rem;
+    }
+
+    /* Hero Banner */
+    .hero-banner {
+      background: linear-gradient(135deg, rgba(37, 99, 235, 0.12) 0%, rgba(17, 24, 39, 0.85) 100%);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 2.25rem 2.5rem;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow-md);
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: rgba(37, 99, 235, 0.2);
+      border: 1px solid rgba(59, 130, 246, 0.35);
+      color: #93c5fd;
+      padding: 0.2rem 0.65rem;
+      border-radius: var(--radius-full);
+      font-size: 0.74rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.85rem;
+    }
+
+    .hero-title {
+      font-size: 1.85rem;
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      color: #fff;
+      margin-bottom: 0.5rem;
+    }
+
+    .hero-desc {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      max-width: 680px;
+      line-height: 1.6;
+    }
+
+    /* Launchers Grid */
+    .launchers-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .tool-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.75rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 1.25rem;
+      box-shadow: var(--shadow-sm);
+      transition: transform 180ms var(--ease), border-color 180ms var(--ease), box-shadow 180ms var(--ease);
+      position: relative;
+    }
+
+    .tool-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(59, 130, 246, 0.4);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .tool-card__header {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+
+    .tool-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .tool-icon--builder {
+      background: rgba(37, 99, 235, 0.15);
+      color: #60a5fa;
+      border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+
+    .tool-icon--checker {
+      background: rgba(5, 150, 105, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .tool-card__title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.3rem;
+    }
+
+    .tool-card__desc {
+      font-size: 0.86rem;
+      color: var(--text-muted);
+      line-height: 1.55;
+    }
+
+    .tool-card__actions {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      padding-top: 1.15rem;
+    }
+
+    .tool-card__sub-actions {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    /* Projects Section */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .section-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    @media (max-width: 820px) {
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .dash-box {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 1.25rem 1.4rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+
+    .dash-box__head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.75rem;
+    }
+
+    .dash-box__title {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+
+    .build-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      max-height: 280px;
+      overflow-y: auto;
+    }
+
+    .build-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      padding: 0.65rem 0.85rem;
+      background: var(--panel-alt);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      transition: border-color 140ms var(--ease);
+    }
+
+    .build-item:hover {
+      border-color: var(--border-focus);
+    }
+
+    .build-item__info {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .build-item__title {
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .build-item__meta {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-top: 0.15rem;
+    }
+
+    .empty-placeholder {
+      text-align: center;
+      padding: 2.25rem 1rem;
+      color: var(--text-muted);
+      font-size: 0.82rem;
+    }
+
+    /* Toast */
+    #app-toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #0f172a;
+      color: #f8fafc;
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 8px;
+      padding: 10px 18px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      box-shadow: var(--shadow-lg);
+      z-index: 99999;
+      transition: opacity 0.25s ease, transform 0.25s ease;
+      opacity: 0;
+      transform: translateY(10px);
+      pointer-events: none;
+    }
+  </style>
+  <link rel="stylesheet" href="desktop.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="app-header app-chrome window-titlebar" data-tauri-drag-region>
+    <div class="app-brand">
+      <a href="home.html" class="app-brand__main" aria-label="Instructor Essentials Home">
+        <div class="app-brand__logo" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <path d="m9 15 2 2 4-4"/>
+          </svg>
+        </div>
+        <h1 class="app-brand__title">Instructor Essentials</h1>
+      </a>
+
+            <nav class="workflow-nav segmented-control" aria-label="Workflow switcher">
+        <a href="home.html" class="workflow-nav__item seg-btn is-active" id="nav-btn-home" aria-current="page" onclick="switchView('home', event); return false;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          <span>Home</span>
+        </a>
+        <a href="index.html" class="workflow-nav__item seg-btn" id="nav-btn-builder" onclick="switchView('builder', event); return false;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          <span>Design Exam</span>
+        </a>
+        <a href="checker.html" class="workflow-nav__item seg-btn" id="nav-btn-checker" onclick="switchView('checker', event); return false;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          <span>Grade Scans</span>
+        </a>
+        <a href="checker.html#speed" class="workflow-nav__item seg-btn" id="nav-btn-speed" onclick="switchView('speed', event); return false;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          <span>Speed Grader</span>
+        </a>
+      </nav>
+    </div>
+
+    <!-- User Account / Google Sign-In -->
+    <div class="user-auth-wrap">
+      <div id="google-disconnected-view" style="display: flex; align-items: center; gap: 0.5rem;">
+        <button type="button" id="btn-google-login" class="btn btn--secondary" title="Sign in once with Google to sync sessions across Sheet Builder and Checker Studio">
+          <svg width="14" height="14" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+          </svg>
+          <span>Sign in with Google</span>
+        </button>
+      </div>
+
+      <div id="google-connected-view" style="display: none; align-items: center; gap: 0.65rem;">
+        <div class="google-user-chip" title="Signed into institutional Google account">
+          <span class="sync-status-dot"></span>
+          <img id="user-avatar-img" class="user-avatar" src="" alt="" style="display: none;">
+          <span id="user-display-name" style="font-weight: 600; color: var(--text);">Instructor</span>
+        </div>
+        <button type="button" id="btn-google-logout" class="btn btn--secondary btn--sm is-danger" title="Sign out of Google account">Sign Out</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Wrap -->
+  <main class="main-wrap">
+    <!-- Hero Banner -->
+    <section class="hero-banner">
+      <div class="hero-badge">Autonomous Assessment System</div>
+      <h2 class="hero-title">Exam Designer, Camera Scanner &amp; Psychometrics</h2>
+      <p class="hero-desc">
+        Welcome to Instructor Essentials. Design millimeter-accurate paper bubble sheets, grade camera scans with automatic OpenCV homography, or resume your current grading session.
+      </p>
+    </section>
+
+    <!-- Primary Tool Launchers -->
+    <section class="launchers-grid">
+      <!-- Card 1: Sheet Builder -->
+      <article class="tool-card">
+        <div class="tool-card__header">
+          <div class="tool-icon tool-icon--builder" aria-hidden="true">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/>
+              <line x1="16" y1="17" x2="8" y2="17"/>
+              <polyline points="10 9 9 9 8 9"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="tool-card__title">Sheet Builder</h3>
+            <p class="tool-card__desc">
+              Design printable bubble answer sheets, Multiple Choice, True/False, and Identification exams with ArUco corner fiducials and true-scale SVG rendering.
+            </p>
+          </div>
+        </div>
+
+        <div class="tool-card__actions">
+          <a href="index.html" class="btn btn--primary" style="width: 100%; font-size: 0.9rem; padding: 0.6rem 1rem;">
+            <span>Launch Sheet Builder</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"/></svg>
+          </a>
+          <div class="tool-card__sub-actions">
+            <a href="index.html?action=new" class="btn btn--secondary btn--sm">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+              <span>New Blank Sheet</span>
+            </a>
+            <a href="index.html?action=generate" class="btn btn--secondary btn--sm">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              <span>Quick Generator</span>
+            </a>
+          </div>
+        </div>
+      </article>
+
+      <!-- Card 2: Checker Studio -->
+      <article class="tool-card">
+        <div class="tool-card__header">
+          <div class="tool-icon tool-icon--checker" aria-hidden="true">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="tool-card__title">Checker Studio</h3>
+            <p class="tool-card__desc">
+              Batch grade student exam scans or phone photos with automatic perspective homography, student roster matching, manual review queue, and item analysis.
+            </p>
+          </div>
+        </div>
+
+        <div class="tool-card__actions">
+          <a href="checker.html" class="btn btn--accent" style="width: 100%; font-size: 0.9rem; padding: 0.6rem 1rem;">
+            <span>Launch Checker Studio</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"/></svg>
+          </a>
+          <div class="tool-card__sub-actions">
+            <a href="checker.html?action=new" class="btn btn--secondary btn--sm">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/></svg>
+              <span>New Exam Session</span>
+            </a>
+            <a href="checker.html?action=sample" class="btn btn--secondary btn--sm">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              <span>1-Click Sample Test</span>
+            </a>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <!-- Projects & Workspaces Hub -->
+    <section>
+      <div class="section-header">
+        <h3 class="section-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          <span>Recent Projects &amp; Sessions</span>
+        </h3>
+        <button type="button" id="btn-clear-all-workspaces" class="btn btn--secondary btn--xs is-danger" title="Clear all local grading sessions and draft sheets for a completely fresh start">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/></svg>
+          <span>Clear All Workspaces</span>
+        </button>
+      </div>
+
+      <div class="dashboard-grid">
+        <!-- Active Grading Session Box -->
+        <div class="dash-box" id="box-active-session">
+          <div class="dash-box__head">
+            <div class="dash-box__title">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              <span>Active Grading Session</span>
+            </div>
+            <span id="session-status-badge" class="badge" style="font-size: 0.7rem; padding: 0.1rem 0.45rem; background: var(--panel-alt); border: 1px solid var(--border); border-radius: var(--radius-full); font-weight: 600; color: var(--text-muted);">Cached</span>
+          </div>
+
+          <div id="session-content-area">
+            <!-- Populated dynamically via JS -->
+          </div>
+        </div>
+
+        <!-- Saved Exam Builds Box -->
+        <div class="dash-box" id="box-saved-builds">
+          <div class="dash-box__head">
+            <div class="dash-box__title">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/></svg>
+              <span>Saved Sheet Builds</span>
+            </div>
+            <a href="index.html" class="btn btn--secondary btn--xs">Design New</a>
+          </div>
+
+          <div class="build-list" id="saved-builds-container">
+            <!-- Populated dynamically via JS -->
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="app-toast"></div>
+
+  <script>
+    'use strict';
+
+    const PROGRESS_STORAGE_KEY = 'instructor_checker_progress_v1';
+    const BUILDS_STORAGE_KEY = 'sheet-builder:saved_builds';
+    const LEGACY_BUILDS_KEY = 'grader:saved_builds';
+    const DEFAULT_GOOGLE_CLIENT_ID = '998750275888-cbvmqvjbfopbsv0oe5pu238grrpv7chm.apps.googleusercontent.com';
+
+    function $(id) { return document.getElementById(id); }
+
+    function showToast(msg) {
+      let toast = $('app-toast');
+      if (!toast) return;
+      toast.textContent = msg;
+      toast.style.opacity = '1';
+      toast.style.transform = 'translateY(0)';
+      if (window._toastTimeout) clearTimeout(window._toastTimeout);
+      window._toastTimeout = setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(10px)';
+      }, 3500);
+    }
+    window.showToast = showToast;
+
+    // ---- Google Auth Persistence & Sync ----
+    function getGoogleUser() {
+      try {
+        const token = localStorage.getItem('instructor_google_token');
+        const expiry = parseInt(localStorage.getItem('instructor_google_token_expiry') || '0', 10);
+        const userStr = localStorage.getItem('instructor_google_user');
+        if (token && expiry > Date.now()) {
+          return userStr ? JSON.parse(userStr) : { name: 'Institutional Instructor' };
+        }
+      } catch {}
+      return null;
+    }
+
+    function updateAuthUI() {
+      const user = getGoogleUser();
+      const discView = $('google-disconnected-view');
+      const connView = $('google-connected-view');
+      const nameEl = $('user-display-name');
+      const avatarEl = $('user-avatar-img');
+
+      if (user) {
+        if (discView) discView.style.display = 'none';
+        if (connView) connView.style.display = 'flex';
+        if (nameEl) nameEl.textContent = user.name || user.email || 'Instructor';
+        if (avatarEl) {
+          if (user.picture) {
+            avatarEl.src = user.picture;
+            avatarEl.style.display = 'inline-block';
+          } else {
+            avatarEl.style.display = 'none';
+          }
+        }
+      } else {
+        if (discView) discView.style.display = 'flex';
+        if (connView) connView.style.display = 'none';
+      }
+    }
+
+    function loadGoogleGis(callback) {
+      if (window.google?.accounts?.oauth2) {
+        callback();
+        return;
+      }
+      const existing = document.querySelector('script[data-gis]');
+      if (existing) {
+        existing.addEventListener('load', () => callback());
+        return;
+      }
+      const s = document.createElement('script');
+      s.src = 'https://accounts.google.com/gsi/client';
+      s.async = true;
+      s.setAttribute('data-gis', 'true');
+      s.onload = () => callback();
+      s.onerror = () => showToast('Failed to load Google Identity Services.');
+      document.head.appendChild(s);
+    }
+
+    function initGoogleLogin() {
+      loadGoogleGis(() => {
+        try {
+          const client = window.google.accounts.oauth2.initTokenClient({
+            client_id: DEFAULT_GOOGLE_CLIENT_ID,
+            scope: 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email',
+            callback: (resp) => {
+              if (resp && resp.access_token) {
+                const token = resp.access_token;
+                const expiresIn = resp.expires_in || 3600;
+                localStorage.setItem('instructor_google_token', token);
+                localStorage.setItem('instructor_google_token_expiry', String(Date.now() + (expiresIn * 1000)));
+
+                // Fetch user info
+                const xhr = new XMLHttpRequest();
+                xhr.open('GET', 'https://www.googleapis.com/oauth2/v3/userinfo');
+                xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+                xhr.onload = function() {
+                  if (xhr.status === 200) {
+                    try {
+                      const user = JSON.parse(xhr.responseText);
+                      localStorage.setItem('instructor_google_user', JSON.stringify(user));
+                    } catch {}
+                  }
+                  updateAuthUI();
+                  showToast('✓ Signed in with Google! Sessions now sync across Sheet Builder & Checker Studio.');
+                };
+                xhr.send();
+              }
+            }
+          });
+          client.requestAccessToken({ prompt: '' });
+        } catch (err) {
+          showToast('Could not initialize Google authentication: ' + err.message);
+        }
+      });
+    }
+
+    function logoutGoogle() {
+      const token = localStorage.getItem('instructor_google_token');
+      if (token && window.google?.accounts?.oauth2?.revoke) {
+        try {
+          window.google.accounts.oauth2.revoke(token, () => {});
+        } catch {}
+      }
+      localStorage.removeItem('instructor_google_token');
+      localStorage.removeItem('instructor_google_token_expiry');
+      localStorage.removeItem('instructor_google_user');
+      updateAuthUI();
+      showToast('Signed out of Google account.');
+    }
+
+    // ---- Render Active Session & Builds ----
+    function renderActiveSession() {
+      const container = $('session-content-area');
+      const badge = $('session-status-badge');
+      if (!container) return;
+
+      let session = null;
+      try {
+        const raw = localStorage.getItem(PROGRESS_STORAGE_KEY);
+        if (raw) session = JSON.parse(raw);
+      } catch {}
+
+      if (!session || !session.results || !session.results.grades || session.results.grades.length === 0) {
+        if (badge) {
+          badge.textContent = 'Empty';
+          badge.style.color = 'var(--text-muted)';
+        }
+        container.innerHTML = `
+          <div class="empty-placeholder">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="margin: 0 auto 0.4rem; color: var(--text-muted); display: block;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            No active grading session stored.<br>
+            <span style="font-size: 0.76rem; color: var(--text-muted);">Launch Checker Studio to grade student scans.</span>
+          </div>
+        `;
+        return;
+      }
+
+      if (badge) {
+        badge.textContent = 'Active';
+        badge.style.color = '#34d399';
+        badge.style.borderColor = 'rgba(16, 185, 129, 0.4)';
+        badge.style.background = 'rgba(16, 185, 129, 0.1)';
+      }
+
+      const grades = session.results.grades;
+      const count = grades.length;
+      const examTitle = session.examTitle || session.key?.title || session.layout?.title || 'Graded Exam';
+      const dateStr = session.savedAt ? new Date(session.savedAt).toLocaleString() : 'Recently';
+
+      container.innerHTML = `
+        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+          <div>
+            <h4 style="font-size: 1rem; font-weight: 700; color: #fff; margin-bottom: 0.2rem;">${examTitle}</h4>
+            <div style="font-size: 0.78rem; color: var(--text-muted);">
+              <strong>${count}</strong> student sheet${count === 1 ? '' : 's'} graded • Saved: ${dateStr}
+            </div>
+          </div>
+          <div style="display: flex; gap: 0.5rem; align-items: center; margin-top: 0.25rem;">
+            <a href="checker.html" class="btn btn--primary btn--sm" style="flex: 1; text-align: center;">Resume Session</a>
+            <button type="button" id="btn-clear-session-home" class="btn btn--secondary btn--sm is-danger" title="Purge this session from storage">Clear Session</button>
+          </div>
+        </div>
+      `;
+
+      $('btn-clear-session-home')?.addEventListener('click', () => {
+        try {
+          localStorage.removeItem(PROGRESS_STORAGE_KEY);
+        } catch {}
+        renderActiveSession();
+        showToast('✓ Grading session purged from workspace.');
+      });
+    }
+
+    function renderSavedBuilds() {
+      const container = $('saved-builds-container');
+      if (!container) return;
+
+      let builds = [];
+      try {
+        const raw = localStorage.getItem(BUILDS_STORAGE_KEY) || localStorage.getItem(LEGACY_BUILDS_KEY);
+        if (raw) builds = JSON.parse(raw);
+      } catch {}
+
+      if (!Array.isArray(builds) || builds.length === 0) {
+        container.innerHTML = `
+          <div class="empty-placeholder">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="margin: 0 auto 0.4rem; color: var(--text-muted); display: block;"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/></svg>
+            No custom sheet builds saved in browser library yet.<br>
+            <span style="font-size: 0.76rem; color: var(--text-muted);">Create sheets in Sheet Builder and click "Save Build".</span>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = builds.map((b) => {
+        const title = b.title || 'Untitled Exam Sheet';
+        const paper = b.paper || 'Folio';
+        const dateStr = b.updatedAt || b.savedAt ? new Date(b.updatedAt || b.savedAt).toLocaleDateString() : '';
+        return `
+          <div class="build-item">
+            <div class="build-item__info">
+              <div class="build-item__title">${title}</div>
+              <div class="build-item__meta">${paper} • ${dateStr || 'Saved'}</div>
+            </div>
+            <div style="display: flex; gap: 0.35rem;">
+              <a href="index.html" class="btn btn--secondary btn--xs" title="Open and edit build in Sheet Builder">Edit</a>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function clearAllWorkspaces() {
+      try {
+        localStorage.removeItem(PROGRESS_STORAGE_KEY);
+        localStorage.removeItem('instructor_sheet_builder_template');
+        localStorage.removeItem('grader_sheet_builder_template');
+      } catch {}
+      renderActiveSession();
+      renderSavedBuilds();
+      showToast('✓ All temporary workspace sessions cleared.');
+    }
+
+    // ---- Event Wiring ----
+    $('btn-google-login')?.addEventListener('click', initGoogleLogin);
+    $('btn-google-logout')?.addEventListener('click', logoutGoogle);
+    $('btn-clear-all-workspaces')?.addEventListener('click', clearAllWorkspaces);
+
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'instructor_google_token' || e.key === 'instructor_google_user') {
+        updateAuthUI();
+      }
+      if (e.key === PROGRESS_STORAGE_KEY) {
+        renderActiveSession();
+      }
+      if (e.key === BUILDS_STORAGE_KEY || e.key === LEGACY_BUILDS_KEY) {
+        renderSavedBuilds();
+      }
+    });
+
+    // Boot
+    updateAuthUI();
+    renderActiveSession();
+    renderSavedBuilds();
+  </script>
+  <script src="desktop.js"></script>
+</body>
+</html>

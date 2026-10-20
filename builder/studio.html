@@ -534,7 +534,7 @@ body {
 }
 
 .btn:active {
-  transform: scale(0.97);
+  transform: translateY(1px);
 }
 
 .btn:focus-visible {
@@ -580,6 +580,55 @@ body {
   background: var(--panel-alt);
   color: var(--text);
 }
+
+.btn--danger,
+.btn.is-danger {
+  color: var(--danger, #ef4444);
+  border-color: rgba(239, 68, 68, 0.35);
+  background: var(--panel);
+}
+.btn--danger:hover,
+.btn.is-danger:hover {
+  background: rgba(239, 68, 68, 0.08);
+  border-color: var(--danger, #ef4444);
+  color: #dc2626;
+}
+.btn--danger.btn--solid,
+.btn.is-danger.btn--solid {
+  background: var(--danger, #ef4444);
+  border-color: var(--danger, #ef4444);
+  color: #fff;
+}
+.btn--danger.btn--solid:hover,
+.btn.is-danger.btn--solid:hover {
+  background: #dc2626;
+  border-color: #dc2626;
+  color: #fff;
+}
+
+.btn--ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--text-muted);
+  box-shadow: none;
+}
+.btn--ghost:hover {
+  background: var(--panel-alt);
+  color: var(--text);
+}
+
+.btn--sm {
+  padding: 0.28rem 0.62rem;
+  font-size: 0.76rem;
+}
+
+.btn--xs,
+.btn-xs {
+  font-size: 0.72rem;
+  padding: 0.22rem 0.52rem;
+  border-radius: var(--radius-xs, 4px);
+}
+
 
 /* Export Dropdown */
 .dropdown-menu {
@@ -2924,11 +2973,15 @@ dialog.modal-dialog--answer-key {
         <h1 class="app-brand__title">Instructor Essentials</h1>
       </div>
       <nav class="workflow-nav" aria-label="Workflow switcher">
-        <a href="index.html" class="workflow-nav__item is-active" aria-current="page">
+        <a href="home.html" class="workflow-nav__item" id="nav-btn-home">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          <span>Home</span>
+        </a>
+        <a href="index.html" class="workflow-nav__item is-active" id="nav-btn-builder" aria-current="page">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
           <span>Sheet Builder</span>
         </a>
-        <a href="checker.html" class="workflow-nav__item">
+        <a href="checker.html" class="workflow-nav__item" id="nav-btn-checker">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
           <span>Checker Studio</span>
         </a>
@@ -2937,6 +2990,12 @@ dialog.modal-dialog--answer-key {
 
     <!-- Top Action Toolbar -->
     <div class="app-header__actions">
+      <!-- New Exam Sheet / Clear Workspace Button -->
+      <button type="button" id="btn-new-sheet" class="btn btn--secondary" title="Start a fresh exam sheet: clear blocks and reset canvas">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+        <span>New Sheet</span>
+      </button>
+
       <!-- Quick Generator Button -->
       <button type="button" id="btn-generator" class="btn btn--secondary" title="Quick Exam Generator: assemble custom sections in seconds">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
@@ -5308,6 +5367,7 @@ function initElements() {
     paperSelect: $('#paper-select'),
     paperBtns: $$('.segmented-btn[data-paper]'),
     samplePreset: $('#sample-preset'),
+    btnNewSheet: $('#btn-new-sheet'),
     btnSaveBuild: $('#btn-save-build'),
     btnLibrary: $('#btn-library'),
     btnGoogleDrive: $('#btn-google-drive'),
@@ -8212,9 +8272,13 @@ function initGoogleDriveAuth() {
   });
 }
 
-function handleGoogleAuthSuccess(token) {
+function handleGoogleAuthSuccess(token, expiresIn = 3600) {
   googleDriveState.accessToken = token;
   googleDriveState.isConnected = true;
+  try {
+    localStorage.setItem('instructor_google_token', token);
+    localStorage.setItem('instructor_google_token_expiry', String(Date.now() + (expiresIn * 1000)));
+  } catch {}
 
   const xhr = new XMLHttpRequest();
   xhr.open('GET', 'https://www.googleapis.com/oauth2/v3/userinfo');
@@ -8223,6 +8287,7 @@ function handleGoogleAuthSuccess(token) {
     if (xhr.status === 200) {
       try {
         googleDriveState.user = JSON.parse(xhr.responseText);
+        localStorage.setItem('instructor_google_user', JSON.stringify(googleDriveState.user));
       } catch {
         googleDriveState.user = { name: 'Google User' };
       }
@@ -8242,6 +8307,56 @@ function handleGoogleAuthSuccess(token) {
   };
   xhr.send();
 }
+
+function restoreGoogleAuthState() {
+  try {
+    const token = localStorage.getItem('instructor_google_token');
+    const expiry = parseInt(localStorage.getItem('instructor_google_token_expiry') || '0', 10);
+    const userStr = localStorage.getItem('instructor_google_user');
+    if (token && expiry > Date.now()) {
+      googleDriveState.accessToken = token;
+      googleDriveState.isConnected = true;
+      if (userStr) {
+        try {
+          googleDriveState.user = JSON.parse(userStr);
+        } catch {
+          googleDriveState.user = { name: 'Google User' };
+        }
+      } else {
+        googleDriveState.user = { name: 'Google User' };
+      }
+      updateGoogleUiState();
+    } else {
+      if (token && expiry <= Date.now()) {
+        localStorage.removeItem('instructor_google_token');
+        localStorage.removeItem('instructor_google_token_expiry');
+        localStorage.removeItem('instructor_google_user');
+      }
+      googleDriveState.accessToken = null;
+      googleDriveState.isConnected = false;
+      googleDriveState.user = null;
+      updateGoogleUiState();
+    }
+  } catch {}
+}
+window.restoreGoogleAuthState = restoreGoogleAuthState;
+
+async function clearSheetWorkspace({ silent = false } = {}) {
+  const blankTpl = JSON.parse(JSON.stringify(SAMPLE_TEMPLATES['blank']));
+  blankTpl.title = 'General Examination';
+  await loadTemplate(blankTpl);
+  state.activePreset = null;
+  state.selectedZoneIndex = null;
+  state.answerKey = null;
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(LEGACY_STORAGE_KEY);
+  } catch {}
+  if (!silent) {
+    showToast('✓ Workspace cleared to blank exam sheet.');
+  }
+}
+window.clearSheetWorkspace = clearSheetWorkspace;
 
 function updateGoogleUiState() {
   const btn = $('#btn-google-drive');
@@ -8301,6 +8416,11 @@ function disconnectGoogleDrive() {
   googleDriveState.user = null;
   googleDriveState.folderId = null;
   googleDriveState.isConnected = false;
+  try {
+    localStorage.removeItem('instructor_google_token');
+    localStorage.removeItem('instructor_google_token_expiry');
+    localStorage.removeItem('instructor_google_user');
+  } catch {}
   updateGoogleUiState();
   showToast('Google Drive disconnected.');
   if (els.modalLibrary && els.modalLibrary.open) {
@@ -8311,9 +8431,15 @@ function disconnectGoogleDrive() {
 function handleGoogleTokenExpired() {
   googleDriveState.accessToken = null;
   googleDriveState.isConnected = false;
+  try {
+    localStorage.removeItem('instructor_google_token');
+    localStorage.removeItem('instructor_google_token_expiry');
+    localStorage.removeItem('instructor_google_user');
+  } catch {}
   updateGoogleUiState();
   showToast('Google session expired. Please reconnect your account.');
 }
+
 
 function getOrCreateDriveFolder(token, callback) {
   if (googleDriveState.folderId) {
@@ -9285,8 +9411,14 @@ function initEvents() {
     });
   }
 
+  // New Exam Sheet / Clear Workspace
+  els.btnNewSheet?.addEventListener('click', () => {
+    clearSheetWorkspace();
+  });
+
   // Save current build to library
   els.btnSaveBuild?.addEventListener('click', () => {
+
     if (!state.template || !state.layout) return;
     const currentTitle = (state.template.title || '').trim() || 'New Exam Sheet';
     const entered = window.prompt('Name this exam build:', currentTitle);
@@ -9924,6 +10056,28 @@ function onReady(fn) {
 async function init() {
   initElements();
   initEvents();
+  restoreGoogleAuthState();
+
+  // Cross-tab synchronization for Google Auth and Saved Builds
+  if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'instructor_google_token' || e.key === 'instructor_google_user') {
+        restoreGoogleAuthState();
+      }
+    });
+  }
+
+  // Check URL query parameters: ?action=new or ?clear=1 or ?action=generate
+  try {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('action') === 'new' || urlParams.get('clear') === '1') {
+      await clearSheetWorkspace({ silent: true });
+      return;
+    }
+    if (urlParams.get('action') === 'generate') {
+      setTimeout(() => openGeneratorModal(), 150);
+    }
+  } catch {}
 
   const saved = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY);
   if (saved) {
@@ -9939,6 +10093,7 @@ async function init() {
   // Guaranteed instant load: default starting template is Blank Sheet
   await loadSample('blank');
 }
+
 
 onReady(init);
 

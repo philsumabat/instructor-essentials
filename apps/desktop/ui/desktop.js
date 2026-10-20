@@ -11,10 +11,16 @@
   // View Switching (macOS Segmented Navigation)
   // ==========================================================================
   function updateSegmentedActive(activeView) {
+    const homeBtn = document.getElementById('nav-btn-home');
     const builderBtn = document.getElementById('nav-btn-builder');
     const checkerBtn = document.getElementById('nav-btn-checker');
     const speedBtn = document.getElementById('nav-btn-speed');
 
+    if (homeBtn) {
+      homeBtn.classList.toggle('is-active', activeView === 'home');
+      if (activeView === 'home') homeBtn.setAttribute('aria-current', 'page');
+      else homeBtn.removeAttribute('aria-current');
+    }
     if (builderBtn) {
       builderBtn.classList.toggle('is-active', activeView === 'builder');
       if (activeView === 'builder') builderBtn.setAttribute('aria-current', 'page');
@@ -37,9 +43,16 @@
       event.preventDefault();
     }
     const isCheckerPage = window.location.pathname.endsWith('checker.html');
-    const isBuilderPage = !isCheckerPage;
+    const isHomePage = window.location.pathname.endsWith('home.html');
+    const isBuilderPage = !isCheckerPage && !isHomePage;
 
-    if (viewName === 'builder') {
+    if (viewName === 'home') {
+      if (!isHomePage) {
+        window.location.href = 'home.html';
+      } else {
+        updateSegmentedActive('home');
+      }
+    } else if (viewName === 'builder') {
       if (!isBuilderPage) {
         window.location.href = 'index.html';
       } else {
@@ -151,8 +164,11 @@
     const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
     const modifier = isMac ? e.metaKey : e.ctrlKey;
 
-    // View switching shortcuts: Cmd+1 (Builder), Cmd+2 (Checker), Cmd+3 (Speed Grader)
-    if (modifier && e.key === '1') {
+    // View switching shortcuts: Cmd+0 (Home), Cmd+1 (Builder), Cmd+2 (Checker), Cmd+3 (Speed Grader)
+    if (modifier && e.key === '0') {
+      e.preventDefault();
+      switchView('home');
+    } else if (modifier && e.key === '1') {
       e.preventDefault();
       switchView('builder');
     } else if (modifier && e.key === '2') {
@@ -211,7 +227,11 @@
   // ==========================================================================
   window.addEventListener('DOMContentLoaded', () => {
     const isCheckerPage = window.location.pathname.endsWith('checker.html');
-    if (isCheckerPage) {
+    const isHomePage = window.location.pathname.endsWith('home.html');
+
+    if (isHomePage) {
+      updateSegmentedActive('home');
+    } else if (isCheckerPage) {
       if (window.location.hash === '#speed') {
         setTimeout(() => {
           switchView('speed');
@@ -224,10 +244,14 @@
     }
 
     // Attach click listeners to segmented nav buttons
+    const homeBtn = document.getElementById('nav-btn-home');
     const builderBtn = document.getElementById('nav-btn-builder');
     const checkerBtn = document.getElementById('nav-btn-checker');
     const speedBtn = document.getElementById('nav-btn-speed');
 
+    if (homeBtn) {
+      homeBtn.addEventListener('click', (e) => switchView('home', e));
+    }
     if (builderBtn) {
       builderBtn.addEventListener('click', (e) => switchView('builder', e));
     }

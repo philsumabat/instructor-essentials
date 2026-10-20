@@ -432,6 +432,34 @@ flowchart LR
   3. **Seamless Background Auto-Sync**: In `saveCheckerProgress` (Checker Studio) and `saveBuildToLibrary` (Sheet Builder), automatically triggers background sync to the `Instructor Essentials` folder on Google Drive, debounced by 2.5–3.5s to prevent API spam while resolving flags in the Review Queue.
   4. **Preserved Zero-Cost & Offline Guarantees**: Retained 100% offline capability with local browser storage and `.grader.progress.json` / `.sheet.json` file downloads, ensuring the application remains fully functional without an internet connection or Google account.
 
+### Decision 39: Unified Home Portal, Shared Google Sign-In, and Explicit Workspace/Roster Purging
+- **Context**:
+  1. Instructors grading sequential classes or different subjects reported an inability to clear an uploaded student roster from a previous class in Checker Studio. Because `state.roster` was persistently cached and lacked explicit removal controls, previous student names shadowed new exams.
+  2. Users lacked an intuitive way to clear their current workspace ("New Sheet" in Sheet Builder, "New Session" in Checker Studio) without manually clearing browser data or opening incognito tabs.
+  3. Redundant, duplicate, and obsolete UI elements cluttered the workflow (e.g. manual Bubble Mark Threshold stepper in Checker Studio, which is better served by a robust built-in default of 0.20; duplicate upload boxes; inconsistent button hierarchy).
+  4. Moving between Sheet Builder and Checker Studio required separate page bookmarks or URL entry, and Google Sign-In state was not unified across tools.
+- **Decision & Architecture**:
+  1. **Unified Portal Homepage (`builder/home.html` & `docs/home.html` & `apps/desktop/ui/home.html`)**:
+     - Created a clean home portal providing single Google Sign-In, tool launcher cards for Sheet Builder and Checker Studio (with direct sub-actions like "New Blank Sheet", "Quick Generator", "New Exam Session", and "1-Click Sample Test"), active grading session card with "Resume" and "Clear Session", and a saved builds library list.
+     - Implemented "Clear All Workspaces" button to purge all local cached sessions and drafts in one click.
+     - Added `#nav-btn-home` to the workflow switcher bar across all web pages and desktop navigation.
+  2. **Shared Institutional Google Authentication**:
+     - Unified Google OAuth tokens and user profile via `localStorage` keys `instructor_google_token`, `instructor_google_token_exp`, and `instructor_google_user`.
+     - Added cross-tab synchronization via `window.addEventListener('storage', ...)` across Home, Sheet Builder, and Checker Studio so signing in or out on one tab immediately updates all open tabs.
+  3. **Explicit Workspace Clearing Controls**:
+     - **Sheet Builder**: Added `#btn-new-sheet` ("New Sheet") in the header bar which resets the canvas to a clean blank exam, purges the auto-saved draft from `localStorage`, and prepares the editor for a new build. Handled URL parameters `?action=new` and `?clear=1`.
+     - **Checker Studio**: Added `#btn-clear-workspace` ("New Session") in the header bar, and `window.clearWorkspace({ silent })` which cleanly resets scans, layout, key, roster, results, and review queue, and removes `localStorage[PROGRESS_STORAGE_KEY]`. Deeply resets all summary metric cards to zero, clears score distribution and SVG bell curve, clears all result tables (`tbody-summary`, `tbody-roster`, `tbody-items`, `tbody-top-students`), clears the Sheet Inspector preview canvas and student badges, re-disables export buttons, and removes `.has-data` from `.main-content`.
+  4. **Dedicated Roster Clearing & Status Badge**:
+     - In `#tab-roster`, added `#btn-clear-roster` ("Remove Roster") alongside `#btn-upload-roster-csv` ("Upload Roster" / "Change Roster") and `#roster-active-badge`.
+     - Clicking "Remove Roster" purges `state.roster`, resets `input-roster-file.value`, reverts student names on active grades back to their Student ID / raw ID, triggers a reactive re-render, and updates auto-saved progress.
+     - Fixed `ensureActiveLayout` by removing silent `state.roster = SAMPLE_ROSTER` injection so editing answer keys or downloading key templates never resurrects previous student lists.
+  5. **Removal of Redundant UI & Internal 0.20 Threshold Default**:
+     - Removed the manual Bubble Mark Threshold stepper (`input-bubble-threshold`) from the DOM in Checker Studio.
+     - Retained the robust, empirically verified default bubble mark threshold of `0.20` internally in `processBatchScans`, protecting instructors from misconfiguration while guaranteeing accurate mark classification.
+  6. **Button Design System & Micro-Interactions**:
+     - Standardized button hierarchy across both applications: Primary (`.btn--primary`), Accent (`.btn--accent`), Secondary (`.btn--secondary`), Danger (`.btn--danger`, `.btn.is-danger`), and Ghost (`.btn--ghost`).
+     - Added consistent active micro-interactions (`transform: translateY(1px)`) across all interactive button classes in CSS and home portal.
+
 ---
 
 ## 8. Multi-Agent Development Mandate

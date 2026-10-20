@@ -59,6 +59,7 @@ function initElements() {
     paperSelect: $('#paper-select'),
     paperBtns: $$('.segmented-btn[data-paper]'),
     samplePreset: $('#sample-preset'),
+    btnNewSheet: $('#btn-new-sheet'),
     btnSaveBuild: $('#btn-save-build'),
     btnLibrary: $('#btn-library'),
     btnGoogleDrive: $('#btn-google-drive'),
@@ -2963,9 +2964,13 @@ function initGoogleDriveAuth() {
   });
 }
 
-function handleGoogleAuthSuccess(token) {
+function handleGoogleAuthSuccess(token, expiresIn = 3600) {
   googleDriveState.accessToken = token;
   googleDriveState.isConnected = true;
+  try {
+    localStorage.setItem('instructor_google_token', token);
+    localStorage.setItem('instructor_google_token_expiry', String(Date.now() + (expiresIn * 1000)));
+  } catch {}
 
   const xhr = new XMLHttpRequest();
   xhr.open('GET', 'https://www.googleapis.com/oauth2/v3/userinfo');
@@ -2974,6 +2979,7 @@ function handleGoogleAuthSuccess(token) {
     if (xhr.status === 200) {
       try {
         googleDriveState.user = JSON.parse(xhr.responseText);
+        localStorage.setItem('instructor_google_user', JSON.stringify(googleDriveState.user));
       } catch {
         googleDriveState.user = { name: 'Google User' };
       }
@@ -2993,6 +2999,56 @@ function handleGoogleAuthSuccess(token) {
   };
   xhr.send();
 }
+
+function restoreGoogleAuthState() {
+  try {
+    const token = localStorage.getItem('instructor_google_token');
+    const expiry = parseInt(localStorage.getItem('instructor_google_token_expiry') || '0', 10);
+    const userStr = localStorage.getItem('instructor_google_user');
+    if (token && expiry > Date.now()) {
+      googleDriveState.accessToken = token;
+      googleDriveState.isConnected = true;
+      if (userStr) {
+        try {
+          googleDriveState.user = JSON.parse(userStr);
+        } catch {
+          googleDriveState.user = { name: 'Google User' };
+        }
+      } else {
+        googleDriveState.user = { name: 'Google User' };
+      }
+      updateGoogleUiState();
+    } else {
+      if (token && expiry <= Date.now()) {
+        localStorage.removeItem('instructor_google_token');
+        localStorage.removeItem('instructor_google_token_expiry');
+        localStorage.removeItem('instructor_google_user');
+      }
+      googleDriveState.accessToken = null;
+      googleDriveState.isConnected = false;
+      googleDriveState.user = null;
+      updateGoogleUiState();
+    }
+  } catch {}
+}
+window.restoreGoogleAuthState = restoreGoogleAuthState;
+
+async function clearSheetWorkspace({ silent = false } = {}) {
+  const blankTpl = JSON.parse(JSON.stringify(SAMPLE_TEMPLATES['blank']));
+  blankTpl.title = 'General Examination';
+  await loadTemplate(blankTpl);
+  state.activePreset = null;
+  state.selectedZoneIndex = null;
+  state.answerKey = null;
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(LEGACY_STORAGE_KEY);
+  } catch {}
+  if (!silent) {
+    showToast('✓ Workspace cleared to blank exam sheet.');
+  }
+}
+window.clearSheetWorkspace = clearSheetWorkspace;
 
 function updateGoogleUiState() {
   const btn = $('#btn-google-drive');
@@ -3052,6 +3108,11 @@ function disconnectGoogleDrive() {
   googleDriveState.user = null;
   googleDriveState.folderId = null;
   googleDriveState.isConnected = false;
+  try {
+    localStorage.removeItem('instructor_google_token');
+    localStorage.removeItem('instructor_google_token_expiry');
+    localStorage.removeItem('instructor_google_user');
+  } catch {}
   updateGoogleUiState();
   showToast('Google Drive disconnected.');
   if (els.modalLibrary && els.modalLibrary.open) {
@@ -3062,9 +3123,15 @@ function disconnectGoogleDrive() {
 function handleGoogleTokenExpired() {
   googleDriveState.accessToken = null;
   googleDriveState.isConnected = false;
+  try {
+    localStorage.removeItem('instructor_google_token');
+    localStorage.removeItem('instructor_google_token_expiry');
+    localStorage.removeItem('instructor_google_user');
+  } catch {}
   updateGoogleUiState();
   showToast('Google session expired. Please reconnect your account.');
 }
+
 
 function getOrCreateDriveFolder(token, callback) {
   if (googleDriveState.folderId) {
@@ -4036,8 +4103,14 @@ function initEvents() {
     });
   }
 
+  // New Exam Sheet / Clear Workspace
+  els.btnNewSheet?.addEventListener('click', () => {
+    clearSheetWorkspace();
+  });
+
   // Save current build to library
   els.btnSaveBuild?.addEventListener('click', () => {
+
     if (!state.template || !state.layout) return;
     const currentTitle = (state.template.title || '').trim() || 'New Exam Sheet';
     const entered = window.prompt('Name this exam build:', currentTitle);
@@ -4675,6 +4748,28 @@ function onReady(fn) {
 async function init() {
   initElements();
   initEvents();
+  restoreGoogleAuthState();
+
+  // Cross-tab synchronization for Google Auth and Saved Builds
+  if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'instructor_google_token' || e.key === 'instructor_google_user') {
+        restoreGoogleAuthState();
+      }
+    });
+  }
+
+  // Check URL query parameters: ?action=new or ?clear=1 or ?action=generate
+  try {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('action') === 'new' || urlParams.get('clear') === '1') {
+      await clearSheetWorkspace({ silent: true });
+      return;
+    }
+    if (urlParams.get('action') === 'generate') {
+      setTimeout(() => openGeneratorModal(), 150);
+    }
+  } catch {}
 
   const saved = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY);
   if (saved) {
@@ -4690,6 +4785,7 @@ async function init() {
   // Guaranteed instant load: default starting template is Blank Sheet
   await loadSample('blank');
 }
+
 
 onReady(init);
 

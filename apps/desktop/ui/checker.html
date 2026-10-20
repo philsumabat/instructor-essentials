@@ -380,6 +380,44 @@
       margin-left: 0.2rem;
       flex-shrink: 0;
     }
+    .google-sync-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 0.15rem 0.42rem;
+      border-radius: var(--radius-full);
+      line-height: 1;
+      transition: all 160ms var(--ease);
+    }
+    .google-sync-indicator.is-synced {
+      background: rgba(52, 168, 83, 0.16);
+      color: #2e7d32;
+      border: 1px solid rgba(52, 168, 83, 0.35);
+    }
+    .google-sync-indicator.is-syncing {
+      background: rgba(66, 133, 244, 0.16);
+      color: #1a73e8;
+      border: 1px solid rgba(66, 133, 244, 0.35);
+    }
+    .google-sync-indicator.is-error {
+      background: rgba(234, 67, 53, 0.16);
+      color: #c5221f;
+      border: 1px solid rgba(234, 67, 53, 0.35);
+    }
+    @keyframes pulseSync {
+      0% { opacity: 0.6; transform: scale(0.96); }
+      50% { opacity: 1; transform: scale(1.04); }
+      100% { opacity: 0.6; transform: scale(0.96); }
+    }
+    .sync-pulsing-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+      animation: pulseSync 1.2s infinite ease-in-out;
+    }
 
     /* Main Workspace Layout */
     .workspace {
@@ -1871,7 +1909,7 @@
       <input type="file" id="input-progress-file" accept=".json" style="display: none;">
 
       <!-- Google Drive Online Backup -->
-      <button type="button" id="btn-google-drive" class="btn btn--secondary btn-google-drive" title="Sign in with Google to backup builds and sessions to Google Drive">
+      <button type="button" id="btn-google-drive" class="btn btn--secondary btn-google-drive" title="Sign in with your VSU Google account to save progress and backup exam sessions to Google Drive">
         <svg class="google-icon" width="14" height="14" viewBox="0 0 24 24">
           <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
           <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -1879,6 +1917,7 @@
           <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
         </svg>
         <span id="label-google-drive">Sign in with Google</span>
+        <span id="google-drive-sync-indicator" class="google-sync-indicator is-synced" style="display: none;">Synced ✓</span>
         <span id="google-drive-dot" class="google-status-dot" style="display: none;" title="Connected to Google Drive"></span>
       </button>
     </div>
@@ -3071,36 +3110,23 @@
     <!-- Body when NOT connected -->
     <div id="gdrive-view-disconnected" style="padding: 1.35rem 1.4rem; display: flex; flex-direction: column; gap: 1rem;">
       <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin: 0;">
-        Save your exam builds, answer keys, and graded sessions directly to your personal Google Drive in an <strong>"Instructor Essentials"</strong> folder. 100% free, private to your account, and with zero external server tracking.
+        Sign in with your VSU Google account (<strong>@vsu.edu.ph</strong>) to automatically save your exam grading sessions, answer keys, and builds directly to your personal Google Drive in an <strong>"Instructor Essentials"</strong> folder. 100% free, private to your account, and with zero external server tracking.
       </p>
 
-      <div>
-        <label for="input-gdrive-client-id" style="display: block; font-size: 0.78rem; font-weight: 600; margin-bottom: 0.35rem; color: var(--text);">
-          Google OAuth 2.0 Web Client ID:
-        </label>
-        <input type="text" id="input-gdrive-client-id" placeholder="e.g. 1234567890-abcdef.apps.googleusercontent.com" style="width: 100%; padding: 0.45rem 0.65rem; font-size: 0.8rem; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--panel-alt); color: var(--text); box-sizing: border-box;">
-        <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.35rem;">
-          Saved in your browser’s local storage. Stays completely private.
-        </div>
-      </div>
-
-      <div style="display: flex; gap: 0.5rem; justify-content: flex-end; align-items: center; margin-top: 0.5rem;">
+      <div style="display: flex; gap: 0.5rem; justify-content: flex-end; align-items: center; margin-top: 0.25rem;">
         <button type="button" class="btn btn--secondary btn-sm" onclick="$('modal-google-drive')?.close();">Cancel</button>
-        <button type="button" id="btn-gdrive-connect" class="btn btn--primary btn-sm" style="background: #1a73e8; border-color: #1a73e8; color: #fff;">
+        <button type="button" id="btn-gdrive-connect" class="btn btn--primary btn-sm" style="background: #1a73e8; border-color: #1a73e8; color: #fff; gap: 0.45rem;">
           <svg class="google-icon" width="13" height="13" viewBox="0 0 24 24"><path fill="#fff" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#fff" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#fff" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#fff" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
-          <span>Sign In &amp; Connect Drive</span>
+          <span>Sign In with VSU Google Account</span>
         </button>
       </div>
 
-      <details style="font-size: 0.74rem; color: var(--text-muted); background: var(--panel-alt); padding: 0.6rem 0.8rem; border-radius: var(--radius-sm); border: 1px solid var(--border);">
-        <summary style="cursor: pointer; font-weight: 600; color: var(--text);">How to obtain a Google OAuth Client ID</summary>
-        <ol style="margin: 0.4rem 0 0 1.2rem; padding: 0; line-height: 1.4;">
-          <li>Visit Google Cloud Console (<a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener" style="color: var(--accent);">console.cloud.google.com</a>).</li>
-          <li>Create a project &gt; APIs &amp; Services &gt; Credentials.</li>
-          <li>Click <em>Create Credentials &gt; OAuth Client ID</em> (Web application).</li>
-          <li>Add Authorized JavaScript origin (e.g., <code>https://philsumabat.github.io</code> or your local address).</li>
-          <li>Paste the generated Client ID above. Free forever.</li>
-        </ol>
+      <!-- Advanced / Custom Client ID Override (optional for self-hosters or custom domains) -->
+      <details style="font-size: 0.72rem; color: var(--text-muted); background: var(--panel-alt); padding: 0.45rem 0.65rem; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+        <summary style="cursor: pointer; font-weight: 600; color: var(--text-muted);">Advanced: Custom Google Client ID</summary>
+        <div style="margin-top: 0.35rem;">
+          <input type="text" id="input-gdrive-client-id" placeholder="998750275888-cbvmqvjbfopbsv0oe5pu238grrpv7chm.apps.googleusercontent.com" style="width: 100%; padding: 0.35rem 0.5rem; font-size: 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--panel); color: var(--text); box-sizing: border-box;">
+        </div>
       </details>
     </div>
 
@@ -10568,10 +10594,14 @@
 
       // Sync to Google Drive if connected
       if (googleDriveState.isConnected && googleDriveState.accessToken) {
+        if (typeof updateGoogleSyncStatus === 'function') updateGoogleSyncStatus('syncing');
         if (shouldDownload || exportFile || !silent) {
           if (typeof clearTimeout === 'function' && window._gdriveSyncTimeout) clearTimeout(window._gdriveSyncTimeout);
           saveSessionToGoogleDrive(googleDriveState.accessToken, data, (err, file) => {
-            if (!err) {
+            if (err) {
+              if (typeof updateGoogleSyncStatus === 'function') updateGoogleSyncStatus('error', err.message);
+            } else {
+              if (typeof updateGoogleSyncStatus === 'function') updateGoogleSyncStatus('synced', `Synced to Google Drive (${file?.name || 'session'})`);
               showToast('✓ Progress synced to Google Drive ("Instructor Essentials")');
             }
           });
@@ -10581,8 +10611,12 @@
           if (typeof setTimeout === 'function') {
             window._gdriveSyncTimeout = setTimeout(() => {
               if (googleDriveState.isConnected && googleDriveState.accessToken) {
+                if (typeof updateGoogleSyncStatus === 'function') updateGoogleSyncStatus('syncing');
                 saveSessionToGoogleDrive(googleDriveState.accessToken, data, (err, file) => {
-                  if (!err) {
+                  if (err) {
+                    if (typeof updateGoogleSyncStatus === 'function') updateGoogleSyncStatus('error', err.message);
+                  } else {
+                    if (typeof updateGoogleSyncStatus === 'function') updateGoogleSyncStatus('synced', `Synced to Google Drive (${file?.name || 'session'})`);
                     showToast('✓ Progress synced to Google Drive');
                   }
                 });
@@ -10804,8 +10838,10 @@
     // Client-Side Google Identity Services & Google Drive Cloud Backup
     // (Adheres to DECISIONS.md Decision 29: zero-cost, 100% private, offline-first fallback)
     // ==========================================
+    const DEFAULT_GOOGLE_CLIENT_ID = '998750275888-cbvmqvjbfopbsv0oe5pu238grrpv7chm.apps.googleusercontent.com';
+
     const googleDriveState = {
-      clientId: (typeof localStorage !== 'undefined' ? localStorage.getItem('instructor_gdrive_client_id') : '') || '',
+      clientId: (typeof localStorage !== 'undefined' ? localStorage.getItem('instructor_gdrive_client_id') : '') || DEFAULT_GOOGLE_CLIENT_ID,
       accessToken: null,
       user: null,
       tokenClient: null,
@@ -10814,19 +10850,44 @@
     };
 
     function getGoogleClientId() {
-      return googleDriveState.clientId || (typeof localStorage !== 'undefined' ? localStorage.getItem('instructor_gdrive_client_id') : '') || '';
+      return googleDriveState.clientId || (typeof localStorage !== 'undefined' ? localStorage.getItem('instructor_gdrive_client_id') : '') || DEFAULT_GOOGLE_CLIENT_ID;
     }
 
     function setGoogleClientId(id) {
-      googleDriveState.clientId = (id || '').trim();
+      googleDriveState.clientId = (id || '').trim() || DEFAULT_GOOGLE_CLIENT_ID;
       if (typeof localStorage !== 'undefined') {
-        if (googleDriveState.clientId) {
+        if (googleDriveState.clientId && googleDriveState.clientId !== DEFAULT_GOOGLE_CLIENT_ID) {
           localStorage.setItem('instructor_gdrive_client_id', googleDriveState.clientId);
         } else {
           localStorage.removeItem('instructor_gdrive_client_id');
         }
       }
     }
+
+    function updateGoogleSyncStatus(status, tooltip = '') {
+      const syncBadge = $('google-drive-sync-indicator');
+      if (!syncBadge) return;
+      syncBadge.classList?.remove?.('is-syncing', 'is-synced', 'is-error');
+      if (status === 'syncing') {
+        syncBadge.style.display = 'inline-flex';
+        syncBadge.classList?.add?.('is-syncing');
+        syncBadge.innerHTML = '<span class="sync-pulsing-dot"></span> Syncing...';
+        syncBadge.title = tooltip || 'Syncing session to Google Drive...';
+      } else if (status === 'synced') {
+        syncBadge.style.display = 'inline-flex';
+        syncBadge.classList?.add?.('is-synced');
+        syncBadge.innerHTML = 'Synced ✓';
+        syncBadge.title = tooltip || `Synced to Google Drive (${new Date().toLocaleTimeString()})`;
+      } else if (status === 'error') {
+        syncBadge.style.display = 'inline-flex';
+        syncBadge.classList?.add?.('is-error');
+        syncBadge.innerHTML = 'Sync Error ⚠';
+        syncBadge.title = tooltip || 'Google Drive sync failed. Check internet connection.';
+      } else {
+        syncBadge.style.display = 'none';
+      }
+    }
+    window.updateGoogleSyncStatus = updateGoogleSyncStatus;
 
     function loadGoogleGis(callback, onError) {
       if (typeof window === 'undefined') return;
@@ -10867,6 +10928,7 @@
               callback: (resp) => {
                 if (resp && resp.error) {
                   showToast('Google Sign-In failed: ' + (resp.error_description || resp.error));
+                  updateGoogleSyncStatus('error', resp.error_description || resp.error);
                   return;
                 }
                 if (resp && resp.access_token) {
@@ -10878,9 +10940,11 @@
           googleDriveState.tokenClient.requestAccessToken({ prompt: '' });
         } catch (err) {
           showToast('Could not initialize Google authentication: ' + err.message);
+          updateGoogleSyncStatus('error', err.message);
         }
       }, (err) => {
         showToast(err.message);
+        updateGoogleSyncStatus('error', err.message);
       });
     }
 
@@ -10909,11 +10973,19 @@
         }
         updateGoogleUiState();
         showToast('✓ Signed in with Google (' + (googleDriveState.user.email || googleDriveState.user.name || 'Account') + ')');
+        $('modal-google-drive')?.close();
+        if (state.results && state.results.grades && state.results.grades.length > 0) {
+          saveCheckerProgress({ downloadFile: false, silent: true });
+        }
       };
       xhr.onerror = function() {
         googleDriveState.user = { name: 'Google User' };
         updateGoogleUiState();
         showToast('✓ Signed in with Google');
+        $('modal-google-drive')?.close();
+        if (state.results && state.results.grades && state.results.grades.length > 0) {
+          saveCheckerProgress({ downloadFile: false, silent: true });
+        }
       };
       xhr.send();
     }
@@ -10955,6 +11027,7 @@
         btn?.classList?.add?.('is-connected');
         if (dot) dot.style.display = 'inline-block';
         if (label) label.textContent = googleDriveState.user.name || googleDriveState.user.email || 'Drive: Connected';
+        updateGoogleSyncStatus('synced');
         if (viewDisc) viewDisc.style.display = 'none';
         if (viewConn) viewConn.style.display = 'flex';
         if (userName) userName.textContent = googleDriveState.user.name || 'Google User';
@@ -10970,6 +11043,7 @@
       } else {
         btn?.classList?.remove?.('is-connected');
         if (dot) dot.style.display = 'none';
+        updateGoogleSyncStatus('hidden');
         if (label) label.textContent = 'Sign in with Google';
         if (viewDisc) viewDisc.style.display = 'flex';
         if (viewConn) viewConn.style.display = 'none';
@@ -11418,6 +11492,8 @@
     window.resolveReviewFlag = resolveReviewFlag;
     window.reopenReviewFlag = reopenReviewFlag;
     window.googleDriveState = googleDriveState;
+    window.DEFAULT_GOOGLE_CLIENT_ID = DEFAULT_GOOGLE_CLIENT_ID;
+    window.updateGoogleSyncStatus = updateGoogleSyncStatus;
     window.initGoogleDriveAuth = initGoogleDriveAuth;
     window.saveSessionToGoogleDrive = saveSessionToGoogleDrive;
     window.saveExamPackageToGoogleDrive = saveExamPackageToGoogleDrive;
@@ -11511,11 +11587,9 @@
     $('btn-gdrive-connect')?.addEventListener('click', () => {
       const inp = $('input-gdrive-client-id');
       const val = (inp?.value || '').trim();
-      if (!val) {
-        alert('Please enter a valid Google OAuth Client ID.');
-        return;
+      if (val) {
+        setGoogleClientId(val);
       }
-      setGoogleClientId(val);
       initGoogleDriveAuth();
     });
 
@@ -11539,14 +11613,17 @@
         saveBtn.disabled = true;
         saveBtn.innerHTML = '<span>Uploading to Google Drive...</span>';
       }
+      updateGoogleSyncStatus('syncing');
       saveSessionToGoogleDrive(googleDriveState.accessToken, data, (err, file) => {
         if (saveBtn) {
           saveBtn.disabled = false;
           saveBtn.innerHTML = origHtml;
         }
         if (err) {
+          updateGoogleSyncStatus('error', err.message);
           alert('Could not save to Google Drive: ' + err.message);
         } else {
+          updateGoogleSyncStatus('synced', `Synced to Google Drive (${file?.name || 'session'})`);
           updateSaveStatusUI('saved');
           showToast(`✓ Saved "${file?.name || 'session'}" to Google Drive!`);
           $('modal-google-drive')?.close();

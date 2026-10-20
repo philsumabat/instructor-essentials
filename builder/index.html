@@ -57,7 +57,7 @@
       </button>
 
       <!-- Google Drive Sign-In / Account -->
-      <button type="button" id="btn-google-drive" class="btn btn--secondary btn-google-drive" title="Sign in with Google to backup builds and answer keys to Google Drive">
+      <button type="button" id="btn-google-drive" class="btn btn--secondary btn-google-drive" title="Sign in with your VSU Google account to backup builds and answer keys to Google Drive">
         <svg class="google-icon" width="14" height="14" viewBox="0 0 24 24">
           <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
           <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -65,6 +65,7 @@
           <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
         </svg>
         <span id="label-google-drive">Sign in with Google</span>
+        <span id="google-drive-sync-indicator" class="google-sync-indicator is-synced" style="display: none;">Synced ✓</span>
         <span id="google-drive-dot" class="google-status-dot" style="display: none;" title="Connected to Google Drive"></span>
       </button>
 
@@ -391,36 +392,23 @@
       <!-- Body when NOT connected -->
       <div id="gdrive-view-disconnected" style="padding: 1.35rem 1.4rem; display: flex; flex-direction: column; gap: 1rem;">
         <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin: 0;">
-          Save your exam builds and answer keys directly to your personal Google Drive in an <strong>"Instructor Essentials"</strong> folder. 100% free, private to your account, and with zero external server tracking.
+          Sign in with your VSU Google account (<strong>@vsu.edu.ph</strong>) to automatically backup and sync your exam builds and answer keys to your Google Drive in an <strong>"Instructor Essentials"</strong> folder. 100% free, private to your account, and with zero external server tracking.
         </p>
 
-        <div>
-          <label for="input-gdrive-client-id" style="display: block; font-size: 0.78rem; font-weight: 600; margin-bottom: 0.35rem; color: var(--text);">
-            Google OAuth 2.0 Web Client ID:
-          </label>
-          <input type="text" id="input-gdrive-client-id" placeholder="e.g. 1234567890-abcdef.apps.googleusercontent.com" style="width: 100%; padding: 0.45rem 0.65rem; font-size: 0.8rem; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--panel-alt); color: var(--text); box-sizing: border-box;">
-          <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.35rem;">
-            Saved in your browser’s local storage. Stays completely private.
-          </div>
-        </div>
-
-        <div style="display: flex; gap: 0.5rem; justify-content: flex-end; align-items: center; margin-top: 0.5rem;">
+        <div style="display: flex; gap: 0.5rem; justify-content: flex-end; align-items: center; margin-top: 0.25rem;">
           <button type="button" class="btn btn--secondary btn-sm" id="btn-gdrive-cancel">Cancel</button>
-          <button type="button" id="btn-gdrive-connect" class="btn btn--primary btn-sm" style="background: #1a73e8; border-color: #1a73e8; color: #fff;">
+          <button type="button" id="btn-gdrive-connect" class="btn btn--primary btn-sm" style="background: #1a73e8; border-color: #1a73e8; color: #fff; gap: 0.45rem;">
             <svg class="google-icon" width="13" height="13" viewBox="0 0 24 24"><path fill="#fff" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#fff" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#fff" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#fff" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
-            <span>Sign In &amp; Connect Drive</span>
+            <span>Sign In with VSU Google Account</span>
           </button>
         </div>
 
-        <details style="font-size: 0.74rem; color: var(--text-muted); background: var(--panel-alt); padding: 0.6rem 0.8rem; border-radius: var(--radius-sm); border: 1px solid var(--border);">
-          <summary style="cursor: pointer; font-weight: 600; color: var(--text);">How to obtain a Google OAuth Client ID</summary>
-          <ol style="margin: 0.4rem 0 0 1.2rem; padding: 0; line-height: 1.4;">
-            <li>Visit Google Cloud Console (<a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener" style="color: var(--accent);">console.cloud.google.com</a>).</li>
-            <li>Create a project &gt; APIs &amp; Services &gt; Credentials.</li>
-            <li>Click <em>Create Credentials &gt; OAuth Client ID</em> (Web application).</li>
-            <li>Add Authorized JavaScript origin (e.g., <code>https://philsumabat.github.io</code> or your local address).</li>
-            <li>Paste the generated Client ID above. Free forever.</li>
-          </ol>
+        <!-- Advanced / Custom Client ID Override (optional for self-hosters or custom domains) -->
+        <details style="font-size: 0.72rem; color: var(--text-muted); background: var(--panel-alt); padding: 0.45rem 0.65rem; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+          <summary style="cursor: pointer; font-weight: 600; color: var(--text-muted);">Advanced: Custom Google Client ID</summary>
+          <div style="margin-top: 0.35rem;">
+            <input type="text" id="input-gdrive-client-id" placeholder="998750275888-cbvmqvjbfopbsv0oe5pu238grrpv7chm.apps.googleusercontent.com" style="width: 100%; padding: 0.35rem 0.5rem; font-size: 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--panel); color: var(--text); box-sizing: border-box;">
+          </div>
         </details>
       </div>
 

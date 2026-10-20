@@ -2832,6 +2832,7 @@ function renderSavedBuildsList() {
 
 // ---- Google Drive Online Storage & Sync ----
 const GOOGLE_CLIENT_ID_STORAGE_KEY = 'instructor_essentials_gdrive_client_id';
+const DEFAULT_GOOGLE_CLIENT_ID = '998750275888-cbvmqvjbfopbsv0oe5pu238grrpv7chm.apps.googleusercontent.com';
 
 const googleDriveState = {
   accessToken: null,
@@ -2866,21 +2867,46 @@ function getGoogleClientId() {
     return localStorage.getItem(GOOGLE_CLIENT_ID_STORAGE_KEY) ||
            localStorage.getItem('grader_gdrive_client_id') ||
            (typeof window !== 'undefined' && window.__GOOGLE_CLIENT_ID__) ||
-           '';
+           DEFAULT_GOOGLE_CLIENT_ID;
   } catch {
-    return '';
+    return DEFAULT_GOOGLE_CLIENT_ID;
   }
 }
 
 function setGoogleClientId(val) {
   try {
-    if (val) {
+    if (val && val.trim() !== DEFAULT_GOOGLE_CLIENT_ID) {
       localStorage.setItem(GOOGLE_CLIENT_ID_STORAGE_KEY, val.trim());
     } else {
       localStorage.removeItem(GOOGLE_CLIENT_ID_STORAGE_KEY);
     }
   } catch {}
 }
+
+function updateGoogleSyncStatus(status, tooltip = '') {
+  const syncBadge = $('#google-drive-sync-indicator');
+  if (!syncBadge) return;
+  syncBadge.classList?.remove?.('is-syncing', 'is-synced', 'is-error');
+  if (status === 'syncing') {
+    syncBadge.style.display = 'inline-flex';
+    syncBadge.classList?.add?.('is-syncing');
+    syncBadge.innerHTML = '<span class="sync-pulsing-dot"></span> Syncing...';
+    syncBadge.title = tooltip || 'Syncing build to Google Drive...';
+  } else if (status === 'synced') {
+    syncBadge.style.display = 'inline-flex';
+    syncBadge.classList?.add?.('is-synced');
+    syncBadge.innerHTML = 'Synced ✓';
+    syncBadge.title = tooltip || `Synced to Google Drive (${new Date().toLocaleTimeString()})`;
+  } else if (status === 'error') {
+    syncBadge.style.display = 'inline-flex';
+    syncBadge.classList?.add?.('is-error');
+    syncBadge.innerHTML = 'Sync Error ⚠';
+    syncBadge.title = tooltip || 'Google Drive sync failed';
+  } else {
+    syncBadge.style.display = 'none';
+  }
+}
+window.updateGoogleSyncStatus = updateGoogleSyncStatus;
 
 function loadGoogleGis(callback, onError) {
   if (window.google?.accounts?.oauth2) {
@@ -2981,7 +3007,8 @@ function updateGoogleUiState() {
   if (googleDriveState.isConnected && googleDriveState.user) {
     btn?.classList?.add('is-connected');
     if (dot) dot.style.display = 'inline-block';
-    if (label) label.textContent = googleDriveState.user.email || 'Drive: Connected';
+    if (label) label.textContent = googleDriveState.user.name || googleDriveState.user.email || 'Drive: Connected';
+    updateGoogleSyncStatus('synced');
     if (viewDisc) viewDisc.style.display = 'none';
     if (viewConn) viewConn.style.display = 'flex';
     if (userName) userName.textContent = googleDriveState.user.name || 'Google User';
@@ -2997,6 +3024,7 @@ function updateGoogleUiState() {
   } else {
     btn?.classList?.remove('is-connected');
     if (dot) dot.style.display = 'none';
+    updateGoogleSyncStatus('hidden');
     if (label) label.textContent = 'Sign in with Google';
     if (viewDisc) viewDisc.style.display = 'flex';
     if (viewConn) viewConn.style.display = 'none';
@@ -3168,10 +3196,13 @@ function saveCurrentBuildToDrive(silent = false) {
   const fileName = `${safeName} - Exam Build.json`;
   const content = JSON.stringify(state.template, null, 2);
 
+  updateGoogleSyncStatus('syncing');
   uploadToGoogleDrive(googleDriveState.accessToken, fileName, 'application/json', content, (err) => {
     if (err) {
+      updateGoogleSyncStatus('error', err.message);
       if (!silent) showToast('Failed to save to Google Drive: ' + err.message);
     } else {
+      updateGoogleSyncStatus('synced', `Synced to Google Drive (${fileName})`);
       showToast(`✓ Saved "${fileName}" to Google Drive`);
     }
   });

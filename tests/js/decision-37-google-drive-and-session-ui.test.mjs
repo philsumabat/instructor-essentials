@@ -14,8 +14,8 @@ function createMockEl() {
   const el = {
     addEventListener: () => {},
     classList: {
-      add: (c) => classListSet.add(c),
-      remove: (c) => classListSet.delete(c),
+      add: (...classes) => classes.forEach(c => classListSet.add(c)),
+      remove: (...classes) => classes.forEach(c => classListSet.delete(c)),
       toggle: (c) => {
         if (classListSet.has(c)) {
           classListSet.delete(c);
@@ -26,6 +26,13 @@ function createMockEl() {
         }
       },
       contains: (c) => classListSet.has(c),
+    },
+    get className() {
+      return Array.from(classListSet).join(' ');
+    },
+    set className(val) {
+      classListSet.clear();
+      (val || '').split(/\s+/).filter(Boolean).forEach(c => classListSet.add(c));
     },
     style: {},
     dataset: {},
@@ -231,4 +238,39 @@ test('Decision 37: Google Drive client-side integration and in-place updates', (
   assert.equal(fetchCalls ? fetchCalls.length : 0, 0, 'Strict zero fetch() calls rule maintained');
   const scriptTags = checkerHtml.match(/<script\s+[^>]*src=/gi);
   assert.equal(scriptTags ? scriptTags.length : 0, 0, 'Zero static external script tags in checker.html');
+});
+
+test('Decision 38: Embedded VSU Google Client ID and Synced Check Status Indicator', () => {
+  const checkerHtml = fs.readFileSync(path.join(rootDir, 'builder/checker.html'), 'utf8');
+
+  // 1. Embedded VSU Client ID is present
+  assert.ok(checkerHtml.includes('998750275888-cbvmqvjbfopbsv0oe5pu238grrpv7chm.apps.googleusercontent.com'), 'Embedded VSU Google OAuth Client ID is present');
+  assert.ok(checkerHtml.includes('id="google-drive-sync-indicator"'), 'Dedicated synced status indicator badge present in header');
+
+  // 2. Functional testing in VM context
+  const ctx = extractCheckerFunctions(checkerHtml);
+  assert.equal(ctx.DEFAULT_GOOGLE_CLIENT_ID, '998750275888-cbvmqvjbfopbsv0oe5pu238grrpv7chm.apps.googleusercontent.com', 'DEFAULT_GOOGLE_CLIENT_ID matches VSU credentials');
+  assert.equal(typeof ctx.updateGoogleSyncStatus, 'function', 'updateGoogleSyncStatus function is exported');
+
+  const syncBadge = ctx.getOrCreateEl('google-drive-sync-indicator');
+
+  // Status: syncing
+  ctx.updateGoogleSyncStatus('syncing');
+  assert.equal(syncBadge.style.display, 'inline-flex', 'Badge displays during sync');
+  assert.equal(syncBadge.classList.contains('is-syncing'), true, 'Badge gains .is-syncing class');
+  assert.ok(syncBadge.innerHTML.includes('Syncing...'), 'Badge shows Syncing... text');
+
+  // Status: synced
+  ctx.updateGoogleSyncStatus('synced');
+  assert.equal(syncBadge.classList.contains('is-synced'), true, 'Badge gains .is-synced class');
+  assert.ok(syncBadge.innerHTML.includes('Synced ✓'), 'Badge shows Synced ✓ text');
+
+  // Status: error
+  ctx.updateGoogleSyncStatus('error', 'Network failure');
+  assert.equal(syncBadge.classList.contains('is-error'), true, 'Badge gains .is-error class');
+  assert.ok(syncBadge.innerHTML.includes('Sync Error'), 'Badge shows Sync Error');
+
+  // Status: hidden
+  ctx.updateGoogleSyncStatus('hidden');
+  assert.equal(syncBadge.style.display, 'none', 'Badge is hidden when disconnected or idle');
 });

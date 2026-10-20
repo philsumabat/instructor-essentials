@@ -418,6 +418,20 @@ flowchart LR
      - Offers one-click save for both Graded Sessions and Exam Packages, as well as an interactive file picker to restore sessions or layout/key configurations from Google Drive.
      - 100% optional: when offline or unconfigured, the application continues to run completely self-contained with full local storage and file import/export capabilities.
 
+### Decision 38: Zero-Setup Institutional Google Sign-In & Live "Synced ✓" Check Indicator
+- **Context**:
+  1. In Decision 37, Google Drive integration required instructors to manually generate and input a Google Cloud OAuth Client ID, creating an intimidating technical hurdle that contradicted classroom simplicity.
+  2. Instructors needed a genuine, zero-configuration Google Sign-In button configured as an internal Google Workspace app for VSU (`@vsu.edu.ph`), eliminating unverified app warnings.
+  3. Teachers required immediate, reassuring visual feedback confirming that their grading progress and exam builds were actively backed up to their Google Drive.
+- **Decision & Architecture**:
+  1. **Pre-Configured Institutional Client ID**: Embedded the VSU Google OAuth Web Client ID (`998750275888-cbvmqvjbfopbsv0oe5pu238grrpv7chm.apps.googleusercontent.com`) directly into `builder/checker.html` and `builder/js/app.js` as `DEFAULT_GOOGLE_CLIENT_ID`. Removed the manual setup accordion and developer instructions from the default UI, while preserving an advanced `<details>` override for custom self-hosters.
+  2. **Dedicated Live Sync Indicator (`#google-drive-sync-indicator`)**: Added a pill badge directly inside `#btn-google-drive` that reacts to sync state in real time:
+     - `Syncing...` (`.is-syncing`): Displays a subtle pulsing dot during network uploads to Google Drive.
+     - `Synced ✓` (`.is-synced`): Displays an emerald check badge with timestamp tooltip once the session or build JSON is written to Drive.
+     - `Sync Error ⚠` (`.is-error`): Displays an amber/red warning badge if an upload fails, prompting token renewal if expired.
+  3. **Seamless Background Auto-Sync**: In `saveCheckerProgress` (Checker Studio) and `saveBuildToLibrary` (Sheet Builder), automatically triggers background sync to the `Instructor Essentials` folder on Google Drive, debounced by 2.5–3.5s to prevent API spam while resolving flags in the Review Queue.
+  4. **Preserved Zero-Cost & Offline Guarantees**: Retained 100% offline capability with local browser storage and `.grader.progress.json` / `.sheet.json` file downloads, ensuring the application remains fully functional without an internet connection or Google account.
+
 ---
 
 ## 8. Multi-Agent Development Mandate

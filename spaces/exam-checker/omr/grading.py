@@ -120,20 +120,22 @@ class AnswerKey:
     def load(cls, path: str | Path) -> "AnswerKey":
         p = Path(path)
         if p.is_dir():
-            for cand in ("answer_key_template.csv", "key.csv", "answer_key.csv"):
+            for cand in ("answer_key.csv", "key.csv", "answer_key.json", "key.json", "answer_key_template.csv"):
                 if (p / cand).is_file():
+                    if cand.endswith(".json"):
+                        with open(p / cand, encoding="utf-8") as fh:
+                            return cls.from_dict(json.load(fh))
                     return cls.from_csv(p / cand)
-            csvs = sorted(p.glob("*key*.csv")) or sorted(p.glob("*.csv"))
+            csvs = [f for f in sorted(p.glob("*key*.csv")) if f.name.lower() != "answer_key_template.csv"]
             if csvs:
                 return cls.from_csv(csvs[0])
-            for cand in ("key.json", "answer_key.json"):
-                if (p / cand).is_file():
-                    with open(p / cand, encoding="utf-8") as fh:
-                        return cls.from_dict(json.load(fh))
             jsons = sorted(p.glob("*key*.json"))
             if jsons:
                 with open(jsons[0], encoding="utf-8") as fh:
                     return cls.from_dict(json.load(fh))
+            other_csvs = sorted(p.glob("*.csv"))
+            if other_csvs:
+                return cls.from_csv(other_csvs[0])
             raise FileNotFoundError(f"No answer key CSV or JSON found in directory {p}")
 
         if p.suffix.lower() == ".zip" and p.is_file():
@@ -142,9 +144,19 @@ class AnswerKey:
 
             with zipfile.ZipFile(p, "r") as zf:
                 names = zf.namelist()
+                # 1. Exact priority files (actual keys before templates)
+                for cand in ("answer_key.csv", "key.csv", "answer_key.json", "key.json"):
+                    for n in names:
+                        if Path(n).name.lower() == cand:
+                            with zf.open(n) as bfh:
+                                if cand.endswith(".json"):
+                                    return cls.from_dict(json.load(bfh))
+                                text = io.TextIOWrapper(bfh, encoding="utf-8", errors="replace").read()
+                                return cls.from_csv_text(text, title=Path(n).stem)
+                # 2. Key patterns (excluding template)
                 for n in names:
                     base = Path(n).name.lower()
-                    if base in ("answer_key_template.csv", "key.csv", "answer_key.csv") or ("key" in base and base.endswith(".csv")):
+                    if "key" in base and base.endswith(".csv") and base != "answer_key_template.csv":
                         with zf.open(n) as bfh:
                             text = io.TextIOWrapper(bfh, encoding="utf-8", errors="replace").read()
                             return cls.from_csv_text(text, title=Path(n).stem)
@@ -153,6 +165,12 @@ class AnswerKey:
                     if "key" in base and base.endswith(".json"):
                         with zf.open(n) as bfh:
                             return cls.from_dict(json.load(bfh))
+                # 3. Fallback to answer_key_template.csv
+                for n in names:
+                    if Path(n).name.lower() == "answer_key_template.csv":
+                        with zf.open(n) as bfh:
+                            text = io.TextIOWrapper(bfh, encoding="utf-8", errors="replace").read()
+                            return cls.from_csv_text(text, title=Path(n).stem)
                 raise FileNotFoundError(f"No answer key CSV or JSON found in zip package {p}")
 
         if p.suffix.lower() == ".csv":
@@ -193,6 +211,18 @@ class AnswerKey:
                 pts_col = idx
                 break
 
+        kind_col = -1
+        for idx, col in enumerate(h_lower):
+            if any(k in col for k in ("kind", "type")):
+                kind_col = idx
+                break
+
+        rubric_col = -1
+        for idx, col in enumerate(h_lower):
+            if any(k in col for k in ("rubric", "mode")):
+                rubric_col = idx
+                break
+
         row_idx = 1
         for row in reader:
             if not row or not any(cell.strip() for cell in row):
@@ -208,6 +238,9 @@ class AnswerKey:
                 except ValueError:
                     pts = 1.0
 
+            raw_kind = row[kind_col].strip().lower() if kind_col != -1 and kind_col < len(row) else ""
+            raw_rubric = row[rubric_col].strip() if rubric_col != -1 and rubric_col < len(row) else ""
+
             norm_ans = ans.strip()
             if norm_ans.upper() == "TRUE":
                 norm_ans = "T"
@@ -218,14 +251,26 @@ class AnswerKey:
 
             is_tf = norm_ans in {"T", "F"}
             is_mcq = len(norm_ans) == 1 and norm_ans.upper() in "ABCDE"
-            kind = "tf" if is_tf else ("mcq" if is_mcq else "text")
+            if raw_kind:
+                if any(k in raw_kind for k in ("text", "short", "essay")):
+                    kind = "text"
+                elif any(k in raw_kind for k in ("tf", "true")):
+                    kind = "tf"
+                elif any(k in raw_kind for k in ("mcq", "choice")):
+                    kind = "mcq"
+                else:
+                    kind = "tf" if is_tf else ("mcq" if is_mcq else "text")
+            else:
+                kind = "tf" if is_tf else ("mcq" if is_mcq else "text")
+
+            rubric = raw_rubric or ("case_insensitive" if kind == "text" else "exact")
 
             items[key_str] = ItemKey(
                 key=key_str,
                 kind=kind,
                 correct_answer=norm_ans,
                 points=pts,
-                rubric="exact",
+                rubric=rubric,
             )
             row_idx += 1
         return cls(items, title=title)
@@ -247,16 +292,47 @@ class AnswerKey:
         for key, val in raw_items.items():
             if isinstance(val, dict):
                 ans = val.get("answer")
-                pts = float(val.get("points", 1.0))
-                kind = val.get("kind", "mcq")
-                rubric = val.get("rubric", "exact")
+                raw_pts = val.get("points")
+                try:
+                    pts = float(raw_pts) if raw_pts is not None else 1.0
+                except (ValueError, TypeError):
+                    pts = 1.0
+                raw_kind = str(val.get("kind") or "").strip().lower()
+                raw_rubric = val.get("rubric")
             elif isinstance(val, (str, list)):
                 ans = val
                 pts = 1.0
-                kind = "mcq"
-                rubric = "exact"
+                raw_kind = ""
+                raw_rubric = None
             else:
                 raise AnswerKeyError(f"Invalid answer format for item {key}: {val}")
+
+            if isinstance(ans, str):
+                norm_ans = ans.strip()
+                if norm_ans.upper() == "TRUE":
+                    norm_ans = "T"
+                elif norm_ans.upper() == "FALSE":
+                    norm_ans = "F"
+                ans = norm_ans
+                is_tf = norm_ans in {"T", "F"}
+                is_mcq = len(norm_ans) == 1 and norm_ans.upper() in "ABCDE"
+            else:
+                is_tf = False
+                is_mcq = False
+
+            if raw_kind:
+                if any(k in raw_kind for k in ("text", "short", "essay")):
+                    kind = "text"
+                elif any(k in raw_kind for k in ("tf", "true")):
+                    kind = "tf"
+                elif any(k in raw_kind for k in ("mcq", "choice")):
+                    kind = "mcq"
+                else:
+                    kind = "tf" if is_tf else ("mcq" if is_mcq else "text")
+            else:
+                kind = "tf" if is_tf else ("mcq" if is_mcq else "text")
+
+            rubric = raw_rubric or ("case_insensitive" if kind == "text" else "exact")
 
             parsed_items[str(key)] = ItemKey(
                 key=str(key),
@@ -271,7 +347,7 @@ class AnswerKey:
 class GradingEngine:
     """Evaluates student exam responses against an answer key."""
 
-    def __init__(self, key: AnswerKey, layout: Layout):
+    def __init__(self, key: AnswerKey, layout: Layout | None = None):
         self.key = key
         self.layout = layout
 
@@ -284,6 +360,20 @@ class GradingEngine:
         review_reason: str = "",
     ) -> ItemGrade:
         """Grades a single item based on response and rubric."""
+        if key_spec.points == 0.0 and not key_spec.correct_answer:
+            return ItemGrade(
+                key=key_spec.key,
+                kind=key_spec.kind,
+                student_response=response.strip() if response not in {"?", ""} else "",
+                correct_answer="",
+                is_correct=True,
+                points_awarded=0.0,
+                max_points=0.0,
+                is_blank=(is_blank or response in {"?", ""}),
+                is_multi=False,
+                details="No correction required",
+            )
+
         if is_blank or response in {"?", ""}:
             return ItemGrade(
                 key=key_spec.key,
@@ -340,11 +430,29 @@ class GradingEngine:
         correct_ans = key_spec.correct_answer
         is_correct = False
 
-        if key_spec.rubric == "case_insensitive" or key_spec.kind == "text":
+        # Gather candidate target strings, splitting pipe-delimited alternatives (e.g. "Condenser | Abbe condenser")
+        candidates: list[str] = []
+        if isinstance(correct_ans, list):
+            for c in correct_ans:
+                for sub in str(c).split("|"):
+                    s = sub.strip()
+                    if s:
+                        candidates.append(s)
+        elif isinstance(correct_ans, str) and "|" in correct_ans:
+            candidates = [sub.strip() for sub in correct_ans.split("|") if sub.strip()]
+        elif correct_ans is not None and str(correct_ans).strip() != "":
+            candidates = [str(correct_ans).strip()]
+
+        if not candidates:
+            # Blank expected answer (e.g. 0-point correction ROI for a True statement)
+            is_correct = True if key_spec.points == 0.0 else (cleaned_resp == "")
+        elif key_spec.rubric == "case_insensitive" or key_spec.kind == "text":
             norm_resp = cleaned_resp.upper()
             def is_match_text(resp: str, target: str) -> bool:
                 r = resp.strip()
                 t = target.upper().strip()
+                if not r or not t:
+                    return r == t
                 if r == t:
                     return True
                 # Allow minor OCR character noise for long words (e.g. D vs O in MITOCHONORIA)
@@ -352,23 +460,16 @@ class GradingEngine:
                     return True
                 return False
 
-            if isinstance(correct_ans, list):
-                is_correct = any(is_match_text(norm_resp, c) for c in correct_ans)
-            else:
-                is_correct = is_match_text(norm_resp, str(correct_ans))
+            is_correct = any(is_match_text(norm_resp, c) for c in candidates)
         elif key_spec.rubric == "regex":
-            patterns = correct_ans if isinstance(correct_ans, list) else [correct_ans]
             def _safe_re_match(pat: str, text: str) -> bool:
                 try:
                     return bool(re.search(str(pat), text, re.IGNORECASE))
                 except re.error:
                     return False
-            is_correct = any(_safe_re_match(p, cleaned_resp) for p in patterns)
+            is_correct = any(_safe_re_match(p, cleaned_resp) for p in candidates)
         else:  # exact
-            if isinstance(correct_ans, list):
-                is_correct = cleaned_resp in correct_ans
-            else:
-                is_correct = cleaned_resp == str(correct_ans)
+            is_correct = any(cleaned_resp == c for c in candidates)
 
         points = key_spec.points if is_correct else 0.0
         return ItemGrade(

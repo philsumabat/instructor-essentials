@@ -3711,7 +3711,7 @@
                 label: count > 1 ? `Item ${q}` : String(z.label || `Item ${q}`).replace(/\.+$/, ''),
                 role: null,
                 graded: z.graded !== false,
-                points: Number(z.pointsPerItem || z.points || 1.0),
+                points: Number(z.pointsPerItem != null ? z.pointsPerItem : (z.points != null ? z.points : 1.0)),
                 multiline: z.type === 'text_essay',
                 ocr: true,
                 x: 0, y: 0, w: 50, h: 10
@@ -3736,7 +3736,7 @@
                 label: `Item ${q} Correction`,
                 role: 'correction',
                 graded: true,
-                points: Number(z.pointsPerItem || z.points || 1.0),
+                points: Number(z.correctionPoints != null ? z.correctionPoints : (z.pointsPerItem != null ? z.pointsPerItem : 1.0)),
                 ocr: true,
                 x: 0, y: 0, w: 50, h: 10
               });
@@ -3757,10 +3757,11 @@
     }
 
     // Question items extractor for layout (combines bubbles and graded ROIs)
-    function getLayoutQuestionItems(layout) {
+    function getLayoutQuestionItems(layout, targetKey = (typeof state !== 'undefined' ? state?.key : null)) {
       if (!layout) return [];
       const items = [];
       const seen = new Set();
+      const keyItems = targetKey?.items || {};
 
       // 1. Bubbles (MCQ and True/False)
       const bubbles = layout.bubbles || [];
@@ -3770,13 +3771,15 @@
           if (!seen.has(key)) {
             seen.add(key);
             const isTF = (b.choice === 'T' || b.choice === 'F');
+            const kItem = keyItems[key];
+            const pts = Number(kItem?.points != null ? kItem.points : 1.0);
             items.push({
               key,
               id: key,
               label: `Item ${key}`.replace(/\.+$/, ''),
               kind: isTF ? 'tf' : 'mcq',
               type: isTF ? 'tf' : 'mcq',
-              points: 1.0,
+              points: pts,
               choices: b.choice ? [b.choice] : []
             });
           } else {
@@ -3815,13 +3818,15 @@
             seen.add(key);
             const rawLabel = roi.label || `Item ${key}`;
             const cleanLabel = String(rawLabel).replace(/\.+$/, '');
+            const kItem = keyItems[key] || keyItems[String(roi.id)];
+            const pts = Number(kItem?.points != null ? kItem.points : (roi.points != null ? roi.points : 1.0));
             items.push({
               key,
               id: String(roi.id || key),
               label: cleanLabel,
               kind: 'text',
               type: roi.role === 'correction' ? 'correction' : (roi.multiline ? 'essay' : 'short_answer'),
-              points: Number(roi.points || 1.0),
+              points: pts,
               prompt: roi.prompt || (roi.role === 'correction' ? 'True/False Correction' : 'Written Response'),
               expected: roi.expected || 'Sample Answer',
               rubric: roi.rubric || 'Instructor review',
@@ -3843,13 +3848,15 @@
               const key = String(start + i);
               if (!seen.has(key)) {
                 seen.add(key);
+                const kItem = keyItems[key];
+                const pts = Number(kItem?.points != null ? kItem.points : (z.pointsPerItem != null ? z.pointsPerItem : (z.points != null ? z.points : 1.0)));
                 items.push({
                   key,
                   id: key,
                   label: `Item ${key}`,
                   kind: z.type === 'truefalse' ? 'tf' : 'mcq',
                   type: z.type === 'truefalse' ? 'tf' : 'mcq',
-                  points: Number(z.pointsPerItem || 1.0),
+                  points: pts,
                   choices
                 });
               }
@@ -3862,13 +3869,15 @@
               if (!seen.has(key)) {
                 seen.add(key);
                 const rawLabel = z.type === 'modified_tf' ? `Item ${q} Correction` : (count > 1 ? `Item ${q}` : (z.label || `Item ${q}`));
+                const kItem = keyItems[key] || keyItems[id];
+                const pts = Number(kItem?.points != null ? kItem.points : (z.pointsPerItem != null ? z.pointsPerItem : (z.points != null ? z.points : 1.0)));
                 items.push({
                   key,
                   id,
                   label: String(rawLabel).replace(/\.+$/, ''),
                   kind: 'text',
                   type: z.type === 'modified_tf' ? 'correction' : (z.type === 'text_essay' ? 'essay' : 'short_answer'),
-                  points: Number(z.pointsPerItem || z.points || 1.0),
+                  points: pts,
                   prompt: z.prompt || (z.type === 'modified_tf' ? 'True/False Correction' : 'Written Response'),
                   expected: z.expected || 'Sample Answer',
                   rubric: z.rubric || 'Instructor review',
@@ -3944,16 +3953,21 @@
           const isText = (typeof item === 'object' && (item.kind === 'text' || item.type === 'written' || item.type === 'short_answer' || item.type === 'essay')) || (!isSingleLetter && !isTF);
           items[k] = {
             answer: ansStr,
-            points: typeof item === 'object' ? Number(item.points || 1.0) : 1.0,
+            points: typeof item === 'object' && item.points !== undefined ? Number(item.points) : 1.0,
             kind: isText ? "text" : (isTF ? "tf" : "mcq"),
             bloom: normalizeBloom(rawBloom || defaultBloomFor(k)),
             label: (typeof item === 'object' && item.label) || k
           };
         });
       }
+      const totalPoints = typeof raw.total_points === 'number'
+        ? raw.total_points
+        : Object.values(items).reduce((s, it) => s + (Number(it.points != null ? it.points : 1.0)), 0);
       return {
         title: raw.title || "Custom Answer Key",
         templateId: raw.templateId || "custom",
+        total_points: totalPoints,
+        pass_score: raw.pass_score ?? Math.round(totalPoints * 0.6),
         items
       };
     }
@@ -4230,14 +4244,14 @@
         const embeddedKey = rawJson.key || rawJson.answerKey || rawJson.template?.key || rawJson.template?.answerKey;
         if (embeddedKey) {
           state.key = parseAnswerKey(embeddedKey);
-        } else {
-          // Generate a starter key matching all layout questions (bubbles & graded ROIs)
+        } else if (!state.key || !state.key.items || Object.keys(state.key.items).length === 0) {
+          // Generate a starter key matching all layout questions (bubbles & graded ROIs) only if no key loaded yet
           const items = {};
           for (const it of layoutItems) {
             if (it.kind === 'text') {
               items[it.key] = {
                 answer: it.expected || 'Sample Answer',
-                points: Number(it.points || 1.0),
+                points: Number(it.points != null ? it.points : 1.0),
                 kind: 'text',
                 label: it.label,
                 prompt: it.prompt,
@@ -4246,14 +4260,14 @@
             } else {
               items[it.key] = {
                 answer: it.choices?.[0] || (it.kind === 'tf' ? 'T' : 'A'),
-                points: Number(it.points || 1.0),
+                points: Number(it.points != null ? it.points : 1.0),
                 kind: it.kind,
                 label: it.label
               };
             }
           }
           if (Object.keys(items).length > 0) {
-            const totPts = Object.values(items).reduce((s, it) => s + (Number(it.points) || 1), 0);
+            const totPts = Object.values(items).reduce((s, it) => s + (Number(it.points != null ? it.points : 1.0)), 0);
             state.key = {
               title: `${rawJson.title || 'Custom Exam'} Answer Key`,
               templateId: rawJson.templateId || 'custom',
@@ -4306,20 +4320,33 @@
             }
             const json = JSON.parse(layoutFile.text());
 
-            // Check if ZIP also includes an answer key CSV or template.json with key
-            const keyCsvFile = files.find(f => f.name === 'answer_key_template.csv' || f.name.endsWith('.key.csv') || f.name.endsWith('answer_key.csv'));
+            // Check if ZIP includes an answer key (JSON or CSV), prioritizing actual keys over templates
+            const keyJsonFile = files.find(f => f.name === 'answer_key.json' || f.name === 'key.json')
+              || files.find(f => f.name.endsWith('.key.json') || f.name.endsWith('_key.json'));
+            const keyCsvFile = files.find(f => f.name === 'answer_key.csv' || f.name === 'key.csv')
+              || files.find(f => f.name.endsWith('.key.csv') || f.name.endsWith('_key.csv'))
+              || files.find(f => f.name === 'answer_key_template.csv');
             const templateFile = files.find(f => f.name === 'template.json');
 
             let zipKey = null;
-            if (keyCsvFile) {
+            if (keyJsonFile) {
+              try {
+                const kj = JSON.parse(keyJsonFile.text());
+                if (kj.items || kj.key || kj.answerKey) {
+                  zipKey = parseAnswerKey(kj.key || kj.answerKey || kj);
+                }
+              } catch (_) {}
+            }
+            if (!zipKey && keyCsvFile) {
               try {
                 const parsedKeyItems = parseKeyCSV(keyCsvFile.text());
                 if (Object.keys(parsedKeyItems).length > 0) {
+                  const totalPts = Object.values(parsedKeyItems).reduce((s, it) => s + (Number(it.points != null ? it.points : 1.0)), 0);
                   zipKey = {
                     title: `${json.title || file.name.replace(/\.[^/.]+$/, "")} Answer Key`,
                     templateId: 'zip-csv',
-                    total_points: Object.values(parsedKeyItems).reduce((s, it) => s + (it.points || 1), 0),
-                    pass_score: Math.round(Object.values(parsedKeyItems).reduce((s, it) => s + (it.points || 1), 0) * 0.6),
+                    total_points: totalPts,
+                    pass_score: Math.round(totalPts * 0.6),
                     items: parsedKeyItems
                   };
                 }
@@ -4359,35 +4386,35 @@
       }
     }
 
+    // Tokenize CSV line respecting RFC 4180 quotes
+    function parseCSVLine(line) {
+      const result = [];
+      let cur = '';
+      let inQuotes = false;
+      for (let i = 0; i < line.length; i++) {
+        const ch = line[i];
+        if (ch === '"') {
+          if (inQuotes && line[i + 1] === '"') {
+            cur += '"';
+            i++;
+          } else {
+            inQuotes = !inQuotes;
+          }
+        } else if (ch === ',' && !inQuotes) {
+          result.push(cur.trim());
+          cur = '';
+        } else {
+          cur += ch;
+        }
+      }
+      result.push(cur.trim());
+      return result;
+    }
+
     function parseRosterCSV(csvText) {
       if (!csvText) return [];
       const lines = csvText.trim().split(/\r?\n/);
       if (lines.length < 2) return [];
-
-      // Tokenize CSV line respecting RFC 4180 quotes
-      function parseCSVLine(line) {
-        const result = [];
-        let cur = '';
-        let inQuotes = false;
-        for (let i = 0; i < line.length; i++) {
-          const ch = line[i];
-          if (ch === '"') {
-            if (inQuotes && line[i + 1] === '"') {
-              cur += '"';
-              i++;
-            } else {
-              inQuotes = !inQuotes;
-            }
-          } else if (ch === ',' && !inQuotes) {
-            result.push(cur.trim());
-            cur = '';
-          } else {
-            cur += ch;
-          }
-        }
-        result.push(cur.trim());
-        return result;
-      }
 
       const header = parseCSVLine(lines[0]).map(h => h.trim().toLowerCase().replace(/^["']|["']$/g, ''));
       const idCol = header.findIndex(h => h.includes('id') || h === 'student_id');
@@ -4452,7 +4479,7 @@
       if (titleEl) titleEl.textContent = state.key.title || 'Active Answer Key';
       const items = Object.values(state.key.items || {});
       const qCount = items.length;
-      const totalPts = items.reduce((sum, it) => sum + (it.points || 1), 0);
+      const totalPts = typeof state.key.total_points === 'number' ? state.key.total_points : items.reduce((sum, it) => sum + (Number(it.points != null ? it.points : 1)), 0);
       if (statsEl) statsEl.textContent = `${qCount} Questions • ${totalPts} Points`;
       validatePreflightKeyLayout();
       if (typeof updateHorizontalBadges === 'function') updateHorizontalBadges();
@@ -5017,7 +5044,7 @@
           ? (it.expected || 'Sample Answer')
           : ((it.choices && it.choices[0]) || (isTF ? 'T' : 'A'));
         const ans = keyItem?.answer || defaultAns;
-        const pts = keyItem?.points ?? Number(it.points || 1);
+        const pts = keyItem?.points != null ? Number(keyItem.points) : Number(it.points != null ? it.points : 1);
         const bloom = keyItem?.bloom || defaultBloomFor(k);
         const formattedAns = String(ans).includes(',') || String(ans).includes('"')
           ? `"${String(ans).replace(/"/g, '""')}"`
@@ -5068,7 +5095,7 @@
 
             currentModalKey.items[k] = {
               answer: existingAns ?? defaultAns,
-              points: existingPts ?? Number(g.points || 1),
+              points: existingPts ?? Number(g.points != null ? g.points : 1),
               bloom: existingBloom || defaultBloomFor(k),
               kind: g.kind,
               options: (g.options || []).map(o => typeof o === 'object' ? (o.value || 'A') : o),
@@ -5093,7 +5120,7 @@
 
             currentModalKey.items[k] = {
               answer: existingAns ?? defaultAns,
-              points: existingPts ?? Number(r.points || 1),
+              points: existingPts ?? Number(r.points != null ? r.points : 1),
               bloom: existingBloom || defaultBloomFor(k),
               kind: 'text',
               label: r.label || k,
@@ -5183,7 +5210,7 @@
             k: rk,
             label: r.label || rk,
             answer: r.role === 'correction' ? 'Correction' : 'Sample Answer',
-            points: Number(r.points || 1),
+            points: Number(r.points != null ? r.points : 1),
             role: r.role,
             zoneLabel: r.role === 'correction' ? 'Modified True/False Corrections' : 'Short Answer / Open Response'
           });
@@ -5199,7 +5226,7 @@
               k: ik,
               label: it.label || ik,
               answer: it.expected || 'Sample Answer',
-              points: Number(it.points || 2),
+              points: Number(it.points != null ? it.points : 1),
               type: it.type,
               zoneLabel: 'Short Answer / Identification'
             });
@@ -5215,7 +5242,7 @@
               k: String(k),
               label: it.label || k,
               answer: it.answer || 'Sample Answer',
-              points: Number(it.points || 1),
+              points: Number(it.points != null ? it.points : 1),
               bloom: it.bloom,
               zoneLabel: 'Short Answer / Identification'
             });
@@ -5231,7 +5258,7 @@
           : (typeof existing === 'string' || typeof existing === 'number' ? String(existing) : cand.answer);
         const pts = typeof existing === 'object' && existing !== null && existing.points !== undefined
           ? Number(existing.points)
-          : cand.points;
+          : (cand.points != null ? Number(cand.points) : 1);
         const bloom = typeof existing === 'object' && existing !== null && existing.bloom
           ? normalizeBloom(existing.bloom)
           : (cand.bloom || defaultBloomFor(k));
@@ -5250,7 +5277,7 @@
       // Calculate total points and passScore
       let totalPts = 0;
       for (const it of Object.values(currentModalKey.items)) {
-        totalPts += Number(it.points || 1);
+        totalPts += Number(it.points != null ? it.points : 1);
       }
       currentModalKey.passScore = state.key?.pass_score ?? Math.round(totalPts * 0.6);
 
@@ -5265,7 +5292,7 @@
       const totalItems = Object.keys(currentModalKey.items).length;
       let totalPoints = 0;
       for (const it of Object.values(currentModalKey.items)) {
-        totalPoints += Number(it.points || 1);
+        totalPoints += Number(it.points != null ? it.points : 1);
       }
 
       if ($('key-metric-count')) $('key-metric-count').textContent = String(totalItems);
@@ -5290,7 +5317,7 @@
         layoutItemsMeta[it.key] = {
           kind: it.kind,
           options: it.choices && it.choices.length > 0 ? it.choices : (it.kind === 'tf' ? ['T', 'F'] : ['A', 'B', 'C', 'D']),
-          points: Number(it.points || 1),
+          points: Number(it.points != null ? it.points : 1),
           label: it.label || it.key,
           zoneLabel: it.kind === 'text' ? 'Handwriting / Short Answer' : 'Questions'
         };
@@ -5442,11 +5469,12 @@
       container.querySelectorAll('.key-pts-input').forEach(input => {
         input.oninput = () => {
           const k = input.dataset.key;
-          const pts = Math.max(0.5, parseFloat(input.value) || 1);
+          const parsed = parseFloat(input.value);
+          const pts = isNaN(parsed) ? 1.0 : Math.max(0, parsed);
           if (currentModalKey.items[k]) {
             currentModalKey.items[k].points = pts;
             let newTotal = 0;
-            for (const it of Object.values(currentModalKey.items)) newTotal += Number(it.points || 1);
+            for (const it of Object.values(currentModalKey.items)) newTotal += Number(it.points != null ? it.points : 1);
             if ($('key-metric-points')) $('key-metric-points').textContent = String(newTotal);
             if (!$('key-passing-input')?.dataset.userEdited) {
               currentModalKey.passScore = Math.round(newTotal * 0.6);
@@ -5475,7 +5503,7 @@
             const isTF = meta.kind === 'tf';
             currentModalKey.items[k] = {
               answer: isText ? 'Sample Answer' : (meta.options ? meta.options[0] : (isTF ? 'T' : 'A')),
-              points: meta.points || 1,
+              points: meta.points != null ? meta.points : 1,
               bloom: defaultBloomFor(k),
               kind: meta.kind || 'mcq',
               options: meta.options || (isTF ? ['T', 'F'] : (isText ? null : ['A', 'B', 'C', 'D'])),
@@ -5534,6 +5562,8 @@
       const ansCol = header.findIndex(h => h.includes('answer') || h.includes('key'));
       const ptsCol = header.findIndex(h => h.includes('point') || h.includes('pts') || h.includes('score'));
       const bloomCol = header.findIndex(h => h.includes('bloom') || h.includes('cognitive') || h.includes('taxonomy') || h.includes('level'));
+      const kindCol = header.findIndex(h => h.includes('kind') || h.includes('type'));
+      const rubricCol = header.findIndex(h => h.includes('rubric'));
 
       const items = {};
       for (let i = 1; i < lines.length; i++) {
@@ -5541,12 +5571,14 @@
         if (row.length === 0) continue;
         const itNum = itemCol !== -1 ? row[itemCol]?.trim() : String(i);
         let ans = ansCol !== -1 ? row[ansCol]?.trim() : (row[1]?.trim() || '');
-        const pts = ptsCol !== -1 ? parseFloat(row[ptsCol]) : 1;
+        const pts = ptsCol !== -1 ? parseFloat(row[ptsCol]) : 1.0;
         const rawBloom = bloomCol !== -1 ? row[bloomCol]?.trim() : (row[3]?.trim() || null);
         const bloom = rawBloom ? normalizeBloom(rawBloom) : defaultBloomFor(itNum);
+        const rawKind = kindCol !== -1 ? row[kindCol]?.trim().toLowerCase() : null;
+        const rubric = rubricCol !== -1 ? row[rubricCol]?.trim() : null;
 
-        if (itNum && ans !== undefined && ans !== '') {
-          let normAns = ans.trim();
+        if (itNum) {
+          let normAns = (ans || '').trim();
           const upper = normAns.toUpperCase();
           if (upper === 'TRUE') normAns = 'T';
           else if (upper === 'FALSE') normAns = 'F';
@@ -5554,11 +5586,19 @@
 
           const isTF = (normAns === 'T' || normAns === 'F');
           const isSingleLetter = /^[A-E]$/i.test(normAns);
+          let kind = isTF ? 'tf' : (isSingleLetter ? 'mcq' : 'text');
+          if (rawKind) {
+            if (rawKind.includes('text') || rawKind.includes('essay') || rawKind.includes('short')) kind = 'text';
+            else if (rawKind.includes('tf') || rawKind.includes('true')) kind = 'tf';
+            else if (rawKind.includes('mcq') || rawKind.includes('choice')) kind = 'mcq';
+          }
+
           items[itNum] = {
             answer: normAns,
-            points: isNaN(pts) ? 1 : pts,
-            kind: isTF ? 'tf' : (isSingleLetter ? 'mcq' : 'text'),
-            bloom: bloom
+            points: isNaN(pts) ? 1.0 : pts,
+            kind,
+            bloom,
+            ...(rubric ? { rubric } : {})
           };
         }
       }
@@ -5630,11 +5670,11 @@
       let totalPts = 0;
       const itemsPayload = {};
       for (const [k, it] of Object.entries(currentModalKey.items)) {
-        totalPts += Number(it.points || 1);
+        totalPts += Number(it.points != null ? it.points : 1);
         itemsPayload[k] = {
           kind: it.kind,
           answer: it.answer,
-          points: Number(it.points || 1),
+          points: Number(it.points != null ? it.points : 1),
           bloom: it.bloom || defaultBloomFor(k),
           ...(it.label ? { label: it.label } : {}),
           ...(it.rubric ? { rubric: it.rubric } : {}),
@@ -5673,11 +5713,11 @@
       let totalPts = 0;
       const itemsPayload = {};
       for (const [k, it] of Object.entries(currentModalKey.items)) {
-        totalPts += Number(it.points || 1);
+        totalPts += Number(it.points != null ? it.points : 1);
         itemsPayload[k] = {
           kind: it.kind,
           answer: it.answer,
-          points: Number(it.points || 1),
+          points: Number(it.points != null ? it.points : 1),
           bloom: it.bloom || defaultBloomFor(k),
           ...(it.label ? { label: it.label } : {}),
           ...(it.rubric ? { rubric: it.rubric } : {}),
@@ -5848,11 +5888,12 @@
           try {
             const items = parseKeyCSV(evt.target.result);
             if (Object.keys(items).length === 0) throw new Error("No valid question items found in CSV.");
+            const totalPts = Object.values(items).reduce((s, it) => s + (Number(it.points != null ? it.points : 1.0)), 0);
             state.key = {
               title: file.name.replace(/\.[^/.]+$/, "") + " Answer Key",
               templateId: 'custom-csv',
-              total_points: Object.values(items).reduce((s, it) => s + (it.points || 1), 0),
-              pass_score: Math.round(Object.values(items).reduce((s, it) => s + (it.points || 1), 0) * 0.6),
+              total_points: totalPts,
+              pass_score: Math.round(totalPts * 0.6),
               items
             };
             updateKeyDisplay();
@@ -6453,12 +6494,14 @@
     window.findBestRosterMatch = findBestRosterMatch;
 
     // Horizontal Grading Items extractor
-    function getHorizontalGradingItems() {
+    function getHorizontalGradingItems(targetLayout = (typeof state !== 'undefined' ? state?.layout : null), targetKey = (typeof state !== 'undefined' ? state?.key : null)) {
+      const activeLayout = targetLayout || (typeof state !== 'undefined' ? state?.layout : null);
+      const activeKey = targetKey || (typeof state !== 'undefined' ? state?.key : null);
       const items = [];
       const seen = new Set();
 
-      const directRois = Array.isArray(state.layout?.rois) ? state.layout.rois : [];
-      const zoneRois = Array.isArray(state.layout?.zones) ? state.layout.zones.flatMap(z => z.rois || []) : [];
+      const directRois = Array.isArray(activeLayout?.rois) ? activeLayout.rois : [];
+      const zoneRois = Array.isArray(activeLayout?.zones) ? activeLayout.zones.flatMap(z => z.rois || []) : [];
       const roisMap = new Map();
       for (const r of [...directRois, ...zoneRois]) {
         if (r && (r.id || r.key)) {
@@ -6479,14 +6522,14 @@
           ['text', 'text_short', 'text_essay', 'modified_tf'].includes(roi.type || roi.kind);
         if (isHorizontal && !seen.has(String(roi.key || roi.id))) {
           seen.add(String(roi.key || roi.id));
-          const keyItem = state.key?.items?.[roi.key || roi.id];
+          const keyItem = activeKey?.items?.[roi.key || roi.id];
           const rawLabel = roi.label || keyItem?.label || `Item ${roi.key || roi.id}`;
           items.push({
             key: String(roi.key || roi.id),
             id: String(roi.id || roi.key),
             label: String(rawLabel).replace(/\.+$/, ''),
             prompt: roi.prompt || keyItem?.prompt || (roi.role === 'correction' ? 'True/False Correction' : 'Written Response'),
-            points: Number(roi.points || keyItem?.points || 1.0),
+            points: Number(keyItem?.points != null ? keyItem.points : (roi.points != null ? roi.points : 1.0)),
             type: roi.role === 'correction' ? 'correction' : (roi.multiline ? 'essay' : 'short_answer'),
             expected: keyItem?.answer || 'Sample Answer',
             rubric: roi.charset === 'digits' ? 'Exact digits' : 'Instructor review / keywords',
@@ -6496,8 +6539,8 @@
       }
 
       // Check uncompiled template zones in layout
-      if (Array.isArray(state.layout?.zones)) {
-        for (const z of state.layout.zones) {
+      if (Array.isArray(activeLayout?.zones)) {
+        for (const z of activeLayout.zones) {
           if (['text', 'text_short', 'text_essay', 'modified_tf'].includes(z.type)) {
             const count = Number(z.count || 1);
             const start = Number(z.start || 1);
@@ -6507,14 +6550,14 @@
               const id = count > 1 ? `${z.id}.${q}` : String(z.id || key);
               if (!seen.has(key)) {
                 seen.add(key);
-                const keyItem = state.key?.items?.[key];
+                const keyItem = activeKey?.items?.[key];
                 const rawLabel = keyItem?.label || (z.type === 'modified_tf' ? `Item ${q} Correction` : (count > 1 ? `Item ${q}` : (z.label || `Item ${q}`)));
                 items.push({
                   key,
                   id,
                   label: String(rawLabel).replace(/\.+$/, ''),
                   prompt: keyItem?.prompt || z.prompt || (z.type === 'modified_tf' ? 'True/False Correction' : 'Written Response'),
-                  points: Number(z.pointsPerItem || z.points || keyItem?.points || 1.0),
+                  points: Number(keyItem?.points != null ? keyItem.points : (z.pointsPerItem != null ? z.pointsPerItem : (z.points != null ? z.points : 1.0))),
                   type: z.type === 'modified_tf' ? 'correction' : (z.type === 'text_essay' ? 'essay' : 'short_answer'),
                   expected: keyItem?.answer || 'Sample Answer',
                   rubric: z.rubric || 'Instructor review / keywords',
@@ -6526,8 +6569,8 @@
         }
       }
 
-      if (state.key && state.key.items) {
-        for (const [k, it] of Object.entries(state.key.items)) {
+      if (activeKey && activeKey.items) {
+        for (const [k, it] of Object.entries(activeKey.items)) {
           if ((it.kind === 'text' || it.type === 'written' || it.type === 'essay' || it.correction) && !seen.has(String(k))) {
             seen.add(String(k));
             const rawLabel = it.label || `Item ${k}`;
@@ -6536,7 +6579,7 @@
               id: String(k),
               label: String(rawLabel).replace(/\.+$/, ''),
               prompt: it.prompt || (it.correction ? 'True/False Correction' : 'Written Response'),
-              points: Number(it.points || 1.0),
+              points: Number(it.points != null ? it.points : 1.0),
               type: it.type || (it.correction ? 'correction' : 'short_answer'),
               expected: it.answer || 'Sample Answer',
               rubric: it.rubric || 'Instructor review',
@@ -6891,7 +6934,7 @@
 
       for (const [itemNumStr, keyItem] of Object.entries(key.items)) {
         if (keyItem.kind === 'text') continue;
-        const pts = keyItem.points || 1.0;
+        const pts = keyItem.points != null ? Number(keyItem.points) : 1.0;
         maxScore += pts;
 
         const studentChoices = itemAnswers[itemNumStr] || itemAnswers[parseInt(itemNumStr)] || [];
@@ -6929,18 +6972,18 @@
       const classOffer = rosterEntry?.classOffer || scan.classOffer || '';
 
       // Initialize handwritten / horizontal grading items
-      const horizontalItems = getHorizontalGradingItems();
+      const horizontalItems = getHorizontalGradingItems(layout, key);
       for (const hItem of horizontalItems) {
         if (hItem.type === 'correction' || hItem.role === 'correction' || (hItem.key && hItem.key.endsWith('_corr'))) {
           const qNum = hItem.key.replace(/_corr$/, '');
-          const keyItem = state.key?.items?.[qNum];
+          const keyItem = (key || state?.key)?.items?.[qNum];
           const isKeyTrue = keyItem && (String(keyItem.answer || keyItem.correct || '').toUpperCase() === 'T');
-          const isMarkedTrue = gradedItems[qNum]?.actual === 'T';
-          if (isKeyTrue || isMarkedTrue) {
+          if (isKeyTrue) {
             continue;
           }
         }
         if (!gradedItems[hItem.key]) {
+          const hPts = Number(hItem.points != null ? hItem.points : 1.0);
           gradedItems[hItem.key] = {
             expected: hItem.expected,
             actual: scan.simulatedResponses?.[hItem.key] || "Handwritten response",
@@ -6948,7 +6991,7 @@
             ocrConfidence: scan.simulatedOcrConf?.[hItem.key] ?? 0.88,
             isCorrect: false,
             pointsAwarded: 0,
-            maxPoints: hItem.points,
+            maxPoints: hPts,
             status: 'unreviewed',
             reviewed: false,
             kind: 'text',
@@ -6957,7 +7000,7 @@
             rubric: hItem.rubric,
             roi: hItem.roi
           };
-          maxScore += (Number(hItem.points) || 1.0);
+          maxScore += hPts;
         }
       }
 
@@ -7146,7 +7189,7 @@
       if (n === 0) return null;
 
       const scores = grades.map(g => g.rawScore);
-      const totalPossible = grades[0].maxScore;
+      const totalPossible = (key && typeof key.total_points === 'number') ? key.total_points : grades[0].maxScore;
       const meanScore = scores.reduce((a, b) => a + b, 0) / n;
       const sorted = [...scores].sort((a, b) => a - b);
       const median = n % 2 === 0 ? (sorted[n / 2 - 1] + sorted[n / 2]) / 2 : sorted[Math.floor(n / 2)];
@@ -7201,7 +7244,7 @@
 
         itemStats[itemNum] = {
           correctAnswer: keyItem.answer,
-          points: keyItem.points || 1.0,
+          points: keyItem.points != null ? keyItem.points : 1.0,
           bloom,
           difficulty: pValue,
           discrimination: rPbis,
@@ -7382,7 +7425,9 @@
             grade = processExamScan(scan, state.layout, state.key, bubbleThreshold);
           } catch (scanErr) {
             console.error(`Error processing scan ${i + 1} (${scan?.name || 'unknown'}):`, scanErr);
-            const totalPts = Object.values(state.key?.items || {}).reduce((s, it) => s + (it.points || 1.0), 0);
+            const totalPts = typeof state.key?.total_points === 'number'
+              ? state.key.total_points
+              : Object.values(state.key?.items || {}).reduce((s, it) => s + (Number(it.points != null ? it.points : 1.0)), 0);
             const gradedItemsFallback = {};
             for (const [k, it] of Object.entries(state.key?.items || {})) {
               gradedItemsFallback[k] = {
@@ -7390,7 +7435,7 @@
                 actual: 'ERROR',
                 isCorrect: false,
                 pointsAwarded: 0,
-                maxPoints: it.points || 1.0
+                maxPoints: Number(it.points != null ? it.points : 1.0)
               };
             }
             grade = {
@@ -8900,7 +8945,7 @@
 
       const horizontalItems = getHorizontalGradingItems();
       const hItem = horizontalItems.find(it => it.key === itemKey) || { points: 1.0, maxPoints: 1.0 };
-      const maxPts = Number(hItem.points || 1.0);
+      const maxPts = Number(hItem.points != null ? hItem.points : 1.0);
 
       let ptsAwarded = 0;
       let status = 'unreviewed';
@@ -9648,14 +9693,14 @@
         const rw = Math.round(roi.w * pxPerMm);
         const rh = Math.round(roi.h * pxPerMm);
 
-        const isCorrect = item.isCorrect || (Number(item.pointsAwarded || 0) >= Number(item.maxPoints || 1));
+        const isCorrect = item.isCorrect || (Number(item.pointsAwarded || 0) >= Number(item.maxPoints != null ? item.maxPoints : 1));
         const color = isCorrect ? '#10b981' : '#ef4444';
         ctx.strokeStyle = color;
         ctx.lineWidth = 2;
         ctx.strokeRect(rx, ry, rw, rh);
 
         // Points badge in top-right of ROI
-        const ptsText = `${Number(item.pointsAwarded || 0)}/${Number(item.maxPoints || 1)} pts`;
+        const ptsText = `${Number(item.pointsAwarded || 0)}/${Number(item.maxPoints != null ? item.maxPoints : 1)} pts`;
         ctx.font = 'bold 11px sans-serif';
         const tw = ctx.measureText(ptsText).width;
         const badgeW = tw + 10;

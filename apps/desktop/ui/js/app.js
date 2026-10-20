@@ -491,7 +491,7 @@ function createDefaultZone(type) {
         key: String(nextQ),
         label: `${nextQ}`,
         boxHeight: 12,
-        points: 2,
+        points: 1,
         charset: 'any',
         w: availW,
       };
@@ -505,7 +505,7 @@ function createDefaultZone(type) {
         start: nextQ,
         columns: 2,
         boxHeight: 10,
-        pointsPerItem: 2,
+        pointsPerItem: 1,
         w: availW,
       };
 
@@ -1389,7 +1389,7 @@ function renderInspector() {
       </div>
     `;
   } else if (zone.type === 'text' || zone.type === 'text_short' || zone.type === 'text_essay') {
-    const defaultPts = zone.type === 'text_essay' ? 5 : 2;
+    const defaultPts = zone.type === 'text_essay' ? 5 : 1;
     const defaultH = zone.type === 'text_essay' ? 35 : (zone.type === 'text_short' ? 10 : 12);
     const count = zone.count ?? 1;
     const cols = zone.columns ?? 1;
@@ -1830,7 +1830,7 @@ function bindInspectorEvents(zone) {
     const input = prompt('How many separate question modules would you like to create for this section?', '3');
     if (!input) return;
     const num = Math.max(2, Math.min(20, parseInt(input, 10) || 3));
-    const basePts = zone.points ?? (zone.type === 'text_essay' ? 5 : 2);
+    const basePts = zone.points ?? (zone.type === 'text_essay' ? 5 : 1);
     const baseH = zone.boxHeight ?? (zone.type === 'text_essay' ? 45 : 12);
     const baseCharset = zone.charset ?? 'any';
     const baseType = zone.type;
@@ -2128,10 +2128,10 @@ function renderMeta(layout) {
   // Total points calculation
   let totalPts = 0;
   for (const g of allGroups(layout)) {
-    if (g.kind === 'mcq' || g.kind === 'tf') totalPts += (g.points || 1);
+    if (g.kind === 'mcq' || g.kind === 'tf') totalPts += Number(g.points != null ? g.points : 1);
   }
   for (const r of layout.zones.flatMap((z) => z.rois)) {
-    if (r.graded) totalPts += (r.points || 1);
+    if (r.graded) totalPts += Number(r.points != null ? r.points : 1);
   }
   els.statPoints.textContent = String(totalPts);
 
@@ -2259,10 +2259,10 @@ function getActiveAnswerKeyPayload() {
   let totalPoints = 0;
   const itemsPayload = {};
   for (const [key, item] of Object.entries(currentAnswerKey.items)) {
-    totalPoints += Number(item.points || 1);
+    totalPoints += Number(item.points != null ? item.points : 1);
     itemsPayload[key] = {
       ...item,
-      points: Number(item.points || 1),
+      points: Number(item.points != null ? item.points : 1),
       bloom: item.bloom || defaultBloomFor(key),
     };
   }
@@ -2321,7 +2321,7 @@ function openAnswerKeyModal() {
 
       currentAnswerKey.items[g.key] = {
         answer: existingAns ?? defaultAns,
-        points: existingPts ?? Number(g.points || 1),
+        points: existingPts ?? Number(g.points != null ? g.points : 1),
         bloom: normalizeBloom(existingBloom || defaultBloomFor(g.key)),
         kind: g.kind,
         options: g.options.map((o) => o.value),
@@ -2355,7 +2355,7 @@ function openAnswerKeyModal() {
 
     currentAnswerKey.items[rKey] = {
       answer: existingAns ?? defaultAns,
-      points: existingPts ?? Number(roi.points || 1),
+      points: existingPts ?? Number(roi.points != null ? roi.points : 1),
       bloom: normalizeBloom(existingBloom || defaultBloomFor(rKey)),
       kind: 'text',
       rubric: roi.charset === 'digits' ? 'exact' : 'case_insensitive',
@@ -2389,7 +2389,7 @@ function openAnswerKeyModal() {
     }
   }
 
-  const totalPoints = Object.values(currentAnswerKey.items).reduce((s, it) => s + Number(it.points || 1), 0);
+  const totalPoints = Object.values(currentAnswerKey.items).reduce((s, it) => s + Number(it.points != null ? it.points : 1), 0);
   currentAnswerKey.passScore = state.template?.answerKey?.pass_score ?? Math.round(totalPoints * 0.6);
   if (state.template?.answerKey?.pass_score !== undefined && els.keyPassingInput) {
     els.keyPassingInput.dataset.userEdited = 'true';
@@ -2407,7 +2407,7 @@ function renderAnswerKeyModalContent() {
   const totalItems = Object.keys(currentAnswerKey.items).length;
   let totalPoints = 0;
   for (const it of Object.values(currentAnswerKey.items)) {
-    totalPoints += Number(it.points || 1);
+    totalPoints += Number(it.points != null ? it.points : 1);
   }
 
   if (els.keyMetricCount) els.keyMetricCount.textContent = String(totalItems);
@@ -2654,11 +2654,12 @@ function renderAnswerKeyModalContent() {
   els.keyItemsContainer.querySelectorAll('.key-pts-input').forEach((input) => {
     input.addEventListener('input', () => {
       const k = input.dataset.key;
-      const pts = Math.max(0.5, parseFloat(input.value) || 1);
+      const rawVal = parseFloat(input.value);
+      const pts = !isNaN(rawVal) ? Math.max(0, rawVal) : 1;
       if (currentAnswerKey.items[k]) {
         currentAnswerKey.items[k].points = pts;
         let newTotal = 0;
-        for (const it of Object.values(currentAnswerKey.items)) newTotal += Number(it.points || 1);
+        for (const it of Object.values(currentAnswerKey.items)) newTotal += Number(it.points != null ? it.points : 1);
         if (els.keyMetricPoints) els.keyMetricPoints.textContent = String(newTotal);
         if (!els.keyPassingInput?.dataset.userEdited) {
           currentAnswerKey.passScore = Math.round(newTotal * 0.6);
@@ -3412,7 +3413,7 @@ function renderPartFields(part) {
       </div>
       <div class="gen-field-inline">
         <label>Pts/Item:</label>
-        <input type="number" class="gen-input gen-input--sm part-input-pts" value="${part.pts ?? 2}" min="1" max="20">
+        <input type="number" class="gen-input gen-input--sm part-input-pts" value="${part.pts ?? 1}" min="1" max="20">
       </div>
     `;
   }
@@ -3497,7 +3498,7 @@ function renderGeneratorParts() {
       } else if (part.type === 'text_short') {
         part.count = Math.min(Math.max(part.count || 5, 1), 20);
         part.boxHeight = part.boxHeight || 12;
-        part.pts = part.pts || 2;
+        part.pts = part.pts || 1;
       } else if (part.type === 'text_essay') {
         part.count = Math.min(Math.max(part.count || 1, 1), 5);
         part.boxHeight = part.boxHeight || 36;
@@ -3883,7 +3884,7 @@ function generateExamFromGeneratorModal() {
       currentQ += count;
     } else if (part.type === 'text_short') {
       const count = Math.max(1, part.count || 5);
-      const pts = Math.max(1, part.pts || 2);
+      const pts = Math.max(1, part.pts || 1);
       const h = part.boxHeight ?? 10;
       const cols = part.cols === 'auto' ? (count <= 4 ? 1 : 2) : (parseInt(part.cols, 10) || 1);
 
@@ -4372,12 +4373,12 @@ function initEvents() {
             if (currentAnswerKey.items[k]) {
               currentAnswerKey.items[k].answer = ansStr;
               currentAnswerKey.items[k].kind = kind;
-              if (typeof v === 'object' && v.points) currentAnswerKey.items[k].points = Number(v.points);
+              if (typeof v === 'object' && v.points != null) currentAnswerKey.items[k].points = Number(v.points);
               if (typeof v === 'object' && v.bloom) currentAnswerKey.items[k].bloom = normalizeBloom(v.bloom);
             } else {
               currentAnswerKey.items[k] = {
                 answer: ansStr,
-                points: typeof v === 'object' && v.points ? Number(v.points) : 1,
+                points: typeof v === 'object' && v.points != null ? Number(v.points) : 1,
                 bloom: normalizeBloom(typeof v === 'object' && v.bloom ? v.bloom : defaultBloomFor(k)),
                 kind,
                 options: typeof v === 'object' && v.options ? v.options : (isTF ? ['T', 'F'] : (isText ? null : ['A', 'B', 'C', 'D'])),
@@ -4437,19 +4438,55 @@ function initEvents() {
 
     const keyRows = ['Item #,Answer,Points,Bloom'];
     const activeKeyItems = currentAnswerKey.items || {};
-    const keyKeys = Object.keys(activeKeyItems);
-    const sortedKeyItems = keyKeys.length > 0
-      ? keyKeys.sort((a, b) => {
-          const na = Number(a), nb = Number(b);
-          if (!isNaN(na) && !isNaN(nb)) return na - nb;
-          return a.localeCompare(b);
-        })
-      : allGroups(state.layout).filter((g) => g.kind === 'mcq' || g.kind === 'tf').map((g) => String(g.key));
+    let sortedKeyItems;
+    if (keyKeys.length > 0) {
+      sortedKeyItems = keyKeys.sort((a, b) => {
+        const na = Number(a), nb = Number(b);
+        if (!isNaN(na) && !isNaN(nb)) return na - nb;
+        return a.localeCompare(b, undefined, { numeric: true });
+      });
+    } else {
+      const allItemKeys = new Set();
+      for (const g of allGroups(state.layout)) {
+        if (g.kind === 'mcq' || g.kind === 'tf') allItemKeys.add(String(g.key));
+      }
+      const allRois = [
+        ...(Array.isArray(state.layout.rois) ? state.layout.rois : []),
+        ...(Array.isArray(state.layout.zones) ? state.layout.zones.flatMap((z) => z.rois || []) : []),
+      ];
+      for (const r of allRois) {
+        if (r && r.graded !== false && r.role !== 'name' && r.role !== 'student_id' && r.role !== 'score' && r.role !== 'signature') {
+          allItemKeys.add(String(r.key || r.id));
+        }
+      }
+      sortedKeyItems = Array.from(allItemKeys).sort((a, b) => {
+        const na = Number(a), nb = Number(b);
+        if (!isNaN(na) && !isNaN(nb)) return na - nb;
+        return a.localeCompare(b, undefined, { numeric: true });
+      });
+    }
+
+    const layoutGroupsMap = new Map();
+    for (const g of allGroups(state.layout)) {
+      layoutGroupsMap.set(String(g.key), g);
+    }
+    const layoutRoisMap = new Map();
+    const allRoisList = [
+      ...(Array.isArray(state.layout.rois) ? state.layout.rois : []),
+      ...(Array.isArray(state.layout.zones) ? state.layout.zones.flatMap((z) => z.rois || []) : []),
+    ];
+    for (const r of allRoisList) {
+      if (r && (r.key || r.id)) layoutRoisMap.set(String(r.key || r.id), r);
+    }
 
     for (const k of sortedKeyItems) {
       const it = activeKeyItems[k];
-      const ans = it ? String(it.answer || '') : 'A';
-      const pts = it ? (it.points ?? 1) : 1;
+      const roi = layoutRoisMap.get(k);
+      const grp = layoutGroupsMap.get(k);
+      const defaultAns = roi ? (roi.role === 'correction' ? 'Correction' : 'Sample Answer') : (grp?.kind === 'tf' ? 'T' : 'A');
+      const defaultPts = roi ? (roi.points != null ? roi.points : 1) : (grp?.points != null ? grp.points : 1);
+      const ans = it ? String(it.answer ?? '') : defaultAns;
+      const pts = it ? (it.points ?? 1) : defaultPts;
       const bloom = it ? (it.bloom || defaultBloomFor(k)) : defaultBloomFor(k);
       const formattedAns = ans.includes(',') || ans.includes('"') ? `"${ans.replace(/"/g, '""')}"` : ans;
       keyRows.push(`${k},${formattedAns},${pts},${bloom}`);

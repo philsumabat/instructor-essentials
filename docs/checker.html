@@ -3213,17 +3213,16 @@
         </ol>
       </div>
 
-      <div style="display: flex; flex-direction: column; gap: 0.4rem; border-top: 1px solid var(--border); padding-top: 0.85rem;">
-        <label for="input-hf-token" style="font-size: 0.78rem; font-weight: 600; color: var(--text);">
-          Optional: Free Hugging Face Read Token (Tier 4 Booster)
+      <div style="display: flex; flex-direction: column; gap: 0.6rem; border-top: 1px solid var(--border); padding-top: 0.85rem;">
+        <label style="display: flex; align-items: center; justify-content: space-between; cursor: pointer;">
+          <div>
+            <div style="font-size: 0.82rem; font-weight: 600; color: var(--text);">Zero-Config AI Handwriting Recognition</div>
+            <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.15rem;">Automatically transcribes written answer crops with zero keys or setup needed.</div>
+          </div>
+          <input type="checkbox" id="chk-auto-trocr" checked style="accent-color: var(--accent); width: 1.15rem; height: 1.15rem; cursor: pointer;">
         </label>
-        <div style="display: flex; gap: 0.4rem;">
-          <input type="password" id="input-hf-token" placeholder="hf_..." style="flex: 1; padding: 0.45rem 0.65rem; font-size: 0.8rem; background: var(--panel-alt); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text);">
-          <button type="button" id="btn-save-hf-token" class="btn btn--primary btn-sm">Save</button>
-          <button type="button" id="btn-clear-hf-token" class="btn btn--secondary btn-sm">Clear</button>
-        </div>
-        <div style="font-size: 0.7rem; color: var(--text-muted);">
-          Stored only in local browser localStorage. Only used when online for fast inference acceleration.
+        <div style="font-size: 0.7rem; color: var(--text-muted); background: var(--panel-alt); padding: 0.5rem 0.65rem; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+          💡 Runs client-side TrOCR / ONNX in your browser or automatically connects to free serverless inference. No API keys or passwords required.
         </div>
       </div>
 
@@ -4596,12 +4595,7 @@
 
     // Helper: Ensure Active Layout & Key Loaded
     function ensureActiveLayout() {
-      if (!state.layout) {
-        state.layout = PRESETS['exam-50'].layout;
-      }
-      if (!state.key) {
-        state.key = PRESETS['exam-50'].key;
-      }
+      return state.layout != null;
     }
 
     // Update Active Answer Key Status Box & Dropzone State
@@ -12517,27 +12511,22 @@
 
     // TrOCR / Handwriting Engine Settings listeners
     $('btn-trocr-settings')?.addEventListener('click', () => {
-      const tokenInput = $('input-hf-token');
-      if (tokenInput && typeof HandwritingEngine !== 'undefined') {
-        tokenInput.value = HandwritingEngine.getHFToken();
+      const autoChk = $('chk-auto-trocr');
+      const hwChk = $('chk-ai-handwriting');
+      if (autoChk && hwChk) {
+        autoChk.checked = hwChk.checked;
       }
       $('modal-trocr-settings')?.showModal();
     });
 
-    $('btn-save-hf-token')?.addEventListener('click', () => {
-      const val = $('input-hf-token')?.value || '';
-      if (typeof HandwritingEngine !== 'undefined') {
-        HandwritingEngine.setHFToken(val);
+    $('chk-auto-trocr')?.addEventListener('change', (e) => {
+      const hwChk = $('chk-ai-handwriting');
+      if (hwChk) {
+        hwChk.checked = e.target.checked;
+        if (typeof renderHorizontalGradingView === 'function') {
+          renderHorizontalGradingView();
+        }
       }
-      showToast('✓ Hugging Face token saved.');
-    });
-
-    $('btn-clear-hf-token')?.addEventListener('click', () => {
-      if ($('input-hf-token')) $('input-hf-token').value = '';
-      if (typeof HandwritingEngine !== 'undefined') {
-        HandwritingEngine.setHFToken('');
-      }
-      showToast('Hugging Face token cleared.');
     });
 
     $('btn-gdrive-save-now')?.addEventListener('click', () => {

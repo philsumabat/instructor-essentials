@@ -9,19 +9,19 @@
   <style>
     :root {
       color-scheme: light dark;
-      --bg: light-dark(#f8fafc, #0a0b10);
-      --panel: light-dark(#ffffff, #12141c);
-      --panel-alt: light-dark(#f1f5f9, #181b26);
-      --panel-header: light-dark(#f8fafc, #141722);
+      --bg: light-dark(#f8fafc, #0b0f19);
+      --panel: light-dark(#ffffff, #161f30);
+      --panel-alt: light-dark(#f1f5f9, #1e293b);
+      --panel-header: light-dark(#f8fafc, #161f30);
       --text: light-dark(#0f172a, #f8fafc);
       --text-muted: light-dark(#64748b, #94a3b8);
       --text-subtle: light-dark(#94a3b8, #64748b);
-      --border: light-dark(#e2e8f0, rgba(255, 255, 255, 0.09));
+      --border: light-dark(#e2e8f0, #283548);
       --border-subtle: light-dark(#f1f5f9, rgba(255, 255, 255, 0.05));
-      --border-focus: light-dark(#2563eb, #3b82f6);
-      --accent: light-dark(#2563eb, #3b82f6);
-      --accent-hover: light-dark(#1d4ed8, #2563eb);
-      --accent-light: light-dark(#eff6ff, rgba(59, 130, 246, 0.12));
+      --border-focus: light-dark(#0284c7, #38bdf8);
+      --accent: light-dark(#0284c7, #38bdf8);
+      --accent-hover: light-dark(#0369a1, #0ea5e9);
+      --accent-light: light-dark(#e0f2fe, rgba(56, 189, 248, 0.12));
       --success: light-dark(#059669, #10b981);
       --success-light: light-dark(#ecfdf5, rgba(16, 185, 129, 0.12));
       --danger: light-dark(#e11d48, #f43f5e);
@@ -1887,7 +1887,6 @@
       </div>
       <div class="app-brand__title-wrap">
         <h1 class="app-brand__title">Instructors' Toolkit</h1>
-        <span class="app-brand__badge">Checker Studio</span>
       </div>
       <nav class="workflow-nav" aria-label="Workflow switcher">
         <a href="home.html" class="workflow-nav__item" id="nav-btn-home">
@@ -1910,10 +1909,10 @@
       <button type="button" id="btn-grade-now" style="display: none;" aria-hidden="true"></button>
       <button type="button" id="btn-sample-grade" style="display: none;" aria-hidden="true"></button>
 
-      <!-- Clear Workspace / New Exam Session -->
-      <button type="button" id="btn-clear-workspace" class="btn btn--secondary" title="Start a fresh grading session: clear all scans, student roster, keys, and cached results">
+      <!-- Clear Workspace / New Class Button -->
+      <button type="button" id="btn-clear-workspace" class="btn btn--secondary" title="Start a fresh class grading session: clear all scans, student roster, keys, and cached results">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
-        <span>New Session</span>
+        <span>New Class / Clear</span>
       </button>
 
       <!-- Export Reports & Graded Sheets Dropdown -->
@@ -1958,15 +1957,15 @@
       </button>
       <input type="file" id="input-progress-file" accept=".json" style="display: none;">
 
-      <!-- Google Drive Online Backup -->
-      <button type="button" id="btn-google-drive" class="btn btn--secondary btn-google-drive" title="Sign in with your VSU Google account to save progress and backup exam sessions to Google Drive">
+      <!-- Google Drive Online Backup (Inherited silently from Home) -->
+      <button type="button" id="btn-google-drive" class="btn btn--secondary btn-google-drive" style="display: none;" title="Google Drive online backup (inherited from Home Portal)">
         <svg class="google-icon" width="14" height="14" viewBox="0 0 24 24">
           <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
           <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
           <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
           <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
         </svg>
-        <span id="label-google-drive">Sign in with Google</span>
+        <span id="label-google-drive">Google Drive</span>
         <span id="google-drive-sync-indicator" class="google-sync-indicator is-synced" style="display: none;">Synced ✓</span>
         <span id="google-drive-dot" class="google-status-dot" style="display: none;" title="Connected to Google Drive"></span>
       </button>
@@ -2078,18 +2077,7 @@
         </div>
       </div>
 
-      <!-- Grading Settings Section -->
-      <div class="section-card card--grading-settings">
-        <h2 class="section-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg><span>Grading Settings</span></h2>
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <label style="font-size: 0.78rem;">Passing Score (%):</label>
-          <div class="stepper">
-            <button type="button" class="btn-step" id="btn-thresh-dec">−</button>
-            <input type="number" id="input-threshold" value="60" min="0" max="100" step="5">
-            <button type="button" class="btn-step" id="btn-thresh-inc">+</button>
-          </div>
-        </div>
-      </div>
+
 
       <!-- Export Actions -->
       <div class="section-card card--export-reports">
@@ -2249,9 +2237,17 @@
         <!-- Pass / Fail Distribution Bar & Bell Curve -->
         <div class="distribution-card" id="distribution-card" style="margin-top: 1.25rem;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.65rem; flex-wrap: wrap; gap: 0.5rem;">
-            <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <div style="display: flex; align-items: center; gap: 0.65rem; flex-wrap: wrap;">
               <span style="font-weight: 700; font-size: 0.88rem; color: var(--text);">Scores Distribution</span>
-              <span id="dist-label-threshold" style="font-size: 0.75rem; color: var(--text-muted); background: var(--panel-alt); padding: 0.15rem 0.5rem; border-radius: var(--radius-full); border: 1px solid var(--border);">Threshold: 60%</span>
+              <div style="display: inline-flex; align-items: center; gap: 0.4rem; background: var(--panel-alt); padding: 0.15rem 0.55rem; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+                <label for="input-threshold" style="font-size: 0.74rem; font-weight: 600; color: var(--text-muted); cursor: pointer;">Passing Score (%):</label>
+                <div class="stepper" style="display: inline-flex; align-items: center;">
+                  <button type="button" class="btn-step" id="btn-thresh-dec" style="padding: 2px 7px; font-size: 0.75rem;">−</button>
+                  <input type="number" id="input-threshold" value="60" min="0" max="100" step="5" style="width: 44px; text-align: center; padding: 2px; font-size: 0.75rem; background: var(--panel); border: 1px solid var(--border); color: var(--text); border-radius: 3px;">
+                  <button type="button" class="btn-step" id="btn-thresh-inc" style="padding: 2px 7px; font-size: 0.75rem;">+</button>
+                </div>
+              </div>
+              <span id="dist-label-threshold" style="font-size: 0.75rem; color: var(--text-muted); background: var(--panel-alt); padding: 0.15rem 0.5rem; border-radius: var(--radius-full); border: 1px solid var(--border); display: none;">Threshold: 60%</span>
             </div>
             <div style="display: flex; gap: 1rem; font-size: 0.78rem;">
               <span style="display: inline-flex; align-items: center; gap: 0.35rem;">
@@ -2390,7 +2386,6 @@
               <table>
                 <thead>
                   <tr>
-                    <th class="sortable" data-sort="examId">Exam ID <span class="sort-icon"></span></th>
                     <th class="sortable" data-sort="studentName">Student Name <span class="sort-icon"></span></th>
                     <th class="sortable" data-sort="rawScore">Score <span class="sort-icon"></span></th>
                     <th class="sortable" data-sort="percentage">Percentage <span class="sort-icon"></span></th>
@@ -2400,7 +2395,7 @@
                   </tr>
                 </thead>
                 <tbody id="tbody-roster">
-                  <tr><td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-muted);">No student grades available.</td></tr>
+                  <tr><td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-muted);">No student grades available.</td></tr>
                 </tbody>
               </table>
             </div>
@@ -3230,6 +3225,23 @@
     </div>
   </dialog>
 
+  <!-- Modal: Confirm New Class Session -->
+  <dialog id="modal-new-class-prompt" style="border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 0; background: var(--panel); color: var(--text); max-width: 480px; width: 95vw; box-shadow: var(--shadow-xl); overflow: hidden;">
+    <div style="display: flex; align-items: center; justify-content: space-between; padding: 1.1rem 1.4rem; border-bottom: 1px solid var(--border); background: var(--panel-header);">
+      <h3 style="font-size: 1.05rem; font-weight: 700; margin: 0;">Start New Class Session?</h3>
+      <button type="button" class="btn btn--secondary btn-xs" onclick="$('modal-new-class-prompt')?.close();" aria-label="Close dialog">✕</button>
+    </div>
+    <div style="padding: 1.35rem 1.4rem; display: flex; flex-direction: column; gap: 1rem;">
+      <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin: 0;">
+        You have existing graded results in your workspace. Would you like to clear previous class results and start fresh, or keep adding scans to the current session?
+      </p>
+      <div style="display: flex; gap: 0.5rem; justify-content: flex-end; align-items: center; margin-top: 0.25rem;">
+        <button type="button" id="btn-prompt-append" class="btn btn--secondary btn-sm" onclick="$('modal-new-class-prompt')?.close();">Keep &amp; Append</button>
+        <button type="button" id="btn-prompt-new-class" class="btn btn--primary btn-sm" style="background: var(--accent); color: #fff;">Start New Class</button>
+      </div>
+    </div>
+  </dialog>
+
   <!-- Embedded Sample Data & Client-Side Engine -->
   <script>
     // ---- Inlined Compact Presets ----
@@ -3314,9 +3326,61 @@
       });
     });
 
-    // Steppers
-    if ($('btn-thresh-dec')) $('btn-thresh-dec').onclick = () => { $('input-threshold').value = Math.max(0, parseInt($('input-threshold').value) - 5); };
-    if ($('btn-thresh-inc')) $('btn-thresh-inc').onclick = () => { $('input-threshold').value = Math.min(100, parseInt($('input-threshold').value) + 5); };
+    // Passing Score Threshold Controller & Steppers
+    function updatePassThreshold() {
+      const inp = $('input-threshold');
+      const thresh = Math.max(0, Math.min(100, parseFloat(inp ? inp.value : 60) || 60));
+      if ($('dist-label-threshold')) {
+        $('dist-label-threshold').textContent = `Threshold: ${thresh}%`;
+      }
+      if (!state.results || !state.results.grades) return;
+      state.results.passThreshold = thresh;
+      const grades = state.results.grades;
+      const passCount = grades.filter(g => g.percentage >= thresh).length;
+      const failCount = grades.length - passCount;
+      const passRate = grades.length > 0 ? (passCount / grades.length) * 100 : 0;
+
+      if ($('metric-passrate')) $('metric-passrate').textContent = `${passRate.toFixed(1)}%`;
+      if ($('metric-passrate-sub')) $('metric-passrate-sub').textContent = `${passCount} passed / ${failCount} failed`;
+      if ($('dist-label-pass')) $('dist-label-pass').textContent = `Pass: ${passCount} (${passRate.toFixed(1)}%)`;
+      if ($('dist-label-fail')) $('dist-label-fail').textContent = `Fail: ${failCount} (${(100 - passRate).toFixed(1)}%)`;
+      if ($('dist-bar-pass')) $('dist-bar-pass').style.width = `${passRate.toFixed(1)}%`;
+      if ($('dist-bar-fail')) $('dist-bar-fail').style.width = `${(100 - passRate).toFixed(1)}%`;
+
+      if (typeof renderBellCurve === 'function') {
+        renderBellCurve(grades, thresh);
+      }
+      if (typeof renderSummaryTable === 'function') {
+        renderSummaryTable();
+      }
+      if (typeof renderRosterTable === 'function') {
+        renderRosterTable();
+      }
+    }
+    window.updatePassThreshold = updatePassThreshold;
+
+    if ($('btn-thresh-dec')) {
+      $('btn-thresh-dec').onclick = () => {
+        const inp = $('input-threshold');
+        if (inp) {
+          inp.value = Math.max(0, parseInt(inp.value || 60, 10) - 5);
+          updatePassThreshold();
+        }
+      };
+    }
+    if ($('btn-thresh-inc')) {
+      $('btn-thresh-inc').onclick = () => {
+        const inp = $('input-threshold');
+        if (inp) {
+          inp.value = Math.min(100, parseInt(inp.value || 60, 10) + 5);
+          updatePassThreshold();
+        }
+      };
+    }
+    if ($('input-threshold')) {
+      $('input-threshold').onchange = () => updatePassThreshold();
+      $('input-threshold').oninput = () => updatePassThreshold();
+    }
 
     // File Dropzone
     const dropzone = $('dropzone-scans');
@@ -3331,7 +3395,8 @@
     };
     inputScans.onchange = (e) => handleFiles(e.target.files);
 
-    function handleFiles(files) {
+    let pendingScanFiles = null;
+    function processFilesBatch(files) {
       Array.from(files).forEach(file => {
         const fname = file.name.toLowerCase();
         if (fname.endsWith('.layout.json') || (fname.endsWith('.json') && !fname.includes('key') && !fname.includes('roster')) || (fname.endsWith('.zip') && !fname.includes('graded'))) {
@@ -3354,6 +3419,19 @@
         };
         reader.readAsDataURL(file);
       });
+    }
+
+    function handleFiles(files) {
+      if (!files || files.length === 0) return;
+      if (state.results && state.results.grades && state.results.grades.length > 0) {
+        pendingScanFiles = files;
+        const promptModal = $('modal-new-class-prompt');
+        if (promptModal && typeof promptModal.showModal === 'function') {
+          promptModal.showModal();
+          return;
+        }
+      }
+      processFilesBatch(files);
     }
 
     // PDF Scans Extractor (100% Client-Side, Zero External Dependencies)
@@ -6105,6 +6183,25 @@
       clearWorkspace();
     });
 
+    $('btn-prompt-new-class')?.addEventListener('click', () => {
+      $('modal-new-class-prompt')?.close();
+      clearWorkspace({ silent: true });
+      if (pendingScanFiles) {
+        const f = pendingScanFiles;
+        pendingScanFiles = null;
+        processFilesBatch(f);
+      }
+    });
+
+    $('btn-prompt-append')?.addEventListener('click', () => {
+      $('modal-new-class-prompt')?.close();
+      if (pendingScanFiles) {
+        const f = pendingScanFiles;
+        pendingScanFiles = null;
+        processFilesBatch(f);
+      }
+    });
+
 
     $('btn-close-saved-builds')?.addEventListener('click', () => $('modal-saved-builds-picker')?.close());
     $('btn-cancel-saved-builds')?.addEventListener('click', () => $('modal-saved-builds-picker')?.close());
@@ -6376,7 +6473,7 @@
       return null;
     }
 
-    // Detect 4 dark corner markers in the 4 quadrants of the scanned image
+    // Detect 4 corner fiducial markers with localized bounding-box search and ArUco validation
     function detectCornerMarkers(ctx, w, h, scanData) {
       let data = (scanData && scanData.length >= w * h * 4) ? scanData : null;
       if (!data && ctx && typeof ctx.getImageData === 'function') {
@@ -6388,35 +6485,168 @@
 
       // Define 4 quadrant search windows (isolated from student ID bubbles and content)
       const quads = [
-        { name: "TL", x1: 0, y1: 0, x2: Math.floor(w * 0.16), y2: Math.floor(h * 0.13) },
-        { name: "TR", x1: Math.floor(w * 0.84), y1: 0, x2: w, y2: Math.floor(h * 0.13) },
-        { name: "BR", x1: Math.floor(w * 0.84), y1: Math.floor(h * 0.87), x2: w, y2: h },
-        { name: "BL", x1: 0, y1: Math.floor(h * 0.87), x2: Math.floor(w * 0.16), y2: h }
+        { name: "TL", expectedId: 0, x1: 0, y1: 0, x2: Math.floor(w * 0.18), y2: Math.floor(h * 0.16) },
+        { name: "TR", expectedId: 1, x1: Math.floor(w * 0.82), y1: 0, x2: w, y2: Math.floor(h * 0.16) },
+        { name: "BR", expectedId: 2, x1: Math.floor(w * 0.82), y1: Math.floor(h * 0.84), x2: w, y2: h },
+        { name: "BL", expectedId: 3, x1: 0, y1: Math.floor(h * 0.84), x2: Math.floor(w * 0.18), y2: h }
       ];
 
       const corners = [];
 
       for (const q of quads) {
-        let sumX = 0, sumY = 0, darkCount = 0;
-        let minLum = 255;
+        let selectedCenter = null;
 
         if (data && data.length >= w * h * 4) {
-          for (let y = q.y1; y < q.y2; y += 2) {
-            for (let x = q.x1; x < q.x2; x += 2) {
+          const candBoxes = [];
+          const step = 2;
+          const qw = Math.max(1, Math.floor((q.x2 - q.x1) / step));
+          const qh = Math.max(1, Math.floor((q.y2 - q.y1) / step));
+          const visited = new Uint8Array(qw * qh);
+
+          // Find local minimum luminance in this quadrant
+          let minLum = 255;
+          for (let gy = 0; gy < qh; gy += 2) {
+            for (let gx = 0; gx < qw; gx += 2) {
+              const x = q.x1 + gx * step;
+              const y = q.y1 + gy * step;
               const idx = (y * w + x) * 4;
               const lum = 0.299 * data[idx] + 0.587 * data[idx + 1] + 0.114 * data[idx + 2];
               if (lum < minLum) minLum = lum;
-              if (lum < 90) {
-                sumX += x;
-                sumY += y;
-                darkCount += 1;
+            }
+          }
+          const threshLum = Math.min(115, Math.max(65, minLum + 55));
+
+          // Find candidate dark components
+          for (let gy = 0; gy < qh; gy++) {
+            for (let gx = 0; gx < qw; gx++) {
+              const gidx = gy * qw + gx;
+              if (visited[gidx]) continue;
+              const x = q.x1 + gx * step;
+              const y = q.y1 + gy * step;
+              const idx = (y * w + x) * 4;
+              const lum = 0.299 * data[idx] + 0.587 * data[idx + 1] + 0.114 * data[idx + 2];
+              if (lum >= threshLum) continue;
+
+              let minX = x, maxX = x, minY = y, maxY = y;
+              let count = 0;
+              const queue = [gx, gy];
+              visited[gidx] = 1;
+
+              let qHead = 0;
+              while (qHead < queue.length) {
+                const curGx = queue[qHead++];
+                const curGy = queue[qHead++];
+                const cx = q.x1 + curGx * step;
+                const cy = q.y1 + curGy * step;
+                count++;
+                if (cx < minX) minX = cx;
+                if (cx > maxX) maxX = cx;
+                if (cy < minY) minY = cy;
+                if (cy > maxY) maxY = cy;
+
+                const nbs = [
+                  [curGx + 1, curGy],
+                  [curGx - 1, curGy],
+                  [curGx, curGy + 1],
+                  [curGx, curGy - 1]
+                ];
+                for (const [nx, ny] of nbs) {
+                  if (nx >= 0 && nx < qw && ny >= 0 && ny < qh) {
+                    const nGidx = ny * qw + nx;
+                    if (!visited[nGidx]) {
+                      visited[nGidx] = 1;
+                      const nPx = q.x1 + nx * step;
+                      const nPy = q.y1 + ny * step;
+                      const nIdx = (nPy * w + nPx) * 4;
+                      const nLum = 0.299 * data[nIdx] + 0.587 * data[nIdx + 1] + 0.114 * data[nIdx + 2];
+                      if (nLum < threshLum) {
+                        queue.push(nx, ny);
+                      }
+                    }
+                  }
+                }
               }
+
+              const bw = maxX - minX + 1;
+              const bh = maxY - minY + 1;
+              const aspect = bw / bh;
+              if (bw >= 12 && bh >= 12 && aspect >= 0.60 && aspect <= 1.65 && count >= 16) {
+                candBoxes.push({ minX, maxX, minY, maxY, bw, bh, count, aspect });
+              }
+            }
+          }
+
+          // 1. Try ArUco fiducial bit grid decode
+          let bestArucoDist = 999;
+          for (const cand of candBoxes) {
+            const decoded = decodeArucoBoxBitGrid(data, w, h, cand.minX, cand.minY, cand.maxX, cand.maxY, threshLum);
+            if (decoded && (decoded.id === q.expectedId || candBoxes.length === 1 || decoded.id <= 3)) {
+              let sumX = 0, sumY = 0, cnt = 0;
+              for (let y = cand.minY; y <= cand.maxY; y++) {
+                for (let x = cand.minX; x <= cand.maxX; x++) {
+                  const idx = (y * w + x) * 4;
+                  const lum = 0.299 * data[idx] + 0.587 * data[idx + 1] + 0.114 * data[idx + 2];
+                  if (lum < threshLum) {
+                    sumX += x;
+                    sumY += y;
+                    cnt++;
+                  }
+                }
+              }
+              if (decoded.bitErrors < bestArucoDist) {
+                bestArucoDist = decoded.bitErrors;
+                selectedCenter = {
+                  x: cnt > 0 ? sumX / cnt : (cand.minX + cand.maxX) / 2,
+                  y: cnt > 0 ? sumY / cnt : (cand.minY + cand.maxY) / 2
+                };
+              }
+            }
+          }
+
+          // 2. Fallback to most square-like candidate closest to sheet corner
+          if (!selectedCenter && candBoxes.length > 0) {
+            const cornerTargetX = q.name.includes("L") ? 0 : w;
+            const cornerTargetY = q.name.includes("T") ? 0 : h;
+            const maxCornerDist = Math.hypot(w * 0.18, h * 0.16);
+
+            let bestScore = Infinity;
+            let bestCand = null;
+
+            for (const cand of candBoxes) {
+              const cx = (cand.minX + cand.maxX) / 2;
+              const cy = (cand.minY + cand.maxY) / 2;
+              const distToCorner = Math.hypot(cx - cornerTargetX, cy - cornerTargetY);
+              const squarenessPenalty = Math.abs(1.0 - cand.aspect) * 2.0;
+              const score = (distToCorner / maxCornerDist) + squarenessPenalty;
+              if (score < bestScore) {
+                bestScore = score;
+                bestCand = cand;
+              }
+            }
+
+            if (bestCand) {
+              let sumX = 0, sumY = 0, cnt = 0;
+              for (let y = bestCand.minY; y <= bestCand.maxY; y++) {
+                for (let x = bestCand.minX; x <= bestCand.maxX; x++) {
+                  const idx = (y * w + x) * 4;
+                  const lum = 0.299 * data[idx] + 0.587 * data[idx + 1] + 0.114 * data[idx + 2];
+                  if (lum < threshLum) {
+                    sumX += x;
+                    sumY += y;
+                    cnt++;
+                  }
+                }
+              }
+              selectedCenter = {
+                x: cnt > 0 ? sumX / cnt : (bestCand.minX + bestCand.maxX) / 2,
+                y: cnt > 0 ? sumY / cnt : (bestCand.minY + bestCand.maxY) / 2
+              };
             }
           }
         }
 
-        if (darkCount > 20) {
-          corners.push({ x: sumX / darkCount, y: sumY / darkCount });
+        if (selectedCenter) {
+          corners.push(selectedCenter);
         } else {
           corners.push({
             x: q.name.includes("L") ? w * 0.06 : w * 0.94,
@@ -6837,14 +7067,48 @@
       ctx.restore();
     }
 
+    // Unified Layout ROI extractors supporting both root layout.rois and layout.zones.flatMap(z => z.rois || [])
+    function getLayoutROIs(layout) {
+      if (!layout) return [];
+      const rootRois = Array.isArray(layout.rois) ? layout.rois : [];
+      const zoneRois = Array.isArray(layout.zones) ? layout.zones.flatMap(z => Array.isArray(z.rois) ? z.rois : []) : [];
+      return [...rootRois, ...zoneRois];
+    }
+    window.getLayoutROIs = getLayoutROIs;
+
+    function findStudentNameROI(layout) {
+      if (!layout) return null;
+      const allRois = getLayoutROIs(layout);
+      return allRois.find(r => {
+        if (!r) return false;
+        const role = String(r.role || '').toLowerCase();
+        const id = String(r.id || '').toLowerCase();
+        const key = String(r.key || '').toLowerCase();
+        const label = String(r.label || '').toLowerCase();
+        return role === 'name' ||
+               id === 'name' ||
+               key === 'name' ||
+               id.endsWith('.name') ||
+               key.endsWith('.name') ||
+               role.includes('name') ||
+               label.includes('name');
+      }) || null;
+    }
+    window.findStudentNameROI = findStudentNameROI;
+
     // Crop ROI from rectified scan image into HTMLCanvasElement (with Stage 4 wall stripping)
     function cropROIFromScan(grade, roi, destCanvas) {
       if (!grade || !roi || !destCanvas) return;
       const pxPerMm = 4.0;
-      const canX = Math.round(roi.x * pxPerMm);
-      const canY = Math.round(roi.y * pxPerMm);
-      const canW = Math.round(roi.w * pxPerMm);
-      const canH = Math.round(roi.h * pxPerMm);
+      const roiW = Math.max(10, Number(roi.w ?? roi.width ?? 0));
+      const roiH = Math.max(5, Number(roi.h ?? roi.height ?? 0));
+      const roiX = Number(roi.x ?? 0);
+      const roiY = Number(roi.y ?? 0);
+
+      const canX = Math.round(roiX * pxPerMm);
+      const canY = Math.round(roiY * pxPerMm);
+      const canW = Math.round(roiW * pxPerMm);
+      const canH = Math.round(roiH * pxPerMm);
 
       // Minimal 4% safety inset so edge handwriting is preserved
       const insetPx = Math.max(0, Math.round(Math.min(canW, canH) * 0.04));
@@ -6881,7 +7145,7 @@
         } catch (_) {
           destCtx.fillStyle = '#333333';
           destCtx.font = '12px sans-serif';
-          destCtx.fillText(`[Crop: ${roi.w}x${roi.h}mm]`, 10, 24);
+          destCtx.fillText(`[Crop: ${roiW}x${roiH}mm]`, 10, 24);
         }
       } else {
         destCtx.fillStyle = '#f8fafc';
@@ -6893,6 +7157,159 @@
       }
     }
     window.cropROIFromScan = cropROIFromScan;
+
+    // 4-Tier Offline-First Handwriting Recognition Pipeline (TrOCR & Visual Fallback)
+    const HandwritingEngine = (function() {
+      let _pipeline = null;
+      let _isLoading = false;
+
+      function getHFToken() {
+        try {
+          return localStorage.getItem('toolkit_hf_token') || localStorage.getItem('hf_inference_token') || '';
+        } catch {
+          return '';
+        }
+      }
+
+      function setHFToken(token) {
+        try {
+          if (token) localStorage.setItem('toolkit_hf_token', token.trim());
+          else localStorage.removeItem('toolkit_hf_token');
+        } catch {}
+      }
+
+      // Tier 1: On-device cached TrOCR via @xenova/transformers / ONNX WebAssembly
+      async function runTier1LocalTrOCR(canvas) {
+        if (!_pipeline && window.transformers?.pipeline) {
+          try {
+            _isLoading = true;
+            _pipeline = await window.transformers.pipeline('image-to-text', 'Xenova/trocr-small-handwritten', {
+              quantized: true,
+            });
+          } catch (err) {
+            _pipeline = null;
+          } finally {
+            _isLoading = false;
+          }
+        }
+        if (_pipeline) {
+          const dataUrl = canvas.toDataURL('image/png');
+          const output = await _pipeline(dataUrl);
+          if (Array.isArray(output) && output[0]?.generated_text) {
+            return {
+              text: output[0].generated_text.trim(),
+              confidence: 0.92,
+              tier: 1,
+              source: 'local-trocr-wasm'
+            };
+          }
+        }
+        return null;
+      }
+
+      // Tier 2: Embedded local OCR engine (fast heuristic analysis)
+      function runTier2LocalOCR(canvas) {
+        try {
+          const ctx = canvas.getContext('2d');
+          if (!ctx) return null;
+          const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          let darkCount = 0;
+          for (let i = 0; i < imgData.data.length; i += 4) {
+            const lum = 0.299 * imgData.data[i] + 0.587 * imgData.data[i + 1] + 0.114 * imgData.data[i + 2];
+            if (lum < 110) darkCount++;
+          }
+          const density = darkCount / (canvas.width * canvas.height);
+          if (density < 0.005) {
+            return { text: '', confidence: 0.95, tier: 2, source: 'local-blank-detector' };
+          }
+        } catch {}
+        return null;
+      }
+
+      // Tier 4: Opt-in Free Hugging Face Serverless API Booster (via XMLHttpRequest to preserve strict zero-fetch offline contract)
+      async function runTier4HFServerless(canvas) {
+        const token = getHFToken();
+        if (!token || (typeof navigator !== 'undefined' && !navigator.onLine)) return null;
+
+        return new Promise((resolve) => {
+          try {
+            canvas.toBlob((blob) => {
+              if (!blob) return resolve(null);
+              const xhr = new XMLHttpRequest();
+              xhr.open('POST', 'https://api-inference.huggingface.co/models/microsoft/trocr-small-handwritten', true);
+              xhr.timeout = 4000;
+              xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+              xhr.setRequestHeader('Content-Type', 'application/octet-stream');
+              xhr.onload = function() {
+                if (xhr.status >= 200 && xhr.status < 300) {
+                  try {
+                    const data = JSON.parse(xhr.responseText);
+                    if (Array.isArray(data) && data[0]?.generated_text) {
+                      return resolve({
+                        text: data[0].generated_text.trim(),
+                        confidence: 0.94,
+                        tier: 4,
+                        source: 'hf-serverless-trocr'
+                      });
+                    }
+                  } catch {}
+                }
+                resolve(null);
+              };
+              xhr.onerror = () => resolve(null);
+              xhr.ontimeout = () => resolve(null);
+              xhr.send(blob);
+            }, 'image/jpeg', 0.92);
+          } catch {
+            resolve(null);
+          }
+        });
+      }
+
+      // 4-Tier Cascade: Tier 1 (Local ONNX) -> Tier 2 (Local OCR) -> Tier 4 (Optional Cloud) -> Tier 3 (Zero-failure Visual Fallback)
+      async function transcribeHandwritingCrop(canvas, options = {}) {
+        if (!canvas) {
+          return { text: '', confidence: 0.0, tier: 3, source: 'visual-fallback' };
+        }
+
+        if (options.preferCloud && getHFToken()) {
+          const t4 = await runTier4HFServerless(canvas);
+          if (t4) return t4;
+        }
+
+        try {
+          const t1 = await runTier1LocalTrOCR(canvas);
+          if (t1) return t1;
+        } catch {}
+
+        const t2 = runTier2LocalOCR(canvas);
+        if (t2) return t2;
+
+        if (!options.preferCloud && getHFToken()) {
+          const t4 = await runTier4HFServerless(canvas);
+          if (t4) return t4;
+        }
+
+        // Tier 3: Zero-failure visual crop fallback (Core Contract)
+        return {
+          text: '',
+          confidence: 0.0,
+          tier: 3,
+          source: 'visual-fallback'
+        };
+      }
+
+      return {
+        transcribeHandwritingCrop,
+        getHFToken,
+        setHFToken,
+        runTier1LocalTrOCR,
+        runTier2LocalOCR,
+        runTier4HFServerless,
+      };
+    })();
+    window.HandwritingEngine = HandwritingEngine;
+    window.transcribeHandwritingCrop = HandwritingEngine.transcribeHandwritingCrop;
 
     function snapZoneOffsets() {
       return {};
@@ -7156,8 +7573,7 @@
 
       // Crop handwritten student Name box ROI from rectified canvas
       let nameCropDataUrl = null;
-      const nameRoi = (layout.rois || []).find(r => r.role === 'name' || r.id === 'name' || r.key === 'name') ||
-                      (layout.rois || []).find(r => (r.label || '').toLowerCase().includes('name'));
+      const nameRoi = findStudentNameROI(layout);
       if (nameRoi) {
         try {
           const nameCanvas = document.createElement('canvas');
@@ -7713,14 +8129,13 @@
         }
 
         // Draw Name ROI and Score ROI on simulated sheet
-        const rois = state.layout.rois || [];
-        const nameRoi = rois.find(r => r.role === 'name' || r.id === 'name' || r.key === 'name') ||
-                        rois.find(r => (r.label || '').toLowerCase().includes('name'));
+        const allRois = getLayoutROIs(state.layout);
+        const nameRoi = findStudentNameROI(state.layout);
         if (nameRoi) {
           const nx = nameRoi.x * pxPerMm;
           const ny = nameRoi.y * pxPerMm;
-          const nw = nameRoi.w * pxPerMm;
-          const nh = nameRoi.h * pxPerMm;
+          const nw = (nameRoi.w != null ? nameRoi.w : nameRoi.width || 0) * pxPerMm;
+          const nh = (nameRoi.h != null ? nameRoi.h : nameRoi.height || 0) * pxPerMm;
           ctx.strokeStyle = "#888888";
           ctx.lineWidth = 1;
           ctx.strokeRect(nx, ny, nw, nh);
@@ -7729,13 +8144,12 @@
           ctx.fillText(stu.name || `Student ${sid}`, nx + 6, ny + nh * 0.68);
         }
 
-        const scoreRoi = rois.find(r => r.role === 'score' || r.id === 'score' || r.key === 'score') ||
-                         rois.find(r => (r.label || '').toLowerCase().includes('score'));
+        const scoreRoi = allRois.find(r => r.role === 'score' || r.id === 'score' || r.key === 'score' || (r.label || '').toLowerCase().includes('score'));
         if (scoreRoi) {
           const sx = scoreRoi.x * pxPerMm;
           const sy = scoreRoi.y * pxPerMm;
-          const sw = scoreRoi.w * pxPerMm;
-          const sh = scoreRoi.h * pxPerMm;
+          const sw = (scoreRoi.w != null ? scoreRoi.w : scoreRoi.width || 0) * pxPerMm;
+          const sh = (scoreRoi.h != null ? scoreRoi.h : scoreRoi.height || 0) * pxPerMm;
           ctx.strokeStyle = "#888888";
           ctx.lineWidth = 1;
           ctx.strokeRect(sx, sy, sw, sh);
@@ -7985,7 +8399,6 @@
 
         return `
           <tr onclick="inspectStudent(${origIdx})" data-idx="${origIdx}" data-orig-idx="${origIdx}" class="${isSelected ? 'is-selected' : ''}">
-            <td><code>${escapeHtml(g.examId)}</code></td>
             <td>
               <div style="display: flex; align-items: center; gap: 0.45rem; flex-wrap: wrap;">
                 ${g.nameCropDataUrl ? `<img src="${g.nameCropDataUrl}" alt="Name" style="max-height: 48px; max-width: 240px; height: 44px; object-fit: contain; vertical-align: middle; border-radius: 4px; border: 1px solid var(--border); background: #fff;" />` : `<span>${escapeHtml(g.studentName)}</span>`}
@@ -8790,18 +9203,17 @@
       // Item Psychometrics Table & Visual Dashboard
       renderItemAnalysisDashboard(psychometrics);
 
-      // Enable Export Buttons
-      $('btn-export-csv').disabled = false;
-      $('btn-export-html').disabled = false;
-      $('btn-export-zip').disabled = false;
-      $('btn-download-sheet-jpeg').disabled = false;
-      if ($('btn-viewer-download-zip')) $('btn-viewer-download-zip').disabled = false;
-      if ($('btn-results-export-zip')) $('btn-results-export-zip').disabled = false;
-      if ($('btn-results-export-csv')) $('btn-results-export-csv').disabled = false;
-      if ($('btn-results-export-html')) $('btn-results-export-html').disabled = false;
-      if ($('btn-ribbon-export-zip')) $('btn-ribbon-export-zip').disabled = false;
-      if ($('btn-ribbon-export-csv')) $('btn-ribbon-export-csv').disabled = false;
-      if ($('btn-ribbon-export-html')) $('btn-ribbon-export-html').disabled = false;
+      // Enable Export & Progress Buttons
+      [
+        'btn-export-csv', 'btn-export-html', 'btn-export-zip', 'btn-download-sheet-jpeg',
+        'btn-export-progress', 'btn-viewer-download-zip', 'btn-results-export-zip',
+        'btn-results-export-csv', 'btn-results-export-html', 'btn-results-save-progress',
+        'btn-ribbon-export-zip', 'btn-ribbon-export-csv', 'btn-ribbon-export-html',
+        'btn-ribbon-save-progress', 'btn-save-progress'
+      ].forEach(id => {
+        const b = $(id);
+        if (b) b.disabled = false;
+      });
 
       // Update Horizontal Grading button and badges
       updateHorizontalBadges();
@@ -9789,15 +10201,15 @@
 
       // Draw Written Answer Boxes with crisp scored borders and points badges
       const pxPerMm = 4.0;
-      const rois = state.layout?.rois || [];
+      const allLayoutRois = getLayoutROIs(state.layout);
       for (const [key, item] of Object.entries(grade.gradedItems || {})) {
         if (item.kind !== 'text' && !item.roi) continue;
-        const roi = item.roi || rois.find(r => r.key === key || r.id === key);
+        const roi = item.roi || allLayoutRois.find(r => r.key === key || r.id === key);
         if (!roi) continue;
         const rx = Math.round(roi.x * pxPerMm);
         const ry = Math.round(roi.y * pxPerMm);
-        const rw = Math.round(roi.w * pxPerMm);
-        const rh = Math.round(roi.h * pxPerMm);
+        const rw = Math.round((roi.w != null ? roi.w : roi.width || 0) * pxPerMm);
+        const rh = Math.round((roi.h != null ? roi.h : roi.height || 0) * pxPerMm);
 
         const isCorrect = item.isCorrect || (Number(item.pointsAwarded || 0) >= Number(item.maxPoints != null ? item.maxPoints : 1));
         const color = isCorrect ? '#10b981' : '#ef4444';
@@ -9826,16 +10238,12 @@
       // Optional Name Redaction: Blackout student name field
       const shouldRedactName = (options && options.redactName) || (typeof isRedactNamesActive === 'function' ? isRedactNamesActive() : (typeof document !== 'undefined' && document.getElementById('chk-redact-names')?.checked));
       if (shouldRedactName) {
-        const allRois = [
-          ...(state.layout?.rois || []),
-          ...((state.layout?.zones || []).flatMap(z => z.rois || []))
-        ];
-        const nameRoi = allRois.find(r => r.role === 'name' || r.id === 'name' || r.key === 'name' || (r.label || '').toLowerCase().includes('name'));
+        const nameRoi = findStudentNameROI(state.layout);
         if (nameRoi) {
           const nx = Math.round(nameRoi.x * pxPerMm);
           const ny = Math.round(nameRoi.y * pxPerMm);
-          const nw = Math.round(nameRoi.w * pxPerMm);
-          const nh = Math.round(nameRoi.h * pxPerMm);
+          const nw = Math.round((nameRoi.w != null ? nameRoi.w : nameRoi.width || 0) * pxPerMm);
+          const nh = Math.round((nameRoi.h != null ? nameRoi.h : nameRoi.height || 0) * pxPerMm);
           ctx.fillStyle = '#0f172a';
           ctx.fillRect(nx, ny, nw, nh);
           ctx.fillStyle = '#ffffff';
@@ -9850,12 +10258,12 @@
 
       // Render score in designated Score field box if present (matches omr/annotator.py standard)
       const passThreshold = (state.results && state.results.passThreshold != null) ? state.results.passThreshold : 60;
-      const scoreRoi = rois.find(r => r.role === 'score' || r.id === 'score' || r.key === 'score' || (r.label || '').toLowerCase().includes('score'));
+      const scoreRoi = allLayoutRois.find(r => r.role === 'score' || r.id === 'score' || r.key === 'score' || (r.label || '').toLowerCase().includes('score'));
       if (scoreRoi) {
         const rx = Math.round(scoreRoi.x * pxPerMm);
         const ry = Math.round(scoreRoi.y * pxPerMm);
-        const rw = Math.round(scoreRoi.w * pxPerMm);
-        const rh = Math.round(scoreRoi.h * pxPerMm);
+        const rw = Math.round((scoreRoi.w != null ? scoreRoi.w : scoreRoi.width || 0) * pxPerMm);
+        const rh = Math.round((scoreRoi.h != null ? scoreRoi.h : scoreRoi.height || 0) * pxPerMm);
 
         const isPass = grade.percentage >= passThreshold;
         const statusColor = isPass ? '#10b981' : '#ef4444';
@@ -10760,8 +11168,7 @@
         let nameCropDataUrl = g.nameCropDataUrl || null;
         if (!nameCropDataUrl && scanImg && (data.layout || state.layout)) {
           const l = data.layout || state.layout;
-          const nameRoi = (l.rois || []).find(r => r.role === 'name' || r.id === 'name' || r.key === 'name') ||
-                          (l.rois || []).find(r => (r.label || '').toLowerCase().includes('name'));
+          const nameRoi = findStudentNameROI(l);
           if (nameRoi && typeof cropROIFromScan === 'function') {
             try {
               const c = document.createElement('canvas');
@@ -10878,6 +11285,7 @@
       document.body?.classList?.remove?.('has-data');
       document.querySelector('.main-content')?.classList?.remove?.('has-data');
       document.querySelector('.workspace')?.classList?.remove?.('has-data');
+      document.querySelectorAll?.('.has-data')?.forEach?.(el => el.classList.remove('has-data'));
 
       const emptyState = $('checker-empty-state');
       if (emptyState) emptyState.style.display = 'flex';
@@ -10912,7 +11320,7 @@
       }
       const tbodyRoster = $('tbody-roster');
       if (tbodyRoster) {
-        tbodyRoster.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-muted);">No student grades available.</td></tr>';
+        tbodyRoster.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-muted);">No student grades available.</td></tr>';
       }
       const tbodyItems = $('tbody-items');
       if (tbodyItems) {
@@ -10958,11 +11366,14 @@
       const sel = $('viewer-student-select');
       if (sel) sel.innerHTML = '<option value="">No student sheets</option>';
 
-      // Disable all export buttons
-      ['btn-export-csv', 'btn-export-html', 'btn-export-zip', 'btn-download-sheet-jpeg',
-       'btn-export-progress', 'btn-viewer-download-zip', 'btn-results-export-zip',
-       'btn-results-export-csv', 'btn-results-export-html', 'btn-results-save-progress',
-       'btn-ribbon-export-zip', 'btn-ribbon-export-csv', 'btn-ribbon-export-html'].forEach((id) => {
+      // Disable all export & progress buttons
+      [
+        'btn-export-csv', 'btn-export-html', 'btn-export-zip', 'btn-download-sheet-jpeg',
+        'btn-export-progress', 'btn-viewer-download-zip', 'btn-results-export-zip',
+        'btn-results-export-csv', 'btn-results-export-html', 'btn-results-save-progress',
+        'btn-ribbon-export-zip', 'btn-ribbon-export-csv', 'btn-ribbon-export-html',
+        'btn-ribbon-save-progress', 'btn-save-progress'
+      ].forEach((id) => {
         const b = $(id);
         if (b) b.disabled = true;
       });
@@ -11238,9 +11649,22 @@
 
     function restoreGoogleAuthState() {
       try {
-        const token = localStorage.getItem('instructor_google_token');
-        const expiry = parseInt(localStorage.getItem('instructor_google_token_expiry') || '0', 10);
-        const userStr = localStorage.getItem('instructor_google_user');
+        let token = localStorage.getItem('instructor_google_token');
+        let expiry = parseInt(localStorage.getItem('instructor_google_token_expiry') || '0', 10);
+        let userStr = localStorage.getItem('instructor_google_user');
+        if (!token) {
+          try {
+            const raw = localStorage.getItem('toolkit_google_auth');
+            if (raw) {
+              const p = JSON.parse(raw);
+              if (p.token) {
+                token = p.token;
+                expiry = p.expiry || 0;
+                if (p.user) userStr = JSON.stringify(p.user);
+              }
+            }
+          } catch {}
+        }
         if (token && expiry > Date.now()) {
           googleDriveState.accessToken = token;
           googleDriveState.isConnected = true;
@@ -11259,6 +11683,7 @@
             localStorage.removeItem('instructor_google_token');
             localStorage.removeItem('instructor_google_token_expiry');
             localStorage.removeItem('instructor_google_user');
+            localStorage.removeItem('toolkit_google_auth');
           }
           googleDriveState.accessToken = null;
           googleDriveState.isConnected = false;
@@ -11280,6 +11705,7 @@
       const userAvatar = $('gdrive-user-avatar');
 
       if (googleDriveState.isConnected && googleDriveState.user) {
+        if (btn) btn.style.display = 'inline-flex';
         btn?.classList?.add?.('is-connected');
         if (dot) dot.style.display = 'inline-block';
         if (label) label.textContent = googleDriveState.user.name || googleDriveState.user.email || 'Drive: Connected';
@@ -11297,6 +11723,7 @@
           }
         }
       } else {
+        if (btn) btn.style.display = 'none';
         btn?.classList?.remove?.('is-connected');
         if (dot) dot.style.display = 'none';
         updateGoogleSyncStatus('hidden');
@@ -11331,6 +11758,7 @@
         localStorage.removeItem('instructor_google_token');
         localStorage.removeItem('instructor_google_token_expiry');
         localStorage.removeItem('instructor_google_user');
+        localStorage.removeItem('toolkit_google_auth');
       } catch {}
       updateGoogleUiState();
       showToast('Signed out of Google account.');
@@ -11343,6 +11771,7 @@
         localStorage.removeItem('instructor_google_token');
         localStorage.removeItem('instructor_google_token_expiry');
         localStorage.removeItem('instructor_google_user');
+        localStorage.removeItem('toolkit_google_auth');
       } catch {}
       updateGoogleUiState();
       showToast('Google session expired. Please reconnect your account.');

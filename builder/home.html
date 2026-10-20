@@ -14,15 +14,15 @@
       --panel: #161f30;
       --panel-alt: #1e293b;
       --border: #283548;
-      --border-focus: #3b82f6;
+      --border-focus: #38bdf8;
       --text: #f8fafc;
       --text-muted: #94a3b8;
-      --accent: #2563eb;
-      --accent-hover: #1d4ed8;
-      --accent-light: rgba(37, 99, 235, 0.12);
-      --success: #059669;
-      --success-hover: #047857;
-      --warning: #d97706;
+      --accent: #38bdf8;
+      --accent-hover: #0ea5e9;
+      --accent-light: rgba(56, 189, 248, 0.12);
+      --success: #10b981;
+      --success-hover: #059669;
+      --warning: #f59e0b;
       --danger: #ef4444;
       --danger-hover: #dc2626;
       --radius-sm: 6px;
@@ -646,9 +646,9 @@
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"/></svg>
           </a>
           <div class="tool-card__sub-actions">
-            <a href="checker.html?action=new" class="btn btn--secondary btn--sm">
+            <a href="checker.html?action=new" class="btn btn--secondary btn--sm" title="Grade New Class (New Exam Session)">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/></svg>
-              <span>New Exam Session</span>
+              <span>Grade New Class</span> <!-- New Exam Session -->
             </a>
             <a href="checker.html?action=sample" class="btn btn--secondary btn--sm">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
@@ -735,9 +735,22 @@
     // ---- Google Auth Persistence & Sync ----
     function getGoogleUser() {
       try {
-        const token = localStorage.getItem('instructor_google_token');
-        const expiry = parseInt(localStorage.getItem('instructor_google_token_expiry') || '0', 10);
-        const userStr = localStorage.getItem('instructor_google_user');
+        let token = localStorage.getItem('instructor_google_token');
+        let expiry = parseInt(localStorage.getItem('instructor_google_token_expiry') || '0', 10);
+        let userStr = localStorage.getItem('instructor_google_user');
+        if (!token) {
+          try {
+            const raw = localStorage.getItem('toolkit_google_auth');
+            if (raw) {
+              const p = JSON.parse(raw);
+              if (p.token) {
+                token = p.token;
+                expiry = p.expiry || 0;
+                if (p.user) userStr = JSON.stringify(p.user);
+              }
+            }
+          } catch {}
+        }
         if (token && expiry > Date.now()) {
           return userStr ? JSON.parse(userStr) : { name: 'Institutional Instructor' };
         }
@@ -807,12 +820,20 @@
                 xhr.open('GET', 'https://www.googleapis.com/oauth2/v3/userinfo');
                 xhr.setRequestHeader('Authorization', 'Bearer ' + token);
                 xhr.onload = function() {
+                  let user = null;
                   if (xhr.status === 200) {
                     try {
-                      const user = JSON.parse(xhr.responseText);
+                      user = JSON.parse(xhr.responseText);
                       localStorage.setItem('instructor_google_user', JSON.stringify(user));
                     } catch {}
                   }
+                  try {
+                    localStorage.setItem('toolkit_google_auth', JSON.stringify({
+                      token,
+                      expiry: Date.now() + (expiresIn * 1000),
+                      user: user || null
+                    }));
+                  } catch {}
                   updateAuthUI();
                   showToast('✓ Signed in with Google! Sessions now sync across Sheet Builder & Checker Studio.');
                 };
@@ -837,6 +858,7 @@
       localStorage.removeItem('instructor_google_token');
       localStorage.removeItem('instructor_google_token_expiry');
       localStorage.removeItem('instructor_google_user');
+      localStorage.removeItem('toolkit_google_auth');
       updateAuthUI();
       showToast('Signed out of Google account.');
     }

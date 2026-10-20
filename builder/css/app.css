@@ -1,18 +1,18 @@
 :root {
   color-scheme: light dark;
-  --bg: light-dark(#f8fafc, #0a0b10);
-  --panel: light-dark(#ffffff, #12141c);
-  --panel-alt: light-dark(#f1f5f9, #181b26);
-  --panel-header: light-dark(#f8fafc, #141722);
+  --bg: light-dark(#f8fafc, #0b0f19);
+  --panel: light-dark(#ffffff, #161f30);
+  --panel-alt: light-dark(#f1f5f9, #1e293b);
+  --panel-header: light-dark(#f8fafc, #161f30);
   --text: light-dark(#0f172a, #f8fafc);
   --text-muted: light-dark(#64748b, #94a3b8);
   --text-subtle: light-dark(#94a3b8, #64748b);
-  --border: light-dark(#e2e8f0, rgba(255, 255, 255, 0.09));
+  --border: light-dark(#e2e8f0, #283548);
   --border-subtle: light-dark(#f1f5f9, rgba(255, 255, 255, 0.05));
-  --border-focus: light-dark(#2563eb, #3b82f6);
-  --accent: light-dark(#2563eb, #3b82f6);
-  --accent-hover: light-dark(#1d4ed8, #2563eb);
-  --accent-light: light-dark(#eff6ff, rgba(59, 130, 246, 0.12));
+  --border-focus: light-dark(#0284c7, #38bdf8);
+  --accent: light-dark(#0284c7, #38bdf8);
+  --accent-hover: light-dark(#0369a1, #0ea5e9);
+  --accent-light: light-dark(#e0f2fe, rgba(56, 189, 248, 0.12));
   --success: light-dark(#059669, #10b981);
   --success-light: light-dark(#ecfdf5, rgba(16, 185, 129, 0.12));
   --danger: light-dark(#e11d48, #f43f5e);

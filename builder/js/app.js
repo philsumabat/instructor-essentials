@@ -3002,9 +3002,22 @@ function handleGoogleAuthSuccess(token, expiresIn = 3600) {
 
 function restoreGoogleAuthState() {
   try {
-    const token = localStorage.getItem('instructor_google_token');
-    const expiry = parseInt(localStorage.getItem('instructor_google_token_expiry') || '0', 10);
-    const userStr = localStorage.getItem('instructor_google_user');
+    let token = localStorage.getItem('instructor_google_token');
+    let expiry = parseInt(localStorage.getItem('instructor_google_token_expiry') || '0', 10);
+    let userStr = localStorage.getItem('instructor_google_user');
+    if (!token) {
+      try {
+        const raw = localStorage.getItem('toolkit_google_auth');
+        if (raw) {
+          const p = JSON.parse(raw);
+          if (p.token) {
+            token = p.token;
+            expiry = p.expiry || 0;
+            if (p.user) userStr = JSON.stringify(p.user);
+          }
+        }
+      } catch {}
+    }
     if (token && expiry > Date.now()) {
       googleDriveState.accessToken = token;
       googleDriveState.isConnected = true;
@@ -3023,6 +3036,7 @@ function restoreGoogleAuthState() {
         localStorage.removeItem('instructor_google_token');
         localStorage.removeItem('instructor_google_token_expiry');
         localStorage.removeItem('instructor_google_user');
+        localStorage.removeItem('toolkit_google_auth');
       }
       googleDriveState.accessToken = null;
       googleDriveState.isConnected = false;
@@ -3061,6 +3075,7 @@ function updateGoogleUiState() {
   const userAvatar = $('#gdrive-user-avatar');
 
   if (googleDriveState.isConnected && googleDriveState.user) {
+    if (btn) btn.style.display = 'inline-flex';
     btn?.classList?.add('is-connected');
     if (dot) dot.style.display = 'inline-block';
     if (label) label.textContent = googleDriveState.user.name || googleDriveState.user.email || 'Drive: Connected';
@@ -3078,6 +3093,7 @@ function updateGoogleUiState() {
       }
     }
   } else {
+    if (btn) btn.style.display = 'none';
     btn?.classList?.remove('is-connected');
     if (dot) dot.style.display = 'none';
     updateGoogleSyncStatus('hidden');
@@ -3112,6 +3128,7 @@ function disconnectGoogleDrive() {
     localStorage.removeItem('instructor_google_token');
     localStorage.removeItem('instructor_google_token_expiry');
     localStorage.removeItem('instructor_google_user');
+    localStorage.removeItem('toolkit_google_auth');
   } catch {}
   updateGoogleUiState();
   showToast('Google Drive disconnected.');
@@ -3127,6 +3144,7 @@ function handleGoogleTokenExpired() {
     localStorage.removeItem('instructor_google_token');
     localStorage.removeItem('instructor_google_token_expiry');
     localStorage.removeItem('instructor_google_user');
+    localStorage.removeItem('toolkit_google_auth');
   } catch {}
   updateGoogleUiState();
   showToast('Google session expired. Please reconnect your account.');

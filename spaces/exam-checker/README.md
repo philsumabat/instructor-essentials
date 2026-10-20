@@ -1,5 +1,5 @@
 ---
-title: Instructor Essentials - OMR Exam Grading & Item Analysis
+title: Instructors' Toolkit - OMR Exam Grading & Item Analysis
 emoji: 📝
 colorFrom: blue
 colorTo: indigo
@@ -8,10 +8,10 @@ sdk_version: 4.44.0
 app_file: app.py
 pinned: false
 license: mit
-short_description: Instructor Essentials — OMR exam grading pipeline, OCR, and psychometric item analysis.
+short_description: Instructors' Toolkit — OMR exam grading pipeline, OCR, and psychometric item analysis.
 ---
 
-# 📝 Instructor Essentials — OMR Exam Grading & Item Analysis
+# 📝 Instructors' Toolkit — OMR Exam Grading & Item Analysis
 
 An open-source, computer-vision grading pipeline that evaluates scanned multiple-choice exam bubble sheets, matches student IDs against class rosters, and generates psychometric item analysis reports.
 

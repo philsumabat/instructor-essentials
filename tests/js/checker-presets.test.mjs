@@ -477,13 +477,13 @@ test('checker.html is 100% offline self-contained with zero external fetch, scri
   assert.ok(!checkerHtml.includes('fetch('), 'Must not use fetch() calls');
 });
 
-test('checker.html is rebranded to Instructor Essentials in title, meta tags, and header brand', async () => {
+test('checker.html is rebranded to Instructors\' Toolkit in title, meta tags, and header brand', async () => {
   const checkerHtml = await readFile(resolve(root, 'builder/checker.html'), 'utf8');
 
-  assert.ok(checkerHtml.includes('<title>Instructor Essentials — Checker Studio</title>'), 'Document title must be rebranded');
-  assert.ok(checkerHtml.includes('<meta name="application-name" content="Instructor Essentials">'), 'Application-name meta tag present');
-  assert.ok(checkerHtml.includes('<meta name="description" content="Instructor Essentials — In-Browser OMR Exam Grading & Psychometrics">'), 'Description meta tag present');
-  assert.ok(checkerHtml.includes('<h1 class="app-brand__title">Instructor Essentials</h1>'), 'Brand heading must be Instructor Essentials');
+  assert.ok(checkerHtml.includes('<title>Instructors\' Toolkit — Checker Studio</title>'), 'Document title must be rebranded');
+  assert.ok(checkerHtml.includes('<meta name="application-name" content="Instructors\' Toolkit">'), 'Application-name meta tag present');
+  assert.ok(checkerHtml.includes('<meta name="description" content="Instructors\' Toolkit — In-Browser OMR Exam Grading & Psychometrics">'), 'Description meta tag present');
+  assert.ok(checkerHtml.includes('<h1 class="app-brand__title">Instructors\' Toolkit</h1>'), 'Brand heading must be Instructors\' Toolkit');
 });
 
 test('checker.html implements progressive disclosure in sidebar, modular upload cards, and prominent results export bar', async () => {

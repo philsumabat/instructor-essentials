@@ -1,6 +1,6 @@
-# Deploying Instructor Essentials Checker to Hugging Face Spaces
+# Deploying Instructors' Toolkit Checker to Hugging Face Spaces
 
-The directory [`spaces/exam-checker/`](../spaces/exam-checker/) contains a complete, ready-to-deploy cloud web application for the **`checker`** component of Instructor Essentials, powered by **Gradio 4.44.0**.
+The directory [`spaces/exam-checker/`](../spaces/exam-checker/) contains a complete, ready-to-deploy cloud web application for the **`checker`** component of Instructors' Toolkit, powered by **Gradio 4.44.0**.
 
 It provides educators, professors, and exam proctors with a zero-install interactive web application to upload scanned exam sheets, evaluate them against custom answer keys and class rosters, inspect live psychometric item analysis reports, and download visually marked exam scans directly in the cloud.
 

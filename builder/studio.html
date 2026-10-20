@@ -3,10 +3,10 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Instructor Essentials — Sheet Builder</title>
-  <meta name="description" content="Instructor Essentials — Millimeter-accurate OMR sheet builder, layout generator, and visual answer key editor.">
-  <meta name="application-name" content="Instructor Essentials">
-  <meta name="apple-mobile-web-app-title" content="Instructor Essentials">
+  <title>Instructors' Toolkit — Sheet Builder</title>
+  <meta name="description" content="Instructors' Toolkit — Millimeter-accurate OMR sheet builder, layout generator, and visual answer key editor.">
+  <meta name="application-name" content="Instructors' Toolkit">
+  <meta name="apple-mobile-web-app-title" content="Instructors' Toolkit">
   <style>
 /* sheet.css */
 /*
@@ -2970,14 +2970,15 @@ dialog.modal-dialog--answer-key {
         </svg>
       </div>
       <div class="app-brand__title-wrap">
-        <h1 class="app-brand__title">Instructor Essentials</h1>
+        <h1 class="app-brand__title">Instructors' Toolkit</h1>
+        <span class="app-brand__badge">Sheet Builder</span>
       </div>
       <nav class="workflow-nav" aria-label="Workflow switcher">
         <a href="home.html" class="workflow-nav__item" id="nav-btn-home">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
           <span>Home</span>
         </a>
-        <a href="index.html" class="workflow-nav__item is-active" id="nav-btn-builder" aria-current="page">
+        <a href="builder.html" class="workflow-nav__item is-active" id="nav-btn-builder" aria-current="page">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
           <span>Sheet Builder</span>
         </a>
@@ -3349,7 +3350,7 @@ dialog.modal-dialog--answer-key {
       <!-- Body when NOT connected -->
       <div id="gdrive-view-disconnected" style="padding: 1.35rem 1.4rem; display: flex; flex-direction: column; gap: 1rem;">
         <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin: 0;">
-          Sign in with your VSU Google account (<strong>@vsu.edu.ph</strong>) to automatically backup and sync your exam builds and answer keys to your Google Drive in an <strong>"Instructor Essentials"</strong> folder. 100% free, private to your account, and with zero external server tracking.
+          Sign in with your VSU Google account (<strong>@vsu.edu.ph</strong>) to automatically backup and sync your exam builds and answer keys to your Google Drive in an <strong>"Instructors' Toolkit"</strong> folder. 100% free, private to your account, and with zero external server tracking.
         </p>
 
         <div style="display: flex; gap: 0.5rem; justify-content: flex-end; align-items: center; margin-top: 0.25rem;">
@@ -3385,7 +3386,7 @@ dialog.modal-dialog--answer-key {
         </div>
 
         <div style="font-size: 0.82rem; color: var(--text); display: flex; flex-direction: column; gap: 0.5rem;">
-          <div><strong>Google Drive Target:</strong> Folder <code style="padding: 0.15rem 0.35rem; background: var(--panel-alt); border-radius: var(--radius-xs);">Instructor Essentials</code></div>
+          <div><strong>Google Drive Target:</strong> Folder <code style="padding: 0.15rem 0.35rem; background: var(--panel-alt); border-radius: var(--radius-xs);">Instructors' Toolkit</code></div>
           <div style="font-size: 0.74rem; color: var(--text-muted);">Exam builds and answer keys are saved automatically to your Drive when you click Save Build.</div>
         </div>
 
@@ -8447,7 +8448,7 @@ function getOrCreateDriveFolder(token, callback) {
     return;
   }
   const searchXhr = new XMLHttpRequest();
-  const query = encodeURIComponent("name = 'Instructor Essentials' and mimeType = 'application/vnd.google-apps.folder' and trashed = false");
+  const query = encodeURIComponent("(name = 'Instructors\\' Toolkit' or name = 'Instructor Essentials') and mimeType = 'application/vnd.google-apps.folder' and trashed = false");
   searchXhr.open('GET', 'https://www.googleapis.com/drive/v3/files?q=' + query + '&fields=files(id,name)');
   searchXhr.setRequestHeader('Authorization', 'Bearer ' + token);
   searchXhr.onload = function() {
@@ -8494,14 +8495,14 @@ function createDriveFolder(token, callback) {
         callback(e);
       }
     } else {
-      callback(new Error('Failed to create Instructor Essentials folder in Google Drive: ' + xhr.statusText));
+      callback(new Error('Failed to create Instructors\' Toolkit folder in Google Drive: ' + xhr.statusText));
     }
   };
   xhr.onerror = function() {
     callback(new Error('Network error creating Google Drive folder'));
   };
   xhr.send(JSON.stringify({
-    name: 'Instructor Essentials',
+    name: "Instructors' Toolkit",
     mimeType: 'application/vnd.google-apps.folder'
   }));
 }
@@ -8654,7 +8655,7 @@ function renderCloudBuildsList() {
       cloudListEl.innerHTML = `
         <div class="empty-library">
           <p>No exam builds saved in Google Drive yet.</p>
-          <p class="empty-sub">Saved builds in your "Instructor Essentials" folder will appear here.</p>
+          <p class="empty-sub">Saved builds in your "Instructors' Toolkit" folder will appear here.</p>
         </div>
       `;
       return;
@@ -9499,7 +9500,7 @@ function initEvents() {
     els.tabBtnLibraryLocal.classList.add('btn--secondary');
     if (els.savedBuildsList) els.savedBuildsList.style.display = 'none';
     if (els.cloudBuildsList) els.cloudBuildsList.style.display = 'block';
-    if (els.libraryTabDesc) els.libraryTabDesc.textContent = 'Exam builds saved in your personal Google Drive ("Instructor Essentials" folder).';
+    if (els.libraryTabDesc) els.libraryTabDesc.textContent = 'Exam builds saved in your personal Google Drive ("Instructors\' Toolkit" folder).';
     renderCloudBuildsList();
   });
 
@@ -9906,7 +9907,7 @@ function initEvents() {
     const keyCsv = keyRows.join('\n') + '\n';
 
     const readme = `EXAM PACKAGE: ${state.layout.title || baseId}
-Generated by Instructor Essentials — Sheet Builder
+Generated by Instructors' Toolkit — Sheet Builder
 
 CONTENTS:
 1. exam_sheet.html & exam_sheet.svg

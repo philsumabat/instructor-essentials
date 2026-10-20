@@ -179,12 +179,11 @@ test('Sheet Builder: New Sheet Workspace Clearing and Shared Google Auth', async
 test('Unified Home Portal: home.html structure, single Google login, and tool launchers', async () => {
   const homeHtml = await readFile(resolve(root, 'builder/home.html'), 'utf8');
   const docsHome = await readFile(resolve(root, 'docs/home.html'), 'utf8');
-  const desktopHome = await readFile(resolve(root, 'apps/desktop/ui/home.html'), 'utf8');
+  const docsIndex = await readFile(resolve(root, 'docs/index.html'), 'utf8');
 
-  // 1. Verify synchronization across builder, docs, and desktop UI
+  // 1. Verify synchronization across builder and docs
   assert.equal(docsHome, homeHtml, 'docs/home.html must match builder/home.html');
-  assert.ok(desktopHome.includes('nav-btn-home'), 'apps/desktop/ui/home.html has nav-btn-home');
-  assert.ok(desktopHome.includes('desktop.js'), 'apps/desktop/ui/home.html includes desktop.js');
+  assert.equal(docsIndex, homeHtml, 'docs/index.html must match builder/home.html');
 
   // 2. Verify Single Google Sign-In elements
   assert.ok(homeHtml.includes('id="btn-google-login"'), 'Google login button present');

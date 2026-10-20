@@ -1,6 +1,6 @@
-# Deploying Instructor Essentials to GitHub Pages
+# Deploying Instructors' Toolkit to GitHub Pages
 
-GitHub Pages hosts the zero-dependency, client-side web application suite of **Instructor Essentials**:
+GitHub Pages hosts the zero-dependency, client-side web application suite of **Instructors' Toolkit**:
 
 1. **`sheet-builder` (`index.html` / `studio.html`)**: The visual exam sheet designer, millimeter layout engine, and template generator.
 2. **`checker` (`checker.html`)**: The complete in-browser Optical Mark Recognition (OMR) grading studio, student roster matcher, interactive sheet inspector, psychometrics dashboard with Bloom's taxonomy analysis, and offline session manager.
@@ -54,7 +54,7 @@ Choose either **Option 1 (GitHub Actions)** or **Option 2 (Branch `/docs` folder
 
 ### Option 1: Automated Deployment via GitHub Actions (Recommended)
 
-Instructor Essentials provides a ready-to-use GitHub Actions workflow template in [`docs/deploy-pages.yml.example`](deploy-pages.yml.example). Copy this file to `.github/workflows/deploy-pages.yml` in your repository to automatically compile and stage both `sheet-builder` and `checker` on every push to the `main` branch.
+Instructors' Toolkit provides a ready-to-use GitHub Actions workflow template in [`docs/deploy-pages.yml.example`](deploy-pages.yml.example). Copy this file to `.github/workflows/deploy-pages.yml` in your repository to automatically compile and stage both `sheet-builder` and `checker` on every push to the `main` branch.
 
 #### Setup Steps:
 1. Open your repository on GitHub.
@@ -65,10 +65,11 @@ Instructor Essentials provides a ready-to-use GitHub Actions workflow template i
    ```
 4. Push a commit to the `main` branch, or trigger the workflow manually:
    - Go to the **Actions** tab in your repository.
-   - Click **Deploy Instructor Essentials to GitHub Pages** in the left sidebar.
+   - Click **Deploy Instructors' Toolkit to GitHub Pages** in the left sidebar.
    - Click **Run workflow** > select branch `main` > **Run workflow**.
 5. Once completed, your live site URLs will be active:
-   - **Sheet Builder**: `https://<username>.github.io/<repository>/` (or `/studio.html`)
+   - **Home Portal**: `https://<username>.github.io/<repository>/`
+   - **Sheet Builder**: `https://<username>.github.io/<repository>/builder.html`
    - **Checker Studio**: `https://<username>.github.io/<repository>/checker.html`
 
 ---
@@ -77,8 +78,9 @@ Instructor Essentials provides a ready-to-use GitHub Actions workflow template i
 
 If you prefer deploying directly from a branch folder without GitHub Actions:
 
-Instructor Essentials automatically maintains synchronized, self-contained standalone builds in the [`docs/`](.) folder:
-- [`docs/index.html`](index.html) — Sheet Builder
+Instructors' Toolkit automatically maintains synchronized, self-contained standalone builds in the [`docs/`](.) folder:
+- [`docs/index.html`](index.html) — Home Portal
+- [`docs/builder.html`](builder.html) — Sheet Builder
 - [`docs/checker.html`](checker.html) — Checker Studio
 - [`docs/.nojekyll`](.nojekyll) — Disables Jekyll processing
 

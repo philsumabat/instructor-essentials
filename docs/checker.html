@@ -3,9 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Instructor Essentials — Checker Studio</title>
-  <meta name="description" content="Instructor Essentials — In-Browser OMR Exam Grading & Psychometrics">
-  <meta name="application-name" content="Instructor Essentials">
+  <title>Instructors' Toolkit — Checker Studio</title>
+  <meta name="description" content="Instructors' Toolkit — In-Browser OMR Exam Grading & Psychometrics">
+  <meta name="application-name" content="Instructors' Toolkit">
   <style>
     :root {
       color-scheme: light dark;
@@ -1886,14 +1886,15 @@
         </svg>
       </div>
       <div class="app-brand__title-wrap">
-        <h1 class="app-brand__title">Instructor Essentials</h1>
+        <h1 class="app-brand__title">Instructors' Toolkit</h1>
+        <span class="app-brand__badge">Checker Studio</span>
       </div>
       <nav class="workflow-nav" aria-label="Workflow switcher">
         <a href="home.html" class="workflow-nav__item" id="nav-btn-home">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
           <span>Home</span>
         </a>
-        <a href="index.html" class="workflow-nav__item" id="nav-btn-builder">
+        <a href="builder.html" class="workflow-nav__item" id="nav-btn-builder">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
           <span>Sheet Builder</span>
         </a>
@@ -2956,7 +2957,7 @@
               </svg>
               <div>
                 <h3 style="margin: 0; font-size: 1.1rem; font-weight: 700; color: var(--text);">Saved in Google Account</h3>
-                <div id="cloud-tab-status-text" style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.2rem;">All exam builds, packages, and grading sessions automatically saved in your personal Google Drive ("Instructor Essentials" folder).</div>
+                <div id="cloud-tab-status-text" style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.2rem;">All exam builds, packages, and grading sessions automatically saved in your personal Google Drive ("Instructors' Toolkit" folder).</div>
               </div>
             </div>
             <div id="cloud-tab-auth-actions" style="display: flex; gap: 0.5rem; align-items: center;">
@@ -3162,7 +3163,7 @@
     <!-- Body when NOT connected -->
     <div id="gdrive-view-disconnected" style="padding: 1.35rem 1.4rem; display: flex; flex-direction: column; gap: 1rem;">
       <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin: 0;">
-        Sign in with your VSU Google account (<strong>@vsu.edu.ph</strong>) to automatically save your exam grading sessions, answer keys, and builds directly to your personal Google Drive in an <strong>"Instructor Essentials"</strong> folder. 100% free, private to your account, and with zero external server tracking.
+        Sign in with your VSU Google account (<strong>@vsu.edu.ph</strong>) to automatically save your exam grading sessions, answer keys, and builds directly to your personal Google Drive in an <strong>"Instructors' Toolkit"</strong> folder. 100% free, private to your account, and with zero external server tracking.
       </p>
 
       <div style="display: flex; gap: 0.5rem; justify-content: flex-end; align-items: center; margin-top: 0.25rem;">
@@ -3198,7 +3199,7 @@
       </div>
 
       <div style="font-size: 0.82rem; color: var(--text); display: flex; flex-direction: column; gap: 0.5rem;">
-        <div><strong>Google Drive Target:</strong> Folder <code style="padding: 0.15rem 0.35rem; background: var(--panel-alt); border-radius: var(--radius-xs);">Instructor Essentials</code></div>
+        <div><strong>Google Drive Target:</strong> Folder <code style="padding: 0.15rem 0.35rem; background: var(--panel-alt); border-radius: var(--radius-xs);">Instructors' Toolkit</code></div>
         <div style="font-size: 0.74rem; color: var(--text-muted);">Graded sessions and answer keys can be uploaded and restored directly from Google Drive.</div>
       </div>
 
@@ -4236,7 +4237,7 @@
               contentEl.innerHTML = `
                 <div style="text-align: center; padding: 2.5rem 1rem; color: var(--text-muted);">
                   <div style="font-weight: 700; font-size: 0.95rem; color: var(--text); margin-bottom: 0.35rem;">No Cloud Builds Found</div>
-                  <p style="font-size: 0.8rem; margin: 0 auto;">No saved builds or sessions found in your Google Drive "Instructor Essentials" folder.</p>
+                  <p style="font-size: 0.8rem; margin: 0 auto;">No saved builds or sessions found in your Google Drive "Instructors' Toolkit" folder.</p>
                 </div>
               `;
               return;
@@ -10313,7 +10314,7 @@
 </head>
 <body>
   <h1>Assessment & Psychometrics Report</h1>
-  <div class="subtitle">${escapeHtml(state.key?.title || 'Assessment')} &bull; Generated by Instructor Essentials &bull; ${new Date().toLocaleDateString(undefined, { dateStyle: 'long' })}</div>
+  <div class="subtitle">${escapeHtml(state.key?.title || 'Assessment')} &bull; Generated by Instructors' Toolkit &bull; ${new Date().toLocaleDateString(undefined, { dateStyle: 'long' })}</div>
 
   <div class="metrics">
     <div class="metric"><span>Total Graded</span><b>${totalN}</b><small>Completed student scans</small></div>
@@ -10681,7 +10682,7 @@
               if (typeof updateGoogleSyncStatus === 'function') updateGoogleSyncStatus('error', err.message);
             } else {
               if (typeof updateGoogleSyncStatus === 'function') updateGoogleSyncStatus('synced', `Synced to Google Drive (${file?.name || 'session'})`);
-              showToast('✓ Progress synced to Google Drive ("Instructor Essentials")');
+              showToast('✓ Progress synced to Google Drive ("Instructors\' Toolkit")');
             }
           });
         } else {
@@ -11353,7 +11354,7 @@
         return;
       }
       const searchXhr = new XMLHttpRequest();
-      const query = encodeURIComponent("name = 'Instructor Essentials' and mimeType = 'application/vnd.google-apps.folder' and trashed = false");
+      const query = encodeURIComponent("(name = 'Instructors\\' Toolkit' or name = 'Instructor Essentials') and mimeType = 'application/vnd.google-apps.folder' and trashed = false");
       searchXhr.open('GET', 'https://www.googleapis.com/drive/v3/files?q=' + query + '&fields=files(id,name)');
       searchXhr.setRequestHeader('Authorization', 'Bearer ' + token);
       searchXhr.onload = function() {
@@ -11400,14 +11401,14 @@
             callback(e);
           }
         } else {
-          callback(new Error('Failed to create Instructor Essentials folder in Google Drive: ' + xhr.statusText));
+          callback(new Error('Failed to create Instructors\' Toolkit folder in Google Drive: ' + xhr.statusText));
         }
       };
       xhr.onerror = function() {
         callback(new Error('Network error creating Google Drive folder'));
       };
       xhr.send(JSON.stringify({
-        name: 'Instructor Essentials',
+        name: "Instructors' Toolkit",
         mimeType: 'application/vnd.google-apps.folder',
       }));
     }
@@ -11930,7 +11931,7 @@
           return;
         }
         if (!files || files.length === 0) {
-          listEl.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 0.5rem;">No saved sessions found in "Instructor Essentials" folder.</div>';
+          listEl.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 0.5rem;">No saved sessions found in "Instructors\' Toolkit" folder.</div>';
           return;
         }
         listEl.innerHTML = '';
@@ -11983,7 +11984,7 @@
         if (loginBtn) loginBtn.style.display = 'inline-flex';
         if (refreshBtn) refreshBtn.style.display = 'none';
         if (logoutBtn) logoutBtn.style.display = 'none';
-        if (statusText) statusText.textContent = 'All exam builds, packages, and grading sessions automatically saved in your personal Google Drive ("Instructor Essentials" folder).';
+        if (statusText) statusText.textContent = 'All exam builds, packages, and grading sessions automatically saved in your personal Google Drive ("Instructors\' Toolkit" folder).';
         container.innerHTML = `
           <div style="text-align: center; padding: 3rem 1.5rem; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text-muted);">
             <svg class="google-icon" width="40" height="40" viewBox="0 0 24 24" style="margin: 0 auto 0.75rem auto; display: block;">
@@ -12006,7 +12007,7 @@
       if (loginBtn) loginBtn.style.display = 'none';
       if (refreshBtn) refreshBtn.style.display = 'inline-flex';
       if (logoutBtn) logoutBtn.style.display = 'inline-flex';
-      if (statusText) statusText.textContent = `Connected as ${googleDriveState.user?.email || googleDriveState.user?.name || 'Google User'}. Files saved in "Instructor Essentials" folder.`;
+      if (statusText) statusText.textContent = `Connected as ${googleDriveState.user?.email || googleDriveState.user?.name || 'Google User'}. Files saved in "Instructors' Toolkit" folder.`;
 
       container.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--text-muted);">Loading files from Google Drive...</div>';
 

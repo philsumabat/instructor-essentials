@@ -48,10 +48,16 @@ test('standalone studio.html is 100% self-contained with valid IIFE closures and
   assert.match(scriptContent, /const\s+Templates\s*=\s*\(function\(\)/);
 });
 
-test('docs/index.html is synchronized for 1-click GitHub Pages deployment', async () => {
+test('docs/builder.html is synchronized for 1-click Sheet Builder deployment', async () => {
   const studioHtml = await readFile(resolve(root, 'builder/studio.html'), 'utf8');
-  const docsHtml = await readFile(resolve(root, 'docs/index.html'), 'utf8');
-  assert.equal(docsHtml, studioHtml, 'docs/index.html must match builder/studio.html exactly');
+  const docsBuilderHtml = await readFile(resolve(root, 'docs/builder.html'), 'utf8');
+  assert.equal(docsBuilderHtml, studioHtml, 'docs/builder.html must match builder/studio.html exactly');
+});
+
+test('docs/index.html is synchronized as Home Portal for GitHub Pages root', async () => {
+  const homeHtml = await readFile(resolve(root, 'builder/home.html'), 'utf8');
+  const docsHomeHtml = await readFile(resolve(root, 'docs/index.html'), 'utf8');
+  assert.equal(docsHomeHtml, homeHtml, 'docs/index.html must match builder/home.html exactly');
 });
 
 test('docs/checker.html is 100% self-contained and synchronized for client-side GitHub Pages OMR', async () => {

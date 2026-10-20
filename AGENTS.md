@@ -2,7 +2,7 @@
 
 ## Project context
 
-This is an instructor-led project. The maintainer is an instructor who understands classroom needs and can describe how they want the tool to work, but does not claim expertise in software engineering, computer vision, OCR, or psychometrics. Treat classroom requirements as the product source of truth. Treat technical approaches and assessment interpretations as proposals to explain, investigate, and validate—not as established expert conclusions.
+**Instructors' Toolkit** is an instructor-led assessment suite providing browser-based OMR exam sheet design, automated camera grading, and psychometric analytics. The maintainer is an instructor who understands classroom needs and can describe how they want the tool to work, but does not claim expertise in software engineering, computer vision, OCR, or psychometrics. Treat classroom requirements as the product source of truth. Treat technical approaches and assessment interpretations as proposals to explain, investigate, and validate—not as established expert conclusions.
 
 When proposing or making changes:
 
@@ -12,6 +12,12 @@ When proposing or making changes:
 - For engine changes, describe how behavior will be evaluated and identify important failure cases.
 - Preserve the requirement that core features remain free and usable without paid services or accounts.
 - Prefer incremental, reviewable changes that fit the existing project unless evidence supports a larger redesign.
+
+## Mandatory Deployment & Git Workflow
+
+- **Always Commit and Push for Deployment**: Immediately after completing and verifying any requested change (all automated tests passing and build bundles synchronized via `npm run build:studio`), you **MUST ALWAYS** stage all changes (`git add -A`), create a clear conventional commit (`git commit -m "..."`), and push directly to GitHub (`git push origin main`) using `BypassSandbox: true`.
+- **Never Leave Changes Unpushed**: Do not leave changes unstaged, uncommitted, or unpushed in the local repository. The maintainer relies on GitHub Pages for live web deployment, so every confirmed modification must be pushed directly to `main`.
+- **Keep Standalone Bundles Synchronized**: Always run `npm run build:studio` prior to committing so that `docs/index.html` (Home Portal), `docs/builder.html` (Sheet Builder), and `docs/checker.html` (Checker Studio) are updated for GitHub Pages.
 
 ## Project references
 

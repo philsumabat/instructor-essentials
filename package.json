@@ -1,9 +1,9 @@
 {
-  "name": "instructor-essentials",
+  "name": "instructors-toolkit",
   "version": "1.0.0",
   "license": "MIT",
   "private": true,
-  "description": "Instructor Essentials: Sheet Builder (browser OMR designer) & Checker (OpenCV grading pipeline)",
+  "description": "Instructors' Toolkit: Unified web suite for OMR exam sheet design, automated camera grading, and psychometric analytics.",
   "type": "module",
   "engines": {
     "node": ">=20"

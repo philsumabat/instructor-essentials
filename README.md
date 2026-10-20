@@ -1,8 +1,8 @@
-# Instructor Essentials — Optical Mark Recognition (OMR) & Assessment Suite
+# Instructors' Toolkit — Optical Mark Recognition (OMR) & Assessment Suite
 
 An end-to-end, millimeter-accurate Optical Mark Recognition (OMR) and document assessment system operating on standard camera photos and flatbed scanner images (JPEG, PNG).
 
-Instructor Essentials is architected into two core pillars:
+Instructors' Toolkit is architected into two core pillars:
 1. **`sheet-builder`**: The browser-based visual exam sheet designer, millimeter layout engine, and zero-CORS standalone HTML editor.
 2. **`checker`**: The computer vision OMR grading pipeline, OCR engine, psychometrics analyzer, in-browser Checker Studio (`docs/checker.html`), local CLI runner, and optional cloud web app (Hugging Face Spaces).
 
@@ -10,7 +10,7 @@ Instructor Essentials is architected into two core pillars:
 
 ## Project Perspective
 
-Instructor Essentials is led by an instructor and shaped by practical classroom needs. The maintainer is not presenting themself as a software engineering, computer vision, OCR, or psychometrics expert. Technical methods and assessment interpretations in this project are implementation choices and areas for continued validation; they should not be read as expert-certified conclusions. The goal is to build a useful, free tool and make its assumptions and limitations understandable.
+Instructors' Toolkit is led by an instructor and shaped by practical classroom needs. The maintainer is not presenting themself as a software engineering, computer vision, OCR, or psychometrics expert. Technical methods and assessment interpretations in this project are implementation choices and areas for continued validation; they should not be read as expert-certified conclusions. The goal is to build a useful, free tool and make its assumptions and limitations understandable.
 
 For AI coding agents and contributors, start with [`AGENTS.md`](AGENTS.md). It links to the [prioritized roadmap](ROADMAP.md), [engineering decisions and detailed architecture](DECISIONS.md), and this project overview. The current architecture overview lives in this README and the detailed specification is in `DECISIONS.md`.
 
@@ -18,7 +18,7 @@ For AI coding agents and contributors, start with [`AGENTS.md`](AGENTS.md). It l
 
 ## 🔒 Privacy, Security & Operating Modes
 
-Instructor Essentials is designed to give instructors complete control over student data privacy and hosting costs:
+Instructors' Toolkit is designed to give instructors complete control over student data privacy and hosting costs:
 
 | Mode | Where Code Runs | Where Data Goes | Network / Account Required | Best For |
 | :--- | :--- | :--- | :--- | :--- |
@@ -88,7 +88,7 @@ flowchart TD
 
 ## Reference Exam Templates
 
-Instructor Essentials includes 5 canonical exam templates covering standard classroom formats:
+Instructors' Toolkit includes 5 canonical exam templates covering standard classroom formats:
 
 | Template | Path | Paper Size | Capacity & Format | Features |
 | :--- | :--- | :--- | :--- | :--- |

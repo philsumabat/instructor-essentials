@@ -532,6 +532,34 @@ flowchart TD
 
 ---
 
+## Decision 40: Web-Only Focus, Instructors' Toolkit Rebranding, and Unified Navigation Flow
+
+- **Date:** October 20, 2026
+- **Status:** Accepted & Deployed
+
+### Context
+The user requested removing the desktop application layer (`apps/desktop/` with Tauri and Rust harness) to concentrate 100% of engineering effort on the browser web application. The suite was also rebranded from "Instructor Essentials" to **"Instructors' Toolkit"**, with continuous navigation across all pages (Home, Sheet Builder, Checker Studio) and an explicit mandatory deployment rule in `AGENTS.md`.
+
+### Architecture Decisions
+1. **Desktop App Deprecation**:
+   - Completely deleted `apps/desktop/` and associated desktop test suites.
+   - Removed `"apps/desktop"` from workspace members in `Cargo.toml`.
+   - Stripped all desktop-specific synchronization routines from `scripts/build-standalone-studio.mjs`.
+2. **Rebranding to Instructors' Toolkit**:
+   - Renamed `package.json` to `"instructors-toolkit"`.
+   - Renamed `pyproject.toml` to `"instructors-toolkit"`.
+   - Updated document titles, meta tags, headers, and UI strings across `builder/home.html`, `builder/index.html`, and `builder/checker.html`.
+   - Updated Google Drive backup folder search query to locate either `Instructors' Toolkit` or legacy `Instructor Essentials` folders.
+3. **Continuous Workflow & Unified GitHub Pages Routing**:
+   - `docs/index.html` serves as the entrypoint **Home Portal** on GitHub Pages.
+   - `docs/builder.html` (and `docs/studio.html`) serves the **Sheet Builder**.
+   - `docs/checker.html` serves **Checker Studio**.
+   - All three pages share a standardized top navigation bar and shared Google Auth session (`localStorage`).
+4. **Mandatory Deployment Workflow**:
+   - Added an explicit rule in `AGENTS.md` requiring automated tests and bundle synchronization (`npm run build:studio`) followed by immediate staging, conventional committing, and pushing (`git push origin main`) via `BypassSandbox: true`.
+
+---
+
 ## 10. Verification & Test Commands
 
 Every change to the codebase must pass both JavaScript layout tests and Python unit/integration tests:

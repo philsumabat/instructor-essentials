@@ -341,11 +341,11 @@ def create_demo():
             "Gradio is not installed. Please install dependencies: pip install gradio"
         )
 
-    with gr.Blocks(css=CUSTOM_CSS, title="Instructor Essentials — OMR Exam Grading & Item Analysis") as demo:
+    with gr.Blocks(css=CUSTOM_CSS, title="Instructors' Toolkit — OMR Exam Grading & Item Analysis") as demo:
         gr.HTML(
             """
             <div class="app-header">
-                <h1>📝 Instructor Essentials — OMR Exam Grading & Item Analysis</h1>
+                <h1>📝 Instructors' Toolkit — OMR Exam Grading & Item Analysis</h1>
                 <p>
                     Turnkey cloud Optical Mark Recognition (OMR) grading pipeline with OpenCV ArUco registration,
                     automated roster mapping, and classical psychometric item analysis (difficulty index, point-biserial discrimination, Cronbach's α).

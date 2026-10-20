@@ -371,8 +371,6 @@ test('Feature 6: Asynchronous batch grading execution, UI progress updating, and
   // 2. Verified across standalone files
   const docsCheckerHtml = fs.readFileSync(path.join(rootDir, 'docs/checker.html'), 'utf8');
   assert.ok(docsCheckerHtml.includes('id="grading-progress-text"'), 'docs/checker.html contains grading-progress-text');
-  const desktopCheckerHtml = fs.readFileSync(path.join(rootDir, 'apps/desktop/ui/checker.html'), 'utf8');
-  assert.ok(desktopCheckerHtml.includes('id="grading-progress-text"'), 'apps/desktop/ui/checker.html contains grading-progress-text');
 
   // 3. Execution of async grading in VM sandbox
   const ctx = extractCheckerFunctions(checkerHtml);

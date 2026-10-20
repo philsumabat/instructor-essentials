@@ -1,4 +1,4 @@
-name: Deploy Instructor Essentials to GitHub Pages
+name: Deploy Instructors' Toolkit to GitHub Pages
 
 on:
   push:

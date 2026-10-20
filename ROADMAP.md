@@ -1,8 +1,8 @@
-# Instructor Essentials Product and Engine Roadmap
+# Instructors' Toolkit Product and Engine Roadmap
 
 ## Product direction
 
-Instructor Essentials should help an instructor move from a printable assessment to trustworthy, reviewable results with as little setup as possible. Keep the full product free: no paid feature gates, accounts, subscriptions, or required paid services.
+Instructors' Toolkit should help an instructor move from a printable assessment to trustworthy, reviewable results with as little setup as possible. Keep the full product free: no paid feature gates, accounts, subscriptions, or required paid services.
 
 ## Project perspective
 

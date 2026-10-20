@@ -2,16 +2,15 @@
 members = [
     "crates/grader-core",
     "crates/grader-cli",
-    "apps/desktop",
 ]
 resolver = "2"
 
 [workspace.package]
 version = "0.1.0"
 edition = "2021"
-authors = ["Instructor Essentials Contributors"]
+authors = ["Instructors' Toolkit Contributors"]
 license = "MIT"
-repository = "https://github.com/philsumabat/grader"
+repository = "https://github.com/philsumabat/instructor-essentials"
 
 [workspace.dependencies]
 serde = { version = "1.0", features = ["derive"] }

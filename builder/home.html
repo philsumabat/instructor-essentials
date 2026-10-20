@@ -3,10 +3,10 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Instructor Essentials — Portal &amp; Projects</title>
-  <meta name="description" content="Instructor Essentials — Unified portal for OMR exam sheet design, automated camera grading, and assessment analytics.">
-  <meta name="application-name" content="Instructor Essentials">
-  <meta name="apple-mobile-web-app-title" content="Instructor Essentials">
+  <title>Instructors' Toolkit — Home &amp; Projects</title>
+  <meta name="description" content="Instructors' Toolkit — Unified web suite for OMR exam sheet design, automated camera grading, and assessment analytics.">
+  <meta name="application-name" content="Instructors' Toolkit">
+  <meta name="apple-mobile-web-app-title" content="Instructors' Toolkit">
   <style>
     :root {
       --bg: #0b0f19;
@@ -521,7 +521,7 @@
   <!-- Header -->
   <header class="app-header">
     <div class="app-brand">
-      <a href="home.html" class="app-brand__main" aria-label="Instructor Essentials Home">
+      <a href="home.html" class="app-brand__main" aria-label="Instructors' Toolkit Home">
         <div class="app-brand__logo" aria-hidden="true">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
@@ -529,7 +529,7 @@
             <path d="m9 15 2 2 4-4"/>
           </svg>
         </div>
-        <h1 class="app-brand__title">Instructor Essentials</h1>
+        <h1 class="app-brand__title">Instructors' Toolkit</h1>
       </a>
 
       <nav class="workflow-nav" aria-label="Workflow switcher">
@@ -537,7 +537,7 @@
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
           <span>Home</span>
         </a>
-        <a href="index.html" class="workflow-nav__item" id="nav-btn-builder">
+        <a href="builder.html" class="workflow-nav__item" id="nav-btn-builder">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
           <span>Sheet Builder</span>
         </a>
@@ -577,10 +577,10 @@
   <main class="main-wrap">
     <!-- Hero Banner -->
     <section class="hero-banner">
-      <div class="hero-badge">Autonomous Assessment System</div>
+      <div class="hero-badge">Unified Web Assessment Suite</div>
       <h2 class="hero-title">Exam Designer, Camera Scanner &amp; Psychometrics</h2>
       <p class="hero-desc">
-        Welcome to Instructor Essentials. Design millimeter-accurate paper bubble sheets, grade camera scans with automatic OpenCV homography, or resume your current grading session.
+        Welcome to Instructors' Toolkit. Everything you need to design, print, and grade paper exams with 100% browser-based privacy, zero server dependencies, and psychometric insights.
       </p>
     </section>
 
@@ -607,16 +607,16 @@
         </div>
 
         <div class="tool-card__actions">
-          <a href="index.html" class="btn btn--primary" style="width: 100%; font-size: 0.9rem; padding: 0.6rem 1rem;">
+          <a href="builder.html" class="btn btn--primary" style="width: 100%; font-size: 0.9rem; padding: 0.6rem 1rem;">
             <span>Launch Sheet Builder</span>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"/></svg>
           </a>
           <div class="tool-card__sub-actions">
-            <a href="index.html?action=new" class="btn btn--secondary btn--sm">
+            <a href="builder.html?action=new" class="btn btn--secondary btn--sm">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
               <span>New Blank Sheet</span>
             </a>
-            <a href="index.html?action=generate" class="btn btn--secondary btn--sm">
+            <a href="builder.html?action=generate" class="btn btn--secondary btn--sm">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
               <span>Quick Generator</span>
             </a>
@@ -695,7 +695,7 @@
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/></svg>
               <span>Saved Sheet Builds</span>
             </div>
-            <a href="index.html" class="btn btn--secondary btn--xs">Design New</a>
+            <a href="builder.html" class="btn btn--secondary btn--xs">Design New</a>
           </div>
 
           <div class="build-list" id="saved-builds-container">
@@ -936,7 +936,7 @@
               <div class="build-item__meta">${paper} • ${dateStr || 'Saved'}</div>
             </div>
             <div style="display: flex; gap: 0.35rem;">
-              <a href="index.html" class="btn btn--secondary btn--xs" title="Open and edit build in Sheet Builder">Edit</a>
+              <a href="builder.html" class="btn btn--secondary btn--xs" title="Open and edit build in Sheet Builder">Edit</a>
             </div>
           </div>
         `;

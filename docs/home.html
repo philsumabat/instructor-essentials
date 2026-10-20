@@ -982,7 +982,7 @@
     $('btn-clear-all-workspaces')?.addEventListener('click', clearAllWorkspaces);
 
     window.addEventListener('storage', (e) => {
-      if (e.key === 'instructor_google_token' || e.key === 'instructor_google_user') {
+      if (e.key === 'instructor_google_token' || e.key === 'instructor_google_user' || e.key === 'toolkit_google_auth') {
         updateAuthUI();
       }
       if (e.key === PROGRESS_STORAGE_KEY) {

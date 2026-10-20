@@ -4771,7 +4771,7 @@ async function init() {
   // Cross-tab synchronization for Google Auth and Saved Builds
   if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
     window.addEventListener('storage', (e) => {
-      if (e.key === 'instructor_google_token' || e.key === 'instructor_google_user') {
+      if (e.key === 'instructor_google_token' || e.key === 'instructor_google_user' || e.key === 'toolkit_google_auth') {
         restoreGoogleAuthState();
       }
     });

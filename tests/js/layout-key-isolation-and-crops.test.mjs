@@ -134,7 +134,12 @@ async function loadCheckerSandbox() {
     setTimeout: (fn) => fn(),
     clearTimeout: () => {},
     Promise,
-    Date
+    Date,
+    FileReader: class MockFileReader {
+      readAsArrayBuffer() {
+        if (this.onload) this.onload({ target: { result: new ArrayBuffer(0) } });
+      }
+    }
   };
 
   sandbox.HTMLImageElement = sandbox.Image;
@@ -411,3 +416,86 @@ test('9. Warping Mitigation: Multi-fiducial 6-point registration documented in d
   assert.ok(decisions.includes('Decision 41:'), 'Decision 41 documented in DECISIONS.md');
   assert.ok(decisions.includes('6-Point Midline Lateral Fiducials Recommendation for Sheet Warping'), 'Fiducial recommendation in Decision 41');
 });
+
+test('10. Layout Key Isolation: ZIP package with answer_key_template.csv does not load fake answer key', async () => {
+  const { context } = await loadCheckerSandbox();
+
+  context.state.key = null;
+  context.state.layout = null;
+
+  // Mock readZipFiles to return layout.json and answer_key_template.csv (the default dummy template)
+  context.readZipFiles = () => [
+    {
+      name: 'layout.json',
+      text: () => JSON.stringify({
+        title: 'Quiz 101',
+        paper: 'A4',
+        bubbles: [{ item: '1', choice: 'A', center: [20, 30], radius: 2.1 }]
+      })
+    },
+    {
+      name: 'answer_key_template.csv',
+      text: () => 'item,answer,points\n1,A,1.0\n'
+    }
+  ];
+
+  context.handleLayoutUpload({ name: 'Quiz_101.package.zip' });
+
+  assert.ok(context.state.layout, 'Layout must be parsed from ZIP');
+  assert.equal(context.state.key, null, 'state.key must NOT be populated with answer_key_template.csv');
+});
+
+test('11. Horizontal Grading ROIs & Crop Caching: getHorizontalGradingItems preserves key/id/role and populates cropDataUrl', async () => {
+  const { context } = await loadCheckerSandbox();
+
+  const mockLayout = {
+    title: 'Short Answer Exam',
+    rois: [
+      { id: 'q1', key: 'q1', graded: true, type: 'text_short', x: 10, y: 20, w: 50, h: 15, prompt: 'Define mitosis' }
+    ]
+  };
+
+  const items = context.getHorizontalGradingItems(mockLayout, null);
+  assert.equal(items.length, 1);
+  assert.equal(items[0].key, 'q1');
+  assert.ok(items[0].roi, 'ROI must exist');
+  assert.equal(items[0].roi.key, 'q1', 'ROI must preserve key');
+  assert.equal(items[0].roi.id, 'q1', 'ROI must preserve id');
+
+  // Test cropROIFromScan populating grade.gradedItems['q1'].cropDataUrl
+  const mockGrade = {
+    scanImg: {
+      width: 840,
+      height: 1188,
+      complete: true
+    },
+    gradedItems: {
+      'q1': {
+        status: 'unreviewed',
+        expected: 'Cell division'
+      }
+    }
+  };
+
+  let toDataURLCalled = false;
+  const mockCanvas = {
+    width: 200,
+    height: 50,
+    getContext: () => ({
+      fillRect: () => {},
+      drawImage: () => {},
+      getImageData: () => ({ data: new Uint8ClampedArray(200 * 50 * 4) }),
+      putImageData: () => {}
+    }),
+    toDataURL: () => {
+      toDataURLCalled = true;
+      return 'data:image/jpeg;base64,extractedCropQ1';
+    }
+  };
+
+  context.cropROIFromScan(mockGrade, items[0].roi, mockCanvas);
+
+  assert.ok(toDataURLCalled, 'toDataURL must be called to cache crop');
+  assert.equal(mockGrade.gradedItems['q1'].cropDataUrl, 'data:image/jpeg;base64,extractedCropQ1', 'cropDataUrl must be cached on gradedItem');
+});
+

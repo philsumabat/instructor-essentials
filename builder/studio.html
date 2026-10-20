@@ -2912,6 +2912,10 @@ dialog.modal-dialog--answer-key {
   background: color-mix(in srgb, #34A853 10%, var(--panel)) !important;
   color: var(--text) !important;
 }
+.btn-google-drive .google-sync-indicator,
+.btn-google-drive .google-status-dot {
+  display: none !important;
+}
 .google-status-badge {
   position: absolute;
   bottom: -3px;
@@ -6036,7 +6040,7 @@ function attachFloatingToolbar(zEl, idx) {
     <button type="button" class="btn-zone-up" title="Move Up" ${idx === 0 ? 'disabled' : ''}>▲</button>
     <button type="button" class="btn-zone-down" title="Move Down" ${idx === state.template.zones.length - 1 ? 'disabled' : ''}>▼</button>
     <button type="button" class="btn-zone-dup" title="Duplicate">⧉</button>
-    <button type="button" class="btn-zone-del is-delete" title="Delete">🗑</button>
+    <button type="button" class="btn-zone-del is-delete" title="Delete"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
   `;
 
   toolbar.querySelector('.btn-zone-up')?.addEventListener('click', (e) => {
@@ -6245,7 +6249,7 @@ function attachSvgZoneInteractions(scaler, svgEl, layout) {
           <button type="button" class="btn-zone-up" title="Move Up" ${idx === 0 ? 'disabled' : ''}>▲</button>
           <button type="button" class="btn-zone-down" title="Move Down" ${idx === state.template.zones.length - 1 ? 'disabled' : ''}>▼</button>
           <button type="button" class="btn-zone-dup" title="Duplicate">⧉</button>
-          <button type="button" class="btn-zone-del is-delete" title="Delete">🗑</button>
+          <button type="button" class="btn-zone-del is-delete" title="Delete"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
         `;
 
         toolbar.querySelector('.btn-zone-up')?.addEventListener('click', (e) => {
@@ -7834,7 +7838,7 @@ function renderAnswerKeyModalContent() {
     discrepancyHtml = `
       <div class="key-discrepancy-banner" id="key-discrepancy-banner">
         <div>
-          <span style="font-weight: 700;">⚠️ Exam Sheet &amp; Key Discrepancy:</span>
+          <span style="font-weight: 700; display: inline-flex; align-items: center; gap: 0.3rem;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--warning);"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Exam Sheet &amp; Key Discrepancy:</span>
           <span>${msg}</span>
         </div>
         <button type="button" class="btn btn--secondary btn-xs" id="btn-sync-key-sheet" title="Auto-fill default answers for all sheet questions and remove orphaned items">
@@ -8287,7 +8291,7 @@ function updateGoogleSyncStatus(status, tooltip = '') {
   } else if (status === 'error') {
     syncBadge.style.display = 'inline-flex';
     syncBadge.classList?.add?.('is-error');
-    syncBadge.innerHTML = 'Sync Error ⚠';
+    syncBadge.innerHTML = 'Sync Error';
     syncBadge.title = tooltip || 'Google Drive sync failed';
   } else {
     syncBadge.style.display = 'none';

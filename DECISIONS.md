@@ -428,7 +428,7 @@ flowchart LR
   2. **Dedicated Live Sync Indicator (`#google-drive-sync-indicator`)**: Added a pill badge directly inside `#btn-google-drive` that reacts to sync state in real time:
      - `Syncing...` (`.is-syncing`): Displays a subtle pulsing dot during network uploads to Google Drive.
      - `Synced ✓` (`.is-synced`): Displays an emerald check badge with timestamp tooltip once the session or build JSON is written to Drive.
-     - `Sync Error ⚠` (`.is-error`): Displays an amber/red warning badge if an upload fails, prompting token renewal if expired.
+     - `Sync Error` (`.is-error`): Displays an amber/red warning badge if an upload fails, prompting token renewal if expired.
   3. **Seamless Background Auto-Sync**: In `saveCheckerProgress` (Checker Studio) and `saveBuildToLibrary` (Sheet Builder), automatically triggers background sync to the `Instructor Essentials` folder on Google Drive, debounced by 2.5–3.5s to prevent API spam while resolving flags in the Review Queue.
   4. **Preserved Zero-Cost & Offline Guarantees**: Retained 100% offline capability with local browser storage and `.grader.progress.json` / `.sheet.json` file downloads, ensuring the application remains fully functional without an internet connection or Google account.
 

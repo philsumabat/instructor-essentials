@@ -2310,7 +2310,7 @@
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
             </div>
             <div>
-              <div style="font-weight: 700; font-size: 0.88rem; color: var(--text);" id="summary-review-callout-title">⚠️ 0 students need review (e.g. blank responses or unverified IDs).</div>
+              <div style="font-weight: 700; font-size: 0.88rem; color: var(--text);" id="summary-review-callout-title">0 students need review (e.g. blank responses or unverified IDs).</div>
               <div style="font-size: 0.76rem; color: var(--text-muted);" id="summary-review-callout-sub">Some sheets have blank responses, multiple marks, or unverified IDs.</div>
             </div>
           </div>
@@ -4455,6 +4455,8 @@
         const embeddedKey = rawJson.key || rawJson.answerKey || rawJson.template?.key || rawJson.template?.answerKey;
         if (embeddedKey) {
           state.key = parseAnswerKey(embeddedKey);
+        } else {
+          state.key = null;
         }
 
         updateLayoutDisplay(rawJson.title || sourceName);
@@ -4499,12 +4501,11 @@
             }
             const json = JSON.parse(layoutFile.text());
 
-            // Check if ZIP includes an answer key (JSON or CSV), prioritizing actual keys over templates
+            // Check if ZIP includes an authentic answer key (JSON or CSV), strictly ignoring blank templates
             const keyJsonFile = files.find(f => f.name === 'answer_key.json' || f.name === 'key.json')
-              || files.find(f => f.name.endsWith('.key.json') || f.name.endsWith('_key.json'));
+              || files.find(f => (f.name.endsWith('.key.json') || f.name.endsWith('_key.json')) && !f.name.toLowerCase().includes('template'));
             const keyCsvFile = files.find(f => f.name === 'answer_key.csv' || f.name === 'key.csv')
-              || files.find(f => f.name.endsWith('.key.csv') || f.name.endsWith('_key.csv'))
-              || files.find(f => f.name === 'answer_key_template.csv');
+              || files.find(f => (f.name.endsWith('.key.csv') || f.name.endsWith('_key.csv')) && f.name.toLowerCase() !== 'answer_key_template.csv' && !f.name.toLowerCase().includes('template'));
             const templateFile = files.find(f => f.name === 'template.json');
 
             let zipKey = null;
@@ -5524,7 +5525,7 @@
         discrepancyHtml = `
           <div class="key-discrepancy-banner">
             <div>
-              <span style="font-weight: 700;">⚠️ Layout &amp; Key Discrepancy:</span>
+              <span style="font-weight: 700; display: inline-flex; align-items: center; gap: 0.3rem;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--warning);"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Layout &amp; Key Discrepancy:</span>
               <span>${msg}</span>
             </div>
             <button type="button" class="btn btn--secondary btn-xs" id="btn-sync-key-sheet" title="Auto-fill default answers for all sheet questions and remove orphaned items">
@@ -6888,7 +6889,15 @@
             type: roi.role === 'correction' ? 'correction' : (roi.multiline ? 'essay' : 'short_answer'),
             expected: keyItem?.answer || 'Sample Answer',
             rubric: roi.charset === 'digits' ? 'Exact digits' : 'Instructor review / keywords',
-            roi: roi.x != null ? { x: roi.x, y: roi.y, w: roi.w, h: roi.h } : null
+            roi: roi.x != null ? {
+              x: roi.x,
+              y: roi.y,
+              w: roi.w,
+              h: roi.h,
+              key: String(roi.key || roi.id),
+              id: String(roi.id || roi.key),
+              role: roi.role
+            } : null
           });
         }
       }
@@ -7118,7 +7127,7 @@
     window.findStudentNameROI = findStudentNameROI;
 
     // Crop ROI from rectified scan image into HTMLCanvasElement (with Stage 4 wall stripping)
-    function cropROIFromScan(grade, roi, destCanvas) {
+    function cropROIFromScan(grade, roi, destCanvas, optionalKey = null) {
       if (!grade || !roi || !destCanvas || typeof destCanvas.getContext !== 'function') return;
       const pxPerMm = 4.0;
       const roiW = Math.max(10, Number(roi.w ?? roi.width ?? 0));
@@ -7148,8 +7157,12 @@
       destCtx.fillStyle = '#ffffff';
       destCtx.fillRect(0, 0, destCanvas.width, destCanvas.height);
 
-      const roiKey = roi.key || roi.id;
-      const cachedCrop = grade.gradedItems?.[roiKey]?.cropDataUrl;
+      const roiKey = optionalKey || roi.key || roi.id || (typeof roi === 'string' ? roi : null);
+      const isName = roi.role === 'name' || roiKey === 'name' || (typeof roi === 'string' && roi.includes('name'));
+      const cachedCrop = isName
+        ? (grade.nameCropDataUrl || grade.gradedItems?.['name']?.cropDataUrl)
+        : (grade.gradedItems?.[roiKey]?.cropDataUrl);
+
       if (cachedCrop) {
         try {
           const cachedImg = new Image();
@@ -7178,7 +7191,7 @@
               stripBoxWallsFromImageData(croppedData);
               destCtx.putImageData(croppedData, 0, 0);
             }
-            if (grade.gradedItems && grade.gradedItems[roiKey] && !grade.gradedItems[roiKey].cropDataUrl) {
+            if (roiKey && grade.gradedItems && grade.gradedItems[roiKey] && !grade.gradedItems[roiKey].cropDataUrl) {
               try {
                 grade.gradedItems[roiKey].cropDataUrl = destCanvas.toDataURL('image/jpeg', 0.85);
               } catch (_) {}
@@ -7194,7 +7207,7 @@
         destCtx.fillRect(0, 0, destCanvas.width, destCanvas.height);
         destCtx.font = 'italic 16px sans-serif';
         destCtx.fillStyle = '#334155';
-        const txt = grade.gradedItems?.[roi.key || roi.id]?.ocrText || 'Handwritten Answer';
+        const txt = (roiKey && grade.gradedItems?.[roiKey]?.ocrText) || 'Handwritten Answer';
         destCtx.fillText(`"${txt}"`, 16, Math.round(destCanvas.height / 2) + 5);
       }
     }
@@ -8330,7 +8343,7 @@
       const flaggedCount = state.results.grades.filter(g => g.reviewFlags && g.reviewFlags.needsReview).length;
       if (flaggedCount > 0) {
         callout.style.display = 'flex';
-        const msg = `⚠️ ${flaggedCount} student${flaggedCount > 1 ? 's' : ''} need review (${flaggedCount} Exam Sheet${flaggedCount > 1 ? 's' : ''} Need Review: e.g. blank responses or unverified IDs).`;
+        const msg = `${flaggedCount} student${flaggedCount > 1 ? 's' : ''} need review (${flaggedCount} Exam Sheet${flaggedCount > 1 ? 's' : ''} Need Review: e.g. blank responses or unverified IDs).`;
         const titleEl = $('summary-review-callout-title');
         if (titleEl) {
           titleEl.textContent = msg;
@@ -9386,11 +9399,11 @@
           const cleanReasons = (grade.reviewFlags.reasons || []).map(r => String(r).replace(/^(Needs Review:\s*)+/gi, '').trim()).filter(Boolean);
           let alertLabel = '';
           if (cleanReasons.length > 2) {
-            alertLabel = `⚠️ ${cleanReasons.length} questions flagged for review`;
+            alertLabel = `${cleanReasons.length} questions flagged for review`;
           } else if (cleanReasons.length > 0) {
-            alertLabel = `⚠️ ${cleanReasons.join(' • ')}`;
+            alertLabel = cleanReasons.join(' • ');
           } else {
-            alertLabel = `⚠️ Flagged for review`;
+            alertLabel = `Flagged for review`;
           }
           reviewAlertEl.innerHTML = `
             <div style="display: flex; align-items: center; gap: 0.4rem; flex: 1;" title="${escapeHtml(cleanReasons.join('; '))}">
@@ -9892,7 +9905,7 @@
 
         const isAiEnabled = $('chk-ai-handwriting') ? ($('chk-ai-handwriting').checked !== false) : true;
         const hasReliableCardOcr = isAiEnabled && !!(cardItemData.ocrText && cardItemData.ocrText.trim());
-        const isCardMatch = isAiEnabled && (typeof isOcrMatch === 'function' ? isOcrMatch(cardItemData.ocrText, activeItem.expected) : false);
+        const isCardMatch = isAiEnabled && (cardItemData.aiOcrMatch || (activeItem.expected !== 'Sample Answer' && typeof isOcrMatch === 'function' ? isOcrMatch(cardItemData.ocrText, activeItem.expected) : false));
 
         if (activeCardContainer) {
           activeCardContainer.innerHTML = `
@@ -9943,7 +9956,7 @@
           const fCanvas = $('flashcard-crop-canvas');
           if (fCanvas && curGrade) {
             if (activeItem.roi) {
-              cropROIFromScan(curGrade, activeItem.roi, fCanvas);
+              cropROIFromScan(curGrade, activeItem.roi, fCanvas, activeItem.key);
             } else {
               const ctx = fCanvas.getContext ? fCanvas.getContext('2d') : null;
               if (ctx && ctx.fillText) {
@@ -9980,7 +9993,7 @@
 
         const isAiEnabled = $('chk-ai-handwriting') ? ($('chk-ai-handwriting').checked !== false) : true;
         const hasReliableStreamOcr = isAiEnabled && !!(itemData.ocrText && itemData.ocrText.trim());
-        const isStreamMatch = isAiEnabled && (typeof isOcrMatch === 'function' ? isOcrMatch(itemData.ocrText, activeItem.expected) : false);
+        const isStreamMatch = isAiEnabled && (itemData.aiOcrMatch || (activeItem.expected !== 'Sample Answer' && typeof isOcrMatch === 'function' ? isOcrMatch(itemData.ocrText, activeItem.expected) : false));
 
         return `
           <div class="horizontal-item-card ${statusClass}" id="h-card-${sIdx}">
@@ -10044,7 +10057,7 @@
         const c = $(`crop-canvas-${sIdx}`);
         if (c) {
           if (activeItem.roi) {
-            cropROIFromScan(g, activeItem.roi, c);
+            cropROIFromScan(g, activeItem.roi, c, activeItem.key);
           } else {
             const ctx = c.getContext ? c.getContext('2d') : null;
             if (ctx && ctx.fillText) {
@@ -10430,7 +10443,7 @@
         if (grade.reviewFlags && grade.reviewFlags.needsReview) {
           viewerBadgeReview.style.display = 'inline-flex';
           viewerBadgeReview.className = 'badge-review';
-          viewerBadgeReview.textContent = '⚠️ Needs Review';
+          viewerBadgeReview.textContent = 'Needs Review';
           viewerBadgeReview.title = (grade.reviewFlags.reasons || []).join('; ');
         } else if (grade.reviewFlags && grade.reviewFlags.manuallyReviewed) {
           viewerBadgeReview.style.display = 'inline-flex';
@@ -10891,7 +10904,7 @@
 
   ${flaggedItems.length > 0 ? `
   <div class="alert-box">
-    <h3 style="margin: 0 0 0.5rem 0; font-size: 0.95rem; font-weight: 700;">⚠️ Questions Flagged for Review (${flaggedItems.length})</h3>
+    <h3 style="margin: 0 0 0.5rem 0; font-size: 0.95rem; font-weight: 700;">Questions Flagged for Review (${flaggedItems.length})</h3>
     <ul style="margin: 0; padding-left: 1.25rem; font-size: 0.85rem; line-height: 1.5;">
       ${flaggedItems.map(f => `
         <li><strong>Item #${f.key}</strong> (Answer: <code>${f.item.correctAnswer}</code>): ${f.reasons.join('; ')}</li>
@@ -11356,12 +11369,17 @@
         let scanImg = null;
         if (g.scanData) {
           const img = new Image();
-          img.onload = () => {
+          const onImgReady = () => {
             if (state.selectedStudentIdx === gIdx) {
               const canvas = $('roster-preview-canvas') || $('roster-inspector-canvas');
               if (canvas) drawGradeOnCanvas(g, canvas);
             }
           };
+          if (typeof img.addEventListener === 'function') {
+            img.addEventListener('load', onImgReady, { once: true });
+          } else {
+            img.onload = onImgReady;
+          }
           img.src = g.scanData;
           scanImg = img;
         } else {
@@ -11442,7 +11460,7 @@
             if (!g.nameCropDataUrl && nameRoi && g.scanImg && typeof cropROIFromScan === 'function') {
               try {
                 const c = document.createElement('canvas');
-                cropROIFromScan(g, nameRoi, c);
+                cropROIFromScan(g, nameRoi, c, 'name');
                 g.nameCropDataUrl = c.toDataURL('image/jpeg', 0.90);
               } catch (_) {}
             }
@@ -11463,7 +11481,7 @@
                 if (g.scanImg && typeof cropROIFromScan === 'function') {
                   try {
                     const c = document.createElement('canvas');
-                    cropROIFromScan(g, hItem.roi, c);
+                    cropROIFromScan(g, hItem.roi, c, hItem.key);
                     g.gradedItems[hItem.key].cropDataUrl = c.toDataURL('image/jpeg', 0.85);
                   } catch (_) {}
                 }
@@ -11474,13 +11492,32 @@
         if (typeof renderHorizontalGradingView === 'function') {
           renderHorizontalGradingView();
         }
+        if (typeof renderSummaryTable === 'function') {
+          renderSummaryTable();
+        }
+        if (state.results && state.results.grades && state.results.grades.length > 0) {
+          inspectStudent(state.selectedStudentIdx >= 0 ? state.selectedStudentIdx : 0);
+        }
       };
 
       const decodePromises = restoredGrades.map(g => {
         const isImg = g.scanImg && (typeof HTMLImageElement !== 'undefined' ? g.scanImg instanceof HTMLImageElement : (typeof g.scanImg.decode === 'function' || 'complete' in g.scanImg));
         if (isImg && !g.scanImg.complete) {
-          return g.scanImg.decode ? g.scanImg.decode().catch(() => {}) : new Promise(res => {
-            g.scanImg.onload = g.scanImg.onerror = res;
+          if (typeof g.scanImg.decode === 'function') {
+            return g.scanImg.decode().catch(() => {});
+          }
+          return new Promise(res => {
+            if (typeof g.scanImg.addEventListener === 'function') {
+              g.scanImg.addEventListener('load', () => res(), { once: true });
+              g.scanImg.addEventListener('error', () => res(), { once: true });
+            } else {
+              const prev = g.scanImg.onload;
+              g.scanImg.onload = (...args) => {
+                if (typeof prev === 'function') prev(...args);
+                res();
+              };
+              g.scanImg.onerror = res;
+            }
           });
         }
         return Promise.resolve();
@@ -11838,7 +11875,7 @@
       } else if (status === 'error') {
         syncBadge.style.display = 'inline-flex';
         syncBadge.classList?.add?.('is-error');
-        syncBadge.innerHTML = 'Sync Error ⚠';
+        syncBadge.innerHTML = 'Sync Error';
         syncBadge.title = tooltip || 'Google Drive sync failed. Check internet connection.';
       } else {
         syncBadge.style.display = 'none';
@@ -12810,7 +12847,7 @@
           if (!cropUrl && activeItem?.roi && typeof cropROIFromScan === 'function') {
             try {
               const c = document.createElement('canvas');
-              cropROIFromScan(g, activeItem.roi, c);
+              cropROIFromScan(g, activeItem.roi, c, itemKey);
               cropUrl = c.toDataURL('image/jpeg', 0.85);
               item.cropDataUrl = cropUrl;
             } catch (_) {}
@@ -12823,9 +12860,7 @@
                 item.ocrText = res.text;
                 item.aiOcrRead = res.text;
                 item.ocrConfidence = res.confidence || 0.88;
-                if (expected && typeof isOcrMatch === 'function' && isOcrMatch(res.text, expected)) {
-                  item.aiOcrMatch = true;
-                }
+                item.aiOcrMatch = Boolean(expected && typeof isOcrMatch === 'function' && isOcrMatch(res.text, expected));
                 count++;
               }
             } catch (err) {

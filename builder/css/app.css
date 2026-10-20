@@ -2708,6 +2708,10 @@ dialog.modal-dialog--answer-key {
   background: color-mix(in srgb, #34A853 10%, var(--panel)) !important;
   color: var(--text) !important;
 }
+.btn-google-drive .google-sync-indicator,
+.btn-google-drive .google-status-dot {
+  display: none !important;
+}
 .google-status-badge {
   position: absolute;
   bottom: -3px;

@@ -405,7 +405,7 @@ class GradingEngine:
                         grp.resolved_value,
                         is_blank=grp.is_blank,
                         is_multi=grp.is_multi,
-                        review_reason=grp.review_reason,
+                        review_reason=getattr(grp, "review_reason", ""),
                     )
                 else:
                     grade = self.evaluate_item(key_spec, "?", is_blank=True)
@@ -421,9 +421,9 @@ class GradingEngine:
         pct = (total_points / max_points * 100.0) if max_points > 0 else 0.0
 
         review_notes = [
-            grp.review_reason
+            getattr(grp, "review_reason", "")
             for grp in bubble_results.values()
-            if grp.review_reason
+            if getattr(grp, "review_reason", "")
         ]
 
         return ExamGrade(

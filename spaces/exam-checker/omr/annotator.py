@@ -121,7 +121,7 @@ class ExamAnnotator:
         cv2.rectangle(canvas, (rx, ry), (rx + rw, ry + rh), status_color, 2)
 
         font = cv2.FONT_HERSHEY_SIMPLEX
-        score_text = f"Score: {grade.score:g}/{grade.max_score:g}"
+        score_text = f"{grade.score:g}/{grade.max_score:g}"
         scale = 0.65
         thick = 2
         (tw, th), _ = cv2.getTextSize(score_text, font, scale, thick)
@@ -177,9 +177,9 @@ class ExamAnnotator:
                     d = int(r * 0.65)
                     cv2.line(canvas, (cx - d, cy - d), (cx + d, cy + d), COLOR_INCORRECT, 2, cv2.LINE_AA)
                     cv2.line(canvas, (cx - d, cy + d), (cx + d, cy - d), COLOR_INCORRECT, 2, cv2.LINE_AA)
-                elif meas.mark_type in {"check_or_cross", "erasure", "faint"}:
+                elif getattr(meas, "mark_type", "") in {"check_or_cross", "erasure", "faint"}:
                     # Ambiguous / non-standard mark flagged for review: Amber/Purple warning ring
-                    warn_color = (247, 85, 168) if meas.mark_type == "check_or_cross" else COLOR_MISSED
+                    warn_color = (247, 85, 168) if getattr(meas, "mark_type", "") == "check_or_cross" else COLOR_MISSED
                     cv2.circle(canvas, (cx, cy), r, warn_color, 2, cv2.LINE_AA)
                 elif is_opt_correct:
                     # Missed correct answer: Green dashed/thick ring
@@ -245,7 +245,7 @@ class ExamAnnotator:
             cv2.LINE_AA,
         )
 
-    def annotate(self, warped_bgr: np.ndarray, grade: ExamGrade) -> np.ndarray:
+    def annotate(self, warped_bgr: np.ndarray, grade: ExamGrade, redact_names: bool = False) -> np.ndarray:
         """Produces a derivative visual feedback image."""
         annotated = warped_bgr.copy()
 
@@ -254,6 +254,28 @@ class ExamAnnotator:
             self._draw_score_box(annotated, grade, self.layout.score_roi)
         else:
             self._draw_banner(annotated, grade)
+
+        # 1b. Optional student name redaction blackout
+        if redact_names and self.layout.name_roi:
+            nroi = self.layout.name_roi
+            nx = int(round(nroi.x * self.px_per_mm))
+            ny = int(round(nroi.y * self.px_per_mm))
+            nw = int(round(nroi.w * self.px_per_mm))
+            nh = int(round(nroi.h * self.px_per_mm))
+            cv2.rectangle(annotated, (nx, ny), (nx + nw, ny + nh), (15, 23, 42), -1)
+            lbl = "[NAME REDACTED]"
+            font = cv2.FONT_HERSHEY_SIMPLEX
+            (lw, lh), _ = cv2.getTextSize(lbl, font, 0.45, 1)
+            cv2.putText(
+                annotated,
+                lbl,
+                (nx + max(2, (nw - lw) // 2), ny + int((nh + lh) / 2)),
+                font,
+                0.45,
+                COLOR_WHITE,
+                1,
+                cv2.LINE_AA,
+            )
 
         # 2. Overlay MCQ / TF bubble annotations
         for key, item_grade in grade.items.items():

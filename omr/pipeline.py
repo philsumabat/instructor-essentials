@@ -113,7 +113,7 @@ class OMRPipeline:
             decoded_sid=decoded_sid,
             roster_match=roster_match,
         )
-        if warp_res.review_notes:
+        if getattr(warp_res, "review_notes", None):
             grade.review_notes = list(warp_res.review_notes) + grade.review_notes
 
         # 6. Annotation

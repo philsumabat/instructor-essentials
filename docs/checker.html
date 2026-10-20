@@ -2016,6 +2016,11 @@
           <button type="button" id="btn-export-html" class="btn btn--secondary btn--sm" disabled>
             <span>Item Analysis</span>
           </button>
+        <div style="margin-bottom: 0.5rem;">
+          <label style="display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.74rem; color: var(--text); cursor: pointer; user-select: none;" title="Blackout student names on exported sheets for anonymous review">
+            <input type="checkbox" id="chk-redact-names-sidebar" style="cursor: pointer; accent-color: var(--accent);">
+            <span>Redact Student Names</span>
+          </label>
         </div>
         <button type="button" id="btn-export-zip" class="btn btn--secondary btn--sm" style="width: 100%; margin-bottom: 0.5rem;" disabled title="Export all graded exam sheets as high-quality annotated JPEGs in a ZIP archive">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;" aria-hidden="true"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5M12 12v10"/></svg>
@@ -2289,18 +2294,16 @@
                 <thead>
                   <tr>
                     <th class="sortable" data-sort="examId">Exam ID <span class="sort-icon"></span></th>
-                    <th class="sortable" data-sort="studentId">Student ID <span class="sort-icon"></span></th>
                     <th class="sortable" data-sort="studentName">Student Name <span class="sort-icon"></span></th>
-                    <th class="sortable" data-sort="classOffer">Class / Offer No. <span class="sort-icon"></span></th>
-                    <th class="sortable" data-sort="rawScore">Raw Score <span class="sort-icon"></span></th>
-                    <th class="sortable" data-sort="maxScore">Max Score <span class="sort-icon"></span></th>
+                    <th class="sortable" data-sort="rawScore">Score <span class="sort-icon"></span></th>
                     <th class="sortable" data-sort="percentage">Percentage <span class="sort-icon"></span></th>
                     <th class="sortable" data-sort="status">Pass / Fail <span class="sort-icon"></span></th>
                     <th>Sheet Inspector</th>
+                    <th class="sortable" style="display: none;" data-sort="classOffer">Class / Offer No. <span class="sort-icon"></span></th>
                   </tr>
                 </thead>
                 <tbody id="tbody-roster">
-                  <tr><td colspan="9" style="text-align: center; padding: 2rem; color: var(--text-muted);">No student grades available.</td></tr>
+                  <tr><td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-muted);">No student grades available.</td></tr>
                 </tbody>
               </table>
             </div>
@@ -2324,6 +2327,10 @@
                   </div>
                 </div>
                 <div class="roster-preview-actions" style="display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;">
+                                    <label style="display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.75rem; color: var(--text); cursor: pointer; user-select: none;" title="Blackout student names on exported sheets for anonymous review">
+                    <input type="checkbox" id="chk-redact-names" style="cursor: pointer; accent-color: var(--accent);">
+                    <span>Redact Names</span>
+                  </label>
                   <button type="button" id="btn-roster-download-jpeg" class="btn btn--secondary btn--sm" disabled title="Download current student's graded sheet as JPEG">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
                     <span>Download Sheet (JPEG)</span>
@@ -2826,11 +2833,8 @@
         </div>
 
         <!-- Section: Stream / Scroll Down Later -->
-        <div style="margin-top: 1.5rem; margin-bottom: 0.75rem; display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border); padding-top: 1.25rem;">
-          <div>
-            <h4 style="margin: 0; font-size: 0.95rem; font-weight: 700; color: var(--text);">All Submissions Stream (Scrollable Overview)</h4>
-            <p style="margin: 0.2rem 0 0; font-size: 0.75rem; color: var(--text-muted);">Browse all student answer crops below at any time, or click a card to open in Flashcard Deck.</p>
-          </div>
+        <div style="margin-top: 1.25rem; margin-bottom: 0.65rem; display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border); padding-top: 0.85rem;">
+          <span style="font-size: 0.82rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em;">Submissions Stream</span>
           <button type="button" id="btn-toggle-stream" class="btn btn--secondary btn-xs" onclick="toggleStreamVisibility();">
             <span id="label-toggle-stream">Hide Stream</span>
           </button>
@@ -2892,6 +2896,10 @@
           </select>
         </div>
         <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <label style="display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.75rem; color: var(--text); cursor: pointer; user-select: none;" title="Blackout student names on exported sheets for anonymous review">
+            <input type="checkbox" id="chk-redact-names-modal" style="cursor: pointer; accent-color: var(--accent);">
+            <span>Redact Names</span>
+          </label>
           <button type="button" id="btn-download-sheet-jpeg" class="btn btn--secondary btn--sm" disabled title="Download current student's graded sheet as JPEG">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
             <span>Download Graded Sheet (JPEG)</span>
@@ -6216,7 +6224,7 @@
       return null;
     }
 
-    // Stage 1: True ArUco Square & 4x4 Bit-Grid Decoder + Auto-Rotation + 3-Marker Parallelogram Recovery
+    // Detect 4 dark corner markers in the 4 quadrants of the scanned image
     function detectCornerMarkers(ctx, w, h, scanData) {
       let data = (scanData && scanData.length >= w * h * 4) ? scanData : null;
       if (!data && ctx && typeof ctx.getImageData === 'function') {
@@ -6226,283 +6234,48 @@
         } catch (e) {}
       }
 
-      // Define 4 quadrant search windows (aspect-aware for 90/270 deg landscape scans while isolated from student ID bubbles)
-      const xFrac = 0.16;
-      const yFrac = w > h ? 0.16 : 0.13;
+      // Define 4 quadrant search windows (isolated from student ID bubbles and content)
       const quads = [
-        { name: "TL", qIdx: 0, expectedId: 0, x1: 0, y1: 0, x2: Math.floor(w * xFrac), y2: Math.floor(h * yFrac) },
-        { name: "TR", qIdx: 1, expectedId: 1, x1: Math.floor(w * (1 - xFrac)), y1: 0, x2: w, y2: Math.floor(h * yFrac) },
-        { name: "BR", qIdx: 2, expectedId: 2, x1: Math.floor(w * (1 - xFrac)), y1: Math.floor(h * (1 - yFrac)), x2: w, y2: h },
-        { name: "BL", qIdx: 3, expectedId: 3, x1: 0, y1: Math.floor(h * (1 - yFrac)), x2: Math.floor(w * xFrac), y2: h }
+        { name: "TL", x1: 0, y1: 0, x2: Math.floor(w * 0.16), y2: Math.floor(h * 0.13) },
+        { name: "TR", x1: Math.floor(w * 0.84), y1: 0, x2: w, y2: Math.floor(h * 0.13) },
+        { name: "BR", x1: Math.floor(w * 0.84), y1: Math.floor(h * 0.87), x2: w, y2: h },
+        { name: "BL", x1: 0, y1: Math.floor(h * 0.87), x2: Math.floor(w * 0.16), y2: h }
       ];
 
-      const defaultCornerFor = (q) => ({
-        x: q.name.includes("L") ? w * 0.06 : w * 0.94,
-        y: q.name.includes("T") ? h * 0.04 : h * 0.96
-      });
-
-      // Guard against mock/empty test buffers smaller than w * h * 4
-      if (!data || data.length < w * h * 4) {
-        const fallback = quads.map(defaultCornerFor);
-        fallback.foundCount = 0;
-        fallback.rotationDeg = 0;
-        fallback.recoveredMissingCorner = false;
-        fallback.lowConfidenceMarkers = false;
-        fallback.reviewNote = "";
-        return fallback;
-      }
-
-      const quadDetections = [null, null, null, null];
+      const corners = [];
 
       for (const q of quads) {
-        const qw = q.x2 - q.x1;
-        const qh = q.y2 - q.y1;
-        if (qw <= 4 || qh <= 4) continue;
+        let sumX = 0, sumY = 0, darkCount = 0;
+        let minLum = 255;
 
-        // 1. Sample luminance range in quadrant for adaptive thresholding
-        let minLum = 255, maxLum = 0;
-        for (let y = q.y1; y < q.y2; y += 2) {
-          for (let x = q.x1; x < q.x2; x += 2) {
-            const idx = (y * w + x) * 4;
-            const lum = 0.299 * data[idx] + 0.587 * data[idx + 1] + 0.114 * data[idx + 2];
-            if (lum < minLum) minLum = lum;
-            if (lum > maxLum) maxLum = lum;
-          }
-        }
-
-        // Require meaningful dark-on-light contrast in the quadrant
-        if (maxLum - minLum < 40 || minLum > 140) continue;
-        const darkThresh = Math.min(115, minLum + (maxLum - minLum) * 0.45);
-
-        // 2. Connected-component blob clustering on 2px coarse grid to isolate candidate squares from desk edges/staples
-        const step = 2;
-        const gw = Math.ceil(qw / step);
-        const gh = Math.ceil(qh / step);
-        const visited = new Uint8Array(gw * gh);
-        const candidates = [];
-
-        for (let gy = 0; gy < gh; gy++) {
-          for (let gx = 0; gx < gw; gx++) {
-            const vIdx = gy * gw + gx;
-            if (visited[vIdx]) continue;
-            const px = q.x1 + gx * step;
-            const py = q.y1 + gy * step;
-            const idx = (py * w + px) * 4;
-            const lum = 0.299 * data[idx] + 0.587 * data[idx + 1] + 0.114 * data[idx + 2];
-            if (lum >= darkThresh) continue;
-
-            // Flood-fill 8-connected dark component
-            const queue = [vIdx];
-            visited[vIdx] = 1;
-            let sumX = 0, sumY = 0, count = 0;
-            let bx1 = px, by1 = py, bx2 = px, by2 = py;
-
-            while (queue.length > 0) {
-              const curr = queue.pop();
-              const cy = Math.floor(curr / gw);
-              const cx = curr % gw;
-              const rx = q.x1 + cx * step;
-              const ry = q.y1 + cy * step;
-              sumX += rx;
-              sumY += ry;
-              count++;
-              if (rx < bx1) bx1 = rx;
-              if (rx > bx2) bx2 = rx;
-              if (ry < by1) by1 = ry;
-              if (ry > by2) by2 = ry;
-
-              for (let dy = -1; dy <= 1; dy++) {
-                for (let dx = -1; dx <= 1; dx++) {
-                  if (dx === 0 && dy === 0) continue;
-                  const nx = cx + dx, ny = cy + dy;
-                  if (nx >= 0 && nx < gw && ny >= 0 && ny < gh) {
-                    const nIdx = ny * gw + nx;
-                    if (!visited[nIdx]) {
-                      const npx = q.x1 + nx * step;
-                      const npy = q.y1 + ny * step;
-                      const pI = (npy * w + npx) * 4;
-                      const nLum = 0.299 * data[pI] + 0.587 * data[pI + 1] + 0.114 * data[pI + 2];
-                      if (nLum < darkThresh) {
-                        visited[nIdx] = 1;
-                        queue.push(nIdx);
-                      }
-                    }
-                  }
-                }
+        if (data && data.length >= w * h * 4) {
+          for (let y = q.y1; y < q.y2; y += 2) {
+            for (let x = q.x1; x < q.x2; x += 2) {
+              const idx = (y * w + x) * 4;
+              const lum = 0.299 * data[idx] + 0.587 * data[idx + 1] + 0.114 * data[idx + 2];
+              if (lum < minLum) minLum = lum;
+              if (lum < 90) {
+                sumX += x;
+                sumY += y;
+                darkCount += 1;
               }
             }
-
-            if (count < 16) continue; // Ignore tiny noise/specks
-
-            // Refine bounding box to 1px precision
-            bx1 = Math.max(q.x1, bx1 - 1);
-            by1 = Math.max(q.y1, by1 - 1);
-            bx2 = Math.min(q.x2 - 1, bx2 + 1);
-            by2 = Math.min(q.y2 - 1, by2 + 1);
-
-            const bw = bx2 - bx1 + 1;
-            const bh = by2 - by1 + 1;
-            const aspect = bw / Math.max(1, bh);
-
-            // Must be square-like and fit within quadrant
-            if (bw < 8 || bh < 8 || bw > qw * 0.90 || bh > qh * 0.90) continue;
-            if (aspect < 0.55 || aspect > 1.80) continue;
-
-            // Reject desk/scanner borders flush with outer canvas boundaries
-            const touchesOuterEdge = (bx1 <= 1 || by1 <= 1 || bx2 >= w - 2 || by2 >= h - 2);
-            if (touchesOuterEdge && (bw > qw * 0.65 || bh > qh * 0.65)) continue;
-
-            // Decode 6x6 ArUco bit pattern if present
-            const arucoInfo = decodeArucoBoxBitGrid(data, w, h, bx1, by1, bx2, by2, darkThresh);
-
-            // Fine 1px centroid over bounding box border/interior for subpixel accuracy
-            let fineSumX = 0, fineSumY = 0, fineCount = 0;
-            for (let fy = by1; fy <= by2; fy++) {
-              for (let fx = bx1; fx <= bx2; fx++) {
-                const fIdx = (fy * w + fx) * 4;
-                const fLum = 0.299 * data[fIdx] + 0.587 * data[fIdx + 1] + 0.114 * data[fIdx + 2];
-                if (fLum < darkThresh) {
-                  fineSumX += fx;
-                  fineSumY += fy;
-                  fineCount++;
-                }
-              }
-            }
-
-            const centerX = arucoInfo ? (bx1 + bx2) / 2.0 : (fineCount > 0 ? fineSumX / fineCount : sumX / count);
-            const centerY = arucoInfo ? (by1 + by2) / 2.0 : (fineCount > 0 ? fineSumY / fineCount : sumY / count);
-            const squareness = 1.0 - Math.min(1.0, Math.abs(1.0 - aspect));
-            const score = (arucoInfo ? 1000 - arucoInfo.bitErrors * 100 : 0) + squareness * 100 + Math.min(200, count);
-
-            candidates.push({
-              x: centerX,
-              y: centerY,
-              bx1, by1, bx2, by2,
-              boxCorners: [
-                { x: bx1, y: by1 },
-                { x: bx2, y: by1 },
-                { x: bx2, y: by2 },
-                { x: bx1, y: by2 }
-              ],
-              arucoId: arucoInfo ? arucoInfo.id : null,
-              rotationDeg: arucoInfo ? arucoInfo.rotationDeg : 0,
-              score
-            });
           }
         }
 
-        if (candidates.length > 0) {
-          candidates.sort((a, b) => b.score - a.score);
-          quadDetections[q.qIdx] = candidates[0];
-        }
-      }
-
-      const foundDetections = quadDetections.filter(Boolean);
-      const foundCount = foundDetections.length;
-
-      // Determine rotation if ArUco IDs were decoded
-      // Canonical quadrant assignment at 0 deg: Q0=ID0(TL), Q1=ID1(TR), Q2=ID2(BR), Q3=ID3(BL)
-      let rotationDeg = 0;
-      const byDecodedId = {};
-      for (let qi = 0; qi < 4; qi++) {
-        const det = quadDetections[qi];
-        if (det && det.arucoId !== null && byDecodedId[det.arucoId] === undefined) {
-          byDecodedId[det.arucoId] = { det, quadIdx: qi };
-        }
-      }
-
-      const decodedIdsCount = Object.keys(byDecodedId).length;
-      let orderedDetections = [...quadDetections];
-
-      if (decodedIdsCount >= 1) {
-        // Infer sheet rotation from both quadrant shifts of decoded marker IDs and internal 4x4 bit-grid orientation
-        const rotVotes = {};
-        for (const [idStr, info] of Object.entries(byDecodedId)) {
-          const mid = Number(idStr);
-          const shiftSteps = (info.quadIdx - mid + 4) % 4;
-          const quadDeg = shiftSteps * 90;
-          rotVotes[quadDeg] = (rotVotes[quadDeg] || 0) + 2;
-          if (info.det && typeof info.det.rotationDeg === "number") {
-            const bitDeg = ((info.det.rotationDeg % 360) + 360) % 360;
-            rotVotes[bitDeg] = (rotVotes[bitDeg] || 0) + 1;
-          }
-        }
-        let bestDeg = 0, bestVotes = -1;
-        for (const [degStr, v] of Object.entries(rotVotes)) {
-          if (v > bestVotes) {
-            bestVotes = v;
-            bestDeg = Number(degStr);
-          }
-        }
-        rotationDeg = bestDeg;
-
-        if (rotationDeg !== 0) {
-          const shiftSteps = (rotationDeg / 90) % 4;
-          // Marker `mid` sits in quadrant `(mid + shiftSteps) % 4`
-          orderedDetections = [0, 1, 2, 3].map(mid => {
-            const d = byDecodedId[mid] ? byDecodedId[mid].det : quadDetections[(mid + shiftSteps) % 4];
-            if (d && Array.isArray(d.boxCorners) && d.boxCorners.length === 4) {
-              const rolled = [0, 1, 2, 3].map(k => d.boxCorners[(k + shiftSteps) % 4]);
-              return { ...d, boxCorners: rolled };
-            }
-            return d;
+        if (darkCount > 20) {
+          corners.push({ x: sumX / darkCount, y: sumY / darkCount });
+        } else {
+          corners.push({
+            x: q.name.includes("L") ? w * 0.06 : w * 0.94,
+            y: q.name.includes("T") ? h * 0.04 : h * 0.96
           });
         }
       }
 
-      let recoveredMissingCorner = false;
-      let missingCornerIndex = -1;
-      let lowConfidenceMarkers = false;
-      let reviewNote = "";
-
-      // Stage 1.4: 3-Marker Parallelogram Recovery (TL + BR = TR + BL)
-      if (foundCount === 3) {
-        missingCornerIndex = orderedDetections.findIndex(d => d === null);
-        if (missingCornerIndex !== -1) {
-          const tl = orderedDetections[0];
-          const tr = orderedDetections[1];
-          const br = orderedDetections[2];
-          const bl = orderedDetections[3];
-          let est = null;
-          if (missingCornerIndex === 0 && tr && br && bl) {
-            est = { x: tr.x + bl.x - br.x, y: tr.y + bl.y - br.y };
-          } else if (missingCornerIndex === 1 && tl && br && bl) {
-            est = { x: tl.x + br.x - bl.x, y: tl.y + br.y - bl.y };
-          } else if (missingCornerIndex === 2 && tl && tr && bl) {
-            est = { x: tr.x + bl.x - tl.x, y: tr.y + bl.y - tl.y };
-          } else if (missingCornerIndex === 3 && tl && tr && br) {
-            est = { x: tl.x + br.x - tr.x, y: tl.y + br.y - tr.y };
-          }
-          if (est) {
-            orderedDetections[missingCornerIndex] = {
-              x: est.x,
-              y: est.y,
-              recovered: true
-            };
-            recoveredMissingCorner = true;
-            reviewNote = "Aligned using 3 of 4 corner markers";
-          }
-        }
-      } else if (foundCount <= 2) {
-        lowConfidenceMarkers = true;
-        reviewNote = "Needs Review: Corner markers not clearly visible";
-      }
-
-      const corners = [0, 1, 2, 3].map(i => {
-        if (orderedDetections[i]) {
-          return { x: orderedDetections[i].x, y: orderedDetections[i].y };
-        }
-        return defaultCornerFor(quads[i]);
-      });
-
-      corners.foundCount = foundCount;
-      corners.rotationDeg = rotationDeg;
-      corners.recoveredMissingCorner = recoveredMissingCorner;
-      corners.missingCornerIndex = missingCornerIndex;
-      corners.lowConfidenceMarkers = lowConfidenceMarkers;
-      corners.reviewNote = reviewNote;
-      corners.detections = orderedDetections;
-      return corners; // [TL, TR, BR, BL] with Stage 1 metadata attached
+      corners.foundCount = 4;
+      corners.rotationDeg = 0;
+      return corners;
     }
     window.detectCornerMarkers = detectCornerMarkers;
 
@@ -6967,160 +6740,24 @@
     }
     window.cropROIFromScan = cropROIFromScan;
 
-    // Stage 2: Local Section Box & Student ID Grid Snapping via Horizontal/Vertical Projection Profiles
-    function snapZoneOffsets(offCtx, imgW, imgH, layout, H_canToSrc, pxPerMm, scanData) {
-      const offsets = {};
-      if (!layout || !Array.isArray(layout.zones) || layout.zones.length === 0) return offsets;
-
-      if (!scanData && offCtx && typeof offCtx.getImageData === 'function') {
-        try {
-          const full = offCtx.getImageData(0, 0, imgW, imgH);
-          if (full && full.data && full.data.length >= imgW * imgH * 4) {
-            scanData = full.data;
-          }
-        } catch (e) {}
-      }
-
-      const searchMm = 3.0;
-      const maxClampMm = 2.5;
-      const stepMm = 0.5;
-
-      const sampleEdgeShift = (isHorizontal, baseCoordMm, spanStartMm, spanLenMm) => {
-        let bestShift = 0, bestRatio = 0;
-        const profile = [];
-        for (let delta = -searchMm; delta <= searchMm; delta += stepMm) {
-          let dark = 0, tot = 0;
-          for (let frac = 0.12; frac <= 0.88; frac += 0.04) {
-            const canPt = isHorizontal
-              ? { x: (spanStartMm + spanLenMm * frac) * pxPerMm, y: (baseCoordMm + delta) * pxPerMm }
-              : { x: (baseCoordMm + delta) * pxPerMm, y: (spanStartMm + spanLenMm * frac) * pxPerMm };
-            const srcPt = applyHomography(H_canToSrc, canPt);
-            const sx = Math.round(srcPt.x), sy = Math.round(srcPt.y);
-            if (sx >= 0 && sx < imgW && sy >= 0 && sy < imgH) {
-              if (scanData && scanData.length >= (sy * imgW + sx + 1) * 4) {
-                const idx = (sy * imgW + sx) * 4;
-                const lum = 0.299 * scanData[idx] + 0.587 * scanData[idx + 1] + 0.114 * scanData[idx + 2];
-                if (lum < 155) dark++;
-                tot++;
-              } else if (offCtx && offCtx.getImageData) {
-                const p = offCtx.getImageData(sx, sy, 1, 1).data;
-                if (p && p.length >= 3) {
-                  const lum = 0.299 * p[0] + 0.587 * p[1] + 0.114 * p[2];
-                  if (lum < 155) dark++;
-                  tot++;
-                }
-              }
-            }
-          }
-          const ratio = tot > 0 ? dark / tot : 0;
-          profile.push(ratio);
-          if (ratio > bestRatio) {
-            bestRatio = ratio;
-            bestShift = delta;
-          }
-        }
-        const avgRatio = profile.length > 0 ? profile.reduce((s, r) => s + r, 0) / profile.length : 0;
-        if (bestRatio >= 0.45 && (bestRatio - avgRatio) >= 0.20 && Math.abs(bestShift) <= maxClampMm) {
-          return bestShift;
-        }
-        return null;
-      };
-
-      for (const z of layout.zones) {
-        const b = z.bbox;
-        if (!b) continue;
-        const zx = Array.isArray(b) ? b[0] : b.x;
-        const zy = Array.isArray(b) ? b[1] : b.y;
-        const zw = Array.isArray(b) ? b[2] : b.w;
-        const zh = Array.isArray(b) ? b[3] : b.h;
-        if (!(zw > 10 && zh > 8)) continue;
-
-        const dyCandidates = [];
-        const dxCandidates = [];
-
-        const topShift = sampleEdgeShift(true, zy, zx, zw);
-        if (topShift !== null) dyCandidates.push(topShift);
-        const botShift = sampleEdgeShift(true, zy + zh, zx, zw);
-        if (botShift !== null) dyCandidates.push(botShift);
-
-        const leftShift = sampleEdgeShift(false, zx, zy, zh);
-        if (leftShift !== null) dxCandidates.push(leftShift);
-        const rightShift = sampleEdgeShift(false, zx + zw, zy, zh);
-        if (rightShift !== null) dxCandidates.push(rightShift);
-
-        const validDy = dyCandidates.length > 0
-          ? Math.max(-maxClampMm, Math.min(maxClampMm, dyCandidates.reduce((a, c) => a + c, 0) / dyCandidates.length))
-          : 0;
-        const validDx = dxCandidates.length > 0
-          ? Math.max(-maxClampMm, Math.min(maxClampMm, dxCandidates.reduce((a, c) => a + c, 0) / dxCandidates.length))
-          : 0;
-
-        offsets[z.id] = { dxMm: validDx, dyMm: validDy };
-      }
-      return offsets;
+    function snapZoneOffsets() {
+      return {};
     }
     window.snapZoneOffsets = snapZoneOffsets;
 
-    // Stage 3: Classify a single bubble's 4-quadrant & 8-sector morphology
     function classifyBubbleMorphology(diag, bubbleThreshold) {
-      const D = diag.fillDensity || 0;
-      const q = diag.quadrantDensities || [D, D, D, D];
-      const maxQ = Math.max(...q, 0);
-      const sortedQ = [...q].sort((a, b) => a - b);
-      const secondLowestQ = sortedQ.length >= 2 ? sortedQ[1] : sortedQ[0];
-      const uniformity = maxQ > 1e-4 ? (secondLowestQ / maxQ) : 0;
-      const filledQuads = q.filter(v => v >= Math.max(0.14, maxQ * 0.42)).length;
-
-      const sectorFills = diag.sectorFills || [];
-      const maxSec = sectorFills.length > 0 ? Math.max(...sectorFills, 0) : 0;
-      const hollowSectors = sectorFills.filter(v => v < Math.max(0.18, maxSec * 0.35)).length;
-      const strokeContrast = diag.strokeContrast ?? D;
-      const midOuterFill = diag.midOuterFill ?? D;
-      const centerFill = diag.centerFill ?? D;
-
-      let altSectorGap = 0;
-      let minAxisMean = 1;
-      if (sectorFills.length === 8) {
-        const cardinalMean = (sectorFills[0] + sectorFills[2] + sectorFills[4] + sectorFills[6]) / 4;
-        const diagonalMean = (sectorFills[1] + sectorFills[3] + sectorFills[5] + sectorFills[7]) / 4;
-        altSectorGap = Math.abs(diagonalMean - cardinalMean);
-        minAxisMean = Math.min(cardinalMean, diagonalMean);
-      }
-
-      // Detect check_or_cross:
-      // High-contrast ink/pencil stroke crossing center/ring with lopsided quadrants or hollow angular sectors / alternating axes
-      const hasSharpStroke = strokeContrast >= 0.35 && (diag.midOuterStrokeCount == null || diag.midOuterStrokeCount >= 2);
-      const isLopsided = (filledQuads <= 2 || uniformity < 0.35) && (centerFill >= 0.15 || (diag.midOuterStrokeCount ?? 3) >= 3);
-      const isUniformPencilShading = filledQuads === 4 && uniformity >= 0.40 && D >= 0.44 && altSectorGap < 0.28;
-      const isCrosshair = !isUniformPencilShading && sectorFills.length === 8 && (
-        (hollowSectors >= 3 && midOuterFill < 0.58 && (centerFill >= 0.30 || maxSec >= 0.38)) ||
-        (centerFill >= 0.60 && altSectorGap >= 0.28 && minAxisMean < 0.40)
-      );
-
-      if (hasSharpStroke && D >= 0.09 && D < 0.72 && (isLopsided || isCrosshair)) {
-        return { markType: 'check_or_cross', isShaded: false, uniformity, filledQuads };
-      }
-
-      if (D >= bubbleThreshold && filledQuads >= 3 && uniformity >= 0.35) {
-        return { markType: 'shaded', isShaded: true, uniformity, filledQuads };
-      }
-
-      if (D >= 0.13) {
-        return { markType: 'faint', isShaded: false, uniformity, filledQuads };
-      }
-
-      return { markType: 'blank', isShaded: false, uniformity, filledQuads };
+      const isShaded = (diag?.fillDensity || 0) >= (bubbleThreshold || 0.16);
+      return {
+        markType: isShaded ? 'shaded' : 'blank',
+        isShaded,
+        uniformity: 1.0,
+        filledQuads: isShaded ? 4 : 0
+      };
     }
     window.classifyBubbleMorphology = classifyBubbleMorphology;
 
-    // Precomputed 16-ray outward radial unit vectors for ring gradient alignment
-    const RAY_COS_SIN_16 = Array.from({ length: 16 }, (_, k) => {
-      const ang = (k * Math.PI) / 8;
-      return [Math.cos(ang), Math.sin(ang)];
-    });
-
-    // Process a single scanned exam image using the 4-Stage Coarse-to-Fine Pipeline
-    function processExamScan(scan, layout, key, bubbleThreshold) {
+    // Process a single scanned exam image
+    function processExamScan(scan, layout, key, bubbleThreshold = 0.16) {
       // Target canonical canvas resolution: 4.0 px/mm (A4 = 840 x 1188 px)
       const pxPerMm = 4.0;
       const targetW = Math.round(layout.page.width * pxPerMm);
@@ -7132,17 +6769,10 @@
       const offCtx = offscreen.getContext('2d', { willReadFrequently: true });
       offCtx.drawImage(scan.img, 0, 0);
 
-      let scanData = null;
-      try {
-        const fullImg = offCtx.getImageData(0, 0, scan.img.width, scan.img.height);
-        if (fullImg && fullImg.data) scanData = fullImg.data;
-      } catch (e) {}
+      // 1. Detect 4 corner markers in source image
+      const srcCorners = detectCornerMarkers(offCtx, scan.img.width, scan.img.height);
 
-      // Stage 1: Detect 4 corner ArUco markers in source image (with auto-rotation & 3-marker recovery)
-      const srcCorners = detectCornerMarkers(offCtx, scan.img.width, scan.img.height, scanData);
-
-      // Target marker positions from layout (mm * pxPerMm)
-      // markers: 0: TL, 1: TR, 2: BR, 3: BL
+      // 2. Target marker positions from layout (mm * pxPerMm)
       const dstCorners = [
         { x: layout.markers["0"].center[0] * pxPerMm, y: layout.markers["0"].center[1] * pxPerMm },
         { x: layout.markers["1"].center[0] * pxPerMm, y: layout.markers["1"].center[1] * pxPerMm },
@@ -7150,421 +6780,112 @@
         { x: layout.markers["3"].center[0] * pxPerMm, y: layout.markers["3"].center[1] * pxPerMm }
       ];
 
-      // Compute homography mapping canonical coords -> source scan coords, and source -> canonical
+      // 3. Compute homography mapping canonical coords -> source scan coords, and source -> canonical
       const H_canToSrc = computeHomography(dstCorners, srcCorners);
-      const H_srcToCan = computeHomography(srcCorners, dstCorners);
 
-      // Rectify source scan image into canonical 4 px/mm space (dead-center bubble alignment)
-      const rectCanvas = warpScanToCanonical(offCtx, scan.img.width, scan.img.height, H_canToSrc, targetW, targetH, scanData);
+      // Rectify source scan image into canonical 4 px/mm space for crisp handwriting and name crop extraction
+      const rectCanvas = warpScanToCanonical(offCtx, scan.img.width, scan.img.height, H_canToSrc, targetW, targetH);
 
-      // Stage 2: Local Section Box & Student ID Grid Snapping
-      const zoneOffsets = snapZoneOffsets(offCtx, scan.img.width, scan.img.height, layout, H_canToSrc, pxPerMm, scanData);
-
-      // Stage 3: Sample each bubble with Column-Tracked Joint Group Ring Alignment, 16-Point Ring Snap, Paper Halo Normalization, & 4-Quadrant Morphology
-      const bubbleDiagnostics = [];
-      const itemDiagMap = {};
-
-      // Group bubbles by item so each row of options can be jointly aligned against 3D page curvature
-      const itemBubblesMap = new Map();
-      for (const b of layout.bubbles) {
-        if (!itemBubblesMap.has(b.item)) itemBubblesMap.set(b.item, []);
-        itemBubblesMap.get(b.item).push(b);
-      }
-
-      // Helper to score a 16-ray outward-gradient ring at source coordinate (cx, cy) with radius ringRad
-      const scoreBubbleRingGrad = (cx, cy, ringRad) => {
-        const rIn = Math.max(2, ringRad * 0.98);
-        const rOut = Math.max(rIn + 1.5, ringRad * 1.28);
-        const pad = Math.ceil(rOut) + 2;
-        const w = scan.img.width;
-        const h = scan.img.height;
-        if (cx < pad || cx >= w - pad || cy < pad || cy >= h - pad) return -1e6;
-        let gradSum = 0;
-        const hasScanData = scanData && scanData.length >= w * h * 4;
-        for (let k = 0; k < 16; k++) {
-          const ca = RAY_COS_SIN_16[k][0], sa = RAY_COS_SIN_16[k][1];
-          const rx = Math.round(cx + rIn * ca), ry = Math.round(cy + rIn * sa);
-          const hx = Math.round(cx + rOut * ca), hy = Math.round(cy + rOut * sa);
-          let lumR = 255, lumH = 255;
-          if (hasScanData) {
-            const rIdx = (ry * w + rx) * 4;
-            const hIdx = (hy * w + hx) * 4;
-            lumR = 0.299 * scanData[rIdx] + 0.587 * scanData[rIdx + 1] + 0.114 * scanData[rIdx + 2];
-            lumH = 0.299 * scanData[hIdx] + 0.587 * scanData[hIdx + 1] + 0.114 * scanData[hIdx + 2];
-          } else {
-            const pR = offCtx.getImageData(rx, ry, 1, 1).data;
-            const pH = offCtx.getImageData(hx, hy, 1, 1).data;
-            lumR = 0.299 * pR[0] + 0.587 * pR[1] + 0.114 * pR[2];
-            lumH = 0.299 * pH[0] + 0.587 * pH[1] + 0.114 * pH[2];
-          }
-          const diff = lumH - lumR;
-          if (diff > 0) gradSum += Math.min(60, diff);
-        }
-        return gradSum;
-      };
-
-      // Pre-index rows by (group, columnX) for local 3-row constellation snapping
-      const colRowsMap = new Map();
-      for (const [, rbList] of itemBubblesMap.entries()) {
-        if (rbList.length < 2) continue;
-        const b0 = rbList[0];
-        const colKey = `${b0.group || ''}_${Math.round(b0.center[0] / 5.0) * 5}`;
-        if (!colRowsMap.has(colKey)) colRowsMap.set(colKey, []);
-        colRowsMap.get(colKey).push(rbList);
-      }
-
-      for (const [itemKey, rowBubbles] of itemBubblesMap.entries()) {
-        // Stage 3.0: Local 3-Row Constellation Ring Alignment
-        let rowDxPx = 0, rowDyPx = 0;
-        if (rowBubbles.length >= 2) {
-          const b0 = rowBubbles[0];
-          const zOff0 = (b0.group && zoneOffsets[b0.group]) ? zoneOffsets[b0.group] : { dxMm: 0, dyMm: 0 };
-          const colKey = `${b0.group || ''}_${Math.round(b0.center[0] / 5.0) * 5}`;
-          const peerRows = colRowsMap.get(colKey) || [rowBubbles];
-          const localBubbles = [];
-          for (const pr of peerRows) {
-            if (Math.abs(pr[0].center[1] - b0.center[1]) <= 7.5) {
-              localBubbles.push(...pr);
-            }
-          }
-          // Estimate local source px per canonical mm
-          const pA = applyHomography(H_canToSrc, { x: (b0.center[0] + zOff0.dxMm) * pxPerMm, y: (b0.center[1] + zOff0.dyMm) * pxPerMm });
-          const pB = applyHomography(H_canToSrc, { x: (b0.center[0] + zOff0.dxMm + 1.0) * pxPerMm, y: (b0.center[1] + zOff0.dyMm) * pxPerMm });
-          const srcPxPerMm = Math.max(1.0, Math.hypot(pB.x - pA.x, pB.y - pA.y));
-          const searchR = Math.max(3, Math.round(2.4 * srcPxPerMm));
-
-          const baseCenters = localBubbles.map(rb => {
-            const zo = (rb.group && zoneOffsets[rb.group]) ? zoneOffsets[rb.group] : { dxMm: 0, dyMm: 0 };
-            const sp = applyHomography(H_canToSrc, { x: (rb.center[0] + zo.dxMm) * pxPerMm, y: (rb.center[1] + zo.dyMm) * pxPerMm });
-            return { x: Math.round(sp.x), y: Math.round(sp.y), r: Math.max(2, Math.round((rb.radius || 2.1) * srcPxPerMm)) };
-          });
-
-          let bestScore = -Infinity;
-          let bestDx = 0, bestDy = 0;
-          const step = searchR > 6 ? 2 : 1;
-          for (let dy = -searchR; dy <= searchR; dy += step) {
-            for (let dx = -searchR; dx <= searchR; dx += step) {
-              let sumScore = 0;
-              for (const bc of baseCenters) {
-                sumScore += scoreBubbleRingGrad(bc.x + dx, bc.y + dy, bc.r);
-              }
-              const meanScore = sumScore / baseCenters.length;
-              const regScore = meanScore - Math.hypot(dx, dy) * 2.5;
-              if (regScore > bestScore) {
-                bestScore = regScore;
-                bestDx = dx;
-                bestDy = dy;
-              }
-            }
-          }
-          rowDxPx = bestDx;
-          rowDyPx = bestDy;
-        }
-
-        for (const b of rowBubbles) {
-          const zOff = (b.group && zoneOffsets[b.group]) ? zoneOffsets[b.group] : { dxMm: 0, dyMm: 0 };
-          const canX = (b.center[0] + zOff.dxMm) * pxPerMm;
-          const canY = (b.center[1] + zOff.dyMm) * pxPerMm;
-          const rad = (b.radius || 2.1) * pxPerMm;
-
-          // Map canonical center to source image pixels + joint row offset
-          const srcPt = applyHomography(H_canToSrc, { x: canX, y: canY });
-
-          // Inner core (0.70r) vs immediate white paper halo annulus (1.15r to 1.40r)
-          const sampleR = Math.max(2, Math.round(rad * 0.70));
-          const haloInR = rad * 1.15;
-          const bgR = Math.max(4, Math.round(rad * 1.40));
-
-          const sx = Math.round(srcPt.x) + rowDxPx;
-          const sy = Math.round(srcPt.y) + rowDyPx;
-
-          // Stage 3.1: Fine Per-Bubble 16-Ray Outward-Gradient Ring Snap within +/- 0.45mm
-          const searchW = Math.max(1, Math.round(Math.min(0.45 * pxPerMm, rad * 0.35)));
-          const totalW = bgR + searchW + 2;
-          let optSx = sx;
-          let optSy = sy;
-
-          if (sx >= totalW && sx < scan.img.width - totalW && sy >= totalW && sy < scan.img.height - totalW) {
-            const hasScanData = scanData && scanData.length >= scan.img.width * scan.img.height * 4;
-            const sBlockSize = totalW * 2 + 1;
-            const searchBlock = hasScanData ? null : (offCtx && offCtx.getImageData ? offCtx.getImageData(sx - totalW, sy - totalW, sBlockSize, sBlockSize).data : null);
-            if (hasScanData || (searchBlock && searchBlock.length >= sBlockSize * sBlockSize * 4)) {
-              const rIn = Math.max(2, rad * 0.98);
-              const rOut = Math.max(rIn + 1.5, rad * 1.28);
-              let maxGradScore = -Infinity;
-
-              for (let ody = -searchW; ody <= searchW; ody += 1) {
-                for (let odx = -searchW; odx <= searchW; odx += 1) {
-                  let gradSum = 0;
-                  let posRays = 0;
-                  for (let k = 0; k < 16; k++) {
-                    const ca = RAY_COS_SIN_16[k][0], sa = RAY_COS_SIN_16[k][1];
-                    const rx = Math.round(odx + rIn * ca), ry = Math.round(ody + rIn * sa);
-                    const hx = Math.round(odx + rOut * ca), hy = Math.round(ody + rOut * sa);
-                    let lumR = 255, lumH = 255;
-                    if (hasScanData) {
-                      const pRIdx = ((sy + ry) * scan.img.width + (sx + rx)) * 4;
-                      const pHIdx = ((sy + hy) * scan.img.width + (sx + hx)) * 4;
-                      lumR = 0.299 * scanData[pRIdx] + 0.587 * scanData[pRIdx + 1] + 0.114 * scanData[pRIdx + 2];
-                      lumH = 0.299 * scanData[pHIdx] + 0.587 * scanData[pHIdx + 1] + 0.114 * scanData[pHIdx + 2];
-                    } else {
-                      const pRIdx = ((ry + totalW) * sBlockSize + (rx + totalW)) * 4;
-                      const pHIdx = ((hy + totalW) * sBlockSize + (hx + totalW)) * 4;
-                      lumR = 0.299 * searchBlock[pRIdx] + 0.587 * searchBlock[pRIdx + 1] + 0.114 * searchBlock[pRIdx + 2];
-                      lumH = 0.299 * searchBlock[pHIdx] + 0.587 * searchBlock[pHIdx + 1] + 0.114 * searchBlock[pHIdx + 2];
-                    }
-                    const diff = lumH - lumR;
-                    if (diff > 0) {
-                      gradSum += Math.min(60, diff);
-                      if (diff >= 8) posRays++;
-                    }
-                  }
-                  const regScore = gradSum - Math.hypot(odx, ody) * 3.5;
-                  if (posRays >= 8 && regScore > maxGradScore) {
-                    maxGradScore = regScore;
-                    optSx = sx + odx;
-                    optSy = sy + ody;
-                  }
-                }
-              }
-            }
-          }
-
-          let bubbleLumSum = 0, bubbleCount = 0;
-          let haloBgLum = 240;
-          let minCoreLum = 255;
-
-          // 4 quadrants: TL (0), TR (1), BL (2), BR (3)
-          const qLumSum = [0, 0, 0, 0];
-          const qCount = [0, 0, 0, 0];
-
-          // 8 angular sectors in mid-outer core (0.42 * sampleR <= d <= sampleR) and center crosshair
-          const secDarkCount = new Array(8).fill(0);
-          const secLumSum = new Array(8).fill(0);
-          const secTotalCount = new Array(8).fill(0);
-          let centerLumSum = 0, centerCount = 0;
-          let midOuterLumSum = 0, midOuterCount = 0;
-          let midOuterStrokeCount = 0;
-
-          if (optSx >= bgR && optSx < scan.img.width - bgR && optSy >= bgR && optSy < scan.img.height - bgR) {
-            const hasScanData = scanData && scanData.length >= scan.img.width * scan.img.height * 4;
-            const bSize = bgR * 2 + 1;
-            const block = hasScanData ? null : (offCtx && offCtx.getImageData ? offCtx.getImageData(optSx - bgR, optSy - bgR, bSize, bSize).data : null);
-
-            if (hasScanData || (block && block.length >= bSize * bSize * 4)) {
-              // Pass 1: Measure local paper halo luminance in [1.15r, 1.40r] using 75th percentile
-              // (immune to thick checkmark tails or adjacent question numbers spilling into annulus)
-              const haloLums = [];
-              for (let dy = -bgR; dy <= bgR; dy++) {
-                for (let dx = -bgR; dx <= bgR; dx++) {
-                  const d2 = dx * dx + dy * dy;
-                  if (d2 >= haloInR * haloInR && d2 <= bgR * bgR) {
-                    let lum = 255;
-                    if (hasScanData) {
-                      const idx = ((optSy + dy) * scan.img.width + (optSx + dx)) * 4;
-                      lum = 0.299 * scanData[idx] + 0.587 * scanData[idx + 1] + 0.114 * scanData[idx + 2];
-                    } else {
-                      const idx = ((dy + bgR) * bSize + (dx + bgR)) * 4;
-                      lum = 0.299 * block[idx] + 0.587 * block[idx + 1] + 0.114 * block[idx + 2];
-                    }
-                    haloLums.push(lum);
-                  }
-                }
-              }
-              if (haloLums.length > 0) {
-                haloLums.sort((a, b) => a - b);
-                const p75Idx = Math.min(haloLums.length - 1, Math.floor(haloLums.length * 0.75));
-                haloBgLum = Math.max(80, haloLums[p75Idx]);
-              }
-              const darkPixelThresh = haloBgLum * 0.76;
-              const sharpStrokeThresh = haloBgLum * 0.58;
-              const centerR2 = Math.pow(sampleR * 0.42, 2);
-
-              // Pass 2: Decompose inner core (d <= sampleR)
-              for (let dy = -sampleR; dy <= sampleR; dy++) {
-                for (let dx = -sampleR; dx <= sampleR; dx++) {
-                  const d2 = dx * dx + dy * dy;
-                  if (d2 > sampleR * sampleR) continue;
-                  let lum = 255;
-                  if (hasScanData) {
-                    const idx = ((optSy + dy) * scan.img.width + (optSx + dx)) * 4;
-                    lum = 0.299 * scanData[idx] + 0.587 * scanData[idx + 1] + 0.114 * scanData[idx + 2];
-                  } else {
-                    const idx = ((dy + bgR) * bSize + (dx + bgR)) * 4;
-                    lum = 0.299 * block[idx] + 0.587 * block[idx + 1] + 0.114 * block[idx + 2];
-                  }
-
-                  bubbleLumSum += lum;
-                  bubbleCount++;
-                  if (lum < minCoreLum) minCoreLum = lum;
-
-                  const qIdx = (dy < 0 ? 0 : 2) + (dx < 0 ? 0 : 1);
-                  qLumSum[qIdx] += lum;
-                  qCount[qIdx]++;
-
-                  if (d2 < centerR2) {
-                    centerLumSum += lum;
-                    centerCount++;
-                  } else {
-                    midOuterLumSum += lum;
-                    midOuterCount++;
-                    if (lum < sharpStrokeThresh) midOuterStrokeCount++;
-                    const ang = (Math.atan2(dy, dx) + Math.PI * 2 + Math.PI / 8) % (Math.PI * 2);
-                    const sIdx = Math.min(7, Math.floor(ang / (Math.PI / 4)));
-                    secTotalCount[sIdx]++;
-                    secLumSum[sIdx] += lum;
-                    if (lum < darkPixelThresh) secDarkCount[sIdx]++;
-                  }
-                }
-              }
-            }
-          }
-
-          const bubbleLum = bubbleCount > 0 ? (bubbleLumSum / bubbleCount) : 255;
-          const bgLum = haloBgLum;
-          const fillDensity = bgLum > 0 ? Math.max(0, (bgLum - bubbleLum) / bgLum) : 0;
-
-          const quadrantDensities = qLumSum.map((s, idx) => {
-            if (qCount[idx] === 0 || bgLum <= 0) return fillDensity;
-            return Math.max(0, (bgLum - (s / qCount[idx])) / bgLum);
-          });
-
-          const sectorFills = secTotalCount.map((tot, idx) => {
-            if (tot <= 0) return 0;
-            const binF = secDarkCount[idx] / tot;
-            const conF = bgLum > 0 ? Math.max(0, (bgLum - (secLumSum[idx] / tot)) / bgLum - 0.025) : 0;
-            return Math.max(binF, conF);
-          });
-          const centerFill = (centerCount > 0 && bgLum > 0) ? Math.max(0, (bgLum - (centerLumSum / centerCount)) / bgLum) : fillDensity;
-          const midOuterFill = (midOuterCount > 0 && bgLum > 0) ? Math.max(0, (bgLum - (midOuterLumSum / midOuterCount)) / bgLum) : fillDensity;
-          const strokeContrast = (bubbleCount > 0 && bgLum > 0) ? Math.max(0, (bgLum - minCoreLum) / bgLum) : 0;
-
-          const fineCan = applyHomography(H_srcToCan, { x: optSx, y: optSy });
-          const diag = {
-            item: b.item,
-            choice: b.choice,
-            canX: fineCan.x,
-            canY: fineCan.y,
-            rad,
-            optSx, optSy,
-            fillDensity,
-            quadrantDensities,
-            sectorFills,
-            centerFill,
-            midOuterFill,
-            strokeContrast,
-            midOuterStrokeCount: bubbleCount > 0 ? midOuterStrokeCount : null,
-            paperHaloLum: bgLum,
-            markType: 'blank',
-            isMarked: false
-          };
-
-          const morph = classifyBubbleMorphology(diag, bubbleThreshold);
-          diag.markType = morph.markType;
-          diag.uniformity = morph.uniformity;
-          diag.isMarked = morph.isShaded;
-
-          bubbleDiagnostics.push(diag);
-          if (!itemDiagMap[b.item]) itemDiagMap[b.item] = [];
-          itemDiagMap[b.item].push(diag);
-        }
-      }
-
-      // Row-level evaluation for erasures, faint marks, and check/cross flags under Strict Shading Policy
+      // 4. Sample each bubble in layout with adaptive centering
       const itemAnswers = {};
-      const nonStandardQuestions = [];
-      const erasureQuestions = [];
-      const faintQuestions = [];
-      const specificReviewReasons = [];
+      const bubbleDiagnostics = [];
 
-      if (srcCorners.reviewNote) {
-        specificReviewReasons.push(srcCorners.reviewNote);
-      }
+      for (const b of layout.bubbles) {
+        const canX = b.center[0] * pxPerMm;
+        const canY = b.center[1] * pxPerMm;
+        const rad = b.radius * pxPerMm;
 
-      for (const [itemKey, rowDiags] of Object.entries(itemDiagMap)) {
-        const sortedRow = [...rowDiags].sort((a, b) => b.fillDensity - a.fillDensity);
-        const top = sortedRow[0];
-        const second = sortedRow.length > 1 ? sortedRow[1] : null;
-        const rowBaseline = sortedRow.length >= 3
-          ? sortedRow[Math.floor(sortedRow.length / 2)].fillDensity
-          : (second ? second.fillDensity : 0);
+        // Map canonical center to source image pixels
+        const srcPt = applyHomography(H_canToSrc, { x: canX, y: canY });
 
-        const isSid = itemKey.startsWith('sid[');
-        const qLabel = isSid ? itemKey : `Q${itemKey}`;
+        // Sample bubble interior (radius * 0.65) vs background annulus (radius * 1.0 to 1.25)
+        const sampleR = Math.max(2, Math.round(rad * 0.65));
+        const bgR = Math.max(4, Math.round(rad * 1.25));
 
-        const shadedList = rowDiags.filter(d => d.markType === 'shaded');
-        const checkCrossList = (shadedList.length >= 1 && top.markType === 'shaded')
-          ? []
-          : rowDiags.filter(
-              d => d.markType === 'check_or_cross' && d.fillDensity >= 0.12 && (d.fillDensity - rowBaseline) >= 0.07
-            );
+        let bubbleLumSum = 0, bubbleCount = 0;
+        let bgLumSum = 0, bgCount = 0;
 
-        if (checkCrossList.length > 0) {
-          // Strict Shading Policy: Checkmarks and crosses are NOT auto-scored; flag for review
-          for (const d of rowDiags) d.isMarked = false;
-          if (!isSid) {
-            nonStandardQuestions.push(itemKey);
-            specificReviewReasons.push(`Needs Review: Non-standard mark (Check/Cross) on ${qLabel}`);
+        const sx = Math.round(srcPt.x);
+        const sy = Math.round(srcPt.y);
+
+        // Adaptive bubble centering (snaps to physical circle under wavy scans)
+        const searchW = Math.max(2, Math.round(rad * 0.75));
+        const totalW = bgR + searchW;
+        let optSx = sx;
+        let optSy = sy;
+
+        if (sx >= totalW && sx < scan.img.width - totalW && sy >= totalW && sy < scan.img.height - totalW) {
+          const searchBlock = offCtx.getImageData(sx - totalW, sy - totalW, totalW * 2 + 1, totalW * 2 + 1).data;
+          const sBlockSize = totalW * 2 + 1;
+          const ringRad = Math.round(rad);
+          let minRingScore = Infinity;
+
+          for (let ody = -searchW; ody <= searchW; ody += 2) {
+            for (let odx = -searchW; odx <= searchW; odx += 2) {
+              let rSum = 0;
+              for (let k = 0; k < 8; k++) {
+                const ang = (k * Math.PI) / 4;
+                const rpx = Math.round(odx + ringRad * Math.cos(ang));
+                const rpy = Math.round(ody + ringRad * Math.sin(ang));
+                const pIdx = ((rpy + totalW) * sBlockSize + (rpx + totalW)) * 4;
+                rSum += 0.299 * searchBlock[pIdx] + 0.587 * searchBlock[pIdx + 1] + 0.114 * searchBlock[pIdx + 2];
+              }
+              if (rSum < minRingScore) {
+                minRingScore = rSum;
+                optSx = sx + odx;
+                optSy = sy + ody;
+              }
+            }
           }
-          continue;
         }
 
-        if (shadedList.length === 1) {
-          // Check if runner-up bubble has an erasure smudge (0.14 <= D2 < D1 and >= 0.08 above row baseline)
-          if (
-            second &&
-            second.fillDensity >= 0.14 &&
-            (second.fillDensity - rowBaseline) >= 0.08 &&
-            !(top.fillDensity >= 0.65 && second.fillDensity < 0.22)
-          ) {
-            second.markType = 'erasure';
-            second.isMarked = false;
-            if (!isSid) {
-              // Do not silently guess on erasure; hold for instructor review
-              top.isMarked = false;
-              erasureQuestions.push(itemKey);
-              specificReviewReasons.push(`Needs Review: Possible erasure on ${qLabel}`);
-            } else {
-              itemAnswers[itemKey] = [shadedList[0].choice];
+        if (optSx >= bgR && optSx < scan.img.width - bgR && optSy >= bgR && optSy < scan.img.height - bgR) {
+          const block = offCtx.getImageData(optSx - bgR, optSy - bgR, bgR * 2 + 1, bgR * 2 + 1).data;
+          const bSize = bgR * 2 + 1;
+
+          for (let dy = -bgR; dy <= bgR; dy++) {
+            for (let dx = -bgR; dx <= bgR; dx++) {
+              const d2 = dx * dx + dy * dy;
+              const idx = ((dy + bgR) * bSize + (dx + bgR)) * 4;
+              const lum = 0.299 * block[idx] + 0.587 * block[idx + 1] + 0.114 * block[idx + 2];
+
+              if (d2 <= sampleR * sampleR) {
+                bubbleLumSum += lum;
+                bubbleCount++;
+              } else if (d2 > (rad * rad) && d2 <= (bgR * bgR)) {
+                bgLumSum += lum;
+                bgCount++;
+              }
             }
-          } else {
-            itemAnswers[itemKey] = [shadedList[0].choice];
           }
-        } else if (shadedList.length > 1) {
-          // Check if one mark is much darker than the second (erasure profile) vs double-shaded
-          if (second && (top.fillDensity - second.fillDensity) >= 0.15) {
-            second.markType = 'erasure';
-            second.isMarked = false;
-            if (!isSid) {
-              erasureQuestions.push(itemKey);
-              specificReviewReasons.push(`Needs Review: Possible erasure on ${qLabel}`);
-            }
-            itemAnswers[itemKey] = shadedList.map(d => d.choice);
-          } else {
-            itemAnswers[itemKey] = shadedList.map(d => d.choice);
-          }
-        } else {
-          // Zero shaded bubbles: check for faint borderline mark (0.13 <= D < threshold and delta >= 0.08)
-          if (top && top.fillDensity >= 0.13 && (top.fillDensity - rowBaseline) >= 0.08) {
-            top.markType = 'faint';
-            top.isMarked = false;
-            if (!isSid) {
-              faintQuestions.push(itemKey);
-              specificReviewReasons.push(`Needs Review: Faint mark on ${qLabel}`);
-            }
-          } else if (top) {
-            top.markType = 'blank';
-          }
+        }
+
+        const bubbleLum = bubbleCount > 0 ? (bubbleLumSum / bubbleCount) : 255;
+        const bgLum = bgCount > 0 ? (bgLumSum / bgCount) : 240;
+        const fillDensity = bgLum > 0 ? Math.max(0, (bgLum - bubbleLum) / bgLum) : 0;
+        const isMarked = fillDensity >= bubbleThreshold;
+
+        bubbleDiagnostics.push({
+          item: b.item,
+          choice: b.choice,
+          canX, canY, rad,
+          fillDensity,
+          isMarked
+        });
+
+        if (isMarked) {
+          if (!itemAnswers[b.item]) itemAnswers[b.item] = [];
+          itemAnswers[b.item].push(b.choice);
         }
       }
 
-      // 5. Score student answers against answer key (Strict Shading Policy)
+      // 5. Score student answers against answer key
       let rawScore = 0;
       let maxScore = 0;
       const gradedItems = {};
 
       for (const [itemNumStr, keyItem] of Object.entries(key.items)) {
-        if (keyItem.kind === 'text') continue; // Skip non-bubble handwritten text questions
+        if (keyItem.kind === 'text') continue;
         const pts = keyItem.points || 1.0;
         maxScore += pts;
 
@@ -7582,7 +6903,7 @@
         };
       }
 
-      // Extract Student ID: from filled sid bubbles first, then filename match, then fallback
+      // Extract Student ID
       let bubbleSid = "";
       const sidKeys = Object.keys(itemAnswers).filter(k => k.startsWith("sid["));
       if (sidKeys.length > 0) {
@@ -7605,7 +6926,6 @@
       // Initialize handwritten / horizontal grading items
       const horizontalItems = getHorizontalGradingItems();
       for (const hItem of horizontalItems) {
-        // In modified T/F, don't scan the box if the statement is true
         if (hItem.type === 'correction' || hItem.role === 'correction' || (hItem.key && hItem.key.endsWith('_corr'))) {
           const qNum = hItem.key.replace(/_corr$/, '');
           const keyItem = state.key?.items?.[qNum];
@@ -7619,7 +6939,7 @@
           gradedItems[hItem.key] = {
             expected: hItem.expected,
             actual: scan.simulatedResponses?.[hItem.key] || "Handwritten response",
-            ocrText: scan.simulatedOcr?.[hItem.key] || hItem.expected,
+            ocrText: scan.simulatedOcr?.[hItem.key] || "", // DO NOT leak expected answer!
             ocrConfidence: scan.simulatedOcrConf?.[hItem.key] ?? 0.88,
             isCorrect: false,
             pointsAwarded: 0,
@@ -7638,7 +6958,7 @@
 
       const percentage = maxScore > 0 ? (rawScore / maxScore) * 100 : 0;
 
-      // Check Review Flags: non-standard marks, erasures, faint marks, blank responses, multiple marks, unmatched ID
+      // Check Review Flags: blank responses, multiple marks, unmatched ID
       let blankCount = 0;
       let multiMarkCount = 0;
       const blankQuestions = [];
@@ -7659,13 +6979,25 @@
       let suggestedMatch = null;
       let matchScore = 0;
       let matchField = '';
-      const isUnmatchedId = String(studentId).startsWith("STU-");
+      const isUnmatchedId = (!rosterEntry && state.roster && state.roster.length > 0) || String(studentId).startsWith("STU-");
 
-      const reviewReasons = [...specificReviewReasons];
+      const reviewReasons = [];
       if (blankCount > 0) reviewReasons.push(`${blankCount} blank response${blankCount > 1 ? 's' : ''}`);
       if (multiMarkCount > 0) reviewReasons.push(`${multiMarkCount} multiple mark${multiMarkCount > 1 ? 's' : ''}`);
+
       if (isUnmatchedId) {
-        reviewReasons.push(`No Student ID detected on sheet`);
+        const best = findBestRosterMatch(studentId, state.roster);
+        if (best && best.score >= 0.5) {
+          isMismatch = true;
+          suggestedMatch = best.student;
+          matchScore = best.score;
+          matchField = best.field;
+          reviewReasons.push(`Roster Mismatch: Suggested "${best.student.name}" (${(best.score * 100).toFixed(0)}% match)`);
+        } else if (state.roster && state.roster.length > 0) {
+          reviewReasons.push(`Unmatched Student ID`);
+        } else {
+          reviewReasons.push(`No Student ID detected on sheet`);
+        }
       }
 
       // Crop handwritten student Name box ROI from rectified canvas
@@ -7688,9 +7020,6 @@
         blankQuestions,
         multiMarkCount,
         multiMarkQuestions,
-        nonStandardQuestions,
-        erasureQuestions,
-        faintQuestions,
         isUnmatchedId,
         isMismatch,
         suggestedMatch,
@@ -8278,7 +7607,7 @@
         return `
         <tr onclick="inspectStudent(${idx}); switchTab('roster');" class="${state.selectedStudentIdx === idx ? 'is-selected' : ''}">
           <td><strong>${escapeHtml(g.studentId)}</strong></td>
-          <td>${g.nameCropDataUrl ? `<img src="${g.nameCropDataUrl}" alt="Name" style="max-height: 26px; max-width: 140px; object-fit: contain; vertical-align: middle; border-radius: 2px; border: 1px solid var(--border); background: #fff;" />` : escapeHtml(g.studentName)}${dupBadge}</td>
+          <td>${g.nameCropDataUrl ? `<img src="${g.nameCropDataUrl}" alt="Name" style="max-height: 48px; max-width: 240px; height: 44px; object-fit: contain; vertical-align: middle; border-radius: 4px; border: 1px solid var(--border); background: #fff;" />` : escapeHtml(g.studentName)}${dupBadge}</td>
           <td>${g.rawScore.toFixed(1)} / ${g.maxScore.toFixed(1)}</td>
           <td>${g.percentage.toFixed(1)}%</td>
           <td><span class="${g.percentage >= passThreshold ? 'badge-pass' : 'badge-fail'}">${g.percentage >= passThreshold ? 'PASS' : 'FAIL'}</span></td>
@@ -8501,19 +7830,17 @@
         return `
           <tr onclick="inspectStudent(${origIdx})" data-idx="${origIdx}" data-orig-idx="${origIdx}" class="${isSelected ? 'is-selected' : ''}">
             <td><code>${escapeHtml(g.examId)}</code></td>
-            <td><strong>${escapeHtml(g.studentId)}</strong></td>
             <td>
               <div style="display: flex; align-items: center; gap: 0.45rem; flex-wrap: wrap;">
-                ${g.nameCropDataUrl ? `<img src="${g.nameCropDataUrl}" alt="Name" style="max-height: 28px; max-width: 140px; object-fit: contain; vertical-align: middle; border-radius: 2px; border: 1px solid var(--border); background: #fff;" />` : `<span>${escapeHtml(g.studentName)}</span>`}
+                ${g.nameCropDataUrl ? `<img src="${g.nameCropDataUrl}" alt="Name" style="max-height: 48px; max-width: 240px; height: 44px; object-fit: contain; vertical-align: middle; border-radius: 4px; border: 1px solid var(--border); background: #fff;" />` : `<span>${escapeHtml(g.studentName)}</span>`}
                 ${reviewBadgeHtml}
               </div>
             </td>
-            <td><span class="badge" style="font-size: 0.75rem; background: var(--panel-alt); border: 1px solid var(--border);">${escapeHtml(g.classOffer || '—')}</span></td>
-            <td>${g.rawScore.toFixed(1)}</td>
-            <td>${g.maxScore.toFixed(1)}</td>
+            <td>${g.rawScore.toFixed(1)} / ${g.maxScore.toFixed(1)}</td>
             <td><strong>${g.percentage.toFixed(1)}%</strong></td>
             <td><span class="${g.percentage >= passThreshold ? 'badge-pass' : 'badge-fail'}">${g.percentage >= passThreshold ? 'PASS' : 'FAIL'}</span></td>
             <td><button type="button" class="btn btn--secondary btn--sm" onclick="event.stopPropagation(); inspectStudent(${origIdx})">Sheet Inspector</button></td>
+            <td style="display: none;">${escapeHtml(g.classOffer || '—')}</td>
           </tr>
         `;
       }).join('');
@@ -8747,7 +8074,7 @@
             return `
               <tr>
                 <td><span class="rank-badge ${rankBadgeClass}">#${rank}</span></td>
-                <td>${s.nameCropDataUrl ? `<img src="${s.nameCropDataUrl}" alt="Name" style="max-height: 26px; max-width: 140px; vertical-align: middle; border-radius: 2px;" />` : `<strong>${escapeHtml(s.studentName || 'Student')}</strong>`}</td>
+                <td>${s.nameCropDataUrl ? `<img src="${s.nameCropDataUrl}" alt="Name" style="max-height: 44px; max-width: 220px; object-fit: contain; vertical-align: middle; border-radius: 4px;" />` : `<strong>${escapeHtml(s.studentName || 'Student')}</strong>`}</td>
                 <td><code>${escapeHtml(s.studentId || '—')}</code></td>
                 <td><span class="badge" style="font-size: 0.72rem; background: var(--panel-alt); border: 1px solid var(--border);">${s.classOffer || '—'}</span></td>
                 <td>${s.rawScore.toFixed(1)} / ${s.maxScore.toFixed(1)}</td>
@@ -9358,7 +8685,7 @@
       if ($('roster-student-badge')) $('roster-student-badge').style.display = 'inline-flex';
       if ($('roster-badge-name')) {
         if (grade.nameCropDataUrl) {
-          $('roster-badge-name').innerHTML = `<img src="${grade.nameCropDataUrl}" alt="Name" style="max-height: 28px; max-width: 140px; vertical-align: middle; border-radius: 2px; border: 1px solid var(--border); margin-right: 0.35rem; background: #fff;" /> <span>(${escapeHtml(grade.studentId)})</span>`;
+          $('roster-badge-name').innerHTML = `<img src="${grade.nameCropDataUrl}" alt="Name" style="max-height: 48px; max-width: 240px; height: 44px; object-fit: contain; vertical-align: middle; border-radius: 4px; border: 1px solid var(--border); margin-right: 0.35rem; background: #fff;" /> <span>(${escapeHtml(grade.studentId)})</span>`;
         } else {
           $('roster-badge-name').textContent = `${grade.studentName} (${grade.studentId})`;
         }
@@ -9394,11 +8721,19 @@
           reviewAlertEl.style.gap = '0.5rem';
           reviewAlertEl.style.background = 'var(--warning-light)';
           reviewAlertEl.style.border = '1px solid var(--warning)';
-          const reasonsSafe = (grade.reviewFlags.reasons || []).map(r => escapeHtml(r)).join(' • ');
+          const cleanReasons = (grade.reviewFlags.reasons || []).map(r => String(r).replace(/^(Needs Review:\s*)+/gi, '').trim()).filter(Boolean);
+          let alertLabel = '';
+          if (cleanReasons.length > 2) {
+            alertLabel = `⚠️ ${cleanReasons.length} questions flagged for review`;
+          } else if (cleanReasons.length > 0) {
+            alertLabel = `⚠️ ${cleanReasons.join(' • ')}`;
+          } else {
+            alertLabel = `⚠️ Flagged for review`;
+          }
           reviewAlertEl.innerHTML = `
-            <div style="display: flex; align-items: center; gap: 0.4rem; flex: 1;">
+            <div style="display: flex; align-items: center; gap: 0.4rem; flex: 1;" title="${escapeHtml(cleanReasons.join('; '))}">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--warning); flex-shrink: 0;"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-              <span><strong>⚠️ Needs Review:</strong> ${reasonsSafe}</span>
+              <span><strong>${escapeHtml(alertLabel)}</strong></span>
             </div>
             <button type="button" class="btn btn--secondary btn-xs" id="btn-resolve-review-flag" onclick="resolveReviewFlag(${idx});" style="background: var(--panel); flex-shrink: 0;" title="Confirm machine read or instructor override and mark this sheet as verified">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--success);"><polyline points="20 6 9 17 4 12"/></svg>
@@ -9893,23 +9228,19 @@
         if (prevCardBtn) prevCardBtn.disabled = horizontalDeckState.currentIndex <= 0;
         if (nextCardBtn) nextCardBtn.disabled = horizontalDeckState.currentIndex >= matchingIndices.length - 1;
 
+        const hasReliableCardOcr = !!(cardItemData.ocrText && cardItemData.ocrText.trim() && cardItemData.ocrText !== activeItem.expected && (cardItemData.ocrConfidence == null || cardItemData.ocrConfidence > 0.60));
+
         if (activeCardContainer) {
           activeCardContainer.innerHTML = `
             <div class="horizontal-flashcard-card">
-              <!-- Student Identification & Name Crop -->
-              ${curGrade?.nameCropDataUrl ? `
-                <div style="margin-bottom: 0.65rem; text-align: center;">
-                  <span style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted); margin-right: 0.4rem;">Student Name:</span>
-                  <img src="${curGrade.nameCropDataUrl}" alt="Student Name" style="max-height: 28px; max-width: 160px; object-fit: contain; vertical-align: middle; border-radius: 2px; border: 1px solid var(--border); background: #fff;" />
-                </div>
-              ` : ''}
               <!-- Crop & OCR Transcription Box -->
               <div class="flashcard-crop-container">
                 <canvas id="flashcard-crop-canvas" class="horizontal-cutting-canvas" style="width: 100%; max-width: 860px; height: auto; border: 1px solid var(--border); border-radius: 4px;"></canvas>
+                ${hasReliableCardOcr ? `
                 <div style="width: 100%; font-size: 0.88rem; color: var(--text); background: var(--panel-alt); padding: 0.5rem 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--border); text-align: center;">
                   <strong style="color: var(--text-muted); font-size: 0.72rem; display: block; margin-bottom: 0.15rem; text-transform: uppercase; letter-spacing: 0.04em;">OCR Transcription:</strong>
-                  "${escapeHtml(cardItemData.ocrText || '(Handwritten response)')}"
-                </div>
+                  "${escapeHtml(cardItemData.ocrText)}"
+                </div>` : ''}
               </div>
 
               <!-- Rapid Grading Action Buttons -->
@@ -9980,6 +9311,8 @@
                             (itemData.status === 'unsure' ? 'is-unsure' :
                             (itemData.status === 'rejected' ? 'is-rejected' : '')));
 
+        const hasReliableStreamOcr = !!(itemData.ocrText && itemData.ocrText.trim() && itemData.ocrText !== activeItem.expected && (itemData.ocrConfidence == null || itemData.ocrConfidence > 0.60));
+
         return `
           <div class="horizontal-item-card ${statusClass}" id="h-card-${sIdx}">
             <!-- Submission Info Column -->
@@ -9988,7 +9321,7 @@
                 <span style="color: var(--text-muted); font-size: 0.8rem;">#${sIdx + 1}</span>
                 <span>Submission #${sIdx + 1}</span>
               </div>
-              ${g.nameCropDataUrl ? `<div style="margin-top: 0.35rem;"><img src="${g.nameCropDataUrl}" alt="Name" style="max-height: 26px; max-width: 130px; object-fit: contain; border-radius: 2px; border: 1px solid var(--border); background: #fff;" /></div>` : ''}
+              
               <div style="margin-top: 0.45rem;">
                 ${makeStatusBadge(itemData.status, itemData.pointsAwarded)}
               </div>
@@ -10004,12 +9337,13 @@
             <div class="horizontal-cutting-box">
               <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
                 <span style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted);">Answer Box Crop:</span>
-                ${makeConfBadge(itemData.ocrConfidence)}
+                ${hasReliableStreamOcr ? makeConfBadge(itemData.ocrConfidence) : ''}
               </div>
               <canvas id="crop-canvas-${sIdx}" class="horizontal-cutting-canvas" style="width: 100%; max-width: 480px; height: auto; min-height: 60px;"></canvas>
+              ${hasReliableStreamOcr ? `
               <div style="font-size: 0.76rem; color: var(--text); background: var(--panel-alt); padding: 0.35rem 0.55rem; border-radius: var(--radius-sm); border: 1px solid var(--border);">
-                <strong style="color: var(--text-muted);">OCR Read:</strong> "${escapeHtml(itemData.ocrText || '(Handwritten response)')}"
-              </div>
+                <strong style="color: var(--text-muted);">OCR Read:</strong> "${escapeHtml(itemData.ocrText)}"
+              </div>` : ''}
             </div>
 
             <!-- Action Buttons Column -->
@@ -10101,6 +9435,28 @@
     }
     window.inspectStudent = inspectStudent;
 
+    
+    function isRedactNamesActive() {
+      return !!(
+        $('chk-redact-names')?.checked ||
+        $('chk-redact-names-sidebar')?.checked ||
+        $('chk-redact-names-modal')?.checked
+      );
+    }
+    window.isRedactNamesActive = isRedactNamesActive;
+
+    function setRedactNames(val) {
+      if ($('chk-redact-names')) $('chk-redact-names').checked = val;
+      if ($('chk-redact-names-sidebar')) $('chk-redact-names-sidebar').checked = val;
+      if ($('chk-redact-names-modal')) $('chk-redact-names-modal').checked = val;
+      if (state.selectedStudentIdx != null && state.results?.grades?.[state.selectedStudentIdx]) {
+        inspectStudent(state.selectedStudentIdx);
+      }
+    }
+    $('chk-redact-names')?.addEventListener('change', (e) => setRedactNames(e.target.checked));
+    $('chk-redact-names-sidebar')?.addEventListener('change', (e) => setRedactNames(e.target.checked));
+    $('chk-redact-names-modal')?.addEventListener('change', (e) => setRedactNames(e.target.checked));
+
     if ($('btn-roster-download-jpeg')) {
       $('btn-roster-download-jpeg').onclick = () => {
         if (!state.results || !state.results.grades || state.selectedStudentIdx == null) return;
@@ -10108,9 +9464,12 @@
         if (!grade) return;
         const canvas = $('roster-preview-canvas') || $('roster-inspector-canvas');
         if (!canvas) return;
-        drawGradeOnCanvas(grade, canvas);
+        const isRedacted = isRedactNamesActive();
+        drawGradeOnCanvas(grade, canvas, { redactName: isRedacted });
         const examName = grade.examId ? grade.examId.replace(/\.[^/.]+$/, "") : `student_${grade.studentId}`;
-        const filename = `${examName}_graded.jpg`;
+        const redTag = isRedacted ? '_redacted' : '';
+        const filename = `${examName}${redTag}_graded.jpg`;
+        
         canvas.toBlob((blob) => {
           if (blob) {
             downloadFile(filename, blob, "image/jpeg");
@@ -10201,7 +9560,7 @@
     }
 
     // Draw Graded and Annotated Sheet onto any HTMLCanvasElement
-    function drawGradeOnCanvas(grade, canvas) {
+    function drawGradeOnCanvas(grade, canvas, options = {}) {
       if (!canvas) return;
       const ctx = canvas.getContext ? canvas.getContext('2d') : null;
       if (!ctx || !ctx.drawImage) return;
@@ -10308,6 +9667,31 @@
         ctx.textBaseline = 'alphabetic';
       }
 
+      // Optional Name Redaction: Blackout student name field
+      const shouldRedactName = (options && options.redactName) || (typeof isRedactNamesActive === 'function' ? isRedactNamesActive() : (typeof document !== 'undefined' && document.getElementById('chk-redact-names')?.checked));
+      if (shouldRedactName) {
+        const allRois = [
+          ...(state.layout?.rois || []),
+          ...((state.layout?.zones || []).flatMap(z => z.rois || []))
+        ];
+        const nameRoi = allRois.find(r => r.role === 'name' || r.id === 'name' || r.key === 'name' || (r.label || '').toLowerCase().includes('name'));
+        if (nameRoi) {
+          const nx = Math.round(nameRoi.x * pxPerMm);
+          const ny = Math.round(nameRoi.y * pxPerMm);
+          const nw = Math.round(nameRoi.w * pxPerMm);
+          const nh = Math.round(nameRoi.h * pxPerMm);
+          ctx.fillStyle = '#0f172a';
+          ctx.fillRect(nx, ny, nw, nh);
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 12px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('[NAME REDACTED]', nx + nw / 2, ny + nh / 2);
+          ctx.textAlign = 'start';
+          ctx.textBaseline = 'alphabetic';
+        }
+      }
+
       // Render score in designated Score field box if present (matches omr/annotator.py standard)
       const passThreshold = (state.results && state.results.passThreshold != null) ? state.results.passThreshold : 60;
       const scoreRoi = rois.find(r => r.role === 'score' || r.id === 'score' || r.key === 'score' || (r.label || '').toLowerCase().includes('score'));
@@ -10332,7 +9716,7 @@
         // Score: 38/100
         const rawFmt = (grade.rawScore % 1 === 0) ? grade.rawScore.toFixed(0) : grade.rawScore.toFixed(1);
         const maxFmt = (grade.maxScore % 1 === 0) ? grade.maxScore.toFixed(0) : grade.maxScore.toFixed(1);
-        const scoreText = `Score: ${rawFmt}/${maxFmt}`;
+        const scoreText = `${rawFmt}/${maxFmt}`;
 
         ctx.font = 'bold 16px sans-serif';
         ctx.fillStyle = statusColor;
@@ -10366,7 +9750,7 @@
       drawGradeOnCanvas(grade, canvas);
       if ($('viewer-student-info')) {
         if (grade.nameCropDataUrl) {
-          $('viewer-student-info').innerHTML = `<img src="${grade.nameCropDataUrl}" alt="Name" style="max-height: 24px; max-width: 130px; vertical-align: middle; border-radius: 2px; border: 1px solid var(--border); margin-right: 0.35rem; background: #fff;" /> <span>(${escapeHtml(grade.studentId)}) — Score: ${grade.rawScore.toFixed(1)} / ${grade.maxScore.toFixed(1)} (${grade.percentage.toFixed(1)}%)</span>`;
+          $('viewer-student-info').innerHTML = `<img src="${grade.nameCropDataUrl}" alt="Name" style="max-height: 48px; max-width: 240px; height: 44px; object-fit: contain; vertical-align: middle; border-radius: 4px; border: 1px solid var(--border); margin-right: 0.35rem; background: #fff;" /> <span>(${escapeHtml(grade.studentId)}) — Score: ${grade.rawScore.toFixed(1)} / ${grade.maxScore.toFixed(1)} (${grade.percentage.toFixed(1)}%)</span>`;
         } else {
           $('viewer-student-info').textContent = `${grade.studentName} (${grade.studentId}) — Score: ${grade.rawScore.toFixed(1)} / ${grade.maxScore.toFixed(1)} (${grade.percentage.toFixed(1)}%)`;
         }
@@ -10398,8 +9782,11 @@
       if (!state.results || !state.results.grades || !state.results.grades[state.selectedStudentIdx]) return;
       const grade = state.results.grades[state.selectedStudentIdx];
       const canvas = $('viewer-canvas');
-      drawGradeOnCanvas(grade, canvas);
-      const filename = `${grade.examId.replace(/\.[^/.]+$/, "")}_graded.jpg`;
+      const isRedacted = isRedactNamesActive();
+      drawGradeOnCanvas(grade, canvas, { redactName: isRedacted });
+      const examName = grade.examId ? grade.examId.replace(/\.[^/.]+$/, "") : `student_${grade.studentId}`;
+      const redTag = isRedacted ? '_redacted' : '';
+      const filename = `${examName}${redTag}_graded.jpg`;
       canvas.toBlob((blob) => {
         if (blob) {
           downloadFile(filename, blob, "image/jpeg");
@@ -10526,17 +9913,20 @@
         const offscreenCanvas = document.createElement('canvas');
         const files = [];
         const total = state.results.grades.length;
+        const isRedacted = isRedactNamesActive();
+        const redTag = isRedacted ? '_redacted' : '';
 
         for (let i = 0; i < total; i++) {
           btn.innerHTML = `<span>⏳ Rendering (${i + 1}/${total})...</span>`;
           const grade = state.results.grades[i];
-          drawGradeOnCanvas(grade, offscreenCanvas);
+          drawGradeOnCanvas(grade, offscreenCanvas, { redactName: isRedacted });
 
           const blob = await new Promise((resolve) => {
             offscreenCanvas.toBlob(resolve, 'image/jpeg', 0.95);
           });
           const arrayBuffer = await blob.arrayBuffer();
-          const filename = `${grade.examId.replace(/\.[^/.]+$/, "")}_graded.jpg`;
+          const examName = grade.examId ? grade.examId.replace(/\.[^/.]+$/, "") : `student_${grade.studentId}`;
+          const filename = `${examName}${redTag}_graded.jpg`;
           files.push({
             name: filename,
             data: new Uint8Array(arrayBuffer)
@@ -10545,7 +9935,7 @@
 
         btn.innerHTML = `<span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; animation: spin 1s linear infinite;"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>Assembling ZIP...</span>`;
         const zipBytes = createZip(files);
-        downloadFile("annotated_scans.zip", zipBytes, "application/zip");
+        downloadFile(isRedacted ? "annotated_scans_redacted.zip" : "annotated_scans.zip", zipBytes, "application/zip");
       } catch (err) {
         console.error("Failed to export ZIP:", err);
         alert("Failed to export annotated scans: " + err.message);
@@ -10633,7 +10023,7 @@
         return `
           <tr>
             <td><span class="rank-badge ${rankClass}">#${rank}</span></td>
-            <td>${s.nameCropDataUrl ? `<img src="${s.nameCropDataUrl}" style="max-height: 28px; max-width: 140px; vertical-align: middle; border-radius: 2px;" />` : `<strong>${escapeHtml(s.studentName || 'Student')}</strong>`}</td>
+            <td>${s.nameCropDataUrl ? `<img src="${s.nameCropDataUrl}" style="max-height: 44px; max-width: 220px; object-fit: contain; vertical-align: middle; border-radius: 4px;" />` : `<strong>${escapeHtml(s.studentName || 'Student')}</strong>`}</td>
             <td><code>${escapeHtml(s.studentId || '—')}</code></td>
             <td><span style="font-size: 11px; padding: 2px 6px; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 4px;">${escapeHtml(s.classOffer || '—')}</span></td>
             <td>${s.rawScore.toFixed(1)} / ${s.maxScore.toFixed(1)}</td>
@@ -11283,6 +10673,9 @@
         const parsed = JSON.parse(raw);
         if (parsed && parsed.results && parsed.results.grades && parsed.results.grades.length > 0) {
           updateResumeStatusUI(true, parsed);
+          // Standard web app persistence: auto-restore session seamlessly on refresh
+          restoreCheckerProgress(parsed);
+          showToast('✓ Session restored automatically');
         } else {
           updateResumeStatusUI(false);
         }
@@ -11441,9 +10834,13 @@
       });
     }
 
-    function handleGoogleAuthSuccess(token) {
+    function handleGoogleAuthSuccess(token, expiresIn = 3600) {
       googleDriveState.accessToken = token;
       googleDriveState.isConnected = true;
+      try {
+        localStorage.setItem('instructor_google_token', token);
+        localStorage.setItem('instructor_google_token_expiry', String(Date.now() + (expiresIn * 1000)));
+      } catch {}
 
       // Fetch user profile info via XHR
       const xhr = new XMLHttpRequest();
@@ -11453,6 +10850,7 @@
         if (xhr.status === 200) {
           try {
             googleDriveState.user = JSON.parse(xhr.responseText);
+            localStorage.setItem('instructor_google_user', JSON.stringify(googleDriveState.user));
           } catch {
             googleDriveState.user = { name: 'Google User' };
           }
@@ -11460,15 +10858,38 @@
           googleDriveState.user = { name: 'Google User' };
         }
         updateGoogleUiState();
-        showToast('✓ Connected to Google Drive (' + (googleDriveState.user.email || googleDriveState.user.name || 'Account') + ')');
+        showToast('✓ Signed in with Google (' + (googleDriveState.user.email || googleDriveState.user.name || 'Account') + ')');
       };
       xhr.onerror = function() {
         googleDriveState.user = { name: 'Google User' };
         updateGoogleUiState();
-        showToast('✓ Connected to Google Drive');
+        showToast('✓ Signed in with Google');
       };
       xhr.send();
     }
+
+    function restoreGoogleAuthState() {
+      try {
+        const token = localStorage.getItem('instructor_google_token');
+        const expiry = parseInt(localStorage.getItem('instructor_google_token_expiry') || '0', 10);
+        const userStr = localStorage.getItem('instructor_google_user');
+        if (token && expiry > Date.now()) {
+          googleDriveState.accessToken = token;
+          googleDriveState.isConnected = true;
+          if (userStr) {
+            try {
+              googleDriveState.user = JSON.parse(userStr);
+            } catch {}
+          }
+          updateGoogleUiState();
+        } else if (token && expiry <= Date.now()) {
+          localStorage.removeItem('instructor_google_token');
+          localStorage.removeItem('instructor_google_token_expiry');
+          localStorage.removeItem('instructor_google_user');
+        }
+      } catch {}
+    }
+    window.restoreGoogleAuthState = restoreGoogleAuthState;
 
     function updateGoogleUiState() {
       const btn = $('btn-google-drive');
@@ -11483,7 +10904,7 @@
       if (googleDriveState.isConnected && googleDriveState.user) {
         btn?.classList?.add?.('is-connected');
         if (dot) dot.style.display = 'inline-block';
-        if (label) label.textContent = googleDriveState.user.email || 'Drive: Connected';
+        if (label) label.textContent = googleDriveState.user.name || googleDriveState.user.email || 'Drive: Connected';
         if (viewDisc) viewDisc.style.display = 'none';
         if (viewConn) viewConn.style.display = 'flex';
         if (userName) userName.textContent = googleDriveState.user.name || 'Google User';
@@ -11499,7 +10920,7 @@
       } else {
         btn?.classList?.remove?.('is-connected');
         if (dot) dot.style.display = 'none';
-        if (label) label.textContent = 'Google Drive';
+        if (label) label.textContent = 'Sign in with Google';
         if (viewDisc) viewDisc.style.display = 'flex';
         if (viewConn) viewConn.style.display = 'none';
       }
@@ -11526,13 +10947,23 @@
       googleDriveState.user = null;
       googleDriveState.folderId = null;
       googleDriveState.isConnected = false;
+      try {
+        localStorage.removeItem('instructor_google_token');
+        localStorage.removeItem('instructor_google_token_expiry');
+        localStorage.removeItem('instructor_google_user');
+      } catch {}
       updateGoogleUiState();
-      showToast('Google Drive disconnected.');
+      showToast('Signed out of Google account.');
     }
 
     function handleGoogleTokenExpired() {
       googleDriveState.accessToken = null;
       googleDriveState.isConnected = false;
+      try {
+        localStorage.removeItem('instructor_google_token');
+        localStorage.removeItem('instructor_google_token_expiry');
+        localStorage.removeItem('instructor_google_user');
+      } catch {}
       updateGoogleUiState();
       showToast('Google session expired. Please reconnect your account.');
     }
@@ -12020,7 +11451,11 @@
     });
 
     $('btn-google-drive')?.addEventListener('click', () => {
-      openGoogleDriveModal();
+      if (googleDriveState.isConnected && googleDriveState.accessToken) {
+        openGoogleDriveModal();
+      } else {
+        initGoogleDriveAuth();
+      }
     });
 
     $('btn-gdrive-connect')?.addEventListener('click', () => {
@@ -12288,6 +11723,7 @@
     updateLayoutDisplay();
     updateKeyDisplay();
     updateRosterDisplay();
+    restoreGoogleAuthState();
     checkAutoSavedProgress();
   </script>
 </body>

@@ -126,6 +126,19 @@ class Layout:
         return None
 
     @property
+    def name_roi(self) -> TextROI | None:
+        """Returns student name ROI if present."""
+        for r in self.rois:
+            if (
+                r.role == "name"
+                or r.key == "name"
+                or getattr(r, "id", None) == "name"
+                or "name" in (getattr(r, "label", "") or "").lower()
+            ):
+                return r
+        return None
+
+    @property
     def score_roi(self) -> TextROI | None:
         """Returns dedicated Score box ROI if present."""
         for r in self.rois:

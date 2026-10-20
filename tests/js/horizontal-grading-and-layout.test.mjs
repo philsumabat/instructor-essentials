@@ -507,8 +507,20 @@ test('Feature 8: OCR Transcription Honesty (No Expected Answer Leakage)', () => 
   // Must NOT display the secret correct answer as OCR Read
   assert.ok(!activeCardContainer.innerHTML.includes('VERY_SECRET_CORRECT_ANSWER'), 'Flashcard must NOT leak expected answer as OCR text');
   assert.ok(!streamContainer.innerHTML.includes('VERY_SECRET_CORRECT_ANSWER'), 'Stream card must NOT leak expected answer as OCR text');
-  assert.ok(activeCardContainer.innerHTML.includes('(Handwritten response)'), 'Flashcard displays honest fallback');
-  assert.ok(streamContainer.innerHTML.includes('(Handwritten response)'), 'Stream card displays honest fallback');
+  // When OCR text is absent or unreliable, omit the OCR Read block completely
+  assert.ok(!activeCardContainer.innerHTML.includes('OCR Transcription:'), 'Flashcard omits OCR block when absent');
+  assert.ok(!streamContainer.innerHTML.includes('OCR Read:'), 'Stream card omits OCR block when absent');
+
+  // Verify reliable OCR text is displayed when present
+  ctx.state.results.grades[0].gradedItems['q99'] = {
+    status: 'unreviewed',
+    reviewed: false,
+    ocrText: 'Student Answer Transcription',
+    ocrConfidence: 0.95
+  };
+  ctx.renderHorizontalGradingView();
+  assert.ok(activeCardContainer.innerHTML.includes('Student Answer Transcription'), 'Flashcard displays reliable OCR reading');
+  assert.ok(streamContainer.innerHTML.includes('Student Answer Transcription'), 'Stream card displays reliable OCR reading');
 });
 
 test('Feature 9: Sheet Builder Block Row/Item Spacing Customization', () => {
@@ -625,5 +637,31 @@ test('Feature 10: Checker Studio Ribbon Dropdown, Clean Flashcard Header, and Ex
   assert.ok(checkerHtml.includes('scale = 1.6'), 'cropROIFromScan scales up scan image by 1.6x');
   assert.ok(!checkerHtml.includes('flashcard-crop-canvas" class="horizontal-cutting-canvas" style="width: 100%; max-width: 820px; height: auto; min-height: 120px;'), 'Flashcard canvas does not force artificial min-height distortion');
   assert.ok(checkerHtml.includes('closeRibbonDropdown'), 'Ribbon dropdown helper defined');
+});
+
+test('Feature 11: Name Redaction, Enlarged Student Name Crops, Google Web-App Persistence & Score Box Stamp', () => {
+  const checkerHtml = fs.readFileSync(path.join(rootDir, 'builder/checker.html'), 'utf8');
+
+  // 1. Redact Names checkboxes exist across Sheet Inspector, sidebar Export, and modal viewer
+  assert.ok(checkerHtml.includes('id="chk-redact-names"'), 'Roster Sheet Inspector has chk-redact-names');
+  assert.ok(checkerHtml.includes('id="chk-redact-names-sidebar"'), 'Sidebar Export Reports has chk-redact-names-sidebar');
+  assert.ok(checkerHtml.includes('id="chk-redact-names-modal"'), 'Modal viewer has chk-redact-names-modal');
+  assert.ok(checkerHtml.includes('isRedactNamesActive'), 'Helper isRedactNamesActive is defined');
+
+  // 2. Score box stamp uses strictly numbers (no "Score:" prefix)
+  assert.ok(checkerHtml.includes('const scoreText = `${rawFmt}/${maxFmt}`;'), 'Score text stamped as raw/max without Score: prefix');
+
+  // 3. Student name crops are enlarged to 44px height in inspector header and modal viewer
+  assert.ok(checkerHtml.includes('id="roster-badge-name"'), 'roster-badge-name element exists');
+  assert.ok(checkerHtml.includes('max-height: 48px; max-width: 240px; height: 44px; object-fit: contain;'), 'Enlarged name crop styles present');
+
+  // 4. Blackout box text [NAME REDACTED] with dark background #0f172a
+  assert.ok(checkerHtml.includes('[NAME REDACTED]'), 'Canvas draws [NAME REDACTED] blackout stamp');
+  assert.ok(checkerHtml.includes('#0f172a'), 'Blackout rectangle uses deep navy/black color');
+
+  // 5. Google Sign-In persistence functions exist
+  assert.ok(checkerHtml.includes('restoreGoogleAuthState'), 'restoreGoogleAuthState function defined');
+  assert.ok(checkerHtml.includes('instructor_google_token'), 'Uses instructor_google_token for session storage');
+  assert.ok(checkerHtml.includes('instructor_google_user'), 'Uses instructor_google_user for profile persistence');
 });
 

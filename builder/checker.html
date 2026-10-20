@@ -47,6 +47,10 @@
 
     *, *::before, *::after { box-sizing: border-box; }
 
+    .visually-hidden {
+      display: none !important;
+    }
+
     body {
       margin: 0;
       background: var(--bg);
@@ -412,6 +416,7 @@
       border-radius: var(--radius-sm, 6px);
       transition: all 140ms var(--ease);
       flex-shrink: 0;
+      overflow: hidden;
     }
     .btn-google-drive:hover {
       border-color: #4285F4;
@@ -2867,8 +2872,15 @@
           <!-- Item Navigator, AI Handwriting Toggle, and Bulk Accept -->
           <div style="display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap;">
             <div style="display: inline-flex; align-items: center; gap: 0.35rem; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.25rem 0.5rem;">
+              <label for="select-horizontal-scope" style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">Scope:</label>
+              <select id="select-horizontal-scope" style="font-size: 0.78rem; font-weight: 600; padding: 0.25rem 0.5rem; background: var(--panel-alt); color: var(--text); border: 1px solid var(--border); border-radius: var(--radius-sm); max-width: 170px;">
+                <option value="all">All Questions</option>
+                <option value="flagged">Flagged Only</option>
+              </select>
+            </div>
+            <div style="display: inline-flex; align-items: center; gap: 0.35rem; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.25rem 0.5rem;">
               <label for="select-horizontal-item" style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">Item:</label>
-              <select id="select-horizontal-item" style="font-size: 0.78rem; font-weight: 600; padding: 0.25rem 0.5rem; background: var(--panel-alt); color: var(--text); border: 1px solid var(--border); border-radius: var(--radius-sm); max-width: 280px;"></select>
+              <select id="select-horizontal-item" style="font-size: 0.78rem; font-weight: 600; padding: 0.25rem 0.5rem; background: var(--panel-alt); color: var(--text); border: 1px solid var(--border); border-radius: var(--radius-sm); max-width: 250px;"></select>
               <button type="button" id="btn-horizontal-item-prev" class="btn btn--secondary btn-xs" title="Previous item" disabled>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
               </button>
@@ -3228,8 +3240,17 @@
     </div>
   </dialog>
 
-  <!-- Modal: Settings dialog anchor -->
-  <dialog id="modal-settings" style="display: none;"></dialog>
+  <!-- Unified Global Loading Visualizer -->
+  <div id="global-loading-indicator" style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.65); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); z-index: 99999; align-items: center; justify-content: center;">
+    <div style="background: var(--panel, #1e293b); border: 1px solid var(--border, #334155); border-radius: var(--radius-lg, 12px); padding: 1.75rem 2.25rem; max-width: 440px; width: 90vw; box-shadow: var(--shadow-xl, 0 20px 25px -5px rgba(0,0,0,0.5)); display: flex; flex-direction: column; align-items: center; text-align: center; gap: 0.85rem;">
+      <div style="width: 38px; height: 38px; border: 3px solid rgba(59, 130, 246, 0.2); border-top-color: var(--accent, #3b82f6); border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
+      <h3 id="global-loading-title" style="margin: 0; font-size: 1.05rem; font-weight: 700; color: var(--text, #f8fafc);">Loading...</h3>
+      <p id="global-loading-message" style="margin: 0; font-size: 0.82rem; color: var(--text-muted, #94a3b8); line-height: 1.4;">Please wait...</p>
+      <div id="global-loading-bar-wrap" style="width: 100%; height: 6px; background: var(--bg, #0f172a); border-radius: 999px; overflow: hidden; display: none; margin-top: 0.35rem;">
+        <div id="global-loading-bar" style="height: 100%; width: 0%; background: var(--accent, #3b82f6); transition: width 0.15s ease;"></div>
+      </div>
+    </div>
+  </div>
 
   <!-- Modal: Confirm New Class Session -->
   <dialog id="modal-new-class-prompt" style="border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 0; background: var(--panel); color: var(--text); max-width: 480px; width: 95vw; box-shadow: var(--shadow-xl); overflow: hidden;">
@@ -3451,6 +3472,44 @@
     };
     inputScans.onchange = (e) => handleFiles(e.target.files);
 
+    function showLoading(title = 'Loading...', message = 'Please wait...', progress = null) {
+      const el = $('global-loading-indicator');
+      if (!el) return;
+      const titleEl = $('global-loading-title');
+      const msgEl = $('global-loading-message');
+      const barWrap = $('global-loading-bar-wrap');
+      const bar = $('global-loading-bar');
+      if (titleEl) titleEl.textContent = title;
+      if (msgEl) msgEl.textContent = message;
+      if (barWrap && bar) {
+        if (typeof progress === 'number' && progress >= 0 && progress <= 100) {
+          barWrap.style.display = 'block';
+          bar.style.width = `${progress}%`;
+        } else {
+          barWrap.style.display = 'none';
+        }
+      }
+      el.style.display = 'flex';
+    }
+    window.showLoading = showLoading;
+
+    function hideLoading() {
+      const el = $('global-loading-indicator');
+      if (el) el.style.display = 'none';
+    }
+    window.hideLoading = hideLoading;
+
+    function addOrUpdateScan(scanItem) {
+      if (!scanItem || !scanItem.name) return;
+      const existingIdx = state.scans.findIndex(s => s.name === scanItem.name);
+      if (existingIdx >= 0) {
+        state.scans[existingIdx] = scanItem;
+      } else {
+        state.scans.push(scanItem);
+      }
+    }
+    window.addOrUpdateScan = addOrUpdateScan;
+
     let pendingScanFiles = null;
     function processFilesBatch(files) {
       Array.from(files).forEach(file => {
@@ -3468,7 +3527,7 @@
         reader.onload = (e) => {
           const img = new Image();
           img.onload = () => {
-            state.scans.push({ file, img, name: file.name });
+            addOrUpdateScan({ file, img, name: file.name });
             renderScansList();
           };
           img.src = e.target.result;
@@ -3479,7 +3538,7 @@
 
     function handleFiles(files) {
       if (!files || files.length === 0) return;
-      if (state.results && state.results.grades && state.results.grades.length > 0) {
+      if ((state.results && state.results.grades && state.results.grades.length > 0) || (state.scans && state.scans.length > 0)) {
         pendingScanFiles = files;
         const promptModal = $('modal-new-class-prompt');
         if (promptModal && typeof promptModal.showModal === 'function') {
@@ -3686,10 +3745,13 @@
       if (container) {
         container.innerHTML = `<div style="color: var(--accent); font-size: 0.75rem; text-align: center; padding: 0.5rem;">Extracting scan pages from ${escapeHtml(file.name)}...</div>`;
       }
+      showLoading("Extracting PDF Scans", `Reading pages from "${file.name}"...`);
+      reader.onerror = () => { hideLoading(); };
       reader.onload = (e) => {
         try {
           const pages = extractPdfScansFromBuffer(e.target.result);
           if (pages.length === 0) {
+            hideLoading();
             alert(`No scan pages could be extracted from "${file.name}". Please ensure this is a scanned exam PDF (e.g., from Adobe Scan, phone scanner, or scanner app).`);
             renderScansList();
             return;
@@ -3700,9 +3762,12 @@
 
           function checkAllDone() {
             if (loadedCount === pages.length) {
-              state.scans.push(...orderedScans.filter(Boolean));
+              orderedScans.filter(Boolean).forEach(s => addOrUpdateScan(s));
+              hideLoading();
               renderScansList();
             } else if (container) {
+              const pct = Math.round((loadedCount / pages.length) * 100);
+              showLoading("Extracting PDF Scans", `Extracting pages from "${file.name}" (${loadedCount}/${pages.length})...`, pct);
               container.innerHTML = `<div style="color: var(--accent); font-size: 0.75rem; text-align: center; padding: 0.5rem;">Extracting scan pages from ${escapeHtml(file.name)} (${loadedCount}/${pages.length})...</div>`;
             }
           }
@@ -3787,6 +3852,7 @@
             rawImg.src = url;
           });
         } catch (err) {
+          hideLoading();
           alert(`Error reading PDF scans from "${file.name}": ` + err.message);
           renderScansList();
         }
@@ -4704,7 +4770,17 @@
       const keyKeys = Object.keys(keyItems);
 
       // 1. Unkeyed questions in layout (on sheet but missing in key)
-      const unkeyed = layoutKeys.filter(q => !keyItems[q]);
+      const unkeyed = layoutKeys.filter(q => {
+        if (keyItems[q]) return false;
+        if (q.endsWith('_corr')) {
+          const parentQ = q.replace(/_corr$/, '');
+          const parentItem = keyItems[parentQ];
+          if (parentItem && String(parentItem.answer || parentItem.correct || '').toUpperCase() === 'T') {
+            return false;
+          }
+        }
+        return true;
+      });
 
       // 2. Extra keyed items (in key but not on sheet layout)
       const extraKeyed = keyKeys.filter(q => !layoutQuestions.has(q));
@@ -6363,7 +6439,8 @@
     }
 
     // High-performance image rectification: warps scan image via H_canToSrc into canonical 4 px/mm canvas (~18ms)
-    function warpScanToCanonical(offCtxOrData, imgW, imgH, H_canToSrc, targetW, targetH, maybeScanData) {
+    // Supports 6-point piecewise homography (H_top, H_bottom) and global vertical parabolic sag correction
+    function warpScanToCanonical(offCtxOrData, imgW, imgH, H_canToSrc, targetW, targetH, maybeScanData, H_bottom = null, midYCan = null, deltaSag = 0) {
       let scanData = maybeScanData;
       if (!scanData) {
         if (offCtxOrData && offCtxOrData.data) {
@@ -6388,12 +6465,13 @@
           : { data: new Uint8ClampedArray(targetW * targetH * 4), width: targetW, height: targetH });
       const outData = imgData.data;
 
-      const h0 = H_canToSrc[0], h1 = H_canToSrc[1], h2 = H_canToSrc[2];
-      const h3 = H_canToSrc[3], h4 = H_canToSrc[4], h5 = H_canToSrc[5];
-      const h6 = H_canToSrc[6], h7 = H_canToSrc[7], h8 = H_canToSrc[8];
-
       let outIdx = 0;
       for (let y = 0; y < targetH; y++) {
+        const H = (H_bottom && midYCan != null && y > midYCan) ? H_bottom : H_canToSrc;
+        const h0 = H[0], h1 = H[1], h2 = H[2];
+        const h3 = H[3], h4 = H[4], h5 = H[5];
+        const h6 = H[6], h7 = H[7], h8 = H[8];
+
         const rx0 = h1 * y + h2;
         const ry0 = h4 * y + h5;
         const rw0 = h7 * y + h8;
@@ -6401,7 +6479,12 @@
           const w = h6 * x + rw0;
           const invW = Math.abs(w) > 1e-8 ? 1.0 / w : 0;
           const sx = Math.round((h0 * x + rx0) * invW);
-          const sy = Math.round((h3 * x + ry0) * invW);
+          let sy = Math.round((h3 * x + ry0) * invW);
+
+          if (!H_bottom && deltaSag !== 0) {
+            const sag = 4 * deltaSag * (x / targetW) * (1 - x / targetW) * (y / targetH) * (1 - y / targetH);
+            sy += Math.round(sag);
+          }
 
           if (sx >= 0 && sx < imgW && sy >= 0 && sy < imgH && scanData) {
             const inIdx = (sy * imgW + sx) << 2;
@@ -6513,8 +6596,9 @@
 
       const corners = [];
 
-      for (const q of quads) {
+      function searchQuadrantForMarker(q, allowFallback = true) {
         let selectedCenter = null;
+        let isDetected = false;
 
         if (data && data.length >= w * h * 4) {
           const candBoxes = [];
@@ -6600,7 +6684,7 @@
           let bestArucoDist = 999;
           for (const cand of candBoxes) {
             const decoded = decodeArucoBoxBitGrid(data, w, h, cand.minX, cand.minY, cand.maxX, cand.maxY, threshLum);
-            if (decoded && (decoded.id === q.expectedId || candBoxes.length === 1 || decoded.id <= 3)) {
+            if (decoded && (decoded.id === q.expectedId || candBoxes.length === 1 || (q.expectedId <= 3 && decoded.id <= 3))) {
               let sumX = 0, sumY = 0, cnt = 0;
               for (let y = cand.minY; y <= cand.maxY; y++) {
                 for (let x = cand.minX; x <= cand.maxX; x++) {
@@ -6619,14 +6703,15 @@
                   x: cnt > 0 ? sumX / cnt : (cand.minX + cand.maxX) / 2,
                   y: cnt > 0 ? sumY / cnt : (cand.minY + cand.maxY) / 2
                 };
+                isDetected = true;
               }
             }
           }
 
-          // 2. Fallback to most square-like candidate closest to sheet corner
-          if (!selectedCenter && candBoxes.length > 0) {
+          // 2. Fallback to most square-like candidate closest to target corner
+          if (!selectedCenter && candBoxes.length > 0 && allowFallback) {
             const cornerTargetX = q.name.includes("L") ? 0 : w;
-            const cornerTargetY = q.name.includes("T") ? 0 : h;
+            const cornerTargetY = q.name.includes("T") ? 0 : (q.name.includes("B") ? h : h / 2);
             const maxCornerDist = Math.hypot(w * 0.18, h * 0.16);
 
             let bestScore = Infinity;
@@ -6661,21 +6746,45 @@
                 x: cnt > 0 ? sumX / cnt : (bestCand.minX + bestCand.maxX) / 2,
                 y: cnt > 0 ? sumY / cnt : (bestCand.minY + bestCand.maxY) / 2
               };
+              isDetected = true;
             }
           }
         }
 
         if (selectedCenter) {
-          corners.push(selectedCenter);
-        } else {
-          corners.push({
-            x: q.name.includes("L") ? w * 0.06 : w * 0.94,
-            y: q.name.includes("T") ? h * 0.04 : h * 0.96
-          });
+          selectedCenter.isDetected = isDetected;
+          return selectedCenter;
         }
+        if (allowFallback) {
+          return {
+            x: q.name.includes("L") ? w * 0.06 : w * 0.94,
+            y: q.name.includes("T") ? h * 0.04 : (q.name.includes("B") ? h * 0.96 : h * 0.5),
+            isDetected: false
+          };
+        }
+        return null;
       }
 
-      corners.foundCount = 4;
+      for (const q of quads) {
+        corners.push(searchQuadrantForMarker(q, true));
+      }
+
+      // Detect lateral midline markers (Left-Mid at ~12mm, 148.5mm, Right-Mid at ~198mm, 148.5mm)
+      const qML = { name: "ML", expectedId: 4, x1: 0, y1: Math.floor(h * 0.38), x2: Math.floor(w * 0.18), y2: Math.floor(h * 0.62) };
+      const qMR = { name: "MR", expectedId: 5, x1: Math.floor(w * 0.82), y1: Math.floor(h * 0.38), x2: w, y2: Math.floor(h * 0.62) };
+      const midLeft = searchQuadrantForMarker(qML, false);
+      const midRight = searchQuadrantForMarker(qMR, false);
+
+      if (midLeft && midRight && midLeft.isDetected && midRight.isDetected) {
+        corners.midLeft = midLeft;
+        corners.midRight = midRight;
+        corners.hasMidline = true;
+        corners.foundCount = 6;
+      } else {
+        corners.hasMidline = false;
+        corners.foundCount = 4;
+      }
+
       corners.rotationDeg = 0;
       return corners;
     }
@@ -6696,15 +6805,44 @@
         if (fullImg && fullImg.data) scanData = fullImg.data;
       } catch (e) {}
 
-      // Detect 4 corner markers in source image
+      // Detect markers in source image
       const srcCorners = detectCornerMarkers(offCtx, img.width, img.height, scanData);
-      const dstCorners = [
-        { x: layout.markers["0"].center[0] * pxPerMm, y: layout.markers["0"].center[1] * pxPerMm },
-        { x: layout.markers["1"].center[0] * pxPerMm, y: layout.markers["1"].center[1] * pxPerMm },
-        { x: layout.markers["2"].center[0] * pxPerMm, y: layout.markers["2"].center[1] * pxPerMm },
-        { x: layout.markers["3"].center[0] * pxPerMm, y: layout.markers["3"].center[1] * pxPerMm }
-      ];
-      const H_canToSrc = computeHomography(dstCorners, srcCorners);
+      const hasMidlineLayout = Boolean(layout.markers?.["4"] && layout.markers?.["5"]);
+      const usePiecewise = Boolean(srcCorners.hasMidline && hasMidlineLayout);
+      let H_canToSrc = null;
+      let H_top = null;
+      let H_bottom = null;
+      let midYCan = Math.round(((layout.page && layout.page.height) || 297) * pxPerMm / 2);
+
+      if (usePiecewise) {
+        midYCan = Math.round(layout.markers["4"].center[1] * pxPerMm);
+        const dstTop = [
+          { x: layout.markers["0"].center[0] * pxPerMm, y: layout.markers["0"].center[1] * pxPerMm },
+          { x: layout.markers["1"].center[0] * pxPerMm, y: layout.markers["1"].center[1] * pxPerMm },
+          { x: layout.markers["5"].center[0] * pxPerMm, y: layout.markers["5"].center[1] * pxPerMm },
+          { x: layout.markers["4"].center[0] * pxPerMm, y: layout.markers["4"].center[1] * pxPerMm }
+        ];
+        const srcTop = [srcCorners[0], srcCorners[1], srcCorners.midRight, srcCorners.midLeft];
+        H_top = computeHomography(dstTop, srcTop);
+
+        const dstBottom = [
+          { x: layout.markers["4"].center[0] * pxPerMm, y: layout.markers["4"].center[1] * pxPerMm },
+          { x: layout.markers["5"].center[0] * pxPerMm, y: layout.markers["5"].center[1] * pxPerMm },
+          { x: layout.markers["2"].center[0] * pxPerMm, y: layout.markers["2"].center[1] * pxPerMm },
+          { x: layout.markers["3"].center[0] * pxPerMm, y: layout.markers["3"].center[1] * pxPerMm }
+        ];
+        const srcBottom = [srcCorners.midLeft, srcCorners.midRight, srcCorners[2], srcCorners[3]];
+        H_bottom = computeHomography(dstBottom, srcBottom);
+        H_canToSrc = H_top;
+      } else {
+        const dstCorners = [
+          { x: layout.markers["0"].center[0] * pxPerMm, y: layout.markers["0"].center[1] * pxPerMm },
+          { x: layout.markers["1"].center[0] * pxPerMm, y: layout.markers["1"].center[1] * pxPerMm },
+          { x: layout.markers["2"].center[0] * pxPerMm, y: layout.markers["2"].center[1] * pxPerMm },
+          { x: layout.markers["3"].center[0] * pxPerMm, y: layout.markers["3"].center[1] * pxPerMm }
+        ];
+        H_canToSrc = computeHomography(dstCorners, srcCorners);
+      }
 
       // Group bubbles by item
       const itemBubbles = {};
@@ -6724,7 +6862,8 @@
           const canX = b.center[0] * pxPerMm;
           const canY = b.center[1] * pxPerMm;
           const rad = b.radius * pxPerMm;
-          const srcPt = applyHomography(H_canToSrc, { x: canX, y: canY });
+          const H = usePiecewise ? (canY <= midYCan ? H_top : H_bottom) : H_canToSrc;
+          const srcPt = applyHomography(H, { x: canX, y: canY });
 
           const sampleR = Math.max(2, Math.round(rad * 0.65));
           const bgR = Math.max(4, Math.round(rad * 1.25));
@@ -7421,24 +7560,55 @@
       const offCtx = offscreen.getContext('2d', { willReadFrequently: true });
       offCtx.drawImage(scan.img, 0, 0);
 
-      // 1. Detect 4 corner markers in source image
-      const srcCorners = detectCornerMarkers(offCtx, scan.img.width, scan.img.height);
+      let scanData = null;
+      try {
+        const fullImg = offCtx.getImageData(0, 0, scan.img.width, scan.img.height);
+        if (fullImg && fullImg.data) scanData = fullImg.data;
+      } catch (e) {}
 
-      // 2. Target marker positions from layout (mm * pxPerMm)
-      const dstCorners = [
-        { x: layout.markers["0"].center[0] * pxPerMm, y: layout.markers["0"].center[1] * pxPerMm },
-        { x: layout.markers["1"].center[0] * pxPerMm, y: layout.markers["1"].center[1] * pxPerMm },
-        { x: layout.markers["2"].center[0] * pxPerMm, y: layout.markers["2"].center[1] * pxPerMm },
-        { x: layout.markers["3"].center[0] * pxPerMm, y: layout.markers["3"].center[1] * pxPerMm }
-      ];
+      // 1. Detect markers in source image
+      const srcCorners = detectCornerMarkers(offCtx, scan.img.width, scan.img.height, scanData);
+      const hasMidlineLayout = Boolean(layout.markers?.["4"] && layout.markers?.["5"]);
+      const usePiecewise = Boolean(srcCorners.hasMidline && hasMidlineLayout);
+      let H_canToSrc = null;
+      let H_top = null;
+      let H_bottom = null;
+      let midYCan = Math.round(((layout.page && layout.page.height) || 297) * pxPerMm / 2);
 
-      // 3. Compute homography mapping canonical coords -> source scan coords, and source -> canonical
-      const H_canToSrc = computeHomography(dstCorners, srcCorners);
+      if (usePiecewise) {
+        midYCan = Math.round(layout.markers["4"].center[1] * pxPerMm);
+        const dstTop = [
+          { x: layout.markers["0"].center[0] * pxPerMm, y: layout.markers["0"].center[1] * pxPerMm },
+          { x: layout.markers["1"].center[0] * pxPerMm, y: layout.markers["1"].center[1] * pxPerMm },
+          { x: layout.markers["5"].center[0] * pxPerMm, y: layout.markers["5"].center[1] * pxPerMm },
+          { x: layout.markers["4"].center[0] * pxPerMm, y: layout.markers["4"].center[1] * pxPerMm }
+        ];
+        const srcTop = [srcCorners[0], srcCorners[1], srcCorners.midRight, srcCorners.midLeft];
+        H_top = computeHomography(dstTop, srcTop);
+
+        const dstBottom = [
+          { x: layout.markers["4"].center[0] * pxPerMm, y: layout.markers["4"].center[1] * pxPerMm },
+          { x: layout.markers["5"].center[0] * pxPerMm, y: layout.markers["5"].center[1] * pxPerMm },
+          { x: layout.markers["2"].center[0] * pxPerMm, y: layout.markers["2"].center[1] * pxPerMm },
+          { x: layout.markers["3"].center[0] * pxPerMm, y: layout.markers["3"].center[1] * pxPerMm }
+        ];
+        const srcBottom = [srcCorners.midLeft, srcCorners.midRight, srcCorners[2], srcCorners[3]];
+        H_bottom = computeHomography(dstBottom, srcBottom);
+        H_canToSrc = H_top;
+      } else {
+        const dstCorners = [
+          { x: layout.markers["0"].center[0] * pxPerMm, y: layout.markers["0"].center[1] * pxPerMm },
+          { x: layout.markers["1"].center[0] * pxPerMm, y: layout.markers["1"].center[1] * pxPerMm },
+          { x: layout.markers["2"].center[0] * pxPerMm, y: layout.markers["2"].center[1] * pxPerMm },
+          { x: layout.markers["3"].center[0] * pxPerMm, y: layout.markers["3"].center[1] * pxPerMm }
+        ];
+        H_canToSrc = computeHomography(dstCorners, srcCorners);
+      }
 
       // Rectify source scan image into canonical 4 px/mm space for crisp handwriting and name crop extraction
-      const rectCanvas = warpScanToCanonical(offCtx, scan.img.width, scan.img.height, H_canToSrc, targetW, targetH);
+      const rectCanvas = warpScanToCanonical(offCtx, scan.img.width, scan.img.height, H_canToSrc, targetW, targetH, scanData, H_bottom, midYCan, 0);
 
-      // 4. Sample each bubble in layout with adaptive centering
+      // 4. Sample each bubble in layout with direct annular contrast math
       const itemAnswers = {};
       const bubbleDiagnostics = [];
 
@@ -7447,8 +7617,9 @@
         const canY = b.center[1] * pxPerMm;
         const rad = b.radius * pxPerMm;
 
-        // Map canonical center to source image pixels
-        const srcPt = applyHomography(H_canToSrc, { x: canX, y: canY });
+        // Map canonical center to source image pixels using active homography
+        const H = usePiecewise ? (canY <= midYCan ? H_top : H_bottom) : H_canToSrc;
+        const srcPt = applyHomography(H, { x: canX, y: canY });
 
         // Sample bubble interior (radius * 0.65) vs background annulus (radius * 1.0 to 1.25)
         const sampleR = Math.max(2, Math.round(rad * 0.65));
@@ -7460,39 +7631,8 @@
         const sx = Math.round(srcPt.x);
         const sy = Math.round(srcPt.y);
 
-        // Adaptive bubble centering (snaps to physical circle under wavy scans)
-        const searchW = Math.max(2, Math.round(rad * 0.75));
-        const totalW = bgR + searchW;
-        let optSx = sx;
-        let optSy = sy;
-
-        if (sx >= totalW && sx < scan.img.width - totalW && sy >= totalW && sy < scan.img.height - totalW) {
-          const searchBlock = offCtx.getImageData(sx - totalW, sy - totalW, totalW * 2 + 1, totalW * 2 + 1).data;
-          const sBlockSize = totalW * 2 + 1;
-          const ringRad = Math.round(rad);
-          let minRingScore = Infinity;
-
-          for (let ody = -searchW; ody <= searchW; ody += 2) {
-            for (let odx = -searchW; odx <= searchW; odx += 2) {
-              let rSum = 0;
-              for (let k = 0; k < 8; k++) {
-                const ang = (k * Math.PI) / 4;
-                const rpx = Math.round(odx + ringRad * Math.cos(ang));
-                const rpy = Math.round(ody + ringRad * Math.sin(ang));
-                const pIdx = ((rpy + totalW) * sBlockSize + (rpx + totalW)) * 4;
-                rSum += 0.299 * searchBlock[pIdx] + 0.587 * searchBlock[pIdx + 1] + 0.114 * searchBlock[pIdx + 2];
-              }
-              if (rSum < minRingScore) {
-                minRingScore = rSum;
-                optSx = sx + odx;
-                optSy = sy + ody;
-              }
-            }
-          }
-        }
-
-        if (optSx >= bgR && optSx < scan.img.width - bgR && optSy >= bgR && optSy < scan.img.height - bgR) {
-          const block = offCtx.getImageData(optSx - bgR, optSy - bgR, bgR * 2 + 1, bgR * 2 + 1).data;
+        if (sx >= bgR && sx < scan.img.width - bgR && sy >= bgR && sy < scan.img.height - bgR) {
+          const block = offCtx.getImageData(sx - bgR, sy - bgR, bgR * 2 + 1, bgR * 2 + 1).data;
           const bSize = bgR * 2 + 1;
 
           for (let dy = -bgR; dy <= bgR; dy++) {
@@ -7533,13 +7673,13 @@
 
       // 5. Score student answers against answer key
       let rawScore = 0;
-      let maxScore = 0;
+      let calculatedMaxScore = 0;
       const gradedItems = {};
 
       for (const [itemNumStr, keyItem] of Object.entries(key.items)) {
         if (keyItem.kind === 'text') continue;
         const pts = keyItem.points != null ? Number(keyItem.points) : 1.0;
-        maxScore += pts;
+        calculatedMaxScore += pts;
 
         const studentChoices = itemAnswers[itemNumStr] || itemAnswers[parseInt(itemNumStr)] || [];
         const isCorrect = (studentChoices.length === 1 && studentChoices[0] === keyItem.answer);
@@ -7614,9 +7754,13 @@
             rubric: hItem.rubric,
             roi: hItem.roi
           };
-          maxScore += hPts;
+          calculatedMaxScore += hPts;
         }
       }
+
+      const maxScore = (key && typeof key.total_points === 'number' && key.total_points > 0)
+        ? key.total_points
+        : calculatedMaxScore;
 
       const percentage = maxScore > 0 ? (rawScore / maxScore) * 100 : 0;
 
@@ -7628,6 +7772,13 @@
 
       for (const [itemNumStr, itemResult] of Object.entries(gradedItems)) {
         if (itemResult.kind === 'text') continue;
+        if (itemNumStr.endsWith('_corr')) {
+          const parentQ = itemNumStr.replace(/_corr$/, '');
+          const parentItem = key?.items?.[parentQ];
+          if (parentItem && String(parentItem.answer || parentItem.correct || '').toUpperCase() === 'T') {
+            continue;
+          }
+        }
         if (itemResult.actual === "BLANK" || !itemResult.actual) {
           blankCount++;
           blankQuestions.push(itemNumStr);
@@ -7688,10 +7839,10 @@
         matchField
       };
 
-      let scanData = null;
+      let serializedScanData = null;
       try {
         if (rectCanvas && typeof rectCanvas.toDataURL === 'function') {
-          scanData = rectCanvas.toDataURL('image/jpeg', 0.70);
+          serializedScanData = rectCanvas.toDataURL('image/jpeg', 0.70);
         }
       } catch (_) {}
 
@@ -7711,8 +7862,8 @@
         targetW,
         targetH,
         scanImg: rectCanvas,
-        scanData,
-        _cachedScanData: scanData,
+        scanData: serializedScanData,
+        _cachedScanData: serializedScanData,
         reviewFlags
       };
     }
@@ -8020,6 +8171,7 @@
       // Initial yield to allow browser to render the busy state, progress bar, and spinner
       await yieldToMain();
 
+      showLoading("Grading Scans", `Preparing ${state.scans.length} scan${state.scans.length > 1 ? 's' : ''}...`, 0);
       try {
         const grades = [];
         const total = state.scans.length;
@@ -8027,6 +8179,7 @@
         for (let i = 0; i < total; i++) {
           const scan = state.scans[i];
           const pctStart = Math.round((i / total) * 100);
+          showLoading("Grading Scans", `Grading scan ${i + 1} of ${total} (${scan?.name || ''})...`, pctStart);
           if (progressBar) progressBar.style.width = `${pctStart}%`;
           if (progressText) {
             const scanName = (scan && scan.name) ? scan.name : `Scan ${i + 1}`;
@@ -8096,6 +8249,7 @@
           await yieldToMain();
         }
 
+        showLoading("Grading Scans", "Analyzing psychometrics and rendering reports...", 100);
         if (progressText) {
           progressText.textContent = "Analyzing psychometrics and rendering reports...";
         }
@@ -8112,6 +8266,7 @@
         console.error("Grading failed:", err);
         alert("An error occurred during grading: " + (err && err.message ? err.message : String(err)));
       } finally {
+        hideLoading();
         state.isGrading = false;
         if (progressWrap) progressWrap.style.display = 'none';
         if (progressText) progressText.style.display = 'none';
@@ -9759,26 +9914,60 @@
       if ($('horizontal-flashcard-deck')) $('horizontal-flashcard-deck').style.display = 'block';
       if ($('horizontal-prompt-card')) $('horizontal-prompt-card').style.display = 'block';
 
-      // Ensure select element has current options
-      if (selectItem) {
-        const curVal = selectItem.value;
-        selectItem.innerHTML = horizontalItems.map(it => `
-          <option value="${it.key}" ${it.key === curVal ? 'selected' : ''}>${it.label} (${it.points} pts)</option>
-        `).join('');
-        if (!selectItem.value || !horizontalItems.some(it => it.key === selectItem.value)) {
-          selectItem.value = horizontalItems[0].key;
+      // Scope filtering (All Questions, Flagged Only, or Portion/Type)
+      const selectScope = $('select-horizontal-scope');
+      const grades = state.results?.grades || [];
+      let scopedItems = horizontalItems;
+
+      if (selectScope) {
+        const curScope = selectScope.value || 'all';
+        const availableTypes = new Set(horizontalItems.map(it => it.type));
+        let scopeHtml = '<option value="all">All Questions</option><option value="flagged">Flagged / Unsure Only</option>';
+        if (availableTypes.has('correction')) scopeHtml += '<option value="type_correction">Corrections Only</option>';
+        if (availableTypes.has('short_answer')) scopeHtml += '<option value="type_short_answer">Short Answer</option>';
+        if (availableTypes.has('essay')) scopeHtml += '<option value="type_essay">Essay Only</option>';
+        if (Array.isArray(state.layout?.zones)) {
+          state.layout.zones.forEach((z, zIdx) => {
+            if (z.label || z.title) {
+              scopeHtml += `<option value="zone_${z.id || zIdx}">${escapeHtml(z.label || z.title)}</option>`;
+            }
+          });
+        }
+        selectScope.innerHTML = scopeHtml;
+        if (selectScope.options && Array.from(selectScope.options).some(o => o.value === curScope)) {
+          selectScope.value = curScope;
+        }
+
+        if (curScope === 'flagged') {
+          const flagged = horizontalItems.filter(it => grades.some(g => g.gradedItems?.[it.key]?.status === 'unsure'));
+          if (flagged.length > 0) scopedItems = flagged;
+        } else if (curScope.startsWith('type_')) {
+          const t = curScope.replace('type_', '');
+          const typed = horizontalItems.filter(it => it.type === t);
+          if (typed.length > 0) scopedItems = typed;
         }
       }
 
-      const activeKey = selectItem ? selectItem.value : horizontalItems[0].key;
-      const activeItem = horizontalItems.find(it => it.key === activeKey) || horizontalItems[0];
-      const activeIdx = horizontalItems.indexOf(activeItem);
+      // Ensure select element has current options
+      if (selectItem) {
+        const curVal = selectItem.value;
+        selectItem.innerHTML = scopedItems.map(it => `
+          <option value="${it.key}" ${it.key === curVal ? 'selected' : ''}>${it.label} (${it.points} pts)</option>
+        `).join('');
+        if (!selectItem.value || !scopedItems.some(it => it.key === selectItem.value)) {
+          selectItem.value = scopedItems[0].key;
+        }
+      }
+
+      const activeKey = selectItem ? selectItem.value : scopedItems[0].key;
+      const activeItem = scopedItems.find(it => it.key === activeKey) || scopedItems[0];
+      const activeIdx = scopedItems.indexOf(activeItem);
 
       // Update prev / next item buttons
       const prevBtn = $('btn-horizontal-item-prev');
       const nextBtn = $('btn-horizontal-item-next');
       if (prevBtn) prevBtn.disabled = activeIdx <= 0;
-      if (nextBtn) nextBtn.disabled = activeIdx >= horizontalItems.length - 1;
+      if (nextBtn) nextBtn.disabled = activeIdx >= scopedItems.length - 1;
 
       // Update reference card prompt, rubric, and expected answer
       if ($('horizontal-item-title')) $('horizontal-item-title').textContent = activeItem.label;
@@ -9788,7 +9977,6 @@
       if ($('horizontal-item-rubric')) $('horizontal-item-rubric').textContent = activeItem.rubric || 'Instructor verification';
       if ($('horizontal-badge-type')) $('horizontal-badge-type').textContent = activeItem.type.replace('_', ' ').toUpperCase();
 
-      const grades = state.results?.grades || [];
       if (grades.length === 0) {
         if (activeCardContainer) {
           activeCardContainer.innerHTML = `
@@ -11358,6 +11546,7 @@
       if (!data || !data.results || !Array.isArray(data.results.grades)) {
         throw new Error('Invalid or corrupted grading session progress file.');
       }
+      showLoading("Restoring Session", `Restoring ${data.results.grades.length} student grades...`);
 
       state.layout = data.layout || null;
       state.key = data.key || null;
@@ -11523,7 +11712,9 @@
         return Promise.resolve();
       });
 
-      return Promise.all(decodePromises).then(postDecode);
+      return Promise.all(decodePromises).then(postDecode).finally(() => {
+        hideLoading();
+      });
     }
     window.restoreCheckerProgress = restoreCheckerProgress;
 
@@ -12048,7 +12239,10 @@
         }
         btn?.classList?.add?.('is-connected');
         if (dot) dot.style.display = 'inline-block';
-        if (label) label.textContent = googleDriveState.user.name || googleDriveState.user.email || 'Drive: Connected';
+        if (label) {
+          label.textContent = googleDriveState.user.name || googleDriveState.user.email || 'Drive: Connected';
+          label.style.display = 'none';
+        }
         updateGoogleSyncStatus('synced');
         if (viewDisc) viewDisc.style.display = 'none';
         if (viewConn) viewConn.style.display = 'flex';
@@ -12070,7 +12264,10 @@
         btn?.classList?.remove?.('is-connected');
         if (dot) dot.style.display = 'none';
         updateGoogleSyncStatus('hidden');
-        if (label) label.textContent = 'Sign in with Google';
+        if (label) {
+          label.textContent = 'Sign in with Google';
+          label.style.display = 'none';
+        }
         if (viewDisc) viewDisc.style.display = 'flex';
         if (viewConn) viewConn.style.display = 'none';
       }
@@ -12502,6 +12699,32 @@
       xhr.send();
     }
 
+    function deleteSessionFromGoogleDrive(token, fileId, callback) {
+      if (!token || !fileId) {
+        if (callback) callback(new Error('Missing token or file ID'));
+        return;
+      }
+      const xhr = new XMLHttpRequest();
+      xhr.open('DELETE', 'https://www.googleapis.com/drive/v3/files/' + encodeURIComponent(fileId));
+      xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+      xhr.onload = function() {
+        if (xhr.status === 401) {
+          handleGoogleTokenExpired();
+          if (callback) callback(new Error('Google session expired. Please reconnect your account.'));
+          return;
+        }
+        if (xhr.status === 204 || xhr.status === 200) {
+          if (callback) callback(null, true);
+        } else {
+          if (callback) callback(new Error('Failed to delete session from Google Drive: ' + xhr.statusText));
+        }
+      };
+      xhr.onerror = function() {
+        if (callback) callback(new Error('Network error connecting to Google Drive'));
+      };
+      xhr.send();
+    }
+
     // Attach core functions to window for testing and external access
     window.state = state;
     window.serializeProgressSession = serializeProgressSession;
@@ -12527,6 +12750,7 @@
     window.saveExamPackageToGoogleDrive = saveExamPackageToGoogleDrive;
     window.listGoogleDriveSessions = listGoogleDriveSessions;
     window.restoreSessionFromGoogleDrive = restoreSessionFromGoogleDrive;
+    window.deleteSessionFromGoogleDrive = deleteSessionFromGoogleDrive;
     window.disconnectGoogleDrive = disconnectGoogleDrive;
     window.handleGoogleTokenExpired = handleGoogleTokenExpired;
 
@@ -12617,7 +12841,7 @@
     });
 
     function openSettingsModal() {
-      const modal = $('modal-settings') || $('modal-google-drive');
+      const modal = $('modal-google-drive') || $('modal-settings');
       if (modal?.showModal) {
         updateGoogleUiState();
         modal.showModal();
@@ -12755,13 +12979,47 @@
           const dateStr = f.modifiedTime ? new Date(f.modifiedTime).toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
           item.innerHTML = `
             <div style="min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-              <strong style="color: var(--text); font-size: 0.78rem;">${f.name}</strong>
+              <strong style="color: var(--text); font-size: 0.78rem;">${escapeHtml(f.name)}</strong>
               <div style="font-size: 0.68rem; color: var(--text-muted);">${dateStr}</div>
             </div>
-            <button type="button" class="btn btn--primary btn-xs btn-restore-file" style="flex-shrink: 0;">Restore</button>
+            <div style="display: flex; gap: 0.35rem; align-items: center; flex-shrink: 0;">
+              <button type="button" class="btn btn--primary btn-xs btn-restore-file">Restore</button>
+              <button type="button" class="btn btn--secondary btn-xs btn-delete-file" style="color: var(--danger, #ef4444); border-color: rgba(239, 68, 68, 0.3);" title="Delete from Google Drive">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+              </button>
+            </div>
           `;
           item.querySelector('.btn-restore-file').addEventListener('click', () => {
             restoreSessionFromGoogleDrive(googleDriveState.accessToken, f.id, f.name);
+          });
+          const delBtn = item.querySelector('.btn-delete-file');
+          delBtn?.addEventListener('click', () => {
+            if (delBtn.dataset.confirming === 'true') {
+              deleteSessionFromGoogleDrive(googleDriveState.accessToken, f.id, (delErr) => {
+                if (delErr) {
+                  alert('Could not delete file from Google Drive: ' + delErr.message);
+                } else {
+                  showToast(`✓ Deleted "${f.name}" from Google Drive`);
+                  item.remove();
+                  if (listEl.children.length === 0) {
+                    listEl.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 0.5rem;">No saved sessions found in "Instructors\' Toolkit" folder.</div>';
+                  }
+                }
+              });
+            } else {
+              delBtn.dataset.confirming = 'true';
+              delBtn.textContent = 'Delete?';
+              delBtn.style.color = '#fff';
+              delBtn.style.background = 'var(--danger, #ef4444)';
+              setTimeout(() => {
+                if (delBtn && delBtn.dataset && delBtn.dataset.confirming === 'true') {
+                  delBtn.dataset.confirming = 'false';
+                  delBtn.style.color = 'var(--danger, #ef4444)';
+                  delBtn.style.background = '';
+                  delBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>';
+                }
+              }, 3000);
+            }
           });
           listEl.appendChild(item);
         });
@@ -12824,11 +13082,14 @@
         btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="google-status-spinner" style="display: inline-block; vertical-align: middle; margin-right: 0.35rem;"></svg> <span>Transcribing...</span>`;
       }
 
+      showLoading("AI Handwriting Transcription", `Transcribing answers for ${activeItem?.label || itemKey}...`, 0);
       let count = 0;
       try {
         const grades = state.results?.grades || [];
         for (let i = 0; i < grades.length; i++) {
           const g = grades[i];
+          const pct = Math.round(((i + 1) / (grades.length || 1)) * 100);
+          showLoading("AI Handwriting Transcription", `Transcribing answer ${i + 1} of ${grades.length}...`, pct);
           if (!g.gradedItems) g.gradedItems = {};
           if (!g.gradedItems[itemKey]) {
             g.gradedItems[itemKey] = {
@@ -12872,6 +13133,7 @@
           showToast(`✓ Auto-transcribed ${count} student answers`);
         }
       } finally {
+        hideLoading();
         if (btn) {
           btn.disabled = false;
           btn.innerHTML = origText;
@@ -12883,6 +13145,10 @@
 
     $('btn-batch-ai-transcribe')?.addEventListener('click', autoTranscribeActiveItem);
     $('chk-ai-handwriting')?.addEventListener('change', () => renderHorizontalGradingView());
+    $('select-horizontal-scope')?.addEventListener('change', () => {
+      horizontalDeckState.currentIndex = 0;
+      renderHorizontalGradingView();
+    });
 
     // Horizontal Grading Item Navigator & Bulk Accept listeners
     $('select-horizontal-item')?.addEventListener('change', () => {

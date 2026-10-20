@@ -58,6 +58,7 @@ function initElements() {
     examTitle: $('#exam-title-input'),
     paperSelect: $('#paper-select'),
     paperBtns: $$('.segmented-btn[data-paper]'),
+    chkMidlineFiducials: $('#chk-midline-fiducials'),
     samplePreset: $('#sample-preset'),
     btnNewSheet: $('#btn-new-sheet'),
     btnSaveBuild: $('#btn-save-build'),
@@ -106,6 +107,7 @@ function initElements() {
     genPaper: $('#gen-paper'),
     genSidMode: $('#gen-sid-mode'),
     genInstructions: $('#gen-instructions'),
+    genMidlineFiducials: $('#gen-midline-fiducials'),
     genPartsList: $('#gen-parts-list'),
     btnGenAddPart: $('#btn-gen-add-part'),
     genPreviewPaperLabel: $('#gen-preview-paper-label'),
@@ -2186,6 +2188,11 @@ function update(options = {}) {
     btn.classList.toggle('is-active', btn.dataset.paper === state.template.paper);
   }
 
+  // Midline fiducials checkbox sync
+  if (els.chkMidlineFiducials) {
+    els.chkMidlineFiducials.checked = Boolean(state.template.fiducial?.ids?.length === 6);
+  }
+
   renderMeta(state.layout);
   renderPreview();
 
@@ -4069,6 +4076,14 @@ function generateExamFromGeneratorModal() {
     title,
     paper,
     bubble: { diameter: 4.2, pitchX: 5.6, pitchY: 5.4 },
+    fiducial: {
+      type: 'aruco',
+      dictionary: 'DICT_4X4_50',
+      size: 10,
+      inset: 7,
+      quietZone: 3,
+      ids: els.genMidlineFiducials?.checked ? [0, 1, 4, 5, 2, 3] : [0, 1, 2, 3]
+    },
     zones,
   };
 
@@ -4133,6 +4148,20 @@ function initEvents() {
       update();
       fitPreview();
     }
+  });
+
+  // Midline lateral fiducials (anti-warping) checkbox toggle
+  els.chkMidlineFiducials?.addEventListener('change', () => {
+    if (!state.template) return;
+    if (!state.template.fiducial) {
+      state.template.fiducial = { type: 'aruco', dictionary: 'DICT_4X4_50', size: 10, inset: 7, quietZone: 3 };
+    }
+    if (els.chkMidlineFiducials.checked) {
+      state.template.fiducial.ids = [0, 1, 4, 5, 2, 3];
+    } else {
+      state.template.fiducial.ids = [0, 1, 2, 3];
+    }
+    update();
   });
 
   // Paper size buttons (if present)

@@ -152,6 +152,12 @@
             <option value="Half-Folio">Half Folio (6.5 × 8.5 in)</option>
           </select>
         </div>
+        <div class="sheet-setting-row" style="margin-top: 0.45rem;">
+          <label class="gen-checkbox-label" style="font-size: 0.76rem; display: flex; align-items: center; gap: 0.45rem; cursor: pointer; color: var(--text-muted);">
+            <input type="checkbox" id="chk-midline-fiducials" style="cursor: pointer;">
+            <span>Print Midline Lateral Fiducials (Anti-Warping)</span>
+          </label>
+        </div>
       </div>
 
       <!-- Studio Tab Navigation -->
@@ -505,6 +511,12 @@
                 <label class="gen-checkbox-label">
                   <input type="checkbox" id="gen-instructions" checked>
                   <span>Include Standard Student Instructions Banner</span>
+                </label>
+              </div>
+              <div class="gen-field gen-field--span-2">
+                <label class="gen-checkbox-label">
+                  <input type="checkbox" id="gen-midline-fiducials">
+                  <span>Print Midline Lateral Fiducials (Anti-Warping)</span>
                 </label>
               </div>
             </div>

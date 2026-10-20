@@ -108,12 +108,9 @@ function extractCheckerFunctions(htmlContent) {
 test('Decision 37: Unobtrusive session banner and zero confirm() blockers on load', () => {
   const checkerHtml = fs.readFileSync(path.join(rootDir, 'builder/checker.html'), 'utf8');
 
-  // 1. Unobtrusive banner exists with actions
-  assert.ok(checkerHtml.includes('id="banner-resume-session"'), 'Banner element exists');
-  assert.ok(checkerHtml.includes('id="btn-banner-resume"'), 'Banner resume button exists');
-  assert.ok(checkerHtml.includes('id="btn-banner-load-file"'), 'Banner load file button exists');
-  assert.ok(checkerHtml.includes('id="btn-banner-clear"'), 'Banner clear button exists');
-  assert.ok(checkerHtml.includes('id="btn-banner-dismiss"'), 'Banner dismiss button exists');
+  // 1. Persistent banner is eliminated in favor of discreet header Resume button
+  assert.ok(!checkerHtml.includes('id="banner-resume-session"'), 'Banner element eliminated');
+  assert.ok(checkerHtml.includes('id="btn-resume-progress"'), 'Discreet header resume button exists');
 
   // 2. No blocking confirm() calls exist in checker.html
   assert.equal((checkerHtml.match(/confirm\(/g) || []).length, 0, 'Zero confirm() modal calls allowed in checker.html');

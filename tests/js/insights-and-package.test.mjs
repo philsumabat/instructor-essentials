@@ -157,13 +157,10 @@ test('Checker Studio: Symmetrical upload boxes for Key & Roster with CSV templat
   assert.ok(checkerHtml.includes('id="key-status-box"'), 'key-status-box present');
   assert.ok(checkerHtml.includes('id="btn-clear-key"'), 'btn-clear-key present');
 
-  // Verify Student Roster card structure
-  assert.ok(checkerHtml.includes('id="card-roster-quick"'), 'card-roster-quick present');
-  assert.ok(checkerHtml.includes('id="roster-dropzone"'), 'roster-dropzone present');
-  assert.ok(checkerHtml.includes('id="input-roster-direct"'), 'input-roster-direct present');
-  assert.ok(checkerHtml.includes('id="btn-download-roster-template"'), 'btn-download-roster-template present');
-  assert.ok(checkerHtml.includes('id="roster-status-box"'), 'roster-status-box present');
-  assert.ok(checkerHtml.includes('id="btn-clear-roster"'), 'btn-clear-roster present');
+  // Verify Student Roster upload card is eliminated in favor of handwritten name cropping
+  assert.ok(!checkerHtml.includes('id="card-roster-quick"'), 'card-roster-quick removed');
+  assert.ok(!checkerHtml.includes('id="roster-dropzone"'), 'roster-dropzone removed');
+  assert.ok(!checkerHtml.includes('id="input-roster-direct"'), 'input-roster-direct removed');
 
   // Verify Starter Presets and Export Sheet are completely removed from Checker Studio
   assert.ok(!checkerHtml.includes('id="preset-selector"'), 'preset-selector removed');

@@ -152,7 +152,7 @@ test('Feature 4: Checker Studio progress saving, resume banner, and state restor
   assert.ok(checkerHtml.includes('id="btn-save-progress"'), 'btn-save-progress exists in header');
   assert.ok(checkerHtml.includes('id="btn-resume-progress"'), 'btn-resume-progress exists in header');
   assert.ok(checkerHtml.includes('id="input-progress-file"'), 'input-progress-file exists');
-  assert.ok(checkerHtml.includes('id="banner-resume-session"'), 'banner-resume-session banner exists');
+  assert.ok(!checkerHtml.includes('id="banner-resume-session"'), 'banner-resume-session banner eliminated');
   assert.ok(checkerHtml.includes('id="btn-results-save-progress"'), 'btn-results-save-progress exists');
 
   // Verify functions are implemented and exported to window

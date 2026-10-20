@@ -496,7 +496,7 @@ test('checker.html implements progressive disclosure in sidebar, modular upload 
   // Modular upload cards in sidebar
   assert.ok(checkerHtml.includes('id="card-layout-quick"'), 'Exam layout card present');
   assert.ok(checkerHtml.includes('id="card-key-quick"'), 'Answer key card present');
-  assert.ok(checkerHtml.includes('id="card-roster-quick"'), 'Student roster card present');
+  assert.ok(!checkerHtml.includes('id="card-roster-quick"'), 'Student roster card removed');
   assert.ok(checkerHtml.includes('id="card-scans-quick"'), 'Exam scans card present');
 
   // Class modifiers for progressive disclosure

@@ -2630,3 +2630,34 @@ dialog.modal-dialog--answer-key {
     scroll-behavior: auto !important;
   }
 }
+
+/* Google Drive Integration Button & Status */
+.btn-google-drive {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--text);
+  transition: all 140ms var(--ease);
+}
+.btn-google-drive:hover {
+  border-color: #4285F4;
+  background: color-mix(in srgb, #4285F4 8%, var(--panel));
+}
+.btn-google-drive.is-connected {
+  border-color: #34A853 !important;
+  background: color-mix(in srgb, #34A853 10%, var(--panel)) !important;
+  color: var(--text) !important;
+}
+.google-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #34A853;
+  box-shadow: 0 0 6px rgba(52, 168, 83, 0.7);
+  display: inline-block;
+  margin-left: 0.2rem;
+}
+

@@ -162,18 +162,13 @@ test('Feature 2: Fuzzy Written Detail Estimation & Roster Mismatch Handling', ()
   assert.equal(match2.student.name, 'Alice Walker');
   assert.ok(match2.score >= 0.85);
 
-  // 3. UI Elements in checker.html
-  assert.ok(checkerHtml.includes('id="filter-roster-mismatches"'), 'Mismatches filter pill exists');
-  assert.ok(checkerHtml.includes('id="count-roster-mismatches"'), 'Mismatches count badge exists');
-  assert.ok(checkerHtml.includes('id="roster-mismatch-panel"'), 'Interactive mismatch resolution panel exists');
-  assert.ok(checkerHtml.includes('id="btn-mismatch-confirm"'), 'Confirm Match button exists');
-  assert.ok(checkerHtml.includes('id="btn-mismatch-assign"'), 'Assign Selected button exists');
-  assert.ok(checkerHtml.includes('id="btn-mismatch-accept-new"'), 'Accept New Student button exists');
-
-  // 4. Mismatch actions exported to window
-  assert.equal(typeof ctx.confirmRosterMatch, 'function');
-  assert.equal(typeof ctx.assignSelectedRosterMatch, 'function');
-  assert.equal(typeof ctx.acceptNewStudent, 'function');
+  // 3. UI Elements in checker.html: roster upload UI removed in favor of handwritten name cropping
+  assert.ok(!checkerHtml.includes('id="roster-dropzone"'), 'Roster dropzone removed');
+  assert.ok(!checkerHtml.includes('id="roster-mismatch-panel"'), 'Roster mismatch panel removed');
+  assert.ok(!checkerHtml.includes('id="card-roster-quick"'), 'Roster quick upload card removed');
+  assert.ok(!checkerHtml.includes('id="filter-roster-mismatches"'), 'Roster mismatches filter button removed');
+  assert.ok(!checkerHtml.includes('id="count-roster-mismatches"'), 'Roster mismatches count badge removed');
+  assert.ok(checkerHtml.includes('cropROIFromScan'), 'cropROIFromScan implemented for handwritten student name crop');
 });
 
 test('Feature 3: Save & Resume Progress Serialization & Restoration', () => {
@@ -195,7 +190,7 @@ test('Feature 3: Save & Resume Progress Serialization & Restoration', () => {
   ctx.state.roster = [
     { id: '10482901', name: 'Alice Walker', classOffer: 'BIO101-SEC1' }
   ];
-  ctx.state.rosterFilter = 'mismatches';
+  ctx.state.rosterFilter = 'all';
   ctx.state.activeTab = 'horizontal';
   ctx.state.results = {
     passThreshold: 65,
@@ -205,6 +200,7 @@ test('Feature 3: Save & Resume Progress Serialization & Restoration', () => {
         examId: 'scan_01.jpg',
         studentId: '10482901',
         studentName: 'Alice Walker',
+        nameCropDataUrl: 'data:image/jpeg;base64,mockcropname123',
         classOffer: 'BIO101-SEC1',
         rawScore: 2.0,
         maxScore: 2.0,
@@ -224,10 +220,10 @@ test('Feature 3: Save & Resume Progress Serialization & Restoration', () => {
   assert.ok(serialized, 'Serialization succeeds');
   assert.equal(serialized.version, 1);
   assert.equal(serialized.layout.id, 'exam-50');
-  assert.equal(serialized.rosterFilter, 'mismatches');
   assert.equal(serialized.activeTab, 'horizontal');
   assert.equal(serialized.results.grades[0].classOffer, 'BIO101-SEC1');
   assert.equal(serialized.results.grades[0].percentage, 100.0);
+  assert.equal(serialized.results.grades[0].nameCropDataUrl, 'data:image/jpeg;base64,mockcropname123', 'Serializes nameCropDataUrl');
 
   // 2. Restore session into fresh context
   const ctx2 = extractCheckerFunctions(checkerHtml);
@@ -237,6 +233,7 @@ test('Feature 3: Save & Resume Progress Serialization & Restoration', () => {
   assert.equal(ctx2.state.results.grades.length, 1);
   assert.equal(ctx2.state.results.grades[0].classOffer, 'BIO101-SEC1');
   assert.equal(ctx2.state.results.grades[0].rawScore, 2.0);
+  assert.equal(ctx2.state.results.grades[0].nameCropDataUrl, 'data:image/jpeg;base64,mockcropname123', 'Restores nameCropDataUrl');
 
   // 3. Verify .grader.progress.json filename convention
   assert.ok(checkerHtml.includes('.grader.progress.json'), 'Saves with .grader.progress.json convention');
@@ -345,10 +342,9 @@ test('Feature 4: Horizontal Grading (Item-by-Item) Controller, Rubrics & Actions
 test('Feature 5: Anti-Slop & UI Quality Standards', () => {
   const checkerHtml = fs.readFileSync(path.join(rootDir, 'builder/checker.html'), 'utf8');
 
-  // 1. Zero raw floppy emoji in banner-resume-session (crisp SVG used)
-  assert.ok(!checkerHtml.includes('>💾<'), 'No raw floppy emoji in resume banner');
-  assert.ok(checkerHtml.includes('id="banner-resume-session"'), 'Resume banner present');
-  assert.match(checkerHtml, /id="banner-resume-session"[\s\S]*?<svg[\s\S]*?<\/svg>/, 'Resume banner contains SVG icon');
+  // 1. Persistent banner eliminated in favor of discreet header Resume button
+  assert.ok(!checkerHtml.includes('id="banner-resume-session"'), 'Resume banner eliminated');
+  assert.ok(checkerHtml.includes('id="btn-resume-progress"'), 'Discreet header resume button exists');
 
   // 2. Horizontal buttons have :focus-visible states
   assert.ok(checkerHtml.includes('.btn-horizontal-accept:focus-visible'), 'btn-horizontal-accept has :focus-visible');

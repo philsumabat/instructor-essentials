@@ -2835,6 +2835,37 @@ dialog.modal-dialog--answer-key {
   }
 }
 
+/* Google Drive Integration Button & Status */
+.btn-google-drive {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--text);
+  transition: all 140ms var(--ease);
+}
+.btn-google-drive:hover {
+  border-color: #4285F4;
+  background: color-mix(in srgb, #4285F4 8%, var(--panel));
+}
+.btn-google-drive.is-connected {
+  border-color: #34A853 !important;
+  background: color-mix(in srgb, #34A853 10%, var(--panel)) !important;
+  color: var(--text) !important;
+}
+.google-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #34A853;
+  box-shadow: 0 0 6px rgba(52, 168, 83, 0.7);
+  display: inline-block;
+  margin-left: 0.2rem;
+}
+
+
 </style>
   <style id="page-rule">@page { size: A4; margin: 0; }</style>
   <link rel="stylesheet" href="desktop.css">
@@ -2886,6 +2917,18 @@ dialog.modal-dialog--answer-key {
       <button type="button" id="btn-library" class="btn btn--secondary" title="Open saved exam builds library">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6 6h10M6 10h10"/></svg>
         <span>Saved Builds</span>
+      </button>
+
+      <!-- Google Drive Sign-In / Account -->
+      <button type="button" id="btn-google-drive" class="btn btn--secondary btn-google-drive" title="Sign in with Google to backup builds and answer keys to Google Drive">
+        <svg class="google-icon" width="14" height="14" viewBox="0 0 24 24">
+          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+        </svg>
+        <span id="label-google-drive">Sign in with Google</span>
+        <span id="google-drive-dot" class="google-status-dot" style="display: none;" title="Connected to Google Drive"></span>
       </button>
 
       <!-- Print Sheet Primary Button -->
@@ -3167,9 +3210,19 @@ dialog.modal-dialog--answer-key {
         <button type="button" class="btn-close-modal" id="btn-close-library" aria-label="Close">✕</button>
       </div>
       <div class="modal-body">
-        <p class="modal-desc">All exam templates saved in Sheet Builder. You can load, export, or delete them anytime.</p>
+        <div class="picker-tabs" style="display: flex; gap: 0.5rem; margin-bottom: 0.85rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">
+          <button type="button" id="tab-btn-library-local" class="btn btn--sm btn--primary" style="border-radius: var(--radius-full);">Local Builds</button>
+          <button type="button" id="tab-btn-library-cloud" class="btn btn--sm btn--secondary" style="border-radius: var(--radius-full); display: inline-flex; align-items: center; gap: 0.35rem;">
+            <svg class="google-icon" width="12" height="12" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
+            <span>Saved in Google Drive</span>
+          </button>
+        </div>
+        <p class="modal-desc" id="library-tab-desc">All exam templates saved in Sheet Builder. You can load, export, or delete them anytime.</p>
         <div class="saved-builds-list" id="saved-builds-list">
           <!-- Populated dynamically -->
+        </div>
+        <div class="saved-builds-list" id="cloud-builds-list" style="display: none;">
+          <!-- Populated dynamically from Google Drive -->
         </div>
       </div>
       <div class="modal-footer">
@@ -3178,6 +3231,93 @@ dialog.modal-dialog--answer-key {
           Import Sheet Builder File (.json)
         </button>
         <button type="button" id="btn-modal-close" class="btn btn--primary">Done</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Modal: Google Drive Online Cloud Backup (Zero external server, client-side OAuth) -->
+  <dialog id="modal-google-drive" class="modal-dialog app-chrome" style="max-width: 540px; width: 95vw; padding: 0; overflow: hidden;">
+    <div class="modal-card" style="padding: 0;">
+      <div style="display: flex; align-items: center; justify-content: space-between; padding: 1.1rem 1.4rem; border-bottom: 1px solid var(--border); background: var(--panel-header);">
+        <div style="display: flex; align-items: center; gap: 0.65rem;">
+          <svg class="google-icon" width="20" height="20" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+          </svg>
+          <h3 style="font-size: 1.05rem; font-weight: 700; margin: 0;">Google Drive Online Save</h3>
+        </div>
+        <button type="button" class="btn-close-modal" id="btn-close-gdrive" aria-label="Close dialog">✕</button>
+      </div>
+
+      <!-- Body when NOT connected -->
+      <div id="gdrive-view-disconnected" style="padding: 1.35rem 1.4rem; display: flex; flex-direction: column; gap: 1rem;">
+        <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin: 0;">
+          Save your exam builds and answer keys directly to your personal Google Drive in an <strong>"Instructor Essentials"</strong> folder. 100% free, private to your account, and with zero external server tracking.
+        </p>
+
+        <div>
+          <label for="input-gdrive-client-id" style="display: block; font-size: 0.78rem; font-weight: 600; margin-bottom: 0.35rem; color: var(--text);">
+            Google OAuth 2.0 Web Client ID:
+          </label>
+          <input type="text" id="input-gdrive-client-id" placeholder="e.g. 1234567890-abcdef.apps.googleusercontent.com" style="width: 100%; padding: 0.45rem 0.65rem; font-size: 0.8rem; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--panel-alt); color: var(--text); box-sizing: border-box;">
+          <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.35rem;">
+            Saved in your browser’s local storage. Stays completely private.
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 0.5rem; justify-content: flex-end; align-items: center; margin-top: 0.5rem;">
+          <button type="button" class="btn btn--secondary btn-sm" id="btn-gdrive-cancel">Cancel</button>
+          <button type="button" id="btn-gdrive-connect" class="btn btn--primary btn-sm" style="background: #1a73e8; border-color: #1a73e8; color: #fff;">
+            <svg class="google-icon" width="13" height="13" viewBox="0 0 24 24"><path fill="#fff" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#fff" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#fff" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#fff" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
+            <span>Sign In &amp; Connect Drive</span>
+          </button>
+        </div>
+
+        <details style="font-size: 0.74rem; color: var(--text-muted); background: var(--panel-alt); padding: 0.6rem 0.8rem; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+          <summary style="cursor: pointer; font-weight: 600; color: var(--text);">How to obtain a Google OAuth Client ID</summary>
+          <ol style="margin: 0.4rem 0 0 1.2rem; padding: 0; line-height: 1.4;">
+            <li>Visit Google Cloud Console (<a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener" style="color: var(--accent);">console.cloud.google.com</a>).</li>
+            <li>Create a project &gt; APIs &amp; Services &gt; Credentials.</li>
+            <li>Click <em>Create Credentials &gt; OAuth Client ID</em> (Web application).</li>
+            <li>Add Authorized JavaScript origin (e.g., <code>https://philsumabat.github.io</code> or your local address).</li>
+            <li>Paste the generated Client ID above. Free forever.</li>
+          </ol>
+        </details>
+      </div>
+
+      <!-- Body when CONNECTED -->
+      <div id="gdrive-view-connected" style="display: none; padding: 1.35rem 1.4rem; flex-direction: column; gap: 1rem;">
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; background: var(--panel-alt); border-radius: var(--radius-sm); border: 1px solid var(--border);">
+          <div style="display: flex; align-items: center; gap: 0.65rem;">
+            <img id="gdrive-user-avatar" src="" alt="Avatar" style="width: 32px; height: 32px; border-radius: 50%; display: none;">
+            <div>
+              <div id="gdrive-user-name" style="font-size: 0.85rem; font-weight: 700; color: var(--text);">Google User</div>
+              <div id="gdrive-user-email" style="font-size: 0.74rem; color: var(--text-muted);">user@example.com</div>
+            </div>
+          </div>
+          <span style="background: rgba(52, 168, 83, 0.15); color: #2e7d32; display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.75rem; font-weight: 600; padding: 0.2rem 0.5rem; border-radius: var(--radius-full);">
+            <span class="google-status-dot"></span> Connected
+          </span>
+        </div>
+
+        <div style="font-size: 0.82rem; color: var(--text); display: flex; flex-direction: column; gap: 0.5rem;">
+          <div><strong>Google Drive Target:</strong> Folder <code style="padding: 0.15rem 0.35rem; background: var(--panel-alt); border-radius: var(--radius-xs);">Instructor Essentials</code></div>
+          <div style="font-size: 0.74rem; color: var(--text-muted);">Exam builds and answer keys are saved automatically to your Drive when you click Save Build.</div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.25rem;">
+          <button type="button" id="btn-gdrive-save-now" class="btn btn--primary" style="justify-content: center; gap: 0.45rem;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            <span>Save Current Build to Google Drive</span>
+          </button>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border); padding-top: 0.85rem; margin-top: 0.5rem;">
+          <button type="button" id="btn-gdrive-disconnect" class="btn btn--secondary btn-xs" style="color: var(--danger);">Disconnect Account</button>
+          <button type="button" class="btn btn--secondary btn-xs" id="btn-gdrive-done">Close</button>
+        </div>
       </div>
     </div>
   </dialog>
@@ -5147,11 +5287,26 @@ function initElements() {
     samplePreset: $('#sample-preset'),
     btnSaveBuild: $('#btn-save-build'),
     btnLibrary: $('#btn-library'),
+    btnGoogleDrive: $('#btn-google-drive'),
+    labelGoogleDrive: $('#label-google-drive'),
+    googleDriveDot: $('#google-drive-dot'),
     modalLibrary: $('#modal-library'),
     btnCloseLibrary: $('#btn-close-library'),
     btnModalClose: $('#btn-modal-close'),
     savedBuildsList: $('#saved-builds-list'),
+    cloudBuildsList: $('#cloud-builds-list'),
+    tabBtnLibraryLocal: $('#tab-btn-library-local'),
+    tabBtnLibraryCloud: $('#tab-btn-library-cloud'),
+    libraryTabDesc: $('#library-tab-desc'),
     btnImportFileTrigger: $('#btn-import-file-trigger'),
+    modalGoogleDrive: $('#modal-google-drive'),
+    btnCloseGdrive: $('#btn-close-gdrive'),
+    btnGdriveCancel: $('#btn-gdrive-cancel'),
+    btnGdriveConnect: $('#btn-gdrive-connect'),
+    btnGdriveSaveNow: $('#btn-gdrive-save-now'),
+    btnGdriveDisconnect: $('#btn-gdrive-disconnect'),
+    btnGdriveDone: $('#btn-gdrive-done'),
+    inputGdriveClientId: $('#input-gdrive-client-id'),
     overlay: $('#overlay'),
     btnDlKey: $('#btn-dl-key'),
     btnPrint: $('#btn-print'),
@@ -7900,6 +8055,496 @@ function renderSavedBuildsList() {
   });
 }
 
+// ---- Google Drive Online Storage & Sync ----
+const GOOGLE_CLIENT_ID_STORAGE_KEY = 'instructor_essentials_gdrive_client_id';
+
+const googleDriveState = {
+  accessToken: null,
+  tokenClient: null,
+  folderId: null,
+  user: null,
+  isConnected: false,
+};
+
+function showToast(msg) {
+  let toast = $('#app-toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'app-toast';
+    toast.style.cssText = 'position: fixed; bottom: 24px; right: 24px; background: #0f172a; color: #f8fafc; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 10px 18px; font-size: 0.82rem; font-weight: 600; box-shadow: 0 10px 25px rgba(0,0,0,0.35); z-index: 99999; transition: opacity 0.25s ease, transform 0.25s ease; opacity: 0; transform: translateY(10px); pointer-events: none;';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = msg;
+  toast.style.opacity = '1';
+  if (typeof clearTimeout === 'function') clearTimeout(toast._timeout);
+  if (typeof setTimeout === 'function') {
+    toast._timeout = setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateY(10px)';
+    }, 3500);
+  }
+}
+window.showToast = showToast;
+
+function getGoogleClientId() {
+  try {
+    return localStorage.getItem(GOOGLE_CLIENT_ID_STORAGE_KEY) ||
+           localStorage.getItem('grader_gdrive_client_id') ||
+           (typeof window !== 'undefined' && window.__GOOGLE_CLIENT_ID__) ||
+           '';
+  } catch {
+    return '';
+  }
+}
+
+function setGoogleClientId(val) {
+  try {
+    if (val) {
+      localStorage.setItem(GOOGLE_CLIENT_ID_STORAGE_KEY, val.trim());
+    } else {
+      localStorage.removeItem(GOOGLE_CLIENT_ID_STORAGE_KEY);
+    }
+  } catch {}
+}
+
+function loadGoogleGis(callback, onError) {
+  if (window.google?.accounts?.oauth2) {
+    callback();
+    return;
+  }
+  const existing = document.querySelector('script[data-gis]');
+  if (existing) {
+    existing.addEventListener('load', () => callback());
+    return;
+  }
+  const s = document.createElement('script');
+  s.src = 'https://accounts.google.com/gsi/client';
+  s.async = true;
+  s.setAttribute('data-gis', 'true');
+  s.onload = () => callback();
+  s.onerror = () => {
+    if (onError) onError(new Error('Failed to load Google Identity Services library. Please check your internet connection.'));
+  };
+  document.head.appendChild(s);
+}
+
+function initGoogleDriveAuth() {
+  const clientId = getGoogleClientId();
+  if (!clientId) {
+    showToast('Please enter your Google OAuth Client ID first.');
+    openGoogleDriveModal();
+    return;
+  }
+
+  loadGoogleGis(() => {
+    try {
+      if (!googleDriveState.tokenClient) {
+        googleDriveState.tokenClient = window.google.accounts.oauth2.initTokenClient({
+          client_id: clientId,
+          scope: 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email',
+          callback: (resp) => {
+            if (resp && resp.error) {
+              showToast('Google Sign-In failed: ' + (resp.error_description || resp.error));
+              return;
+            }
+            if (resp && resp.access_token) {
+              handleGoogleAuthSuccess(resp.access_token);
+            }
+          },
+        });
+      }
+      googleDriveState.tokenClient.requestAccessToken({ prompt: '' });
+    } catch (err) {
+      showToast('Could not initialize Google authentication: ' + err.message);
+    }
+  }, (err) => {
+    showToast(err.message);
+  });
+}
+
+function handleGoogleAuthSuccess(token) {
+  googleDriveState.accessToken = token;
+  googleDriveState.isConnected = true;
+
+  const xhr = new XMLHttpRequest();
+  xhr.open('GET', 'https://www.googleapis.com/oauth2/v3/userinfo');
+  xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+  xhr.onload = function() {
+    if (xhr.status === 200) {
+      try {
+        googleDriveState.user = JSON.parse(xhr.responseText);
+      } catch {
+        googleDriveState.user = { name: 'Google User' };
+      }
+    } else {
+      googleDriveState.user = { name: 'Google User' };
+    }
+    updateGoogleUiState();
+    showToast('✓ Connected to Google Drive (' + (googleDriveState.user.email || googleDriveState.user.name || 'Account') + ')');
+    if (els.modalLibrary && els.modalLibrary.open && els.cloudBuildsList && els.cloudBuildsList.style.display !== 'none') {
+      renderCloudBuildsList();
+    }
+  };
+  xhr.onerror = function() {
+    googleDriveState.user = { name: 'Google User' };
+    updateGoogleUiState();
+    showToast('✓ Connected to Google Drive');
+  };
+  xhr.send();
+}
+
+function updateGoogleUiState() {
+  const btn = $('#btn-google-drive');
+  const label = $('#label-google-drive');
+  const dot = $('#google-drive-dot');
+  const viewDisc = $('#gdrive-view-disconnected');
+  const viewConn = $('#gdrive-view-connected');
+  const userName = $('#gdrive-user-name');
+  const userEmail = $('#gdrive-user-email');
+  const userAvatar = $('#gdrive-user-avatar');
+
+  if (googleDriveState.isConnected && googleDriveState.user) {
+    btn?.classList?.add('is-connected');
+    if (dot) dot.style.display = 'inline-block';
+    if (label) label.textContent = googleDriveState.user.email || 'Drive: Connected';
+    if (viewDisc) viewDisc.style.display = 'none';
+    if (viewConn) viewConn.style.display = 'flex';
+    if (userName) userName.textContent = googleDriveState.user.name || 'Google User';
+    if (userEmail) userEmail.textContent = googleDriveState.user.email || 'Online Storage Active';
+    if (userAvatar) {
+      if (googleDriveState.user.picture) {
+        userAvatar.src = googleDriveState.user.picture;
+        userAvatar.style.display = 'inline-block';
+      } else {
+        userAvatar.style.display = 'none';
+      }
+    }
+  } else {
+    btn?.classList?.remove('is-connected');
+    if (dot) dot.style.display = 'none';
+    if (label) label.textContent = 'Sign in with Google';
+    if (viewDisc) viewDisc.style.display = 'flex';
+    if (viewConn) viewConn.style.display = 'none';
+  }
+}
+
+function openGoogleDriveModal() {
+  const modal = $('#modal-google-drive');
+  if (!modal) return;
+  const inp = $('#input-gdrive-client-id');
+  if (inp) {
+    inp.value = getGoogleClientId();
+  }
+  updateGoogleUiState();
+  openModal(modal);
+}
+
+function disconnectGoogleDrive() {
+  if (googleDriveState.accessToken && window.google?.accounts?.oauth2?.revoke) {
+    try {
+      window.google.accounts.oauth2.revoke(googleDriveState.accessToken, () => {});
+    } catch {}
+  }
+  googleDriveState.accessToken = null;
+  googleDriveState.user = null;
+  googleDriveState.folderId = null;
+  googleDriveState.isConnected = false;
+  updateGoogleUiState();
+  showToast('Google Drive disconnected.');
+  if (els.modalLibrary && els.modalLibrary.open) {
+    renderCloudBuildsList();
+  }
+}
+
+function handleGoogleTokenExpired() {
+  googleDriveState.accessToken = null;
+  googleDriveState.isConnected = false;
+  updateGoogleUiState();
+  showToast('Google session expired. Please reconnect your account.');
+}
+
+function getOrCreateDriveFolder(token, callback) {
+  if (googleDriveState.folderId) {
+    callback(null, googleDriveState.folderId);
+    return;
+  }
+  const searchXhr = new XMLHttpRequest();
+  const query = encodeURIComponent("name = 'Instructor Essentials' and mimeType = 'application/vnd.google-apps.folder' and trashed = false");
+  searchXhr.open('GET', 'https://www.googleapis.com/drive/v3/files?q=' + query + '&fields=files(id,name)');
+  searchXhr.setRequestHeader('Authorization', 'Bearer ' + token);
+  searchXhr.onload = function() {
+    if (searchXhr.status === 401) {
+      handleGoogleTokenExpired();
+      if (callback) callback(new Error('Google session expired. Please reconnect your account.'));
+      return;
+    }
+    if (searchXhr.status === 200) {
+      try {
+        const res = JSON.parse(searchXhr.responseText);
+        if (res.files && res.files.length > 0) {
+          googleDriveState.folderId = res.files[0].id;
+          callback(null, googleDriveState.folderId);
+          return;
+        }
+      } catch {}
+    }
+    createDriveFolder(token, callback);
+  };
+  searchXhr.onerror = function() {
+    createDriveFolder(token, callback);
+  };
+  searchXhr.send();
+}
+
+function createDriveFolder(token, callback) {
+  const xhr = new XMLHttpRequest();
+  xhr.open('POST', 'https://www.googleapis.com/drive/v3/files');
+  xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+  xhr.setRequestHeader('Content-Type', 'application/json');
+  xhr.onload = function() {
+    if (xhr.status === 401) {
+      handleGoogleTokenExpired();
+      if (callback) callback(new Error('Google session expired. Please reconnect your account.'));
+      return;
+    }
+    if (xhr.status === 200 || xhr.status === 201) {
+      try {
+        const folder = JSON.parse(xhr.responseText);
+        googleDriveState.folderId = folder.id;
+        callback(null, folder.id);
+      } catch (e) {
+        callback(e);
+      }
+    } else {
+      callback(new Error('Failed to create Instructor Essentials folder in Google Drive: ' + xhr.statusText));
+    }
+  };
+  xhr.onerror = function() {
+    callback(new Error('Network error creating Google Drive folder'));
+  };
+  xhr.send(JSON.stringify({
+    name: 'Instructor Essentials',
+    mimeType: 'application/vnd.google-apps.folder'
+  }));
+}
+
+function uploadToGoogleDrive(token, fileName, mimeType, content, callback) {
+  getOrCreateDriveFolder(token, (folderErr, folderId) => {
+    if (folderErr) {
+      callback(folderErr);
+      return;
+    }
+
+    const metadata = {
+      name: fileName,
+      mimeType: mimeType,
+      parents: [folderId]
+    };
+
+    const boundary = '-------314159265358979323846';
+    const delimiter = "\r\n--" + boundary + "\r\n";
+    const closeDelim = "\r\n--" + boundary + "--";
+
+    const multipartRequestBody =
+      delimiter +
+      'Content-Type: application/json; charset=UTF-8\r\n\r\n' +
+      JSON.stringify(metadata) +
+      delimiter +
+      'Content-Type: ' + mimeType + '\r\n\r\n' +
+      content +
+      closeDelim;
+
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart');
+    xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+    xhr.setRequestHeader('Content-Type', 'multipart/related; boundary=' + boundary);
+    xhr.onload = function() {
+      if (xhr.status === 401) {
+        handleGoogleTokenExpired();
+        callback(new Error('Google session expired. Please reconnect your account.'));
+        return;
+      }
+      if (xhr.status === 200 || xhr.status === 201) {
+        try {
+          const resp = JSON.parse(xhr.responseText);
+          callback(null, resp);
+        } catch {
+          callback(null, { name: fileName });
+        }
+      } else {
+        callback(new Error('Drive upload failed: ' + xhr.status + ' ' + xhr.statusText));
+      }
+    };
+    xhr.onerror = function() {
+      callback(new Error('Network error during Google Drive upload'));
+    };
+    xhr.send(multipartRequestBody);
+  });
+}
+
+function saveCurrentBuildToDrive(silent = false) {
+  if (!googleDriveState.isConnected || !googleDriveState.accessToken) {
+    if (!silent) openGoogleDriveModal();
+    return;
+  }
+  if (!state.template) return;
+  const title = (state.template.title || 'Exam Build').trim();
+  const safeName = title.replace(/[/\\?%*:|"<>]/g, '-');
+  const fileName = `${safeName} - Exam Build.json`;
+  const content = JSON.stringify(state.template, null, 2);
+
+  uploadToGoogleDrive(googleDriveState.accessToken, fileName, 'application/json', content, (err) => {
+    if (err) {
+      if (!silent) showToast('Failed to save to Google Drive: ' + err.message);
+    } else {
+      showToast(`✓ Saved "${fileName}" to Google Drive`);
+    }
+  });
+}
+
+function listGoogleDriveBuilds(token, callback) {
+  getOrCreateDriveFolder(token, (folderErr, folderId) => {
+    if (folderErr) {
+      callback(folderErr);
+      return;
+    }
+    const query = encodeURIComponent(`trashed = false and '${folderId}' in parents and (mimeType = 'application/json' or name contains '.json' or name contains 'Build')`);
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', 'https://www.googleapis.com/drive/v3/files?q=' + query + '&fields=files(id,name,mimeType,createdTime,modifiedTime,size)&orderBy=modifiedTime desc');
+    xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+    xhr.onload = function() {
+      if (xhr.status === 401) {
+        handleGoogleTokenExpired();
+        callback(new Error('Google session expired. Please reconnect your account.'));
+        return;
+      }
+      if (xhr.status === 200) {
+        try {
+          const res = JSON.parse(xhr.responseText);
+          callback(null, res.files || []);
+        } catch (e) {
+          callback(e);
+        }
+      } else {
+        callback(new Error('Failed to list files from Google Drive'));
+      }
+    };
+    xhr.onerror = function() {
+      callback(new Error('Network error listing Google Drive files'));
+    };
+    xhr.send();
+  });
+}
+
+function renderCloudBuildsList() {
+  const cloudListEl = $('#cloud-builds-list');
+  if (!cloudListEl) return;
+
+  if (!googleDriveState.isConnected || !googleDriveState.accessToken) {
+    cloudListEl.innerHTML = `
+      <div style="text-align: center; padding: 2.5rem 1.5rem; background: var(--panel-alt); border-radius: var(--radius-md); border: 1px dashed var(--border);">
+        <svg class="google-icon" width="36" height="36" viewBox="0 0 24 24" style="margin: 0 auto 0.75rem auto; display: block;">
+          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+        </svg>
+        <div style="font-weight: 700; font-size: 0.95rem; color: var(--text); margin-bottom: 0.35rem;">Sign in with Google</div>
+        <p style="font-size: 0.8rem; margin: 0 auto 1.25rem auto; max-width: 360px; color: var(--text-muted);">Connect your personal Google Drive to 1-click restore exam builds across devices.</p>
+        <button type="button" class="btn btn--primary btn--sm" id="btn-cloud-signin" style="display: inline-flex; align-items: center; gap: 0.45rem; margin: 0 auto;">
+          <svg class="google-icon" width="13" height="13" viewBox="0 0 24 24"><path fill="#fff" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#fff" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#fff" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#fff" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
+          <span>Sign in with Google</span>
+        </button>
+      </div>
+    `;
+    $('#btn-cloud-signin')?.addEventListener('click', () => {
+      initGoogleDriveAuth();
+    });
+    return;
+  }
+
+  cloudListEl.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--text-muted);">Loading files from Google Drive...</div>';
+  listGoogleDriveBuilds(googleDriveState.accessToken, (err, files) => {
+    if (err) {
+      cloudListEl.innerHTML = `<div style="text-align: center; padding: 2rem; color: var(--danger);">Error: ${safeEscapeHTML(err.message)}</div>`;
+      return;
+    }
+    if (!files || files.length === 0) {
+      cloudListEl.innerHTML = `
+        <div class="empty-library">
+          <p>No exam builds saved in Google Drive yet.</p>
+          <p class="empty-sub">Saved builds in your "Instructor Essentials" folder will appear here.</p>
+        </div>
+      `;
+      return;
+    }
+
+    cloudListEl.innerHTML = files.map((f) => {
+      const dateStr = f.modifiedTime ? new Date(f.modifiedTime).toLocaleString() : '';
+      return `
+        <div class="saved-build-card" data-file-id="${safeEscapeHTML(f.id)}">
+          <div class="saved-build-card__info">
+            <h4 class="saved-build-card__title">${safeEscapeHTML(f.name)}</h4>
+            <div class="saved-build-card__meta">
+              <span class="badge badge--paper">Google Drive</span>
+              <span class="saved-build-card__date">${dateStr}</span>
+            </div>
+          </div>
+          <div class="saved-build-card__actions">
+            <button type="button" class="btn btn--secondary btn-sm btn-cloud-load" data-file-id="${safeEscapeHTML(f.id)}" title="Load this exam build into editor">Load</button>
+            <button type="button" class="btn btn--secondary btn-sm is-danger btn-cloud-delete" data-file-id="${safeEscapeHTML(f.id)}" title="Delete from Google Drive">Delete</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    cloudListEl.querySelectorAll('.btn-cloud-load').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const fileId = btn.dataset.fileId;
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`);
+        xhr.setRequestHeader('Authorization', 'Bearer ' + googleDriveState.accessToken);
+        xhr.onload = async function() {
+          if (xhr.status === 200) {
+            try {
+              const tpl = JSON.parse(xhr.responseText);
+              await loadTemplate(tpl);
+              closeModal(els.modalLibrary);
+              showToast('✓ Loaded exam build from Google Drive');
+            } catch (e) {
+              alert('Error parsing build JSON from Google Drive: ' + e.message);
+            }
+          } else {
+            alert('Failed to download build from Google Drive: ' + xhr.statusText);
+          }
+        };
+        xhr.send();
+      });
+    });
+
+    cloudListEl.querySelectorAll('.btn-cloud-delete').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const fileId = btn.dataset.fileId;
+        if (confirm('Delete this build file from your Google Drive?')) {
+          const xhr = new XMLHttpRequest();
+          xhr.open('DELETE', `https://www.googleapis.com/drive/v3/files/${fileId}`);
+          xhr.setRequestHeader('Authorization', 'Bearer ' + googleDriveState.accessToken);
+          xhr.onload = function() {
+            if (xhr.status === 204 || xhr.status === 200) {
+              showToast('Deleted from Google Drive');
+              renderCloudBuildsList();
+            } else {
+              alert('Failed to delete file from Google Drive: ' + xhr.statusText);
+            }
+          };
+          xhr.send();
+        }
+      });
+    });
+  });
+}
+
+
 // ---- Exam Generator Logic ----
 // Dynamic Exam Generator Parts state
 let generatorParts = [
@@ -8616,6 +9261,9 @@ function initEvents() {
       layout: state.layout ? JSON.parse(JSON.stringify(state.layout)) : null,
     };
     saveBuildToLibrary(entry);
+    if (googleDriveState.isConnected && googleDriveState.accessToken) {
+      saveCurrentBuildToDrive(true);
+    }
 
     // Visual feedback
     const btn = els.btnSaveBuild;
@@ -8632,8 +9280,72 @@ function initEvents() {
 
   // Open library modal
   els.btnLibrary?.addEventListener('click', () => {
+    if (els.tabBtnLibraryLocal && els.tabBtnLibraryCloud) {
+      els.tabBtnLibraryLocal.classList.remove('btn--secondary');
+      els.tabBtnLibraryLocal.classList.add('btn--primary');
+      els.tabBtnLibraryCloud.classList.remove('btn--primary');
+      els.tabBtnLibraryCloud.classList.add('btn--secondary');
+    }
+    if (els.savedBuildsList) els.savedBuildsList.style.display = 'block';
+    if (els.cloudBuildsList) els.cloudBuildsList.style.display = 'none';
+    if (els.libraryTabDesc) els.libraryTabDesc.textContent = 'All exam templates saved in Sheet Builder. You can load, export, or delete them anytime.';
     renderSavedBuildsList();
     openModal(els.modalLibrary);
+  });
+
+  // Library tab buttons
+  els.tabBtnLibraryLocal?.addEventListener('click', () => {
+    els.tabBtnLibraryLocal.classList.remove('btn--secondary');
+    els.tabBtnLibraryLocal.classList.add('btn--primary');
+    els.tabBtnLibraryCloud.classList.remove('btn--primary');
+    els.tabBtnLibraryCloud.classList.add('btn--secondary');
+    if (els.savedBuildsList) els.savedBuildsList.style.display = 'block';
+    if (els.cloudBuildsList) els.cloudBuildsList.style.display = 'none';
+    if (els.libraryTabDesc) els.libraryTabDesc.textContent = 'All exam templates saved in Sheet Builder. You can load, export, or delete them anytime.';
+    renderSavedBuildsList();
+  });
+
+  els.tabBtnLibraryCloud?.addEventListener('click', () => {
+    els.tabBtnLibraryCloud.classList.remove('btn--secondary');
+    els.tabBtnLibraryCloud.classList.add('btn--primary');
+    els.tabBtnLibraryLocal.classList.remove('btn--primary');
+    els.tabBtnLibraryLocal.classList.add('btn--secondary');
+    if (els.savedBuildsList) els.savedBuildsList.style.display = 'none';
+    if (els.cloudBuildsList) els.cloudBuildsList.style.display = 'block';
+    if (els.libraryTabDesc) els.libraryTabDesc.textContent = 'Exam builds saved in your personal Google Drive ("Instructor Essentials" folder).';
+    renderCloudBuildsList();
+  });
+
+  // Google Drive Header Button & Modal listeners
+  els.btnGoogleDrive?.addEventListener('click', () => {
+    if (!googleDriveState.isConnected) {
+      const clientId = getGoogleClientId();
+      if (!clientId) {
+        openGoogleDriveModal();
+      } else {
+        initGoogleDriveAuth();
+      }
+    } else {
+      openGoogleDriveModal();
+    }
+  });
+
+  els.btnCloseGdrive?.addEventListener('click', () => closeModal(els.modalGoogleDrive));
+  els.btnGdriveCancel?.addEventListener('click', () => closeModal(els.modalGoogleDrive));
+  els.btnGdriveDone?.addEventListener('click', () => closeModal(els.modalGoogleDrive));
+  els.modalGoogleDrive?.addEventListener('click', (e) => {
+    if (e.target === els.modalGoogleDrive) closeModal(els.modalGoogleDrive);
+  });
+  els.btnGdriveConnect?.addEventListener('click', () => {
+    const val = els.inputGdriveClientId?.value;
+    if (val) setGoogleClientId(val);
+    initGoogleDriveAuth();
+  });
+  els.btnGdriveDisconnect?.addEventListener('click', () => {
+    disconnectGoogleDrive();
+  });
+  els.btnGdriveSaveNow?.addEventListener('click', () => {
+    saveCurrentBuildToDrive(false);
   });
 
   // Close library modal handlers

@@ -129,7 +129,12 @@ class Layout:
     def score_roi(self) -> TextROI | None:
         """Returns dedicated Score box ROI if present."""
         for r in self.rois:
-            if r.role == "score" or r.key == "score":
+            if (
+                r.role == "score"
+                or r.key == "score"
+                or getattr(r, "id", None) == "score"
+                or "score" in (getattr(r, "label", "") or "").lower()
+            ):
                 return r
         return None
 

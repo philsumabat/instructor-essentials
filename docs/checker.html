@@ -1866,35 +1866,18 @@
       <input type="file" id="input-progress-file" accept=".json" style="display: none;">
 
       <!-- Google Drive Online Backup -->
-      <button type="button" id="btn-google-drive" class="btn btn--secondary btn-google-drive" title="Google Drive: Connect account to backup sessions online">
+      <button type="button" id="btn-google-drive" class="btn btn--secondary btn-google-drive" title="Sign in with Google to backup builds and sessions to Google Drive">
         <svg class="google-icon" width="14" height="14" viewBox="0 0 24 24">
           <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
           <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
           <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
           <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
         </svg>
-        <span id="label-google-drive">Google Drive</span>
+        <span id="label-google-drive">Sign in with Google</span>
         <span id="google-drive-dot" class="google-status-dot" style="display: none;" title="Connected to Google Drive"></span>
       </button>
     </div>
   </header>
-
-  <!-- Auto-Save Notification Banner -->
-  <div id="banner-resume-session" style="display: none; margin: 0.65rem 1.25rem 0 1.25rem; border-radius: var(--radius-sm); padding: 0.65rem 1rem; background: var(--panel); border: 1px solid var(--accent); align-items: center; justify-content: space-between; gap: 0.75rem; font-size: 0.82rem; box-shadow: var(--shadow-sm);">
-    <div style="display: flex; align-items: center; gap: 0.6rem; min-width: 0;">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent); flex-shrink: 0;" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-      <div style="min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-        <strong style="color: var(--text);">Saved Grading Session:</strong>
-        <span id="banner-resume-details" style="color: var(--text-muted); margin-left: 0.35rem;">Previous grading progress is available.</span>
-      </div>
-    </div>
-    <div style="display: flex; gap: 0.45rem; align-items: center; flex-shrink: 0;">
-      <button type="button" id="btn-banner-resume" class="btn btn--primary btn-xs">Resume Session</button>
-      <button type="button" id="btn-banner-load-file" class="btn btn--secondary btn-xs" title="Load session from a saved .json file">Open File</button>
-      <button type="button" id="btn-banner-clear" class="btn btn--secondary btn-xs" title="Clear auto-saved progress from browser storage">Clear</button>
-      <button type="button" id="btn-banner-dismiss" class="btn btn--secondary btn-xs">Dismiss</button>
-    </div>
-  </div>
 
   <!-- Workspace -->
   <div class="workspace">
@@ -1972,38 +1955,6 @@
         </div>
       </div>
 
-      <!-- Student Roster Selection -->
-      <div class="section-card" id="card-roster-quick">
-        <h2 class="section-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Student Roster</span></h2>
-        
-        <!-- Empty / Unloaded State -->
-        <div id="roster-empty-state" style="display: flex; flex-direction: column; gap: 0.5rem;">
-          <div id="roster-dropzone" class="dropzone dropzone--compact" title="Drag &amp; drop student roster .csv here, or click to upload">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin: 0 auto 0.35rem auto; color: var(--accent); display: block;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-            <div style="font-weight: 700; font-size: 0.82rem; color: var(--text);">Drop Student Roster CSV</div>
-            <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.15rem;">or click to upload (Student ID, Name)</div>
-            <input type="file" id="input-roster-direct" accept=".csv" style="display: none;">
-          </div>
-          <button type="button" id="btn-download-roster-template" class="btn btn--secondary btn--sm" style="width: 100%; justify-content: center; gap: 0.45rem;" title="Download sample roster CSV template">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            <span>Roster Template (CSV)</span>
-          </button>
-        </div>
-
-        <!-- Loaded State -->
-        <div id="roster-status-box" style="display: none; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.55rem 0.65rem; font-size: 0.78rem;">
-          <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 0.5rem;">
-            <div style="flex: 1; min-width: 0;">
-              <div style="font-weight: 700; color: var(--accent); margin-bottom: 0.15rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" id="roster-title-display">Student Roster Loaded</div>
-              <div style="color: var(--text-muted); font-size: 0.72rem;" id="roster-stats-display">—</div>
-            </div>
-            <div style="display: flex; gap: 0.25rem; flex-shrink: 0;">
-              <button type="button" id="btn-change-roster" class="btn btn--secondary btn-xs" title="Change roster CSV">Change</button>
-              <button type="button" id="btn-clear-roster" class="btn btn--secondary btn-xs is-danger" title="Unload active roster">✕</button>
-            </div>
-          </div>
-        </div>
-      </div>
 
       <!-- Exam Scans Section -->
       <div class="section-card" id="card-scans-quick">
@@ -2162,6 +2113,17 @@
             <span id="badge-horizontal-count" class="badge" style="display: none; font-size: 0.65rem; padding: 0.1rem 0.4rem; background: var(--accent); color: #fff; border-radius: var(--radius-full);">0</span>
           </span>
         </button>
+        <button type="button" class="tab-btn" data-tab="cloud" id="tab-btn-cloud" title="Cloud builds and saved grading sessions in Google Drive">
+          <span style="display: inline-flex; align-items: center; gap: 0.35rem;">
+            <svg class="google-icon" width="13" height="13" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+            </svg>
+            Cloud Library
+          </span>
+        </button>
       </nav>
 
       <!-- Tab 1: Cohort Summary Dashboard -->
@@ -2305,13 +2267,6 @@
                   </span>
                   <span class="filter-count count-pill count-pill--warning" id="count-roster-review" style="margin-left: 0.25rem; font-weight: 700;">(0)</span>
                 </button>
-                <button type="button" class="btn btn--secondary btn-xs" data-filter="mismatches" id="filter-roster-mismatches" title="Filter to sheets with student name/ID mismatches against roster">
-                  <span style="display: inline-flex; align-items: center; gap: 0.25rem; color: #f59e0b;">
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                    Mismatches
-                  </span>
-                  <span class="filter-count count-pill count-pill--warning" id="count-roster-mismatches" style="margin-left: 0.25rem; font-weight: 700;">(0)</span>
-                </button>
                 <button type="button" class="btn btn--secondary btn-xs" data-filter="duplicates" id="filter-roster-duplicates" title="Filter to duplicate scans (same student or identical answers)">
                   <span style="display: inline-flex; align-items: center; gap: 0.25rem; color: #ea580c;">
                     <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
@@ -2383,33 +2338,6 @@
               <!-- Review Alert Notice Banner -->
               <div id="roster-review-alert" style="display: none; background: var(--warning-light); border: 1px solid var(--warning); border-radius: var(--radius-sm); padding: 0.45rem 0.75rem; margin-bottom: 0.65rem; font-size: 0.76rem; color: var(--text);"></div>
 
-              <!-- Interactive Roster Mismatch Resolution Panel -->
-              <div id="roster-mismatch-panel" style="display: none; background: #fffbeb; border: 1.5px solid #f59e0b; border-radius: var(--radius-sm); padding: 0.65rem 0.85rem; margin-bottom: 0.75rem; font-size: 0.76rem; color: #78350f;">
-                <div style="display: flex; align-items: center; gap: 0.4rem; font-weight: 700; margin-bottom: 0.45rem; font-size: 0.82rem;">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: #d97706;"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                  <span>Student Roster Mismatch Detected</span>
-                </div>
-                <div id="roster-mismatch-details" style="margin-bottom: 0.5rem; line-height: 1.45;"></div>
-                <div id="roster-mismatch-crop-container" style="margin-bottom: 0.5rem; display: none;">
-                  <div style="font-weight: 600; margin-bottom: 0.25rem; font-size: 0.7rem; color: #92400e;">Written Student Info Crop:</div>
-                  <canvas id="roster-mismatch-crop-canvas" style="border: 1px solid #d97706; border-radius: 4px; max-width: 100%; height: auto; background: #fff;"></canvas>
-                </div>
-                <div style="display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap; margin-bottom: 0.5rem;">
-                  <label for="select-roster-candidate" style="font-weight: 600; font-size: 0.72rem; color: #92400e;">Roster Student:</label>
-                  <select id="select-roster-candidate" style="flex: 1; min-width: 180px; padding: 0.25rem 0.45rem; font-size: 0.75rem; border: 1px solid #d97706; border-radius: var(--radius-sm); background: #ffffff; color: #000;"></select>
-                </div>
-                <div style="display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap;">
-                  <button type="button" class="btn btn-xs" id="btn-mismatch-confirm" style="background: #10b981; color: #fff; border: none; font-weight: 600; padding: 0.3rem 0.65rem;" title="Confirm suggested match from roster">
-                    Confirm Match
-                  </button>
-                  <button type="button" class="btn btn-xs btn--secondary" id="btn-mismatch-assign" style="background: #fff; border: 1px solid #d97706; color: #92400e; font-weight: 600; padding: 0.3rem 0.65rem;" title="Assign currently selected student from roster">
-                    Assign Selected
-                  </button>
-                  <button type="button" class="btn btn-xs btn--secondary" id="btn-mismatch-accept-new" style="background: #fff; border: 1px solid #9ca3af; color: #374151; font-weight: 600; padding: 0.3rem 0.65rem;" title="Accept this student as new enrollment without matching existing roster">
-                    Accept as New Student
-                  </button>
-                </div>
-              </div>
 
               <!-- Color legend: Green = Correct, Red = Incorrect, Amber = Missed Key -->
               <div class="roster-preview-legend">
@@ -2913,6 +2841,39 @@
           <div style="text-align: center; padding: 3rem; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text-muted);">
             No student submissions available for horizontal grading. Grade some scans or pre-load sample data first.
           </div>
+      </div>
+
+      <!-- Tab 5: Cloud Library (Saved in Google Drive) -->
+      <div id="tab-cloud" class="tab-pane" style="display: none;">
+        <div class="section-card" style="margin-bottom: 1rem; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1.25rem 1.5rem;">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+              <svg class="google-icon" width="28" height="28" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+              </svg>
+              <div>
+                <h3 style="margin: 0; font-size: 1.1rem; font-weight: 700; color: var(--text);">Saved in Google Account</h3>
+                <div id="cloud-tab-status-text" style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.2rem;">All exam builds, packages, and grading sessions automatically saved in your personal Google Drive ("Instructor Essentials" folder).</div>
+              </div>
+            </div>
+            <div id="cloud-tab-auth-actions" style="display: flex; gap: 0.5rem; align-items: center;">
+              <button type="button" id="btn-cloud-tab-login" class="btn btn--primary btn--sm" style="display: inline-flex; align-items: center; gap: 0.45rem;">
+                <svg class="google-icon" width="13" height="13" viewBox="0 0 24 24"><path fill="#fff" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#fff" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#fff" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#fff" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
+                <span>Sign in with Google</span>
+              </button>
+              <button type="button" id="btn-cloud-tab-refresh" class="btn btn--secondary btn--sm" style="display: none;">Refresh</button>
+              <button type="button" id="btn-cloud-tab-logout" class="btn btn--secondary btn--sm is-danger" style="display: none;">Disconnect</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="cloud-tab-files-container" style="display: flex; flex-direction: column; gap: 0.75rem;">
+          <div style="text-align: center; padding: 2.5rem; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text-muted);">
+            Sign in with Google to view your cloud builds and saved grading sessions.
+          </div>
         </div>
       </div>
   </div>
@@ -3251,6 +3212,7 @@
         state.activeTab = btn.dataset.tab;
         if (state.activeTab === 'viewer') renderViewerSheet();
         if (state.activeTab === 'horizontal') renderHorizontalGradingView();
+        if (state.activeTab === 'cloud') renderCloudLibraryTab();
         if (state.activeTab === 'roster' && state.results && state.results.grades && state.results.grades.length > 0) {
           const idx = (state.selectedStudentIdx != null && state.selectedStudentIdx < state.results.grades.length)
             ? state.selectedStudentIdx
@@ -4055,55 +4017,154 @@
       }
     }
 
-    function openSavedBuildsPicker() {
+    let currentPickerTab = 'local';
+
+    function openSavedBuildsPicker(initialTab = 'local') {
+      currentPickerTab = initialTab;
       const modal = $('modal-saved-builds-picker');
       const body = $('saved-builds-modal-body');
       if (!modal || !body) return;
 
+      renderSavedBuildsPickerBody();
+      modal.showModal();
+    }
+
+    function renderSavedBuildsPickerBody() {
+      const body = $('saved-builds-modal-body');
+      if (!body) return;
+
       const builds = getSavedBuilds();
-      if (builds.length === 0) {
-        body.innerHTML = `
-          <div style="text-align: center; padding: 2.5rem 1rem; color: var(--text-muted);">
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin: 0 auto 0.75rem auto; opacity: 0.5; display: block;"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/></svg>
-            <div style="font-weight: 700; font-size: 0.95rem; color: var(--text); margin-bottom: 0.35rem;">No Saved Builds Found</div>
-            <p style="font-size: 0.8rem; margin: 0 auto 1.25rem auto; max-width: 360px;">Design and save an exam sheet in Sheet Builder first, or drag and drop a <code>.layout.json</code> file or exam package <code>.zip</code> directly onto the dropzone.</p>
-            <button type="button" class="btn btn--secondary btn--sm" onclick="$('input-layout-direct').click(); $('modal-saved-builds-picker').close();">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-              <span>Upload Layout File Instead</span>
-            </button>
-          </div>
-        `;
-      } else {
-        body.innerHTML = `
-          <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-            ${builds.map((b, idx) => {
-              const dateStr = b.timestamp ? new Date(b.timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '';
-              const qCount = b.questionCount ?? (b.layout?.bubbles ? new Set(b.layout.bubbles.filter(bb => bb.item && !bb.item.startsWith('sid[')).map(bb => bb.item)).size : (b.template?.zones ? b.template.zones.reduce((acc, z) => acc + (z.count || 1), 0) : 0));
-              return `
-                <div style="background: var(--panel-alt); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.75rem 1rem; display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;">
-                  <div style="flex: 1; min-width: 0;">
-                    <div style="font-weight: 700; font-size: 0.88rem; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 0.4rem;">
-                      <span>${escapeHtml(b.title || 'Untitled Exam')}</span>
-                      ${b.isDraft ? '<span class="badge" style="background: var(--accent-light); color: var(--accent); font-size: 0.68rem; padding: 0.1rem 0.4rem; border-radius: var(--radius-full); font-weight: 600;">Active Draft</span>' : ''}
+      const isLocal = (currentPickerTab === 'local');
+
+      body.innerHTML = `
+        <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.65rem;">
+          <button type="button" class="btn btn-xs ${isLocal ? 'btn--primary' : 'btn--secondary'}" id="picker-tab-local" style="font-weight: 600;">
+            Local Builds (${builds.length})
+          </button>
+          <button type="button" class="btn btn-xs ${!isLocal ? 'btn--primary' : 'btn--secondary'}" id="picker-tab-cloud" style="display: inline-flex; align-items: center; gap: 0.35rem; font-weight: 600;">
+            <svg class="google-icon" width="12" height="12" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
+            <span>Saved in Google Drive</span>
+          </button>
+        </div>
+        <div id="picker-tab-content"></div>
+      `;
+
+      $('picker-tab-local')?.addEventListener('click', () => {
+        currentPickerTab = 'local';
+        renderSavedBuildsPickerBody();
+      });
+      $('picker-tab-cloud')?.addEventListener('click', () => {
+        currentPickerTab = 'cloud';
+        renderSavedBuildsPickerBody();
+      });
+
+      const contentEl = $('picker-tab-content');
+      if (!contentEl) return;
+
+      if (isLocal) {
+        if (builds.length === 0) {
+          contentEl.innerHTML = `
+            <div style="text-align: center; padding: 2.5rem 1rem; color: var(--text-muted);">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin: 0 auto 0.75rem auto; opacity: 0.5; display: block;"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/></svg>
+              <div style="font-weight: 700; font-size: 0.95rem; color: var(--text); margin-bottom: 0.35rem;">No Saved Builds Found</div>
+              <p style="font-size: 0.8rem; margin: 0 auto 1.25rem auto; max-width: 360px;">Design and save an exam sheet in Sheet Builder first, or drag and drop a <code>.layout.json</code> file or exam package <code>.zip</code> directly onto the dropzone.</p>
+              <button type="button" class="btn btn--secondary btn--sm" onclick="$('input-layout-direct').click(); $('modal-saved-builds-picker').close();">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                <span>Upload Layout File Instead</span>
+              </button>
+            </div>
+          `;
+        } else {
+          contentEl.innerHTML = `
+            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+              ${builds.map((b, idx) => {
+                const dateStr = b.timestamp ? new Date(b.timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+                const qCount = b.questionCount ?? (b.layout?.bubbles ? new Set(b.layout.bubbles.filter(bb => bb.item && !bb.item.startsWith('sid[')).map(bb => bb.item)).size : (b.template?.zones ? b.template.zones.reduce((acc, z) => acc + (z.count || 1), 0) : 0));
+                return `
+                  <div style="background: var(--panel-alt); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.75rem 1rem; display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;">
+                    <div style="flex: 1; min-width: 0;">
+                      <div style="font-weight: 700; font-size: 0.88rem; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 0.4rem;">
+                        <span>${escapeHtml(b.title || 'Untitled Exam')}</span>
+                        ${b.isDraft ? '<span class="badge" style="background: var(--accent-light); color: var(--accent); font-size: 0.68rem; padding: 0.1rem 0.4rem; border-radius: var(--radius-full); font-weight: 600;">Active Draft</span>' : ''}
+                      </div>
+                      <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <span>${escapeHtml(b.paper || 'A4')}</span>
+                        <span>•</span>
+                        <span>${qCount} Questions</span>
+                        ${dateStr ? `<span>•</span><span>${dateStr}</span>` : ''}
+                      </div>
                     </div>
-                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                      <span>${escapeHtml(b.paper || 'A4')}</span>
-                      <span>•</span>
-                      <span>${qCount} Questions</span>
-                      ${dateStr ? `<span>•</span><span>${dateStr}</span>` : ''}
-                    </div>
+                    <button type="button" class="btn btn--primary btn--sm" onclick="loadSavedBuildByIndex(${idx})" style="white-space: nowrap; flex-shrink: 0;">
+                      <span>Load Layout</span>
+                    </button>
                   </div>
-                  <button type="button" class="btn btn--primary btn--sm" onclick="loadSavedBuildByIndex(${idx})" style="white-space: nowrap; flex-shrink: 0;">
-                    <span>Load Layout</span>
-                  </button>
+                `;
+              }).join('')}
+            </div>
+          `;
+        }
+      } else {
+        // Cloud tab
+        if (!googleDriveState.isConnected || !googleDriveState.accessToken) {
+          contentEl.innerHTML = `
+            <div style="text-align: center; padding: 2.5rem 1rem; color: var(--text-muted);">
+              <svg class="google-icon" width="36" height="36" viewBox="0 0 24 24" style="margin: 0 auto 0.75rem auto; display: block;">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+              </svg>
+              <div style="font-weight: 700; font-size: 0.95rem; color: var(--text); margin-bottom: 0.35rem;">Sign in with Google</div>
+              <p style="font-size: 0.8rem; margin: 0 auto 1.25rem auto; max-width: 360px;">Connect your personal Google Drive to 1-click restore exam builds, keys, and grading sessions across devices.</p>
+              <button type="button" class="btn btn--primary btn--sm" onclick="initGoogleDriveAuth();" style="display: inline-flex; align-items: center; gap: 0.45rem; margin: 0 auto;">
+                <svg class="google-icon" width="13" height="13" viewBox="0 0 24 24"><path fill="#fff" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#fff" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#fff" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#fff" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
+                <span>Sign in with Google</span>
+              </button>
+            </div>
+          `;
+        } else {
+          contentEl.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--text-muted);">Loading files from Google Drive...</div>';
+          listGoogleDriveSessions(googleDriveState.accessToken, (err, files) => {
+            if (err) {
+              contentEl.innerHTML = `<div style="padding: 1rem; text-align: center; color: var(--danger);">Error loading files: ${escapeHtml(err.message)}</div>`;
+              return;
+            }
+            if (!files || files.length === 0) {
+              contentEl.innerHTML = `
+                <div style="text-align: center; padding: 2.5rem 1rem; color: var(--text-muted);">
+                  <div style="font-weight: 700; font-size: 0.95rem; color: var(--text); margin-bottom: 0.35rem;">No Cloud Builds Found</div>
+                  <p style="font-size: 0.8rem; margin: 0 auto;">No saved builds or sessions found in your Google Drive "Instructor Essentials" folder.</p>
                 </div>
               `;
-            }).join('')}
-          </div>
-        `;
+              return;
+            }
+            contentEl.innerHTML = `
+              <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                ${files.map(f => {
+                  const dateStr = f.modifiedTime ? new Date(f.modifiedTime).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+                  const isPkg = f.name.includes('.package.') || f.name.includes('.zip');
+                  const isBuild = f.name.includes('.sheet.') || f.name.includes('.layout.');
+                  const tag = isPkg ? 'Exam Package' : (isBuild ? 'Sheet Build' : 'Grading Session');
+                  return `
+                    <div style="background: var(--panel-alt); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.75rem 1rem; display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;">
+                      <div style="flex: 1; min-width: 0;">
+                        <div style="font-weight: 700; font-size: 0.88rem; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 0.4rem;">
+                          <span>${escapeHtml(f.name)}</span>
+                          <span class="badge" style="font-size: 0.65rem; padding: 0.1rem 0.4rem; border-radius: var(--radius-full); background: var(--panel); border: 1px solid var(--border); color: var(--accent); font-weight: 700;">${tag}</span>
+                        </div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem;">${dateStr}</div>
+                      </div>
+                      <button type="button" class="btn btn--primary btn--sm" onclick="restoreSessionFromGoogleDrive(googleDriveState.accessToken, '${f.id}', '${escapeHtml(f.name)}'); $('modal-saved-builds-picker')?.close();" style="white-space: nowrap; flex-shrink: 0;">
+                        <span>Restore / Load</span>
+                      </button>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            `;
+          });
+        }
       }
-
-      modal.showModal();
     }
 
     function loadSavedBuildByIndex(idx) {
@@ -5855,7 +5916,6 @@
     // Initialize Card Dropzones
     setupCardDropzone($('layout-dropzone'), $('input-layout-direct'), handleLayoutUpload);
     setupCardDropzone($('key-dropzone'), $('input-key-scan'), handleAnswerKeyUpload);
-    setupCardDropzone($('roster-dropzone'), $('input-roster-direct'), handleRosterUpload);
 
     // Layout Actions
     $('btn-open-saved-builds')?.addEventListener('click', openSavedBuildsPicker);
@@ -6024,6 +6084,69 @@
         y: (H[3] * pt.x + H[4] * pt.y + H[5]) / w
       };
     }
+
+    // High-performance image rectification: warps scan image via H_canToSrc into canonical 4 px/mm canvas (~18ms)
+    function warpScanToCanonical(offCtxOrData, imgW, imgH, H_canToSrc, targetW, targetH, maybeScanData) {
+      let scanData = maybeScanData;
+      if (!scanData) {
+        if (offCtxOrData && offCtxOrData.data) {
+          scanData = offCtxOrData.data;
+        } else if (offCtxOrData && offCtxOrData.getImageData) {
+          try {
+            scanData = offCtxOrData.getImageData(0, 0, imgW, imgH).data;
+          } catch (_) {}
+        } else if (ArrayBuffer.isView(offCtxOrData)) {
+          scanData = offCtxOrData;
+        }
+      }
+      const rectCanvas = document.createElement('canvas');
+      rectCanvas.width = targetW;
+      rectCanvas.height = targetH;
+      const rectCtx = rectCanvas.getContext ? rectCanvas.getContext('2d') : null;
+      if (!rectCtx) return rectCanvas;
+      const imgData = (typeof rectCtx.createImageData === 'function')
+        ? rectCtx.createImageData(targetW, targetH)
+        : (typeof ImageData !== 'undefined'
+          ? new ImageData(targetW, targetH)
+          : { data: new Uint8ClampedArray(targetW * targetH * 4), width: targetW, height: targetH });
+      const outData = imgData.data;
+
+      const h0 = H_canToSrc[0], h1 = H_canToSrc[1], h2 = H_canToSrc[2];
+      const h3 = H_canToSrc[3], h4 = H_canToSrc[4], h5 = H_canToSrc[5];
+      const h6 = H_canToSrc[6], h7 = H_canToSrc[7], h8 = H_canToSrc[8];
+
+      let outIdx = 0;
+      for (let y = 0; y < targetH; y++) {
+        const rx0 = h1 * y + h2;
+        const ry0 = h4 * y + h5;
+        const rw0 = h7 * y + h8;
+        for (let x = 0; x < targetW; x++) {
+          const w = h6 * x + rw0;
+          const invW = Math.abs(w) > 1e-8 ? 1.0 / w : 0;
+          const sx = Math.round((h0 * x + rx0) * invW);
+          const sy = Math.round((h3 * x + ry0) * invW);
+
+          if (sx >= 0 && sx < imgW && sy >= 0 && sy < imgH && scanData) {
+            const inIdx = (sy * imgW + sx) << 2;
+            outData[outIdx]     = scanData[inIdx];
+            outData[outIdx + 1] = scanData[inIdx + 1];
+            outData[outIdx + 2] = scanData[inIdx + 2];
+            outData[outIdx + 3] = 255;
+          } else {
+            outData[outIdx]     = 255;
+            outData[outIdx + 1] = 255;
+            outData[outIdx + 2] = 255;
+            outData[outIdx + 3] = 255;
+          }
+          outIdx += 4;
+        }
+      }
+      if (typeof rectCtx.putImageData === 'function') {
+        rectCtx.putImageData(imgData, 0, 0);
+      }
+      return rectCanvas;
+    }
+    window.warpScanToCanonical = warpScanToCanonical;
 
     // Decode 6x6 ArUco bit grid inside a candidate square bounding box [bx1, by1, bx2, by2]
     function decodeArucoBoxBitGrid(data, w, h, bx1, by1, bx2, by2, threshLum) {
@@ -7027,8 +7150,12 @@
         { x: layout.markers["3"].center[0] * pxPerMm, y: layout.markers["3"].center[1] * pxPerMm }
       ];
 
-      // Compute homography mapping canonical coords -> source scan coords
+      // Compute homography mapping canonical coords -> source scan coords, and source -> canonical
       const H_canToSrc = computeHomography(dstCorners, srcCorners);
+      const H_srcToCan = computeHomography(srcCorners, dstCorners);
+
+      // Rectify source scan image into canonical 4 px/mm space (dead-center bubble alignment)
+      const rectCanvas = warpScanToCanonical(offCtx, scan.img.width, scan.img.height, H_canToSrc, targetW, targetH, scanData);
 
       // Stage 2: Local Section Box & Student ID Grid Snapping
       const zoneOffsets = snapZoneOffsets(offCtx, scan.img.width, scan.img.height, layout, H_canToSrc, pxPerMm, scanData);
@@ -7312,10 +7439,13 @@
           const midOuterFill = (midOuterCount > 0 && bgLum > 0) ? Math.max(0, (bgLum - (midOuterLumSum / midOuterCount)) / bgLum) : fillDensity;
           const strokeContrast = (bubbleCount > 0 && bgLum > 0) ? Math.max(0, (bgLum - minCoreLum) / bgLum) : 0;
 
+          const fineCan = applyHomography(H_srcToCan, { x: optSx, y: optSy });
           const diag = {
             item: b.item,
             choice: b.choice,
-            canX, canY, rad,
+            canX: fineCan.x,
+            canY: fineCan.y,
+            rad,
             optSx, optSy,
             fillDensity,
             quadrantDensities,
@@ -7529,25 +7659,26 @@
       let suggestedMatch = null;
       let matchScore = 0;
       let matchField = '';
-      const isUnmatchedId = (!rosterEntry && state.roster && state.roster.length > 0) || String(studentId).startsWith("STU-");
+      const isUnmatchedId = String(studentId).startsWith("STU-");
 
       const reviewReasons = [...specificReviewReasons];
       if (blankCount > 0) reviewReasons.push(`${blankCount} blank response${blankCount > 1 ? 's' : ''}`);
       if (multiMarkCount > 0) reviewReasons.push(`${multiMarkCount} multiple mark${multiMarkCount > 1 ? 's' : ''}`);
-
       if (isUnmatchedId) {
-        const best = findBestRosterMatch(studentId, state.roster);
-        if (best && best.score >= 0.5) {
-          isMismatch = true;
-          suggestedMatch = best.student;
-          matchScore = best.score;
-          matchField = best.field;
-          reviewReasons.push(`Roster Mismatch: Suggested "${best.student.name}" (${(best.score * 100).toFixed(0)}% match)`);
-        } else if (state.roster && state.roster.length > 0) {
-          reviewReasons.push(`Unmatched Student ID`);
-        } else {
-          reviewReasons.push(`No Student ID detected on sheet`);
-        }
+        reviewReasons.push(`No Student ID detected on sheet`);
+      }
+
+      // Crop handwritten student Name box ROI from rectified canvas
+      let nameCropDataUrl = null;
+      const nameRoi = (layout.rois || []).find(r => r.role === 'name' || r.id === 'name' || r.key === 'name') ||
+                      (layout.rois || []).find(r => (r.label || '').toLowerCase().includes('name'));
+      if (nameRoi) {
+        try {
+          const nameCanvas = document.createElement('canvas');
+          const tempGrade = { scanImg: rectCanvas, targetW, targetH, rotationDeg: 0 };
+          cropROIFromScan(tempGrade, nameRoi, nameCanvas);
+          nameCropDataUrl = nameCanvas.toDataURL('image/jpeg', 0.90);
+        } catch (_) {}
       }
 
       const reviewFlags = {
@@ -7571,6 +7702,7 @@
         examId: scan.name,
         studentId,
         studentName,
+        nameCropDataUrl,
         classOffer,
         rawScore,
         maxScore,
@@ -7578,10 +7710,10 @@
         gradedItems,
         bubbleDiagnostics,
         H_canToSrc,
-        rotationDeg: srcCorners.rotationDeg || 0,
+        rotationDeg: 0,
         targetW,
         targetH,
-        scanImg: scan.img,
+        scanImg: rectCanvas,
         reviewFlags
       };
     }
@@ -8095,6 +8227,38 @@
           }
         }
 
+        // Draw Name ROI and Score ROI on simulated sheet
+        const rois = state.layout.rois || [];
+        const nameRoi = rois.find(r => r.role === 'name' || r.id === 'name' || r.key === 'name') ||
+                        rois.find(r => (r.label || '').toLowerCase().includes('name'));
+        if (nameRoi) {
+          const nx = nameRoi.x * pxPerMm;
+          const ny = nameRoi.y * pxPerMm;
+          const nw = nameRoi.w * pxPerMm;
+          const nh = nameRoi.h * pxPerMm;
+          ctx.strokeStyle = "#888888";
+          ctx.lineWidth = 1;
+          ctx.strokeRect(nx, ny, nw, nh);
+          ctx.fillStyle = "#1e293b";
+          ctx.font = "italic bold 15px sans-serif";
+          ctx.fillText(stu.name || `Student ${sid}`, nx + 6, ny + nh * 0.68);
+        }
+
+        const scoreRoi = rois.find(r => r.role === 'score' || r.id === 'score' || r.key === 'score') ||
+                         rois.find(r => (r.label || '').toLowerCase().includes('score'));
+        if (scoreRoi) {
+          const sx = scoreRoi.x * pxPerMm;
+          const sy = scoreRoi.y * pxPerMm;
+          const sw = scoreRoi.w * pxPerMm;
+          const sh = scoreRoi.h * pxPerMm;
+          ctx.strokeStyle = "#888888";
+          ctx.lineWidth = 1;
+          ctx.strokeRect(sx, sy, sw, sh);
+          ctx.fillStyle = "#64748b";
+          ctx.font = "bold 10px sans-serif";
+          ctx.fillText("SCORE", sx + 4, sy + 12);
+        }
+
         const img = new Image();
         img.src = simCanvas.toDataURL("image/jpeg");
         await new Promise(r => { img.onload = r; });
@@ -8114,7 +8278,7 @@
         return `
         <tr onclick="inspectStudent(${idx}); switchTab('roster');" class="${state.selectedStudentIdx === idx ? 'is-selected' : ''}">
           <td><strong>${escapeHtml(g.studentId)}</strong></td>
-          <td>${escapeHtml(g.studentName)}${dupBadge}</td>
+          <td>${g.nameCropDataUrl ? `<img src="${g.nameCropDataUrl}" alt="Name" style="max-height: 26px; max-width: 140px; object-fit: contain; vertical-align: middle; border-radius: 2px; border: 1px solid var(--border); background: #fff;" />` : escapeHtml(g.studentName)}${dupBadge}</td>
           <td>${g.rawScore.toFixed(1)} / ${g.maxScore.toFixed(1)}</td>
           <td>${g.percentage.toFixed(1)}%</td>
           <td><span class="${g.percentage >= passThreshold ? 'badge-pass' : 'badge-fail'}">${g.percentage >= passThreshold ? 'PASS' : 'FAIL'}</span></td>
@@ -8132,9 +8296,6 @@
       if (filter === 'needs-review') {
         return state.results.grades.filter(g => g.reviewFlags && g.reviewFlags.needsReview);
       }
-      if (filter === 'mismatches') {
-        return state.results.grades.filter(g => g.reviewFlags && g.reviewFlags.isMismatch);
-      }
       if (filter === 'duplicates') {
         return state.results.grades.filter(g => g.isDuplicate);
       }
@@ -8149,13 +8310,11 @@
       const allGrades = state.results.grades;
       const totalCount = allGrades.length;
       const reviewCount = allGrades.filter(g => g.reviewFlags && g.reviewFlags.needsReview).length;
-      const mismatchCount = allGrades.filter(g => g.reviewFlags && g.reviewFlags.isMismatch).length;
       const duplicateCount = allGrades.filter(g => g.isDuplicate).length;
       const cleanCount = allGrades.filter(g => (!g.reviewFlags || !g.reviewFlags.needsReview) && !g.isDuplicate).length;
 
       if ($('count-roster-all')) $('count-roster-all').textContent = `(${totalCount})`;
       if ($('count-roster-review')) $('count-roster-review').textContent = `(${reviewCount})`;
-      if ($('count-roster-mismatches')) $('count-roster-mismatches').textContent = `(${mismatchCount})`;
       if ($('count-roster-duplicates')) $('count-roster-duplicates').textContent = `(${duplicateCount})`;
       if ($('count-roster-clean')) $('count-roster-clean').textContent = `(${cleanCount})`;
       if ($('roster-count-badge')) $('roster-count-badge').textContent = `${totalCount} student${totalCount === 1 ? '' : 's'}`;
@@ -8299,10 +8458,6 @@
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 0.35rem; display: inline-block;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
             <div>✓ All exam sheets are clean and verified! No scans require manual review.</div>
           </div>`;
-        } else if (filter === 'mismatches') {
-          emptyMsg = `<div style="padding: 1.5rem; text-align: center; color: var(--success); font-weight: 600;">
-            <div>✓ No student name or ID mismatches found against roster!</div>
-          </div>`;
         } else if (filter === 'duplicates') {
           emptyMsg = `<div style="padding: 1.5rem; text-align: center; color: var(--success); font-weight: 600;">
             <div>✓ No duplicate scans detected! All student submissions appear unique.</div>
@@ -8349,7 +8504,7 @@
             <td><strong>${escapeHtml(g.studentId)}</strong></td>
             <td>
               <div style="display: flex; align-items: center; gap: 0.45rem; flex-wrap: wrap;">
-                <span>${escapeHtml(g.studentName)}</span>
+                ${g.nameCropDataUrl ? `<img src="${g.nameCropDataUrl}" alt="Name" style="max-height: 28px; max-width: 140px; object-fit: contain; vertical-align: middle; border-radius: 2px; border: 1px solid var(--border); background: #fff;" />` : `<span>${escapeHtml(g.studentName)}</span>`}
                 ${reviewBadgeHtml}
               </div>
             </td>
@@ -8592,7 +8747,7 @@
             return `
               <tr>
                 <td><span class="rank-badge ${rankBadgeClass}">#${rank}</span></td>
-                <td><strong>${escapeHtml(s.studentName || 'Student')}</strong></td>
+                <td>${s.nameCropDataUrl ? `<img src="${s.nameCropDataUrl}" alt="Name" style="max-height: 26px; max-width: 140px; vertical-align: middle; border-radius: 2px;" />` : `<strong>${escapeHtml(s.studentName || 'Student')}</strong>`}</td>
                 <td><code>${escapeHtml(s.studentId || '—')}</code></td>
                 <td><span class="badge" style="font-size: 0.72rem; background: var(--panel-alt); border: 1px solid var(--border);">${s.classOffer || '—'}</span></td>
                 <td>${s.rawScore.toFixed(1)} / ${s.maxScore.toFixed(1)}</td>
@@ -9201,7 +9356,13 @@
       updateStepperControls(grade);
 
       if ($('roster-student-badge')) $('roster-student-badge').style.display = 'inline-flex';
-      if ($('roster-badge-name')) $('roster-badge-name').textContent = `${grade.studentName} (${grade.studentId})`;
+      if ($('roster-badge-name')) {
+        if (grade.nameCropDataUrl) {
+          $('roster-badge-name').innerHTML = `<img src="${grade.nameCropDataUrl}" alt="Name" style="max-height: 28px; max-width: 140px; vertical-align: middle; border-radius: 2px; border: 1px solid var(--border); margin-right: 0.35rem; background: #fff;" /> <span>(${escapeHtml(grade.studentId)})</span>`;
+        } else {
+          $('roster-badge-name').textContent = `${grade.studentName} (${grade.studentId})`;
+        }
+      }
       const classBadgeEl = $('roster-badge-class');
       if (classBadgeEl) {
         if (grade.classOffer) {
@@ -9274,56 +9435,6 @@
         if (reviewAlertEl) reviewAlertEl.style.display = 'none';
       }
 
-      // Interactive Mismatch Resolution Panel
-      const mismatchPanel = $('roster-mismatch-panel');
-      if (mismatchPanel) {
-        if (grade.reviewFlags && grade.reviewFlags.isMismatch) {
-          mismatchPanel.style.display = 'block';
-          const detailsEl = $('roster-mismatch-details');
-          if (detailsEl) {
-            const detectedClass = grade.classOffer ? ` • Class: <code>${escapeHtml(grade.classOffer)}</code>` : '';
-            const matchScore = grade.reviewFlags.matchScore != null ? (grade.reviewFlags.matchScore * 100).toFixed(0) : '0';
-            const suggested = grade.reviewFlags.suggestedMatch;
-            const suggName = suggested ? escapeHtml(suggested.name) : 'None';
-            const suggId = suggested ? escapeHtml(suggested.id) : '—';
-            const suggClass = suggested?.classOffer ? ` (Class: <code>${escapeHtml(suggested.classOffer)}</code>)` : '';
-            detailsEl.innerHTML = `
-              <div><strong>Scanned / Detected:</strong> ID: <code>${escapeHtml(grade.studentId)}</code> • Name: <strong>${escapeHtml(grade.studentName)}</strong>${detectedClass}</div>
-              <div style="margin-top: 0.25rem;"><strong>Suggested Roster Match:</strong> <strong>${suggName}</strong> (ID: <code>${suggId}</code>)${suggClass} &bull; Confidence: <strong>${matchScore}%</strong></div>
-            `;
-          }
-
-          // Populate candidate select
-          const sel = $('select-roster-candidate');
-          if (sel && state.roster) {
-            sel.innerHTML = state.roster.map(r => `
-              <option value="${escapeHtml(r.id)}" ${grade.reviewFlags.suggestedMatch?.id === r.id ? 'selected' : ''}>${escapeHtml(r.name)} (${escapeHtml(r.id)}${r.classOffer ? ` - ${escapeHtml(r.classOffer)}` : ''})</option>
-            `).join('');
-          }
-
-          // Crop student info header if ROI or sheet available
-          const cropBox = $('roster-mismatch-crop-container');
-          const cropCanvas = $('roster-mismatch-crop-canvas');
-          if (cropBox && cropCanvas && grade.scanImg) {
-            cropBox.style.display = 'block';
-            const infoRoi = state.layout?.rois?.find(r => r.id === 'info.name' || r.id === 'info.sid' || r.key === 'name' || r.key === 'sid') ||
-                            { x: 12, y: 22, w: 186, h: 18 };
-            cropROIFromScan(grade, infoRoi, cropCanvas);
-          } else if (cropBox) {
-            cropBox.style.display = 'none';
-          }
-
-          const btnConfirm = $('btn-mismatch-confirm');
-          if (btnConfirm) btnConfirm.onclick = () => confirmRosterMatch(idx);
-          const btnAssign = $('btn-mismatch-assign');
-          if (btnAssign) btnAssign.onclick = () => assignSelectedRosterMatch(idx, $('select-roster-candidate')?.value);
-          const btnAcceptNew = $('btn-mismatch-accept-new');
-          if (btnAcceptNew) btnAcceptNew.onclick = () => acceptNewStudent(idx);
-        } else {
-          mismatchPanel.style.display = 'none';
-        }
-      }
-
       if ($('btn-roster-download-jpeg')) $('btn-roster-download-jpeg').disabled = false;
       if ($('btn-roster-expand-modal')) $('btn-roster-expand-modal').disabled = false;
 
@@ -9377,151 +9488,12 @@
     }
     window.reopenReviewFlag = reopenReviewFlag;
 
-    // Roster Mismatch Resolution Actions
-    function confirmRosterMatch(studentIdx) {
-      if (!state.results || !state.results.grades || !state.results.grades[studentIdx]) return;
-      const grade = state.results.grades[studentIdx];
-      const suggested = grade.reviewFlags?.suggestedMatch;
-      if (!suggested) return;
-
-      grade.studentId = suggested.id;
-      grade.studentName = suggested.name;
-      if (suggested.classOffer) grade.classOffer = suggested.classOffer;
-
-      grade.reviewFlags.isMismatch = false;
-      grade.reviewFlags.reasons = (grade.reviewFlags.reasons || []).filter(r => !r.includes('Mismatch') && !r.includes('Unmatched'));
-      if (grade.reviewFlags.reasons.length === 0) {
-        grade.reviewFlags.needsReview = false;
-        grade.reviewFlags.manuallyReviewed = true;
-      }
-
-      renderRosterTable();
-      renderSummaryTable();
-      updateRosterFilterCounts();
-      updateSummaryReviewCallout();
-
-      if (state.rosterFilter === 'mismatches') {
-        const remaining = state.results.grades.filter(g => g.reviewFlags && g.reviewFlags.isMismatch);
-        if (remaining.length > 0) {
-          const nextRemaining = remaining.find(g => state.results.grades.indexOf(g) > studentIdx) || remaining[0];
-          inspectStudent(state.results.grades.indexOf(nextRemaining));
-        } else {
-          inspectStudent(null);
-        }
-      } else if (state.rosterFilter === 'needs-review') {
-        const remaining = state.results.grades.filter(g => g.reviewFlags && g.reviewFlags.needsReview);
-        if (remaining.length > 0) {
-          const nextRemaining = remaining.find(g => state.results.grades.indexOf(g) > studentIdx) || remaining[0];
-          inspectStudent(state.results.grades.indexOf(nextRemaining));
-        } else {
-          inspectStudent(null);
-        }
-      } else {
-        inspectStudent(studentIdx);
-      }
-
-      saveCheckerProgress({ downloadFile: false, silent: true });
-      showToast(`✓ Matched student: ${grade.studentName} (${grade.studentId})`);
-    }
+    // Roster Mismatch Resolution Compatibility Stubs
+    function confirmRosterMatch() {}
     window.confirmRosterMatch = confirmRosterMatch;
-
-    function assignSelectedRosterMatch(studentIdx, selectedId) {
-      if (!state.results || !state.results.grades || !state.results.grades[studentIdx]) return;
-      const grade = state.results.grades[studentIdx];
-      const targetId = selectedId || $('select-roster-candidate')?.value || grade.reviewFlags?.suggestedMatch?.id;
-      const stu = (state.roster || []).find(r => String(r.id) === String(targetId));
-      if (!stu) return;
-
-      grade.studentId = stu.id;
-      grade.studentName = stu.name;
-      if (stu.classOffer) grade.classOffer = stu.classOffer;
-
-      grade.reviewFlags.isMismatch = false;
-      grade.reviewFlags.reasons = (grade.reviewFlags.reasons || []).filter(r => !r.includes('Mismatch') && !r.includes('Unmatched'));
-      if (grade.reviewFlags.reasons.length === 0) {
-        grade.reviewFlags.needsReview = false;
-        grade.reviewFlags.manuallyReviewed = true;
-      }
-
-      renderRosterTable();
-      renderSummaryTable();
-      updateRosterFilterCounts();
-      updateSummaryReviewCallout();
-
-      if (state.rosterFilter === 'mismatches') {
-        const remaining = state.results.grades.filter(g => g.reviewFlags && g.reviewFlags.isMismatch);
-        if (remaining.length > 0) {
-          const nextRemaining = remaining.find(g => state.results.grades.indexOf(g) > studentIdx) || remaining[0];
-          inspectStudent(state.results.grades.indexOf(nextRemaining));
-        } else {
-          inspectStudent(null);
-        }
-      } else if (state.rosterFilter === 'needs-review') {
-        const remaining = state.results.grades.filter(g => g.reviewFlags && g.reviewFlags.needsReview);
-        if (remaining.length > 0) {
-          const nextRemaining = remaining.find(g => state.results.grades.indexOf(g) > studentIdx) || remaining[0];
-          inspectStudent(state.results.grades.indexOf(nextRemaining));
-        } else {
-          inspectStudent(null);
-        }
-      } else {
-        inspectStudent(studentIdx);
-      }
-
-      saveCheckerProgress({ downloadFile: false, silent: true });
-      showToast(`✓ Assigned to roster: ${grade.studentName} (${grade.studentId})`);
-    }
+    function assignSelectedRosterMatch() {}
     window.assignSelectedRosterMatch = assignSelectedRosterMatch;
-
-    function acceptNewStudent(studentIdx) {
-      if (!state.results || !state.results.grades || !state.results.grades[studentIdx]) return;
-      const grade = state.results.grades[studentIdx];
-
-      grade.reviewFlags.isMismatch = false;
-      grade.reviewFlags.reasons = (grade.reviewFlags.reasons || []).filter(r => !r.includes('Mismatch') && !r.includes('Unmatched'));
-      if (grade.reviewFlags.reasons.length === 0) {
-        grade.reviewFlags.needsReview = false;
-        grade.reviewFlags.manuallyReviewed = true;
-      }
-
-      if (!state.roster) state.roster = [];
-      if (!state.roster.some(r => String(r.id) === String(grade.studentId))) {
-        state.roster.push({
-          id: grade.studentId,
-          name: grade.studentName,
-          classOffer: grade.classOffer || ''
-        });
-        updateRosterDisplay();
-      }
-
-      renderRosterTable();
-      renderSummaryTable();
-      updateRosterFilterCounts();
-      updateSummaryReviewCallout();
-
-      if (state.rosterFilter === 'mismatches') {
-        const remaining = state.results.grades.filter(g => g.reviewFlags && g.reviewFlags.isMismatch);
-        if (remaining.length > 0) {
-          const nextRemaining = remaining.find(g => state.results.grades.indexOf(g) > studentIdx) || remaining[0];
-          inspectStudent(state.results.grades.indexOf(nextRemaining));
-        } else {
-          inspectStudent(null);
-        }
-      } else if (state.rosterFilter === 'needs-review') {
-        const remaining = state.results.grades.filter(g => g.reviewFlags && g.reviewFlags.needsReview);
-        if (remaining.length > 0) {
-          const nextRemaining = remaining.find(g => state.results.grades.indexOf(g) > studentIdx) || remaining[0];
-          inspectStudent(state.results.grades.indexOf(nextRemaining));
-        } else {
-          inspectStudent(null);
-        }
-      } else {
-        inspectStudent(studentIdx);
-      }
-
-      saveCheckerProgress({ downloadFile: false, silent: true });
-      showToast(`✓ Accepted as new student: ${grade.studentName} (${grade.studentId})`);
-    }
+    function acceptNewStudent() {}
     window.acceptNewStudent = acceptNewStudent;
 
     // Horizontal Grading Engine Controller
@@ -9924,6 +9896,13 @@
         if (activeCardContainer) {
           activeCardContainer.innerHTML = `
             <div class="horizontal-flashcard-card">
+              <!-- Student Identification & Name Crop -->
+              ${curGrade?.nameCropDataUrl ? `
+                <div style="margin-bottom: 0.65rem; text-align: center;">
+                  <span style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted); margin-right: 0.4rem;">Student Name:</span>
+                  <img src="${curGrade.nameCropDataUrl}" alt="Student Name" style="max-height: 28px; max-width: 160px; object-fit: contain; vertical-align: middle; border-radius: 2px; border: 1px solid var(--border); background: #fff;" />
+                </div>
+              ` : ''}
               <!-- Crop & OCR Transcription Box -->
               <div class="flashcard-crop-container">
                 <canvas id="flashcard-crop-canvas" class="horizontal-cutting-canvas" style="width: 100%; max-width: 860px; height: auto; border: 1px solid var(--border); border-radius: 4px;"></canvas>
@@ -10009,6 +9988,7 @@
                 <span style="color: var(--text-muted); font-size: 0.8rem;">#${sIdx + 1}</span>
                 <span>Submission #${sIdx + 1}</span>
               </div>
+              ${g.nameCropDataUrl ? `<div style="margin-top: 0.35rem;"><img src="${g.nameCropDataUrl}" alt="Name" style="max-height: 26px; max-width: 130px; object-fit: contain; border-radius: 2px; border: 1px solid var(--border); background: #fff;" /></div>` : ''}
               <div style="margin-top: 0.45rem;">
                 ${makeStatusBadge(itemData.status, itemData.pointsAwarded)}
               </div>
@@ -10247,13 +10227,24 @@
           ctx.fill();
           ctx.stroke();
         } else if (b.isMarked && !isKeyTarget) {
-          // Incorrect mark: Red circle
+          // Incorrect mark: Red circle + small red X cross
           ctx.beginPath();
           ctx.arc(b.canX, b.canY, b.rad + 2, 0, Math.PI * 2);
           ctx.lineWidth = 3;
           ctx.strokeStyle = "#ef4444";
           ctx.fillStyle = "rgba(239, 68, 68, 0.35)";
           ctx.fill();
+          ctx.stroke();
+
+          // Red X over wrong selection
+          const d = Math.round((b.rad + 2) * 0.65);
+          ctx.beginPath();
+          ctx.moveTo(b.canX - d, b.canY - d);
+          ctx.lineTo(b.canX + d, b.canY + d);
+          ctx.moveTo(b.canX - d, b.canY + d);
+          ctx.lineTo(b.canX + d, b.canY - d);
+          ctx.lineWidth = 2.5;
+          ctx.strokeStyle = "#ef4444";
           ctx.stroke();
         } else if (b.markType === 'check_or_cross' || b.markType === 'erasure' || b.markType === 'faint') {
           // Ambiguous / non-standard mark flagged for review: Purple/Amber warning ring
@@ -10267,28 +10258,101 @@
           ctx.stroke();
           ctx.setLineDash([]);
         } else if (!b.isMarked && isKeyTarget) {
-          // Missed correct answer: Amber target outline
+          // Missed correct answer: Green outline ring + center dot
           ctx.beginPath();
-          ctx.arc(b.canX, b.canY, b.rad + 1, 0, Math.PI * 2);
-          ctx.lineWidth = 2;
-          ctx.setLineDash([3, 3]);
-          ctx.strokeStyle = "#f59e0b";
+          ctx.arc(b.canX, b.canY, b.rad + 2, 0, Math.PI * 2);
+          ctx.lineWidth = 2.5;
+          ctx.strokeStyle = "#10b981";
           ctx.stroke();
-          ctx.setLineDash([]);
+
+          ctx.beginPath();
+          ctx.arc(b.canX, b.canY, Math.max(2, b.rad * 0.3), 0, Math.PI * 2);
+          ctx.fillStyle = "#10b981";
+          ctx.fill();
         }
       }
 
-      // Draw header badge with score
+      // Draw Written Answer Boxes with crisp scored borders and points badges
+      const pxPerMm = 4.0;
+      const rois = state.layout?.rois || [];
+      for (const [key, item] of Object.entries(grade.gradedItems || {})) {
+        if (item.kind !== 'text' && !item.roi) continue;
+        const roi = item.roi || rois.find(r => r.key === key || r.id === key);
+        if (!roi) continue;
+        const rx = Math.round(roi.x * pxPerMm);
+        const ry = Math.round(roi.y * pxPerMm);
+        const rw = Math.round(roi.w * pxPerMm);
+        const rh = Math.round(roi.h * pxPerMm);
+
+        const isCorrect = item.isCorrect || (Number(item.pointsAwarded || 0) >= Number(item.maxPoints || 1));
+        const color = isCorrect ? '#10b981' : '#ef4444';
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
+        ctx.strokeRect(rx, ry, rw, rh);
+
+        // Points badge in top-right of ROI
+        const ptsText = `${Number(item.pointsAwarded || 0)}/${Number(item.maxPoints || 1)} pts`;
+        ctx.font = 'bold 11px sans-serif';
+        const tw = ctx.measureText(ptsText).width;
+        const badgeW = tw + 10;
+        const badgeH = 18;
+        const badgeX = rx + rw - badgeW - 6;
+        const badgeY = ry + 4;
+        ctx.fillStyle = color;
+        ctx.fillRect(badgeX, badgeY, badgeW, badgeH);
+        ctx.fillStyle = '#ffffff';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(ptsText, badgeX + badgeW / 2, badgeY + badgeH / 2);
+        ctx.textAlign = 'start';
+        ctx.textBaseline = 'alphabetic';
+      }
+
+      // Render score in designated Score field box if present (matches omr/annotator.py standard)
       const passThreshold = (state.results && state.results.passThreshold != null) ? state.results.passThreshold : 60;
-      ctx.fillStyle = "rgba(0, 0, 0, 0.75)";
-      ctx.roundRect ? ctx.roundRect(20, 20, 340, 54, 8) : ctx.fillRect(20, 20, 340, 54);
-      ctx.fill();
-      ctx.fillStyle = "#fff";
-      ctx.font = "bold 16px sans-serif";
-      ctx.fillText(`${grade.studentName} (${grade.studentId})`, 32, 44);
-      ctx.font = "14px sans-serif";
-      ctx.fillStyle = grade.percentage >= passThreshold ? "#34d399" : "#f87171";
-      ctx.fillText(`Score: ${grade.rawScore.toFixed(1)} / ${grade.maxScore.toFixed(1)} (${grade.percentage.toFixed(1)}%)`, 32, 64);
+      const scoreRoi = rois.find(r => r.role === 'score' || r.id === 'score' || r.key === 'score' || (r.label || '').toLowerCase().includes('score'));
+      if (scoreRoi) {
+        const rx = Math.round(scoreRoi.x * pxPerMm);
+        const ry = Math.round(scoreRoi.y * pxPerMm);
+        const rw = Math.round(scoreRoi.w * pxPerMm);
+        const rh = Math.round(scoreRoi.h * pxPerMm);
+
+        const isPass = grade.percentage >= passThreshold;
+        const statusColor = isPass ? '#10b981' : '#ef4444';
+
+        // Tint inside score box
+        ctx.fillStyle = isPass ? 'rgba(235, 248, 235, 0.40)' : 'rgba(235, 235, 252, 0.40)';
+        ctx.fillRect(rx, ry, rw, rh);
+
+        // Clean border
+        ctx.strokeStyle = statusColor;
+        ctx.lineWidth = 2;
+        ctx.strokeRect(rx, ry, rw, rh);
+
+        // Score: 38/100
+        const rawFmt = (grade.rawScore % 1 === 0) ? grade.rawScore.toFixed(0) : grade.rawScore.toFixed(1);
+        const maxFmt = (grade.maxScore % 1 === 0) ? grade.maxScore.toFixed(0) : grade.maxScore.toFixed(1);
+        const scoreText = `Score: ${rawFmt}/${maxFmt}`;
+
+        ctx.font = 'bold 16px sans-serif';
+        ctx.fillStyle = statusColor;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(scoreText, rx + rw / 2, ry + rh / 2);
+        ctx.textAlign = 'start';
+        ctx.textBaseline = 'alphabetic';
+      } else {
+        // Fallback header banner ONLY when no score ROI exists in template
+        ctx.fillStyle = "rgba(0, 0, 0, 0.75)";
+        ctx.roundRect ? ctx.roundRect(20, 20, 340, 54, 8) : ctx.fillRect(20, 20, 340, 54);
+        ctx.fill();
+        ctx.fillStyle = "#fff";
+        ctx.font = "bold 16px sans-serif";
+        ctx.fillText(`${grade.studentName} (${grade.studentId})`, 32, 44);
+        ctx.font = "14px sans-serif";
+        ctx.fillStyle = grade.percentage >= passThreshold ? "#34d399" : "#f87171";
+        ctx.fillText(`Score: ${grade.rawScore.toFixed(1)} / ${grade.maxScore.toFixed(1)} (${grade.percentage.toFixed(1)}%)`, 32, 64);
+      }
     }
 
     // Render Canvas with Overlay in Viewer
@@ -10301,7 +10365,11 @@
       const canvas = $('viewer-canvas');
       drawGradeOnCanvas(grade, canvas);
       if ($('viewer-student-info')) {
-        $('viewer-student-info').textContent = `${grade.studentName} (${grade.studentId}) — Score: ${grade.rawScore.toFixed(1)} / ${grade.maxScore.toFixed(1)} (${grade.percentage.toFixed(1)}%)`;
+        if (grade.nameCropDataUrl) {
+          $('viewer-student-info').innerHTML = `<img src="${grade.nameCropDataUrl}" alt="Name" style="max-height: 24px; max-width: 130px; vertical-align: middle; border-radius: 2px; border: 1px solid var(--border); margin-right: 0.35rem; background: #fff;" /> <span>(${escapeHtml(grade.studentId)}) — Score: ${grade.rawScore.toFixed(1)} / ${grade.maxScore.toFixed(1)} (${grade.percentage.toFixed(1)}%)</span>`;
+        } else {
+          $('viewer-student-info').textContent = `${grade.studentName} (${grade.studentId}) — Score: ${grade.rawScore.toFixed(1)} / ${grade.maxScore.toFixed(1)} (${grade.percentage.toFixed(1)}%)`;
+        }
       }
       if ($('viewer-student-select')) {
         $('viewer-student-select').value = state.selectedStudentIdx;
@@ -10565,7 +10633,7 @@
         return `
           <tr>
             <td><span class="rank-badge ${rankClass}">#${rank}</span></td>
-            <td><strong>${escapeHtml(s.studentName || 'Student')}</strong></td>
+            <td>${s.nameCropDataUrl ? `<img src="${s.nameCropDataUrl}" style="max-height: 28px; max-width: 140px; vertical-align: middle; border-radius: 2px;" />` : `<strong>${escapeHtml(s.studentName || 'Student')}</strong>`}</td>
             <td><code>${escapeHtml(s.studentId || '—')}</code></td>
             <td><span style="font-size: 11px; padding: 2px 6px; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 4px;">${escapeHtml(s.classOffer || '—')}</span></td>
             <td>${s.rawScore.toFixed(1)} / ${s.maxScore.toFixed(1)}</td>
@@ -10999,6 +11067,7 @@
           examId: g.examId,
           studentId: g.studentId,
           studentName: g.studentName,
+          nameCropDataUrl: g.nameCropDataUrl || null,
           classOffer: g.classOffer || '',
           rawScore: g.rawScore,
           maxScore: g.maxScore,
@@ -11134,10 +11203,25 @@
           scanImg = c;
         }
 
+        let nameCropDataUrl = g.nameCropDataUrl || null;
+        if (!nameCropDataUrl && scanImg && (data.layout || state.layout)) {
+          const l = data.layout || state.layout;
+          const nameRoi = (l.rois || []).find(r => r.role === 'name' || r.id === 'name' || r.key === 'name') ||
+                          (l.rois || []).find(r => (r.label || '').toLowerCase().includes('name'));
+          if (nameRoi && typeof cropROIFromScan === 'function') {
+            try {
+              const c = document.createElement('canvas');
+              cropROIFromScan({ scanImg, targetW: g.targetW, targetH: g.targetH, rotationDeg: 0 }, nameRoi, c);
+              nameCropDataUrl = c.toDataURL('image/jpeg', 0.90);
+            } catch (_) {}
+          }
+        }
+
         return {
           examId: g.examId,
           studentId: g.studentId,
           studentName: g.studentName,
+          nameCropDataUrl,
           classOffer: g.classOffer || '',
           rawScore: g.rawScore,
           maxScore: g.maxScore,
@@ -11183,7 +11267,6 @@
         inspectStudent(0);
       }
 
-      if ($('banner-resume-session')) $('banner-resume-session').style.display = 'none';
       updateSaveStatusUI('saved');
       updateResumeStatusUI(true, data);
       showToast(`✓ Session restored: ${restoredGrades.length} students graded`);
@@ -11200,14 +11283,6 @@
         const parsed = JSON.parse(raw);
         if (parsed && parsed.results && parsed.results.grades && parsed.results.grades.length > 0) {
           updateResumeStatusUI(true, parsed);
-          const banner = $('banner-resume-session');
-          const details = $('banner-resume-details');
-          if (banner && details) {
-            const dateStr = parsed.savedAt ? new Date(parsed.savedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'recently';
-            const title = parsed.layout?.title || 'Exam';
-            details.textContent = `${title} (${parsed.results.grades.length} students, saved ${dateStr})`;
-            banner.style.display = 'flex';
-          }
         } else {
           updateResumeStatusUI(false);
         }
@@ -11944,10 +12019,6 @@
       $('input-progress-file')?.click();
     });
 
-    $('btn-banner-load-file')?.addEventListener('click', () => {
-      $('input-progress-file')?.click();
-    });
-
     $('btn-google-drive')?.addEventListener('click', () => {
       openGoogleDriveModal();
     });
@@ -12082,28 +12153,95 @@
       reader.readAsText(file);
     });
 
-    $('btn-banner-resume')?.addEventListener('click', () => {
-      const raw = localStorage.getItem(PROGRESS_STORAGE_KEY);
-      if (raw) {
-        try {
-          restoreCheckerProgress(JSON.parse(raw));
-        } catch (err) {
-          alert(`Could not resume session: ${err.message}`);
-        }
+    // Dedicated Cloud Library Tab (Saved in Google Drive)
+    function renderCloudLibraryTab() {
+      const container = $('cloud-tab-files-container');
+      const statusText = $('cloud-tab-status-text');
+      const loginBtn = $('btn-cloud-tab-login');
+      const refreshBtn = $('btn-cloud-tab-refresh');
+      const logoutBtn = $('btn-cloud-tab-logout');
+      if (!container) return;
+
+      if (!googleDriveState.isConnected || !googleDriveState.accessToken) {
+        if (loginBtn) loginBtn.style.display = 'inline-flex';
+        if (refreshBtn) refreshBtn.style.display = 'none';
+        if (logoutBtn) logoutBtn.style.display = 'none';
+        if (statusText) statusText.textContent = 'All exam builds, packages, and grading sessions automatically saved in your personal Google Drive ("Instructor Essentials" folder).';
+        container.innerHTML = `
+          <div style="text-align: center; padding: 3rem 1.5rem; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text-muted);">
+            <svg class="google-icon" width="40" height="40" viewBox="0 0 24 24" style="margin: 0 auto 0.75rem auto; display: block;">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+            </svg>
+            <h4 style="color: var(--text); font-size: 1.05rem; font-weight: 700; margin: 0 0 0.4rem 0;">Sign in to View Cloud Builds &amp; Sessions</h4>
+            <p style="font-size: 0.85rem; max-width: 440px; margin: 0 auto 1.25rem auto;">Access your exam templates, answer keys, and auto-saved grading sessions from any browser or device securely via Google Drive.</p>
+            <button type="button" class="btn btn--primary" onclick="initGoogleDriveAuth();" style="display: inline-flex; align-items: center; gap: 0.5rem; margin: 0 auto;">
+              <svg class="google-icon" width="14" height="14" viewBox="0 0 24 24"><path fill="#fff" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#fff" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#fff" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#fff" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
+              <span>Sign in with Google</span>
+            </button>
+          </div>
+        `;
+        return;
       }
-    });
 
-    $('btn-banner-clear')?.addEventListener('click', () => {
-      try {
-        localStorage.removeItem(PROGRESS_STORAGE_KEY);
-      } catch {}
-      if ($('banner-resume-session')) $('banner-resume-session').style.display = 'none';
-      updateResumeStatusUI(false);
-      showToast('Saved session cleared from browser storage');
-    });
+      if (loginBtn) loginBtn.style.display = 'none';
+      if (refreshBtn) refreshBtn.style.display = 'inline-flex';
+      if (logoutBtn) logoutBtn.style.display = 'inline-flex';
+      if (statusText) statusText.textContent = `Connected as ${googleDriveState.user?.email || googleDriveState.user?.name || 'Google User'}. Files saved in "Instructor Essentials" folder.`;
 
-    $('btn-banner-dismiss')?.addEventListener('click', () => {
-      if ($('banner-resume-session')) $('banner-resume-session').style.display = 'none';
+      container.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--text-muted);">Loading files from Google Drive...</div>';
+
+      listGoogleDriveSessions(googleDriveState.accessToken, (err, files) => {
+        if (err) {
+          container.innerHTML = `<div style="padding: 1.5rem; text-align: center; color: var(--danger); background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-md);">Error loading files: ${escapeHtml(err.message)}</div>`;
+          return;
+        }
+        if (!files || files.length === 0) {
+          container.innerHTML = `
+            <div style="text-align: center; padding: 3rem; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text-muted);">
+              <h4 style="margin: 0 0 0.35rem 0; color: var(--text); font-size: 1rem;">No saved builds or sessions found</h4>
+              <p style="font-size: 0.8rem; margin: 0;">Save an exam build in Sheet Builder or run grading in Checker Studio. It will automatically sync here!</p>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = files.map(f => {
+          const dateStr = f.modifiedTime ? new Date(f.modifiedTime).toLocaleString() : '';
+          const isPkg = f.name.includes('.package.') || f.name.includes('.zip');
+          const isBuild = f.name.includes('.sheet.') || f.name.includes('.layout.');
+          const isSession = f.name.includes('.progress.') || f.name.includes('.session.');
+          const tag = isPkg ? 'Exam Package' : (isBuild ? 'Sheet Build' : (isSession ? 'Grading Session' : 'Exam File'));
+          const tagColor = isPkg ? 'var(--accent)' : (isBuild ? '#10b981' : '#f59e0b');
+
+          return `
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.85rem 1.15rem; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-md); flex-wrap: wrap;">
+              <div style="min-width: 0; flex: 1;">
+                <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                  <strong style="color: var(--text); font-size: 0.92rem;">${escapeHtml(f.name)}</strong>
+                  <span class="badge" style="font-size: 0.68rem; padding: 0.1rem 0.45rem; border-radius: var(--radius-full); background: var(--panel-alt); border: 1px solid var(--border); color: ${tagColor}; font-weight: 700;">${tag}</span>
+                </div>
+                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">Modified: ${dateStr}</div>
+              </div>
+              <div style="display: flex; gap: 0.5rem; align-items: center; flex-shrink: 0;">
+                <button type="button" class="btn btn--primary btn--sm" onclick="restoreSessionFromGoogleDrive(googleDriveState.accessToken, '${f.id}', '${escapeHtml(f.name)}');" style="font-weight: 600;">
+                  <span>Restore / Load</span>
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      });
+    }
+    window.renderCloudLibraryTab = renderCloudLibraryTab;
+
+    $('btn-cloud-tab-login')?.addEventListener('click', () => initGoogleDriveAuth());
+    $('btn-cloud-tab-refresh')?.addEventListener('click', () => renderCloudLibraryTab());
+    $('btn-cloud-tab-logout')?.addEventListener('click', () => {
+      disconnectGoogleDrive();
+      renderCloudLibraryTab();
     });
 
     // Horizontal Grading Item Navigator & Bulk Accept listeners

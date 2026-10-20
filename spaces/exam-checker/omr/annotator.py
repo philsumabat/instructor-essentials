@@ -121,7 +121,7 @@ class ExamAnnotator:
         cv2.rectangle(canvas, (rx, ry), (rx + rw, ry + rh), status_color, 2)
 
         font = cv2.FONT_HERSHEY_SIMPLEX
-        score_text = f"{grade.score:g}/{grade.max_score:g}"
+        score_text = f"Score: {grade.score:g}/{grade.max_score:g}"
         scale = 0.65
         thick = 2
         (tw, th), _ = cv2.getTextSize(score_text, font, scale, thick)

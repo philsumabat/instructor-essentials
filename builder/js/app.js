@@ -2886,6 +2886,25 @@ function setGoogleClientId(val) {
 
 function updateGoogleSyncStatus(status, tooltip = '') {
   const syncBadge = $('#google-drive-sync-indicator');
+  const statusBadge = $('#google-drive-status-badge');
+  if (statusBadge) {
+    statusBadge.classList?.remove?.('is-syncing', 'is-synced', 'is-error');
+    if (status === 'syncing') {
+      statusBadge.style.display = 'flex';
+      statusBadge.classList?.add?.('is-syncing');
+      statusBadge.title = tooltip || 'Syncing build to Google Drive...';
+    } else if (status === 'synced') {
+      statusBadge.style.display = 'flex';
+      statusBadge.classList?.add?.('is-synced');
+      statusBadge.title = tooltip || `Synced to Google Drive (${new Date().toLocaleTimeString()})`;
+    } else if (status === 'error') {
+      statusBadge.style.display = 'flex';
+      statusBadge.classList?.add?.('is-error');
+      statusBadge.title = tooltip || 'Google Drive sync failed';
+    } else {
+      statusBadge.style.display = 'none';
+    }
+  }
   if (!syncBadge) return;
   syncBadge.classList?.remove?.('is-syncing', 'is-synced', 'is-error');
   if (status === 'syncing') {
@@ -3075,7 +3094,10 @@ function updateGoogleUiState() {
   const userAvatar = $('#gdrive-user-avatar');
 
   if (googleDriveState.isConnected && googleDriveState.user) {
-    if (btn) btn.style.display = 'inline-flex';
+    if (btn) {
+      btn.style.display = 'inline-flex';
+      btn.title = googleDriveState.user.name || googleDriveState.user.email || 'Google Drive (Connected)';
+    }
     btn?.classList?.add('is-connected');
     if (dot) dot.style.display = 'inline-block';
     if (label) label.textContent = googleDriveState.user.name || googleDriveState.user.email || 'Drive: Connected';
@@ -3093,7 +3115,10 @@ function updateGoogleUiState() {
       }
     }
   } else {
-    if (btn) btn.style.display = 'none';
+    if (btn) {
+      btn.style.display = 'none';
+      btn.title = 'Google Drive integration (inherited from Home Portal)';
+    }
     btn?.classList?.remove('is-connected');
     if (dot) dot.style.display = 'none';
     updateGoogleSyncStatus('hidden');

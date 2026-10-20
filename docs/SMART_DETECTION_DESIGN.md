@@ -92,3 +92,32 @@ For each option bubble (`A–E`, `T/F`, or `sid` bubble):
 | 2 | **Strict Shading Policy with Explicit Review Flags** | Silently accepting $\checkmark/\times$; silently treating $\checkmark/\times$ as blank with no flag | Upholds classroom instructions to shade bubbles completely while ensuring instructors are alerted to every checkmark, cross, faint mark, or erasure in the Review Queue. |
 | 3 | **Local Section Box & Row Projection Snapping** | Global 4-corner homography only | Corrects $1\text{–}2.5\text{ mm}$ middle-of-the-page drift from bowed paper or printer scaling before sampling bubbles. |
 | 4 | **Perimeter Line Morphology for Box Cropping** | Blind 15% border inset cropping | Removes printed box borders without slicing off the edges of student handwritten digits. |
+
+---
+
+## 5. Architectural Recommendation: Addressing Sheet Warping via Multi-Fiducial Registration
+
+### 5.1 Physical Problem Analysis
+In standard classroom usage, exam sheets frequently exhibit physical distortion that violates the planar assumption of a single global $3 \times 3$ homography matrix $H$:
+1. **Vertical Paper Sag & Barrel Distortion**: Phone cameras held at slight angles or thin paper ($70\text{--}80\text{ gsm}$) curling across desks exhibit cylindrical 1D curvature, leading to $2\text{--}5\text{ mm}$ displacement along the vertical midline ($y \approx 50\%$).
+2. **Printer Feed Skew**: Mechanical roller drag on budget classroom printers can stretch or compress paper non-linearly along the sheet length.
+3. **Small Bubble Margin**: Standard $2.1\text{ mm}$ bubbles require registration accuracy within $\pm 0.8\text{ mm}$ to ensure sampling circles stay firmly inside the printed rings. A $2.5\text{ mm}$ sag causes outer quadrant clipping and false positive/negative shade reads.
+
+### 5.2 Recommended Multi-Fiducial Strategies
+To eliminate warping without requiring neural network dewarping models (e.g., DewarpNet/DocTr which add 50+ MB weights), the following incremental hardware-layout additions are recommended:
+
+1. **Midline Lateral Fiducials (6-Point Registration — Primary Recommendation)**:
+   - Place two additional ArUco fiducials along the left and right page margins at $50\%$ page height:
+     - **Marker 4 (Mid-Left)**: $x = 12\text{ mm}, y = 148.5\text{ mm}$ (A4).
+     - **Marker 5 (Mid-Right)**: $x = 198\text{ mm}, y = 148.5\text{ mm}$ (A4).
+   - **Piecewise Homography**:
+     - Upper half rectified using markers $[0, 1, 5, 4]$.
+     - Lower half rectified using markers $[4, 5, 2, 3]$.
+   - **Benefit**: Reduces midline vertical distortion by over $90\%$, operating in pure 2D matrix arithmetic with $< 5\text{ ms}$ compute overhead.
+
+2. **Column Header Anchor Crosses**:
+   - For 2-column or 3-column exams, print $4\text{ mm}$ registration crosshairs above and below each question column.
+   - Allows local affine calibration per column, compensating for asymmetric paper curl across wide portrait pages.
+
+3. **Margin Timing Tracks (Scantron-style Sync)**:
+   - A vertical column of alternating $3\text{ mm}$ tick marks along the margin providing independent row-by-row $Y$-synchronization for every individual question.

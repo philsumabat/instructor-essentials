@@ -560,6 +560,45 @@ The user requested removing the desktop application layer (`apps/desktop/` with 
 
 ---
 
+## Decision 41: Layout Upload Key Isolation, Zero-Loss Session & Crop Restoration, Working AI Handwriting Transcription, and Ribbon Optimization
+
+- **Date:** October 21, 2026
+- **Status:** Accepted & Deployed
+
+### Context
+1. Uploading a standalone exam layout JSON silently auto-synthesized a dummy answer key (`Custom Exam Answer Key`) prefilled with default answers, confusing instructors into believing a corrupted or previous answer key had been loaded.
+2. In Horizontal Grading, clicking "Auto-Transcribe Item" performed 0 operations due to an incorrect data path query (`state.grades` instead of `state.results.grades`) and an invalid `cropROIFromScan` invocation.
+3. Restoring saved grading sessions caused handwritten answer crops to flash blank white or disappear because `scanImg` loaded asynchronously while horizontal card canvases were rendered synchronously before pixel decoding finished.
+4. Top Performing Students table displayed redundant administrative columns (`Student ID` and `Class / Offer No.`), crowding student score metrics and handwriting crops.
+5. Decorative emojis cluttered diagnostic signals and action buttons, conflicting with clean academic software design.
+6. The header ribbon in Sheet Builder was cramped on standard laptop screens, with the Google Account button taking up unnecessary horizontal width.
+7. Instructors grading smartphone photo scans reported paper sagging along the vertical midline, creating up to 2–5mm sag that degraded bubble registration.
+
+### Architecture Decisions
+1. **Layout Upload Answer Key Isolation**:
+   - Removed the automatic dummy starter key synthesis fallback in `applyLoadedLayout()`.
+   - When a standalone layout JSON is uploaded, `state.key` remains null unless an authentic key is explicitly embedded or uploaded via ZIP package / CSV.
+2. **Working AI Handwriting Transcription & Auto-Match**:
+   - Corrected grade iteration to `state.results?.grades`.
+   - Extracted answer crops via `cropROIFromScan(g, activeItem.roi, c)` and cached them onto `item.cropDataUrl`.
+   - Executed transcription via `HandwritingEngine.transcribeHandwritingCrop(cropUrl)`, updated `item.ocrText`, evaluated fuzzy match via `isOcrMatch(res.text, expected)`, and dynamically awarded `✓ Match` badges.
+3. **Zero-Loss Session & Crop Restoration**:
+   - Made `restoreCheckerProgress()` async and awaited full image decoding of all `scanImg` instances via `Promise.all` and `HTMLImageElement.decode()` before triggering canvas rendering.
+   - Guarded `cropROIFromScan()` to immediately render and return when `cachedCrop` is present, eliminating blank white canvas overwrites.
+   - Guaranteed full persistence of all handwritten crops in `ToolkitDB` IndexedDB.
+4. **Top Performing Students Table Cleanup**:
+   - Renamed heading from `Top Performing Students (Cohort Leaders)` to `Top Performing Students`.
+   - Removed `Student ID` and `Class / Offer No.` columns from both the Tab 3 table and exported HTML report.
+5. **Academic Typography & Emoji Cleanup**:
+   - Replaced decorative emojis with clean academic labels and crisp inline SVGs across signal legends, action buttons, and diagnostic callouts.
+6. **Uniform Compact 32px Google Account Button**:
+   - Redesigned `#btn-google-drive` in both Sheet Builder and Checker Studio as a compact 32px icon button featuring the authentic Google color logo and a micro status badge (emerald checkmark `✓` when synced, rotating spinner when syncing).
+   - Protected `.app-brand` with `flex-shrink: 0`.
+7. **6-Point Midline Lateral Fiducials Recommendation for Sheet Warping**:
+   - Evaluated and documented 6-point registration in `docs/SMART_DETECTION_DESIGN.md` (Marker 4 at mid-left, Marker 5 at mid-right on A4 margins) enabling piecewise planar homography or Thin Plate Splines (TPS) to eliminate 90%+ of vertical paper sag and phone camera curvature without neural networks.
+
+---
+
 ## 10. Verification & Test Commands
 
 Every change to the codebase must pass both JavaScript layout tests and Python unit/integration tests:

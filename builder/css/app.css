@@ -99,6 +99,7 @@ body {
   display: flex;
   align-items: center;
   gap: 0.65rem;
+  flex-shrink: 0;
 }
 
 .app-brand__logo {
@@ -2682,14 +2683,21 @@ dialog.modal-dialog--answer-key {
 
 /* Google Drive Integration Button & Status */
 .btn-google-drive {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  max-width: 32px;
+  padding: 0;
   display: inline-flex;
   align-items: center;
-  gap: 0.45rem;
-  font-weight: 600;
+  justify-content: center;
+  position: relative;
   border: 1px solid var(--border);
   background: var(--panel);
   color: var(--text);
+  border-radius: var(--radius-sm, 6px);
   transition: all 140ms var(--ease);
+  flex-shrink: 0;
 }
 .btn-google-drive:hover {
   border-color: #4285F4;
@@ -2699,6 +2707,53 @@ dialog.modal-dialog--answer-key {
   border-color: #34A853 !important;
   background: color-mix(in srgb, #34A853 10%, var(--panel)) !important;
   color: var(--text) !important;
+}
+.google-status-badge {
+  position: absolute;
+  bottom: -3px;
+  right: -3px;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid var(--panel, #ffffff);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  z-index: 2;
+}
+.google-status-badge.is-synced {
+  background: #10b981;
+  color: #ffffff;
+}
+.google-status-badge.is-synced .google-status-check {
+  display: block;
+}
+.google-status-badge.is-synced .google-status-spinner {
+  display: none;
+}
+.google-status-badge.is-syncing {
+  background: #3b82f6;
+}
+.google-status-badge.is-syncing .google-status-check {
+  display: none;
+}
+.google-status-badge.is-syncing .google-status-spinner {
+  display: block;
+  width: 7px;
+  height: 7px;
+  border: 1.5px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+.google-status-badge.is-error {
+  background: #ef4444;
+  color: #ffffff;
+}
+.google-status-badge.is-error .google-status-check,
+.google-status-badge.is-error .google-status-spinner {
+  display: none;
 }
 .google-status-dot {
   width: 7px;

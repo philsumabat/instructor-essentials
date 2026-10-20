@@ -114,17 +114,13 @@ test('Feature 1: Class / Offer No. Extraction, Display, and Export', () => {
   assert.ok(checkerHtml.includes('Student ID,Student Name,Class / Offer No.'), 'Roster template CSV has Class / Offer No. header');
   assert.ok(checkerHtml.includes('BIO101-SEC1'), 'Roster template CSV has sample class/offer codes');
 
-  // 3. Verify #tab-roster and Top Performing Students headers & columns
+  // 3. Verify #tab-roster has Class / Offer No. header, and Top Performing Students table omits it
   assert.ok(checkerHtml.includes('data-sort="classOffer">Class / Offer No.'), '#tab-roster has sortable Class / Offer No. header');
-  assert.ok(checkerHtml.includes('<th>Class / Offer No.</th>'), 'Top Performing Students table has Class / Offer No. header');
-  assert.ok(checkerHtml.includes('${s.classOffer || \'—\'}'), 'Top Performing Students row template renders s.classOffer');
+  assert.ok(!checkerHtml.includes('<th>Class / Offer No.</th>'), 'Top Performing Students table excludes Class / Offer No. header');
 
   // 4. Verify CSV Summary export includes Class / Offer No.
   assert.ok(checkerHtml.includes('"Exam ID", "Student ID", "Student Name", "Class / Offer No.", "Raw Score"'), 'btn-export-csv includes Class / Offer No. column header');
   assert.ok(checkerHtml.includes('`"${g.classOffer || \'\'}"`'), 'btn-export-csv writes g.classOffer');
-
-  // 5. Verify HTML export includes Class / Offer No.
-  assert.ok(checkerHtml.includes('<th>Class / Offer No.</th>'), 'HTML export has Class / Offer No. header');
 });
 
 test('Feature 2: Fuzzy Written Detail Estimation & Roster Mismatch Handling', () => {

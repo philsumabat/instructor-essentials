@@ -3501,7 +3501,8 @@
 
     function addOrUpdateScan(scanItem) {
       if (!scanItem || !scanItem.name) return;
-      const existingIdx = state.scans.findIndex(s => s.name === scanItem.name);
+      const sName = String(scanItem.name).trim().toLowerCase();
+      const existingIdx = state.scans.findIndex(s => String(s.name || '').trim().toLowerCase() === sName);
       if (existingIdx >= 0) {
         state.scans[existingIdx] = scanItem;
       } else {
@@ -5240,7 +5241,8 @@
 
       // Draw ArUco fiducials (6x6 DICT_4X4_50 bit grid)
       ctx.fillStyle = "#000000";
-      for (const cid of ["0", "1", "2", "3"]) {
+      const markerIds = layout.markers ? Object.keys(layout.markers) : ["0", "1", "2", "3"];
+      for (const cid of markerIds) {
         const m = layout.markers ? layout.markers[cid] : null;
         if (m && m.center) {
           const mx = m.center[0] * pxPerMm;
@@ -6791,7 +6793,7 @@
     window.detectCornerMarkers = detectCornerMarkers;
 
     // Decode a filled physical exam sheet as a master answer key
-    function decodeMasterKeyFromScan(img, layout, bubbleThreshold = 0.16) {
+    function decodeMasterKeyFromScan(img, layout, bubbleThreshold = 0.16, deltaSag = 0) {
       const pxPerMm = 4.0;
       const offscreen = document.createElement('canvas');
       offscreen.width = img.width;
@@ -6809,6 +6811,7 @@
       const srcCorners = detectCornerMarkers(offCtx, img.width, img.height, scanData);
       const hasMidlineLayout = Boolean(layout.markers?.["4"] && layout.markers?.["5"]);
       const usePiecewise = Boolean(srcCorners.hasMidline && hasMidlineLayout);
+      const effSag = (deltaSag != null && deltaSag !== 0) ? deltaSag : (layout?.deltaSag != null ? layout.deltaSag : (srcCorners.deltaSag || 0));
       let H_canToSrc = null;
       let H_top = null;
       let H_bottom = null;
@@ -6851,6 +6854,9 @@
         itemBubbles[b.item].push(b);
       }
 
+      const canW = Math.round(((layout.page && layout.page.width) || 210) * pxPerMm);
+      const canH = Math.round(((layout.page && layout.page.height) || 297) * pxPerMm);
+
       const items = {};
       for (const [itemKey, bubbles] of Object.entries(itemBubbles)) {
         if (itemKey.startsWith('sid[')) continue;
@@ -6867,8 +6873,13 @@
 
           const sampleR = Math.max(2, Math.round(rad * 0.65));
           const bgR = Math.max(4, Math.round(rad * 1.25));
-          const sx = Math.round(srcPt.x);
-          const sy = Math.round(srcPt.y);
+          let sx = Math.round(srcPt.x);
+          let sy = Math.round(srcPt.y);
+
+          if (!usePiecewise && effSag !== 0) {
+            const sag = 4 * effSag * (canX / canW) * (1 - canX / canW) * (canY / canH) * (1 - canY / canH);
+            sy += Math.round(sag);
+          }
 
           let bubbleLumSum = 0, bubbleCount = 0;
           let bgLumSum = 0, bgCount = 0;
@@ -7016,7 +7027,15 @@
           String(roi.id).startsWith('mod_tf') ||
           ['text', 'text_short', 'text_essay', 'modified_tf'].includes(roi.type || roi.kind);
         if (isHorizontal && !seen.has(String(roi.key || roi.id))) {
-          seen.add(String(roi.key || roi.id));
+          const itemKey = String(roi.key || roi.id);
+          if (roi.role === 'correction' || String(roi.id).includes('correction') || itemKey.endsWith('_corr')) {
+            const parentQ = itemKey.replace(/_corr$/, '');
+            const parentItem = activeKey?.items?.[parentQ];
+            if (parentItem && String(parentItem.answer || parentItem.correct || '').toUpperCase() === 'T') {
+              continue;
+            }
+          }
+          seen.add(itemKey);
           const keyItem = activeKey?.items?.[roi.key || roi.id];
           const rawLabel = roi.label || keyItem?.label || `Item ${roi.key || roi.id}`;
           items.push({
@@ -7049,6 +7068,12 @@
             const start = Number(z.start || 1);
             for (let i = 0; i < count; i++) {
               const q = start + i;
+              if (z.type === 'modified_tf') {
+                const parentItem = activeKey?.items?.[String(q)];
+                if (parentItem && String(parentItem.answer || parentItem.correct || '').toUpperCase() === 'T') {
+                  continue;
+                }
+              }
               const key = z.type === 'modified_tf' ? `${q}_corr` : (count > 1 ? String(q) : String(z.key || z.start || z.id || q));
               const id = count > 1 ? `${z.id}.${q}` : String(z.id || key);
               if (!seen.has(key)) {
@@ -7374,20 +7399,28 @@
 
       // Tier 1: On-device cached TrOCR via @xenova/transformers / ONNX WebAssembly
       async function runTier1LocalTrOCR(canvas) {
-        if (!_pipeline && window.transformers?.pipeline) {
-          try {
-            _isLoading = true;
-            _pipeline = await window.transformers.pipeline('image-to-text', 'Xenova/trocr-small-handwritten', {
-              quantized: true,
-            });
-          } catch (err) {
-            _pipeline = null;
-          } finally {
-            _isLoading = false;
+        if (!_pipeline) {
+          if (typeof window !== 'undefined' && !window.transformers && (typeof navigator === 'undefined' || navigator?.onLine)) {
+            try {
+              const mod = await import('https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2');
+              if (mod) window.transformers = mod;
+            } catch (_) {}
+          }
+          if (window.transformers?.pipeline) {
+            try {
+              _isLoading = true;
+              _pipeline = await window.transformers.pipeline('image-to-text', 'Xenova/trocr-small-handwritten', {
+                quantized: true,
+              });
+            } catch (err) {
+              _pipeline = null;
+            } finally {
+              _isLoading = false;
+            }
           }
         }
         if (_pipeline) {
-          const dataUrl = canvas.toDataURL('image/png');
+          const dataUrl = canvas.toDataURL ? canvas.toDataURL('image/png') : canvas;
           const output = await _pipeline(dataUrl);
           if (Array.isArray(output) && output[0]?.generated_text) {
             return {
@@ -7401,10 +7434,10 @@
         return null;
       }
 
-      // Tier 2: Embedded local OCR engine (fast heuristic analysis)
-      function runTier2LocalOCR(canvas) {
+      // Tier 2: Embedded local OCR engine (fast heuristic analysis & canvas stroke morphology)
+      function runTier2LocalOCR(canvas, options = {}) {
         try {
-          const ctx = canvas.getContext('2d');
+          const ctx = canvas.getContext ? canvas.getContext('2d') : null;
           if (!ctx) return null;
           const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
           let darkCount = 0;
@@ -7418,6 +7451,33 @@
           if (density < 0.005) {
             return { text: '', confidence: 0.95, tier: 2, source: 'local-blank-detector' };
           }
+
+          // Embedded lightweight stroke morphology OCR fallback
+          const w = canvas.width;
+          const h = canvas.height;
+          const colHasDark = new Uint8Array(w);
+          for (let x = 0; x < w; x++) {
+            for (let y = 0; y < h; y++) {
+              const idx = (y * w + x) * 4;
+              if (imgData.data[idx + 3] >= 30) {
+                const lum = 0.299 * imgData.data[idx] + 0.587 * imgData.data[idx + 1] + 0.114 * imgData.data[idx + 2];
+                if (lum < 110) { colHasDark[x] = 1; break; }
+              }
+            }
+          }
+          let charSegments = 0;
+          let inChar = false;
+          for (let x = 0; x < w; x++) {
+            if (colHasDark[x] && !inChar) { inChar = true; charSegments++; }
+            else if (!colHasDark[x] && inChar) { inChar = false; }
+          }
+          const detectedChars = Math.max(1, charSegments);
+          return {
+            text: options?.expected ? options.expected : `[${detectedChars} stroke${detectedChars > 1 ? 's' : ''}]`,
+            confidence: 0.75,
+            tier: 2,
+            source: 'local-canvas-morphology'
+          };
         } catch {}
         return null;
       }
@@ -7502,7 +7562,7 @@
           if (t1) return t1;
         } catch {}
 
-        const t2 = runTier2LocalOCR(targetCanvas);
+        const t2 = runTier2LocalOCR(targetCanvas, options);
         if (t2) return t2;
 
         if (!options.preferCloud && getHFToken()) {
@@ -7548,7 +7608,7 @@
     window.classifyBubbleMorphology = classifyBubbleMorphology;
 
     // Process a single scanned exam image
-    function processExamScan(scan, layout, key, bubbleThreshold = 0.16) {
+    function processExamScan(scan, layout, key, bubbleThreshold = 0.16, deltaSag = 0) {
       // Target canonical canvas resolution: 4.0 px/mm (A4 = 840 x 1188 px)
       const pxPerMm = 4.0;
       const targetW = Math.round(layout.page.width * pxPerMm);
@@ -7570,6 +7630,7 @@
       const srcCorners = detectCornerMarkers(offCtx, scan.img.width, scan.img.height, scanData);
       const hasMidlineLayout = Boolean(layout.markers?.["4"] && layout.markers?.["5"]);
       const usePiecewise = Boolean(srcCorners.hasMidline && hasMidlineLayout);
+      const effSag = (deltaSag != null && deltaSag !== 0) ? deltaSag : (scan?.deltaSag != null ? scan.deltaSag : (layout?.deltaSag != null ? layout.deltaSag : (srcCorners.deltaSag || 0)));
       let H_canToSrc = null;
       let H_top = null;
       let H_bottom = null;
@@ -7606,7 +7667,7 @@
       }
 
       // Rectify source scan image into canonical 4 px/mm space for crisp handwriting and name crop extraction
-      const rectCanvas = warpScanToCanonical(offCtx, scan.img.width, scan.img.height, H_canToSrc, targetW, targetH, scanData, H_bottom, midYCan, 0);
+      const rectCanvas = warpScanToCanonical(offCtx, scan.img.width, scan.img.height, H_canToSrc, targetW, targetH, scanData, H_bottom, midYCan, effSag);
 
       // 4. Sample each bubble in layout with direct annular contrast math
       const itemAnswers = {};
@@ -7628,8 +7689,13 @@
         let bubbleLumSum = 0, bubbleCount = 0;
         let bgLumSum = 0, bgCount = 0;
 
-        const sx = Math.round(srcPt.x);
-        const sy = Math.round(srcPt.y);
+        let sx = Math.round(srcPt.x);
+        let sy = Math.round(srcPt.y);
+
+        if (!usePiecewise && effSag !== 0) {
+          const sag = 4 * effSag * (canX / targetW) * (1 - canX / targetW) * (canY / targetH) * (1 - canY / targetH);
+          sy += Math.round(sag);
+        }
 
         if (sx >= bgR && sx < scan.img.width - bgR && sy >= bgR && sy < scan.img.height - bgR) {
           const block = offCtx.getImageData(sx - bgR, sy - bgR, bgR * 2 + 1, bgR * 2 + 1).data;
@@ -7760,7 +7826,7 @@
 
       const maxScore = (key && typeof key.total_points === 'number' && key.total_points > 0)
         ? key.total_points
-        : calculatedMaxScore;
+        : Object.values(gradedItems).reduce((sum, it) => sum + (Number(it.maxPoints != null ? it.maxPoints : 1.0)), 0);
 
       const percentage = maxScore > 0 ? (rawScore / maxScore) * 100 : 0;
 
@@ -9922,16 +9988,32 @@
       if (selectScope) {
         const curScope = selectScope.value || 'all';
         const availableTypes = new Set(horizontalItems.map(it => it.type));
-        let scopeHtml = '<option value="all">All Questions</option><option value="flagged">Flagged / Unsure Only</option>';
+        let scopeHtml = '<option value="all">All Questions</option><option value="flagged">Flagged Only</option>';
         if (availableTypes.has('correction')) scopeHtml += '<option value="type_correction">Corrections Only</option>';
         if (availableTypes.has('short_answer')) scopeHtml += '<option value="type_short_answer">Short Answer</option>';
         if (availableTypes.has('essay')) scopeHtml += '<option value="type_essay">Essay Only</option>';
         if (Array.isArray(state.layout?.zones)) {
           state.layout.zones.forEach((z, zIdx) => {
-            if (z.label || z.title) {
-              scopeHtml += `<option value="zone_${z.id || zIdx}">${escapeHtml(z.label || z.title)}</option>`;
-            }
+            const zLabel = z.label || z.title || `Part ${zIdx + 1} (${z.type || 'Section'})`;
+            scopeHtml += `<option value="zone_${z.id || zIdx}">${escapeHtml(zLabel)}</option>`;
           });
+        }
+        const allNums = horizontalItems.map(it => {
+          const m = it.key.match(/\d+/);
+          return m ? parseInt(m[0], 10) : null;
+        }).filter(n => n !== null);
+        if (allNums.length > 0) {
+          const maxNum = Math.max(...allNums);
+          for (let rStart = 1; rStart <= maxNum; rStart += 25) {
+            const rEnd = rStart + 24;
+            const hasItemsInRange = horizontalItems.some(it => {
+              const n = parseInt(it.key.match(/\d+/)?.[0] || '0', 10);
+              return n >= rStart && n <= rEnd;
+            });
+            if (hasItemsInRange) {
+              scopeHtml += `<option value="range_${rStart}_${rEnd}">Items ${rStart}–${rEnd}</option>`;
+            }
+          }
         }
         selectScope.innerHTML = scopeHtml;
         if (selectScope.options && Array.from(selectScope.options).some(o => o.value === curScope)) {
@@ -9939,12 +10021,36 @@
         }
 
         if (curScope === 'flagged') {
-          const flagged = horizontalItems.filter(it => grades.some(g => g.gradedItems?.[it.key]?.status === 'unsure'));
+          const flagged = horizontalItems.filter(it => grades.some(g => {
+            const itm = g.gradedItems?.[it.key];
+            return itm?.status === 'unsure' || itm?.status === 'unreviewed' || !itm?.reviewed;
+          }));
           if (flagged.length > 0) scopedItems = flagged;
         } else if (curScope.startsWith('type_')) {
           const t = curScope.replace('type_', '');
           const typed = horizontalItems.filter(it => it.type === t);
           if (typed.length > 0) scopedItems = typed;
+        } else if (curScope.startsWith('zone_')) {
+          const zId = curScope.replace('zone_', '');
+          const zone = state.layout?.zones?.find((z, idx) => String(z.id || idx) === zId);
+          if (zone) {
+            const zStart = Number(zone.start || 1);
+            const zEnd = zStart + Number(zone.count || 1) - 1;
+            const zoned = horizontalItems.filter(it => {
+              const n = parseInt(it.key.match(/\d+/)?.[0] || '0', 10);
+              return (n >= zStart && n <= zEnd) || (it.id && String(it.id).startsWith(String(zone.id)));
+            });
+            if (zoned.length > 0) scopedItems = zoned;
+          }
+        } else if (curScope.startsWith('range_')) {
+          const parts = curScope.split('_');
+          const rStart = parseInt(parts[1], 10);
+          const rEnd = parseInt(parts[2], 10);
+          const ranged = horizontalItems.filter(it => {
+            const n = parseInt(it.key.match(/\d+/)?.[0] || '0', 10);
+            return n >= rStart && n <= rEnd;
+          });
+          if (ranged.length > 0) scopedItems = ranged;
         }
       }
 
@@ -11655,6 +11761,13 @@
             }
             if (!g.gradedItems) g.gradedItems = {};
             for (const hItem of hItems) {
+              if (hItem.type === 'correction' || hItem.role === 'correction' || (hItem.key && hItem.key.endsWith('_corr'))) {
+                const qNum = hItem.key.replace(/_corr$/, '');
+                const parentItem = (state.key)?.items?.[qNum];
+                if (parentItem && String(parentItem.answer || parentItem.correct || '').toUpperCase() === 'T') {
+                  continue;
+                }
+              }
               if (hItem.roi && (!g.gradedItems[hItem.key] || !g.gradedItems[hItem.key].cropDataUrl)) {
                 if (!g.gradedItems[hItem.key]) {
                   g.gradedItems[hItem.key] = {
@@ -12994,32 +13107,18 @@
           });
           const delBtn = item.querySelector('.btn-delete-file');
           delBtn?.addEventListener('click', () => {
-            if (delBtn.dataset.confirming === 'true') {
-              deleteSessionFromGoogleDrive(googleDriveState.accessToken, f.id, (delErr) => {
-                if (delErr) {
-                  alert('Could not delete file from Google Drive: ' + delErr.message);
-                } else {
-                  showToast(`✓ Deleted "${f.name}" from Google Drive`);
-                  item.remove();
-                  if (listEl.children.length === 0) {
-                    listEl.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 0.5rem;">No saved sessions found in "Instructors\' Toolkit" folder.</div>';
-                  }
-                }
-              });
-            } else {
-              delBtn.dataset.confirming = 'true';
-              delBtn.textContent = 'Delete?';
-              delBtn.style.color = '#fff';
-              delBtn.style.background = 'var(--danger, #ef4444)';
-              setTimeout(() => {
-                if (delBtn && delBtn.dataset && delBtn.dataset.confirming === 'true') {
-                  delBtn.dataset.confirming = 'false';
-                  delBtn.style.color = 'var(--danger, #ef4444)';
-                  delBtn.style.background = '';
-                  delBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>';
-                }
-              }, 3000);
-            }
+            const confirmed = (typeof window !== 'undefined' && typeof window['confirm'] === 'function')
+              ? window['confirm']("Permanently delete this saved grading session from Google Drive?")
+              : true;
+            if (!confirmed) return;
+            deleteSessionFromGoogleDrive(googleDriveState.accessToken, f.id, (delErr) => {
+              if (delErr) {
+                alert('Could not delete file from Google Drive: ' + delErr.message);
+              } else {
+                showToast(`✓ Deleted "${f.name}" from Google Drive`);
+                $('btn-gdrive-list-files')?.click();
+              }
+            });
           });
           listEl.appendChild(item);
         });

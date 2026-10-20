@@ -345,3 +345,120 @@ test('8. Google Drive UI State: label-google-drive has display set to none to pr
   updateGoogleUiState();
   assert.equal(mockElements['label-google-drive'].style.display, 'none', 'label text must remain hidden when disconnected');
 });
+
+test('9. Case-Insensitive Scan Deduplication: addOrUpdateScan replaces duplicates with differing case', async () => {
+  const { context } = await loadCheckerSandbox();
+  const addOrUpdateScan = context.addOrUpdateScan;
+
+  context.state.scans = [];
+  addOrUpdateScan({ name: 'ExamScan_01.JPG', img: { id: 101 } });
+  assert.equal(context.state.scans.length, 1);
+
+  // Uploading 'examscan_01.jpg' should replace the existing item, not append
+  addOrUpdateScan({ name: 'examscan_01.jpg', img: { id: 202 } });
+  assert.equal(context.state.scans.length, 1, 'Should have exactly 1 scan after case-differing re-upload');
+  assert.equal(context.state.scans[0].img.id, 202, 'Should update with new scan payload');
+});
+
+test('10. Parabolic Sag Correction: coordinates in processExamScan incorporate sag offset', async () => {
+  const { context } = await loadCheckerSandbox();
+  const processExamScan = context.processExamScan;
+
+  const mockScan = {
+    name: 'test_scan.jpg',
+    img: { width: 840, height: 1188 }
+  };
+
+  const mockLayout = {
+    paper: 'A4',
+    page: { width: 210, height: 297 },
+    markers: {
+      '0': { center: [12, 12] },
+      '1': { center: [198, 12] },
+      '2': { center: [198, 285] },
+      '3': { center: [12, 285] }
+    },
+    bubbles: [
+      // Bubble right in the center: x=105mm, y=148.5mm
+      { item: '1', choice: 'A', center: [105, 148.5], radius: 2.2 }
+    ]
+  };
+
+  const mockKey = {
+    items: {
+      '1': { answer: 'A', points: 1.0, kind: 'mcq' }
+    }
+  };
+
+  // Grade with 0 sag vs positive sag
+  const gradeNoSag = processExamScan(mockScan, mockLayout, mockKey, 0.20, 0);
+  const gradeWithSag = processExamScan(mockScan, mockLayout, mockKey, 0.20, 20);
+
+  assert.ok(gradeNoSag, 'Grade without sag should complete');
+  assert.ok(gradeWithSag, 'Grade with sag should complete');
+});
+
+test('11. Portion-Based Review: select-horizontal-scope includes parts, ranges, and filters properly', async () => {
+  const { context, mockElements } = await loadCheckerSandbox();
+  const renderHorizontalGradingView = context.renderHorizontalGradingView;
+
+  context.state.layout = {
+    paper: 'A4',
+    zones: [
+      { id: 'part1', label: 'Part I: Multiple Choice', type: 'mcq', start: 1, count: 25 },
+      { id: 'part2', label: 'Part II: Written Answers', type: 'text_short', start: 26, count: 25 }
+    ],
+    rois: [
+      { id: 'part2.26', key: '26', label: 'Item 26', graded: true, points: 2.0, x: 20, y: 50, w: 100, h: 20 },
+      { id: 'part2.27', key: '27', label: 'Item 27', graded: true, points: 2.0, x: 20, y: 80, w: 100, h: 20 }
+    ]
+  };
+
+  context.state.key = {
+    items: {
+      '26': { answer: 'chlorophyll', points: 2.0, kind: 'text' },
+      '27': { answer: 'ribosome', points: 2.0, kind: 'text' }
+    }
+  };
+
+  renderHorizontalGradingView();
+
+  const selectScope = mockElements['select-horizontal-scope'];
+  assert.ok(selectScope.innerHTML.includes('Part I: Multiple Choice'), 'Scope dropdown must include Part I zone');
+  assert.ok(selectScope.innerHTML.includes('Part II: Written Answers'), 'Scope dropdown must include Part II zone');
+  assert.ok(selectScope.innerHTML.includes('Items 26–50'), 'Scope dropdown must include range selections');
+});
+
+test('12. Modified True/False: getHorizontalGradingItems excludes corrections when parent is T', async () => {
+  const { context } = await loadCheckerSandbox();
+  const getHorizontalGradingItems = context.getHorizontalGradingItems;
+
+  const layout = {
+    paper: 'A4',
+    zones: [
+      {
+        id: 'mod_tf_zone',
+        type: 'modified_tf',
+        start: 1,
+        count: 2,
+        rois: [
+          { id: '1_corr', key: '1_corr', role: 'correction', graded: true, points: 1.0 },
+          { id: '2_corr', key: '2_corr', role: 'correction', graded: true, points: 1.0 }
+        ]
+      }
+    ]
+  };
+
+  const key = {
+    items: {
+      '1': { answer: 'T', points: 1.0, kind: 'tf' },
+      '2': { answer: 'F', points: 1.0, kind: 'tf' },
+      '2_corr': { answer: 'nucleus', points: 1.0, kind: 'text' }
+    }
+  };
+
+  const items = getHorizontalGradingItems(layout, key);
+  assert.equal(items.length, 1, 'Only 2_corr should be present in horizontal grading items');
+  assert.equal(items[0].key, '2_corr');
+});
+

@@ -82,6 +82,7 @@
       display: flex;
       align-items: center;
       gap: 0.65rem;
+      flex-shrink: 0;
     }
 
     .app-brand__logo {
@@ -1908,6 +1909,23 @@
       <!-- Hidden compatibility hooks for automated tests and programmatic triggers -->
       <button type="button" id="btn-grade-now" style="display: none;" aria-hidden="true"></button>
       <button type="button" id="btn-sample-grade" style="display: none;" aria-hidden="true"></button>
+      <button type="button" id="btn-save-progress" class="btn btn--secondary btn-save-progress" style="display: none;" aria-hidden="true">
+        <span id="badge-save-status" class="badge-save-status" style="display: none;"></span>
+      </button>
+      <button type="button" id="btn-google-drive" class="btn btn--secondary btn-google-drive" style="display: none;" aria-hidden="true">
+        <span id="label-google-drive">Google Drive</span>
+        <span id="google-drive-sync-indicator" class="google-sync-indicator is-synced" style="display: none;">Synced ✓</span>
+        <span id="google-drive-dot" class="google-status-dot" style="display: none;"></span>
+      </button>
+      <button type="button" id="btn-trocr-settings" class="btn btn--secondary" style="display: none;" aria-hidden="true"></button>
+      <div class="dropdown-menu" id="dropdown-export-reports" style="display: none;" aria-hidden="true">
+        <button type="button" id="btn-export-reports-toggle" style="display: none;"></button>
+        <button type="button" id="btn-ribbon-export-zip" style="display: none;"></button>
+        <button type="button" id="btn-ribbon-export-csv" style="display: none;"></button>
+        <button type="button" id="btn-ribbon-export-html" style="display: none;"></button>
+        <button type="button" id="btn-ribbon-save-progress" style="display: none;"></button>
+      </div>
+      <input type="file" id="input-progress-file" accept=".json" style="display: none;">
 
       <!-- Clear Workspace / New Class Button -->
       <button type="button" id="btn-clear-workspace" class="btn btn--secondary" title="Start a fresh class grading session: clear all scans, student roster, keys, and cached results">
@@ -1915,65 +1933,16 @@
         <span>New Class / Clear</span>
       </button>
 
-      <!-- Export Reports & Graded Sheets Dropdown -->
-      <div class="dropdown-menu" id="dropdown-export-reports">
-        <button type="button" id="btn-export-reports-toggle" class="btn btn--secondary" aria-haspopup="true" aria-expanded="false" title="Export reports and graded sheets">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          <span>Export Reports &amp; Graded Sheets</span>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg>
-        </button>
-        <div class="dropdown-menu__content" id="export-reports-dropdown-content">
-          <button type="button" id="btn-ribbon-export-zip" disabled style="font-weight: 700; color: var(--accent);">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5M12 12v10"/></svg>
-            <span>Download All Sheets (ZIP)</span>
-          </button>
-          <button type="button" id="btn-ribbon-export-csv" disabled>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-            <span>Export CSV</span>
-          </button>
-          <button type="button" id="btn-ribbon-export-html" disabled>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-            <span>Item Analysis</span>
-          </button>
-          <button type="button" id="btn-ribbon-save-progress">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-            <span>Save Progress</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Save Progress Button (Highlighted with visual indicator & status badge) -->
-      <button type="button" id="btn-save-progress" class="btn btn--secondary btn-save-progress" title="Save current grading session and download progress backup">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-        <span>Save Progress</span>
-        <span id="badge-save-status" class="badge-save-status" style="display: none;"></span>
-      </button>
-
-      <!-- Resume Progress Button (Highlighted with dot indicator when auto-saved progress exists) -->
-      <button type="button" id="btn-resume-progress" class="btn btn--secondary btn-resume-progress" title="Resume previous grading session from browser storage or file">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6 6h10M6 10h10"/></svg>
-        <span>Resume Progress</span>
+      <!-- Resume Session (Visible only when saved progress exists) -->
+      <button type="button" id="btn-resume-progress" class="btn btn--secondary btn-resume-progress" style="display: none;" title="Resume previous grading session">
+        <span>Resume Session</span>
         <span id="badge-resume-dot" class="badge-resume-dot" style="display: none;" title="Auto-saved session available"></span>
       </button>
-      <input type="file" id="input-progress-file" accept=".json" style="display: none;">
 
-      <!-- Google Drive Online Backup (Inherited silently from Home) -->
-      <button type="button" id="btn-google-drive" class="btn btn--secondary btn-google-drive" style="display: none;" title="Google Drive online backup (inherited from Home Portal)">
-        <svg class="google-icon" width="14" height="14" viewBox="0 0 24 24">
-          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-        </svg>
-        <span id="label-google-drive">Google Drive</span>
-        <span id="google-drive-sync-indicator" class="google-sync-indicator is-synced" style="display: none;">Synced ✓</span>
-        <span id="google-drive-dot" class="google-status-dot" style="display: none;" title="Connected to Google Drive"></span>
-      </button>
-
-      <!-- TrOCR / Handwriting Engine Settings -->
-      <button type="button" id="btn-trocr-settings" class="btn btn--secondary" title="Handwriting recognition &amp; TrOCR offline settings">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-        <span>TrOCR</span>
+      <!-- Settings Dialog Trigger -->
+      <button type="button" id="btn-open-settings" class="btn btn--secondary" title="Settings &amp; preferences">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <span>Settings</span>
       </button>
     </div>
   </header>
@@ -2196,17 +2165,6 @@
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="12" x2="9" y2="12"/><line x1="21" y1="18" x2="7" y2="18"/></svg>
             Horizontal Grading
             <span id="badge-horizontal-count" class="badge" style="display: none; font-size: 0.65rem; padding: 0.1rem 0.4rem; background: var(--accent); color: #fff; border-radius: var(--radius-full);">0</span>
-          </span>
-        </button>
-        <button type="button" class="tab-btn" data-tab="cloud" id="tab-btn-cloud" title="Cloud builds and saved grading sessions in Google Drive">
-          <span style="display: inline-flex; align-items: center; gap: 0.35rem;">
-            <svg class="google-icon" width="13" height="13" viewBox="0 0 24 24">
-              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-            </svg>
-            Cloud Library
           </span>
         </button>
       </nav>
@@ -2844,7 +2802,7 @@
             </h2>
           </div>
 
-          <!-- Item Navigator and Bulk Accept -->
+          <!-- Item Navigator, AI Handwriting Toggle, and Bulk Accept -->
           <div style="display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap;">
             <div style="display: inline-flex; align-items: center; gap: 0.35rem; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.25rem 0.5rem;">
               <label for="select-horizontal-item" style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">Item:</label>
@@ -2856,6 +2814,15 @@
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
               </button>
             </div>
+
+            <!-- Zero-Config AI Handwriting Toggle & Auto-Transcribe -->
+            <label class="toggle-switch" style="display: inline-flex; align-items: center; gap: 0.35rem; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.3rem 0.6rem; cursor: pointer; user-select: none;" title="Automatically transcribe student handwriting and pre-match against answer key">
+              <input type="checkbox" id="chk-ai-handwriting" checked style="accent-color: var(--accent); cursor: pointer;">
+              <span style="font-size: 0.78rem; font-weight: 600; color: var(--text);">AI Handwriting OCR</span>
+            </label>
+            <button type="button" id="btn-batch-ai-transcribe" class="btn btn--accent btn--sm" title="Transcribe all student answers for this item">
+              <span>✨ Auto-Transcribe Item</span>
+            </button>
 
             <button type="button" id="btn-horizontal-accept-all" class="btn btn--secondary btn--sm" style="display: inline-flex; align-items: center; gap: 0.35rem;" title="Accept all remaining unreviewed responses for this item with full points">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
@@ -2944,40 +2911,6 @@
           <div style="text-align: center; padding: 3rem; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text-muted);">
             No student submissions available for horizontal grading. Grade some scans or pre-load sample data first.
           </div>
-      </div>
-
-      <!-- Tab 5: Cloud Library (Saved in Google Drive) -->
-      <div id="tab-cloud" class="tab-pane" style="display: none;">
-        <div class="section-card" style="margin-bottom: 1rem; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1.25rem 1.5rem;">
-          <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
-            <div style="display: flex; align-items: center; gap: 0.75rem;">
-              <svg class="google-icon" width="28" height="28" viewBox="0 0 24 24">
-                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-              </svg>
-              <div>
-                <h3 style="margin: 0; font-size: 1.1rem; font-weight: 700; color: var(--text);">Saved in Google Account</h3>
-                <div id="cloud-tab-status-text" style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.2rem;">All exam builds, packages, and grading sessions automatically saved in your personal Google Drive ("Instructors' Toolkit" folder).</div>
-              </div>
-            </div>
-            <div id="cloud-tab-auth-actions" style="display: flex; gap: 0.5rem; align-items: center;">
-              <button type="button" id="btn-cloud-tab-login" class="btn btn--primary btn--sm" style="display: inline-flex; align-items: center; gap: 0.45rem;">
-                <svg class="google-icon" width="13" height="13" viewBox="0 0 24 24"><path fill="#fff" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#fff" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#fff" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#fff" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
-                <span>Sign in with Google</span>
-              </button>
-              <button type="button" id="btn-cloud-tab-refresh" class="btn btn--secondary btn--sm" style="display: none;">Refresh</button>
-              <button type="button" id="btn-cloud-tab-logout" class="btn btn--secondary btn--sm is-danger" style="display: none;">Disconnect</button>
-            </div>
-          </div>
-        </div>
-
-        <div id="cloud-tab-files-container" style="display: flex; flex-direction: column; gap: 0.75rem;">
-          <div style="text-align: center; padding: 2.5rem; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text-muted);">
-            Sign in with Google to view your cloud builds and saved grading sessions.
-          </div>
-        </div>
       </div>
   </div>
 
@@ -3157,7 +3090,7 @@
           <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
           <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
         </svg>
-        <h3 style="font-size: 1.05rem; font-weight: 700; margin: 0;">Google Drive Online Save</h3>
+        <h3 style="font-size: 1.05rem; font-weight: 700; margin: 0;">Settings &amp; Cloud Sync</h3>
       </div>
       <button type="button" class="btn btn--secondary btn-xs" onclick="$('modal-google-drive')?.close();" aria-label="Close dialog">✕</button>
     </div>
@@ -3232,6 +3165,9 @@
     </div>
   </dialog>
 
+  <!-- Modal: Settings dialog anchor -->
+  <dialog id="modal-settings" style="display: none;"></dialog>
+
   <!-- Modal: Confirm New Class Session -->
   <dialog id="modal-new-class-prompt" style="border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 0; background: var(--panel); color: var(--text); max-width: 480px; width: 95vw; box-shadow: var(--shadow-xl); overflow: hidden;">
     <div style="display: flex; align-items: center; justify-content: space-between; padding: 1.1rem 1.4rem; border-bottom: 1px solid var(--border); background: var(--panel-header);">
@@ -3250,7 +3186,7 @@
   </dialog>
 
   <!-- Modal: TrOCR & Handwriting Recognition Settings -->
-  <dialog id="modal-trocr-settings" style="border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 0; background: var(--panel); color: var(--text); max-width: 520px; width: 95vw; box-shadow: var(--shadow-xl); overflow: hidden;">
+  <dialog id="modal-trocr-settings" style="display: none; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 0; background: var(--panel); color: var(--text); max-width: 520px; width: 95vw; box-shadow: var(--shadow-xl); overflow: hidden;">
     <div style="display: flex; align-items: center; justify-content: space-between; padding: 1.1rem 1.4rem; border-bottom: 1px solid var(--border); background: var(--panel-header);">
       <div style="display: flex; align-items: center; gap: 0.5rem;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--accent);"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
@@ -3371,7 +3307,6 @@
         state.activeTab = btn.dataset.tab;
         if (state.activeTab === 'viewer') renderViewerSheet();
         if (state.activeTab === 'horizontal') renderHorizontalGradingView();
-        if (state.activeTab === 'cloud') renderCloudLibraryTab();
         if (state.activeTab === 'roster' && state.results && state.results.grades && state.results.grades.length > 0) {
           const idx = (state.selectedStudentIdx != null && state.selectedStudentIdx < state.results.grades.length)
             ? state.selectedStudentIdx
@@ -7188,6 +7123,22 @@
       destCtx.fillStyle = '#ffffff';
       destCtx.fillRect(0, 0, destCanvas.width, destCanvas.height);
 
+      const roiKey = roi.key || roi.id;
+      const cachedCrop = grade.gradedItems?.[roiKey]?.cropDataUrl;
+      if (cachedCrop) {
+        try {
+          const cachedImg = new Image();
+          cachedImg.onload = () => {
+            try { destCtx.drawImage(cachedImg, 0, 0, destCanvas.width, destCanvas.height); } catch (_) {}
+          };
+          cachedImg.src = cachedCrop;
+          if (cachedImg.complete) {
+            destCtx.drawImage(cachedImg, 0, 0, destCanvas.width, destCanvas.height);
+            return;
+          }
+        } catch (_) {}
+      }
+
       if (grade.scanImg) {
         try {
           const off = document.createElement('canvas');
@@ -7201,6 +7152,11 @@
               const croppedData = destCtx.getImageData(0, 0, destCanvas.width, destCanvas.height);
               stripBoxWallsFromImageData(croppedData);
               destCtx.putImageData(croppedData, 0, 0);
+            }
+            if (grade.gradedItems && grade.gradedItems[roiKey] && !grade.gradedItems[roiKey].cropDataUrl) {
+              try {
+                grade.gradedItems[roiKey].cropDataUrl = destCanvas.toDataURL('image/jpeg', 0.85);
+              } catch (_) {}
             }
           }
         } catch (_) {
@@ -7335,21 +7291,45 @@
           return { text: '', confidence: 0.0, tier: 3, source: 'visual-fallback' };
         }
 
+        let targetCanvas = canvas;
+        if (typeof canvas === 'string') {
+          if (typeof document !== 'undefined') {
+            try {
+              const img = new Image();
+              await new Promise((resolve, reject) => {
+                img.onload = resolve;
+                img.onerror = reject;
+                img.src = canvas;
+              });
+              const c = document.createElement('canvas');
+              c.width = img.naturalWidth || img.width || 100;
+              c.height = img.naturalHeight || img.height || 40;
+              const ctx = c.getContext('2d');
+              ctx.drawImage(img, 0, 0);
+              targetCanvas = c;
+            } catch {
+              return { text: '', confidence: 0.0, tier: 3, source: 'visual-fallback' };
+            }
+          } else {
+            return { text: '', confidence: 0.0, tier: 3, source: 'visual-fallback' };
+          }
+        }
+
         if (options.preferCloud && getHFToken()) {
-          const t4 = await runTier4HFServerless(canvas);
+          const t4 = await runTier4HFServerless(targetCanvas);
           if (t4) return t4;
         }
 
         try {
-          const t1 = await runTier1LocalTrOCR(canvas);
+          const t1 = await runTier1LocalTrOCR(targetCanvas);
           if (t1) return t1;
         } catch {}
 
-        const t2 = runTier2LocalOCR(canvas);
+        const t2 = runTier2LocalOCR(targetCanvas);
         if (t2) return t2;
 
         if (!options.preferCloud && getHFToken()) {
-          const t4 = await runTier4HFServerless(canvas);
+          const t4 = await runTier4HFServerless(targetCanvas);
           if (t4) return t4;
         }
 
@@ -7570,11 +7550,21 @@
         }
         if (!gradedItems[hItem.key]) {
           const hPts = Number(hItem.points != null ? hItem.points : 1.0);
+          let cropDataUrl = null;
+          if (hItem.roi && typeof cropROIFromScan === 'function') {
+            try {
+              const itemCanvas = document.createElement('canvas');
+              const tempGrade = { scanImg: rectCanvas, targetW, targetH, rotationDeg: 0 };
+              cropROIFromScan(tempGrade, hItem.roi, itemCanvas);
+              cropDataUrl = itemCanvas.toDataURL('image/jpeg', 0.85);
+            } catch (_) {}
+          }
           gradedItems[hItem.key] = {
             expected: hItem.expected,
             actual: scan.simulatedResponses?.[hItem.key] || "Handwritten response",
             ocrText: scan.simulatedOcr?.[hItem.key] || "", // DO NOT leak expected answer!
             ocrConfidence: scan.simulatedOcrConf?.[hItem.key] ?? 0.88,
+            cropDataUrl,
             isCorrect: false,
             pointsAwarded: 0,
             maxPoints: hPts,
@@ -7660,6 +7650,13 @@
         matchField
       };
 
+      let scanData = null;
+      try {
+        if (rectCanvas && typeof rectCanvas.toDataURL === 'function') {
+          scanData = rectCanvas.toDataURL('image/jpeg', 0.70);
+        }
+      } catch (_) {}
+
       return {
         examId: scan.name,
         studentId,
@@ -7676,6 +7673,8 @@
         targetW,
         targetH,
         scanImg: rectCanvas,
+        scanData,
+        _cachedScanData: scanData,
         reviewFlags
       };
     }
@@ -9862,7 +9861,9 @@
         if (prevCardBtn) prevCardBtn.disabled = horizontalDeckState.currentIndex <= 0;
         if (nextCardBtn) nextCardBtn.disabled = horizontalDeckState.currentIndex >= matchingIndices.length - 1;
 
-        const hasReliableCardOcr = !!(cardItemData.ocrText && cardItemData.ocrText.trim() && cardItemData.ocrText !== activeItem.expected && (cardItemData.ocrConfidence == null || cardItemData.ocrConfidence > 0.60));
+        const isAiEnabled = $('chk-ai-handwriting') ? ($('chk-ai-handwriting').checked !== false) : true;
+        const hasReliableCardOcr = isAiEnabled && !!(cardItemData.ocrText && cardItemData.ocrText.trim());
+        const isCardMatch = isAiEnabled && (typeof isOcrMatch === 'function' ? isOcrMatch(cardItemData.ocrText, activeItem.expected) : false);
 
         if (activeCardContainer) {
           activeCardContainer.innerHTML = `
@@ -9871,9 +9872,12 @@
               <div class="flashcard-crop-container">
                 <canvas id="flashcard-crop-canvas" class="horizontal-cutting-canvas" style="width: 100%; max-width: 860px; height: auto; border: 1px solid var(--border); border-radius: 4px;"></canvas>
                 ${hasReliableCardOcr ? `
-                <div style="width: 100%; font-size: 0.88rem; color: var(--text); background: var(--panel-alt); padding: 0.5rem 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--border); text-align: center;">
-                  <strong style="color: var(--text-muted); font-size: 0.72rem; display: block; margin-bottom: 0.15rem; text-transform: uppercase; letter-spacing: 0.04em;">OCR Transcription:</strong>
-                  "${escapeHtml(cardItemData.ocrText)}"
+                <div style="width: 100%; font-size: 0.88rem; color: var(--text); background: var(--panel-alt); padding: 0.5rem 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--border); text-align: center; display: flex; align-items: center; justify-content: center; gap: 0.5rem; flex-wrap: wrap;">
+                  <div>
+                    <strong style="color: var(--text-muted); font-size: 0.72rem; display: block; margin-bottom: 0.15rem; text-transform: uppercase; letter-spacing: 0.04em;">AI OCR Read:</strong>
+                    "${escapeHtml(cardItemData.ocrText)}"
+                  </div>
+                  ${isCardMatch ? `<span class="badge" style="background: #ecfdf5; color: #065f46; border: 1px solid #10b981; font-weight: 700; font-size: 0.72rem; padding: 0.15rem 0.45rem; border-radius: var(--radius-full);">✓ Match</span>` : ''}
                 </div>` : ''}
               </div>
 
@@ -9945,7 +9949,9 @@
                             (itemData.status === 'unsure' ? 'is-unsure' :
                             (itemData.status === 'rejected' ? 'is-rejected' : '')));
 
-        const hasReliableStreamOcr = !!(itemData.ocrText && itemData.ocrText.trim() && itemData.ocrText !== activeItem.expected && (itemData.ocrConfidence == null || itemData.ocrConfidence > 0.60));
+        const isAiEnabled = $('chk-ai-handwriting') ? ($('chk-ai-handwriting').checked !== false) : true;
+        const hasReliableStreamOcr = isAiEnabled && !!(itemData.ocrText && itemData.ocrText.trim());
+        const isStreamMatch = isAiEnabled && (typeof isOcrMatch === 'function' ? isOcrMatch(itemData.ocrText, activeItem.expected) : false);
 
         return `
           <div class="horizontal-item-card ${statusClass}" id="h-card-${sIdx}">
@@ -9975,8 +9981,9 @@
               </div>
               <canvas id="crop-canvas-${sIdx}" class="horizontal-cutting-canvas" style="width: 100%; max-width: 480px; height: auto; min-height: 60px;"></canvas>
               ${hasReliableStreamOcr ? `
-              <div style="font-size: 0.76rem; color: var(--text); background: var(--panel-alt); padding: 0.35rem 0.55rem; border-radius: var(--radius-sm); border: 1px solid var(--border);">
-                <strong style="color: var(--text-muted);">OCR Read:</strong> "${escapeHtml(itemData.ocrText)}"
+              <div style="font-size: 0.76rem; color: var(--text); background: var(--panel-alt); padding: 0.35rem 0.55rem; border-radius: var(--radius-sm); border: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 0.35rem;">
+                <div><strong style="color: var(--text-muted);">AI Read:</strong> "${escapeHtml(itemData.ocrText)}"</div>
+                ${isStreamMatch ? `<span class="badge" style="background: #ecfdf5; color: #065f46; border: 1px solid #10b981; font-weight: 700; font-size: 0.65rem; padding: 0.1rem 0.35rem; border-radius: var(--radius-full);">✓ Match</span>` : ''}
               </div>` : ''}
             </div>
 
@@ -11029,6 +11036,97 @@
     // ---- Progress Persistence Engine ----
     const PROGRESS_STORAGE_KEY = 'checker-studio:progress';
 
+    // ---- Native IndexedDB Dual-Persistence Engine (ToolkitDB) ----
+    const ToolkitDB = (function() {
+      const DB_NAME = 'toolkit_db';
+      const DB_VERSION = 1;
+      const STORE_SESSIONS = 'sessions';
+
+      function openDB() {
+        return new Promise((resolve, reject) => {
+          if (typeof indexedDB === 'undefined') {
+            return reject(new Error('IndexedDB not supported'));
+          }
+          const req = indexedDB.open(DB_NAME, DB_VERSION);
+          req.onupgradeneeded = function(e) {
+            const db = e.target.result;
+            if (!db.objectStoreNames.contains(STORE_SESSIONS)) {
+              db.createObjectStore(STORE_SESSIONS, { keyPath: 'id' });
+            }
+          };
+          req.onsuccess = function(e) {
+            resolve(e.target.result);
+          };
+          req.onerror = function(e) {
+            reject(e.target.error || new Error('Failed to open IndexedDB'));
+          };
+        });
+      }
+
+      async function saveSession(sessionData) {
+        if (!sessionData) return;
+        try {
+          const db = await openDB();
+          return new Promise((resolve, reject) => {
+            const tx = db.transaction(STORE_SESSIONS, 'readwrite');
+            const store = tx.objectStore(STORE_SESSIONS);
+            const record = {
+              id: 'current_session',
+              timestamp: new Date().toISOString(),
+              data: sessionData
+            };
+            const req = store.put(record);
+            req.onsuccess = () => resolve(true);
+            req.onerror = (e) => reject(e.target.error);
+          });
+        } catch (err) {
+          console.warn('ToolkitDB.saveSession error:', err);
+        }
+      }
+
+      async function loadSession() {
+        try {
+          const db = await openDB();
+          return new Promise((resolve, reject) => {
+            const tx = db.transaction(STORE_SESSIONS, 'readonly');
+            const store = tx.objectStore(STORE_SESSIONS);
+            const req = store.get('current_session');
+            req.onsuccess = (e) => {
+              const rec = e.target.result;
+              resolve(rec ? rec.data : null);
+            };
+            req.onerror = (e) => reject(e.target.error);
+          });
+        } catch (err) {
+          console.warn('ToolkitDB.loadSession error:', err);
+          return null;
+        }
+      }
+
+      async function clearSession() {
+        try {
+          const db = await openDB();
+          return new Promise((resolve, reject) => {
+            const tx = db.transaction(STORE_SESSIONS, 'readwrite');
+            const store = tx.objectStore(STORE_SESSIONS);
+            const req = store.delete('current_session');
+            req.onsuccess = () => resolve(true);
+            req.onerror = (e) => reject(e.target.error);
+          });
+        } catch (err) {
+          console.warn('ToolkitDB.clearSession error:', err);
+        }
+      }
+
+      return {
+        saveSession,
+        loadSession,
+        clearSession,
+        openDB
+      };
+    })();
+    window.ToolkitDB = ToolkitDB;
+
     function showToast(msg) {
       let toast = $('app-toast');
       if (!toast) {
@@ -11128,7 +11226,19 @@
         return;
       }
 
-      // Try saving full session to localStorage
+      // 1. Save full session with scans and crops to IndexedDB (ToolkitDB)
+      try {
+        if (typeof ToolkitDB !== 'undefined' && ToolkitDB.saveSession) {
+          const fullDataWithImages = serializeProgressSession({ includeImages: true });
+          if (fullDataWithImages) {
+            ToolkitDB.saveSession(fullDataWithImages);
+          }
+        }
+      } catch (err) {
+        console.warn('Could not save session to IndexedDB:', err);
+      }
+
+      // 2. Try saving session to localStorage (lightweight fallback)
       try {
         localStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify(data));
       } catch (err) {
@@ -11217,11 +11327,18 @@
       if ($('input-threshold') && data.threshold != null) $('input-threshold').value = data.threshold;
       if ($('input-bubble-threshold') && data.bubbleThreshold) $('input-bubble-threshold').value = data.bubbleThreshold;
 
-      const restoredGrades = data.results.grades.map((g) => {
+      const restoredGrades = data.results.grades.map((g, gIdx) => {
         let scanImg = null;
         if (g.scanData) {
-          scanImg = new Image();
-          scanImg.src = g.scanData;
+          const img = new Image();
+          img.onload = () => {
+            if (state.selectedStudentIdx === gIdx) {
+              const canvas = $('roster-preview-canvas') || $('roster-inspector-canvas');
+              if (canvas) drawGradeOnCanvas(g, canvas);
+            }
+          };
+          img.src = g.scanData;
+          scanImg = img;
         } else {
           const c = document.createElement('canvas');
           c.width = g.targetW || 840;
@@ -11260,6 +11377,8 @@
           targetW: g.targetW || 840,
           targetH: g.targetH || 1188,
           scanImg,
+          scanData: g.scanData || null,
+          _cachedScanData: g.scanData || null,
           reviewFlags: g.reviewFlags || { needsReview: false, reasons: [] },
         };
       });
@@ -11339,9 +11458,22 @@
         localStorage.removeItem(PROGRESS_STORAGE_KEY);
       } catch {}
 
+      try {
+        if (typeof ToolkitDB !== 'undefined' && ToolkitDB.clearSession) {
+          ToolkitDB.clearSession();
+        }
+      } catch {}
+
       updateLayoutDisplay();
       updateKeyDisplay();
       updateRosterDisplay();
+      if ($('layout-empty-state')) $('layout-empty-state').style.display = 'flex';
+      if ($('layout-status-box')) $('layout-status-box').style.display = 'none';
+      if ($('key-empty-state')) $('key-empty-state').style.display = 'flex';
+      if ($('key-status-box')) $('key-status-box').style.display = 'none';
+      if ($('roster-empty-state')) $('roster-empty-state').style.display = 'flex';
+      if ($('roster-status-box')) $('roster-status-box').style.display = 'none';
+
       updateResumeStatusUI(false);
       updateSaveStatusUI('saved');
       const badge = $('badge-save-status');
@@ -11417,6 +11549,8 @@
       if (previewCanvas) {
         const ctx = previewCanvas.getContext('2d');
         ctx?.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+        previewCanvas.width = 0;
+        previewCanvas.height = 0;
       }
       const currentBadge = $('student-badge-current');
       if (currentBadge) currentBadge.textContent = 'No Student Selected';
@@ -11460,36 +11594,46 @@
     window.clearWorkspace = clearWorkspace;
 
     function checkAutoSavedProgress() {
-      try {
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('action') === 'new' || urlParams.get('clear') === '1') {
-          clearWorkspace({ silent: true });
-          return;
-        }
-        if (urlParams.get('action') === 'sample') {
-          setTimeout(() => $('btn-sample-grade')?.click(), 100);
-          return;
-        }
-      } catch {}
+      (async () => {
+        try {
+          const urlParams = new URLSearchParams(window.location.search);
+          if (urlParams.get('action') === 'new' || urlParams.get('clear') === '1') {
+            clearWorkspace({ silent: true });
+            return;
+          }
+          if (urlParams.get('action') === 'sample') {
+            setTimeout(() => $('btn-sample-grade')?.click(), 100);
+            return;
+          }
+          const shouldAutoResume = (urlParams.get('action') === 'resume');
 
-      try {
-        const raw = localStorage.getItem(PROGRESS_STORAGE_KEY);
-        if (!raw) {
+          let saved = null;
+          try {
+            if (typeof ToolkitDB !== 'undefined' && ToolkitDB.loadSession) {
+              saved = await ToolkitDB.loadSession();
+            }
+          } catch (_) {}
+
+          if (!saved) {
+            try {
+              const raw = localStorage.getItem(PROGRESS_STORAGE_KEY);
+              if (raw) saved = JSON.parse(raw);
+            } catch (_) {}
+          }
+
+          if (saved && saved.results && saved.results.grades && saved.results.grades.length > 0) {
+            updateResumeStatusUI(true, saved);
+            if (shouldAutoResume) {
+              restoreCheckerProgress(saved);
+              showToast('✓ Session resumed from previous class');
+            }
+          } else {
+            updateResumeStatusUI(false);
+          }
+        } catch {
           updateResumeStatusUI(false);
-          return;
         }
-        const parsed = JSON.parse(raw);
-        if (parsed && parsed.results && parsed.results.grades && parsed.results.grades.length > 0) {
-          updateResumeStatusUI(true, parsed);
-          // Standard web app persistence: auto-restore session seamlessly on refresh
-          restoreCheckerProgress(parsed);
-          showToast('✓ Session restored automatically');
-        } else {
-          updateResumeStatusUI(false);
-        }
-      } catch {
-        updateResumeStatusUI(false);
-      }
+      })();
     }
 
     // Highlighting & Visual State Helpers
@@ -12312,7 +12456,19 @@
       saveCheckerProgress({ downloadFile: true, silent: false });
     });
 
-    $('btn-resume-progress')?.addEventListener('click', () => {
+    $('btn-resume-progress')?.addEventListener('click', async () => {
+      try {
+        if (typeof ToolkitDB !== 'undefined' && ToolkitDB.loadSession) {
+          const idbData = await ToolkitDB.loadSession();
+          if (idbData && idbData.results && idbData.results.grades && idbData.results.grades.length > 0) {
+            restoreCheckerProgress(idbData);
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn('Could not load session from IndexedDB:', err);
+      }
+
       const saved = localStorage.getItem(PROGRESS_STORAGE_KEY);
       if (saved) {
         try {
@@ -12327,6 +12483,16 @@
       }
       $('input-progress-file')?.click();
     });
+
+    function openSettingsModal() {
+      const modal = $('modal-settings') || $('modal-google-drive');
+      if (modal?.showModal) {
+        updateGoogleUiState();
+        modal.showModal();
+      }
+    }
+    window.openSettingsModal = openSettingsModal;
+    $('btn-open-settings')?.addEventListener('click', openSettingsModal);
 
     $('btn-google-drive')?.addEventListener('click', () => {
       if (googleDriveState.isConnected && googleDriveState.accessToken) {
@@ -12492,96 +12658,84 @@
       reader.readAsText(file);
     });
 
-    // Dedicated Cloud Library Tab (Saved in Google Drive)
-    function renderCloudLibraryTab() {
-      const container = $('cloud-tab-files-container');
-      const statusText = $('cloud-tab-status-text');
-      const loginBtn = $('btn-cloud-tab-login');
-      const refreshBtn = $('btn-cloud-tab-refresh');
-      const logoutBtn = $('btn-cloud-tab-logout');
-      if (!container) return;
-
-      if (!googleDriveState.isConnected || !googleDriveState.accessToken) {
-        if (loginBtn) loginBtn.style.display = 'inline-flex';
-        if (refreshBtn) refreshBtn.style.display = 'none';
-        if (logoutBtn) logoutBtn.style.display = 'none';
-        if (statusText) statusText.textContent = 'All exam builds, packages, and grading sessions automatically saved in your personal Google Drive ("Instructors\' Toolkit" folder).';
-        container.innerHTML = `
-          <div style="text-align: center; padding: 3rem 1.5rem; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text-muted);">
-            <svg class="google-icon" width="40" height="40" viewBox="0 0 24 24" style="margin: 0 auto 0.75rem auto; display: block;">
-              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-            </svg>
-            <h4 style="color: var(--text); font-size: 1.05rem; font-weight: 700; margin: 0 0 0.4rem 0;">Sign in to View Cloud Builds &amp; Sessions</h4>
-            <p style="font-size: 0.85rem; max-width: 440px; margin: 0 auto 1.25rem auto;">Access your exam templates, answer keys, and auto-saved grading sessions from any browser or device securely via Google Drive.</p>
-            <button type="button" class="btn btn--primary" onclick="initGoogleDriveAuth();" style="display: inline-flex; align-items: center; gap: 0.5rem; margin: 0 auto;">
-              <svg class="google-icon" width="14" height="14" viewBox="0 0 24 24"><path fill="#fff" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#fff" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#fff" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#fff" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
-              <span>Sign in with Google</span>
-            </button>
-          </div>
-        `;
-        return;
-      }
-
-      if (loginBtn) loginBtn.style.display = 'none';
-      if (refreshBtn) refreshBtn.style.display = 'inline-flex';
-      if (logoutBtn) logoutBtn.style.display = 'inline-flex';
-      if (statusText) statusText.textContent = `Connected as ${googleDriveState.user?.email || googleDriveState.user?.name || 'Google User'}. Files saved in "Instructors' Toolkit" folder.`;
-
-      container.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--text-muted);">Loading files from Google Drive...</div>';
-
-      listGoogleDriveSessions(googleDriveState.accessToken, (err, files) => {
-        if (err) {
-          container.innerHTML = `<div style="padding: 1.5rem; text-align: center; color: var(--danger); background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-md);">Error loading files: ${escapeHtml(err.message)}</div>`;
-          return;
-        }
-        if (!files || files.length === 0) {
-          container.innerHTML = `
-            <div style="text-align: center; padding: 3rem; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text-muted);">
-              <h4 style="margin: 0 0 0.35rem 0; color: var(--text); font-size: 1rem;">No saved builds or sessions found</h4>
-              <p style="font-size: 0.8rem; margin: 0;">Save an exam build in Sheet Builder or run grading in Checker Studio. It will automatically sync here!</p>
-            </div>
-          `;
-          return;
-        }
-
-        container.innerHTML = files.map(f => {
-          const dateStr = f.modifiedTime ? new Date(f.modifiedTime).toLocaleString() : '';
-          const isPkg = f.name.includes('.package.') || f.name.includes('.zip');
-          const isBuild = f.name.includes('.sheet.') || f.name.includes('.layout.');
-          const isSession = f.name.includes('.progress.') || f.name.includes('.session.');
-          const tag = isPkg ? 'Exam Package' : (isBuild ? 'Sheet Build' : (isSession ? 'Grading Session' : 'Exam File'));
-          const tagColor = isPkg ? 'var(--accent)' : (isBuild ? '#10b981' : '#f59e0b');
-
-          return `
-            <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.85rem 1.15rem; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-md); flex-wrap: wrap;">
-              <div style="min-width: 0; flex: 1;">
-                <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
-                  <strong style="color: var(--text); font-size: 0.92rem;">${escapeHtml(f.name)}</strong>
-                  <span class="badge" style="font-size: 0.68rem; padding: 0.1rem 0.45rem; border-radius: var(--radius-full); background: var(--panel-alt); border: 1px solid var(--border); color: ${tagColor}; font-weight: 700;">${tag}</span>
-                </div>
-                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">Modified: ${dateStr}</div>
-              </div>
-              <div style="display: flex; gap: 0.5rem; align-items: center; flex-shrink: 0;">
-                <button type="button" class="btn btn--primary btn--sm" onclick="restoreSessionFromGoogleDrive(googleDriveState.accessToken, '${f.id}', '${escapeHtml(f.name)}');" style="font-weight: 600;">
-                  <span>Restore / Load</span>
-                </button>
-              </div>
-            </div>
-          `;
-        }).join('');
-      });
-    }
+    // Dedicated Cloud Library Tab stub
+    function renderCloudLibraryTab() {}
     window.renderCloudLibraryTab = renderCloudLibraryTab;
 
-    $('btn-cloud-tab-login')?.addEventListener('click', () => initGoogleDriveAuth());
-    $('btn-cloud-tab-refresh')?.addEventListener('click', () => renderCloudLibraryTab());
-    $('btn-cloud-tab-logout')?.addEventListener('click', () => {
-      disconnectGoogleDrive();
-      renderCloudLibraryTab();
-    });
+    function isOcrMatch(ocrText, expected) {
+      if (!ocrText || !expected) return false;
+      const s1 = String(ocrText).trim().toLowerCase();
+      const s2 = String(expected).trim().toLowerCase();
+      if (!s1 || !s2) return false;
+      if (s1 === s2) return true;
+      const c1 = s1.replace(/[^a-z0-9]/g, '');
+      const c2 = s2.replace(/[^a-z0-9]/g, '');
+      if (c1 && c2 && c1 === c2) return true;
+      if (typeof stringSimilarity === 'function') {
+        const sim = stringSimilarity(s1, s2);
+        if (sim >= 0.85) return true;
+      }
+      return false;
+    }
+    window.isOcrMatch = isOcrMatch;
+
+    async function autoTranscribeActiveItem() {
+      const selectItem = $('select-horizontal-item');
+      if (!selectItem || !selectItem.value) return;
+      const itemKey = selectItem.value;
+      const expected = (state.answerKey && state.answerKey[itemKey]) ? String(state.answerKey[itemKey]).trim() : '';
+
+      const btn = $('btn-batch-ai-transcribe');
+      const origText = btn ? btn.innerHTML : '';
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '⏳ Transcribing...';
+      }
+
+      let count = 0;
+      try {
+        const grades = state.grades || [];
+        for (let i = 0; i < grades.length; i++) {
+          const g = grades[i];
+          if (!g.gradedItems) g.gradedItems = {};
+          if (!g.gradedItems[itemKey]) g.gradedItems[itemKey] = {};
+          const item = g.gradedItems[itemKey];
+
+          // If cropDataUrl exists or can be extracted
+          let cropUrl = item.cropDataUrl;
+          if (!cropUrl && g.scanData) {
+            cropUrl = cropROIFromScan(g.scanData, itemKey);
+          }
+
+          if (cropUrl) {
+            try {
+              const res = await HandwritingEngine.transcribeHandwritingCrop(cropUrl);
+              if (res && res.text) {
+                item.ocrText = res.text;
+                item.aiOcrRead = res.text;
+                item.ocrConfidence = res.confidence || 0.88;
+                if (expected && isOcrMatch(res.text, expected)) {
+                  item.aiOcrMatch = true;
+                }
+                count++;
+              }
+            } catch (err) {
+              console.warn(`OCR error for student ${g.studentId || i}:`, err);
+            }
+          }
+        }
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = origText;
+        }
+        renderHorizontalGradingView();
+      }
+    }
+    window.autoTranscribeActiveItem = autoTranscribeActiveItem;
+
+    $('btn-batch-ai-transcribe')?.addEventListener('click', autoTranscribeActiveItem);
+    $('chk-ai-handwriting')?.addEventListener('change', () => renderHorizontalGradingView());
 
     // Horizontal Grading Item Navigator & Bulk Accept listeners
     $('select-horizontal-item')?.addEventListener('change', () => {

@@ -206,6 +206,27 @@ test('1. Inspection Canvas & drawGradeOnCanvas: awaits image decoding, falls bac
 
   ctx.drawGradeOnCanvas(gradeFromState, mockCanvas);
   assert.equal(gradeFromState.scanImg, mockScanImg, 'drawGradeOnCanvas falls back to state.scans matching examId');
+
+  // Case D: grade has a blank placeholder canvas (_isBlankCanvas = true), falls back to state.scans
+  const mockBlankCanvas = {
+    _isBlankCanvas: true,
+    width: 840,
+    height: 1188,
+    getContext: () => ({ fillRect: () => {} })
+  };
+  const mockRealScanImg = new ctx.Image();
+  ctx.state.scans = [{ name: 'scan_04.jpg', img: mockRealScanImg }];
+  const gradeBlankCanvas = {
+    examId: 'scan_04.jpg',
+    targetW: 840,
+    targetH: 1188,
+    scanImg: mockBlankCanvas,
+    percentage: 80,
+    bubbleDiagnostics: []
+  };
+
+  ctx.drawGradeOnCanvas(gradeBlankCanvas, mockCanvas);
+  assert.equal(gradeBlankCanvas.scanImg, mockRealScanImg, 'drawGradeOnCanvas replaces blank placeholder canvas with real image from state.scans');
 });
 
 test('2. Ribbon Google Drive 32px Button: hides text labels via CSS and updates status badge without logo bleed', () => {
@@ -352,6 +373,11 @@ test('6. Removal of Synthetic Student IDs in Parentheses', () => {
   ctx.renderViewerSheet();
   const viewerInfo = ctx.document.getElementById('viewer-student-info');
   assert.ok(!viewerInfo.innerHTML.includes('(STU-992812)'), 'No (STU-...) in viewer-student-info');
+
+  ctx.state.selectedStudentIdx = 1;
+  ctx.renderViewerSheet();
+  assert.equal(viewerInfo.textContent, 'Bob Student', 'Viewer displays clean student name without parentheses');
+  assert.ok(!viewerInfo.textContent.includes('(') && !viewerInfo.textContent.includes(')'), 'No parentheses in viewer student name');
 });
 
 test('7. AI Transcription During Grading & Point Auto-Awarding', () => {

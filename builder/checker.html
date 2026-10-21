@@ -931,17 +931,16 @@
     .roster-student-badge {
       display: inline-flex;
       align-items: center;
-      gap: 0.45rem;
-      padding: 0.2rem 0.55rem;
-      background: var(--panel-alt);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-full);
+      gap: 0.5rem;
       font-size: 0.75rem;
       font-weight: 600;
     }
 
     .roster-badge-name {
+      display: inline-flex;
+      align-items: center;
       color: var(--text);
+      font-weight: 700;
     }
 
     .roster-preview-actions {
@@ -7845,8 +7844,8 @@
 
               // Run handwriting transcription right during grading if simulated OCR was not supplied
               if (!ocrText && typeof HandwritingEngine !== 'undefined' && HandwritingEngine.runTier2LocalOCR) {
-                const t2 = HandwritingEngine.runTier2LocalOCR(itemCanvas);
-                if (t2 && t2.text) {
+                const t2 = HandwritingEngine.runTier2LocalOCR(itemCanvas, { expected: hItem.expected });
+                if (t2 && t2.text && !t2.text.startsWith('[')) {
                   ocrText = t2.text;
                   ocrConfidence = t2.confidence || 0.85;
                 }
@@ -8369,24 +8368,26 @@
             const isAiActive = $('chk-ai-handwriting') ? ($('chk-ai-handwriting').checked !== false) : true;
             if (isAiActive) {
               for (const [k, item] of Object.entries(grade.gradedItems || {})) {
-                if (item.kind === 'text' && item.cropDataUrl && !item.ocrText) {
+                if (item.kind === 'text' && item.cropDataUrl && (!item.ocrText || item.ocrText.startsWith('['))) {
                   try {
-                    const res = await HandwritingEngine.transcribeHandwritingCrop(item.cropDataUrl);
-                    if (res && res.text) {
+                    const res = await HandwritingEngine.transcribeHandwritingCrop(item.cropDataUrl, { expected: item.expected });
+                    if (res && res.text && !res.text.startsWith('[')) {
                       item.ocrText = res.text;
                       item.aiOcrRead = res.text;
                       item.ocrConfidence = res.confidence || 0.88;
                       const isMatch = Boolean(item.expected && typeof isOcrMatch === 'function' && isOcrMatch(res.text, item.expected));
-                      if (isMatch && !item.isCorrect) {
-                        item.isCorrect = true;
-                        item.pointsAwarded = item.maxPoints;
+                      if (isMatch) {
+                        if (!item.isCorrect) {
+                          item.isCorrect = true;
+                          item.pointsAwarded = item.maxPoints;
+                          grade.rawScore += item.maxPoints;
+                          if (grade.maxScore > 0) {
+                            grade.percentage = (grade.rawScore / grade.maxScore) * 100;
+                          }
+                        }
                         item.aiOcrMatch = true;
                         item.status = 'reviewed';
                         item.reviewed = true;
-                        grade.rawScore += item.maxPoints;
-                        if (grade.maxScore > 0) {
-                          grade.percentage = (grade.rawScore / grade.maxScore) * 100;
-                        }
                       }
                     }
                   } catch (_) {}
@@ -9609,10 +9610,8 @@
       const sel = $('viewer-student-select');
       if (sel) {
         sel.innerHTML = grades.map((g, idx) => {
-          const hasRealSid = g.studentId && !String(g.studentId).startsWith('STU-');
-          const nameDisplay = escapeHtml((g.studentName && !g.studentName.startsWith('Student STU-')) ? g.studentName : (hasRealSid ? g.studentId : `Student ${idx + 1}`));
-          const sidDisplay = hasRealSid && g.studentName ? ` (${escapeHtml(g.studentId)})` : '';
-          return `<option value="${idx}">${nameDisplay}${sidDisplay} — ${(g.rawScore != null ? Number(g.rawScore) : 0).toFixed(1)} pts (${(g.percentage != null ? Number(g.percentage) : 0).toFixed(1)}%)</option>`;
+          const nameDisplay = escapeHtml((g.studentName && !g.studentName.startsWith('Student STU-')) ? g.studentName : (g.studentId && !String(g.studentId).startsWith('STU-') ? g.studentId : `Student ${idx + 1}`));
+          return `<option value="${idx}">${nameDisplay} — ${(g.rawScore != null ? Number(g.rawScore) : 0).toFixed(1)} pts (${(g.percentage != null ? Number(g.percentage) : 0).toFixed(1)}%)</option>`;
         }).join('');
         sel.onchange = (e) => {
           state.selectedStudentIdx = parseInt(e.target.value);
@@ -9677,12 +9676,10 @@
       if ($('roster-student-badge')) $('roster-student-badge').style.display = 'inline-flex';
       if ($('roster-badge-name')) {
         if (grade.nameCropDataUrl) {
-          $('roster-badge-name').innerHTML = `<img src="${grade.nameCropDataUrl}" alt="Name" style="max-height: 48px; max-width: 240px; height: 44px; object-fit: contain; vertical-align: middle; border-radius: 4px; border: 1px solid var(--border); background: #fff;" />`;
+          $('roster-badge-name').innerHTML = `<img src="${grade.nameCropDataUrl}" alt="Name" style="max-height: 40px; max-width: 240px; height: 36px; object-fit: contain; vertical-align: middle; border-radius: var(--radius-sm, 6px); border: 1px solid var(--border); background: #fff; box-shadow: var(--shadow-xs);" />`;
         } else {
-          const hasRealSid = grade.studentId && !String(grade.studentId).startsWith('STU-');
-          const nameDisplay = (grade.studentName && !grade.studentName.startsWith('Student STU-')) ? grade.studentName : (hasRealSid ? grade.studentId : 'Student');
-          const sidDisplay = hasRealSid && grade.studentName ? ` (${grade.studentId})` : '';
-          $('roster-badge-name').textContent = `${nameDisplay}${sidDisplay}`;
+          const nameDisplay = (grade.studentName && !grade.studentName.startsWith('Student STU-')) ? grade.studentName : (grade.studentId && !String(grade.studentId).startsWith('STU-') ? grade.studentId : 'Student');
+          $('roster-badge-name').textContent = nameDisplay;
         }
       }
       const classBadgeEl = $('roster-badge-class');
@@ -10643,10 +10640,26 @@
       canvas.width = grade.targetW || 840;
       canvas.height = grade.targetH || 1188;
 
+      function isBlankCanvas(el) {
+        if (!el) return true;
+        if (el._isBlankCanvas) return true;
+        if (typeof HTMLCanvasElement !== 'undefined' && el instanceof HTMLCanvasElement) {
+          if (el._isBlankCanvas || !el.width || !el.height) return true;
+        }
+        return false;
+      }
+
       let activeScanImg = grade.scanImg;
+      if (isBlankCanvas(activeScanImg)) {
+        activeScanImg = null;
+      }
       if (!activeScanImg && typeof state !== 'undefined' && state.scans) {
-        const found = state.scans.find(s => s && (s.name === grade.examId || s.name === grade.studentId)) || (grade.studentIndex != null ? state.scans[grade.studentIndex] : null);
-        if (found && found.img) {
+        const gradeIdx = (state.results && state.results.grades) ? state.results.grades.indexOf(grade) : -1;
+        const found = state.scans.find(s => s && (s.name === grade.examId || s.name === grade.studentId)) ||
+                      (gradeIdx >= 0 ? state.scans[gradeIdx] : null) ||
+                      (grade.studentIndex != null ? state.scans[grade.studentIndex] : null) ||
+                      (state.selectedStudentIdx != null ? state.scans[state.selectedStudentIdx] : null);
+        if (found && found.img && !isBlankCanvas(found.img)) {
           activeScanImg = found.img;
           grade.scanImg = activeScanImg;
         }
@@ -10655,20 +10668,30 @@
         const dataSrc = grade.scanData || grade._cachedScanData;
         try {
           const img = new Image();
-          img.addEventListener('load', () => {
+          const onLoad = () => {
             grade.scanImg = img;
             drawGradeOnCanvas(grade, canvas, options);
-          }, { once: true });
+          };
+          if (typeof img.addEventListener === 'function') {
+            img.addEventListener('load', onLoad, { once: true });
+          } else {
+            img.onload = onLoad;
+          }
           img.src = dataSrc;
           activeScanImg = img;
           grade.scanImg = img;
         } catch (_) {}
       }
 
-      if (activeScanImg && !activeScanImg.complete && typeof activeScanImg.addEventListener === 'function') {
-        activeScanImg.addEventListener('load', () => {
+      if (activeScanImg && !activeScanImg.complete) {
+        const onImgLoad = () => {
           drawGradeOnCanvas(grade, canvas, options);
-        }, { once: true });
+        };
+        if (typeof activeScanImg.addEventListener === 'function') {
+          activeScanImg.addEventListener('load', onImgLoad, { once: true });
+        } else {
+          activeScanImg.onload = onImgLoad;
+        }
       }
 
       // Always paint clean neutral paper background first
@@ -10844,7 +10867,8 @@
         ctx.fill();
         ctx.fillStyle = "#fff";
         ctx.font = "bold 16px sans-serif";
-        ctx.fillText(`${grade.studentName || 'Student'} (${grade.studentId || 'ID'})`, 32, 44);
+        const bannerName = (grade.studentName && !grade.studentName.startsWith('Student STU-')) ? grade.studentName : (grade.studentId && !String(grade.studentId).startsWith('STU-') ? grade.studentId : 'Student');
+        ctx.fillText(bannerName, 32, 44);
         ctx.font = "14px sans-serif";
         ctx.fillStyle = pctVal >= passThreshold ? "#34d399" : "#f87171";
         ctx.fillText(`Score: ${rawScoreVal.toFixed(1)} / ${maxScoreVal.toFixed(1)} (${pctVal.toFixed(1)}%)`, 32, 64);
@@ -10862,12 +10886,10 @@
       drawGradeOnCanvas(grade, canvas);
       if ($('viewer-student-info')) {
         if (grade.nameCropDataUrl) {
-          $('viewer-student-info').innerHTML = `<img src="${grade.nameCropDataUrl}" alt="Name" style="max-height: 40px; max-width: 220px; height: 36px; object-fit: contain; vertical-align: middle; border-radius: 4px; border: 1px solid var(--border); background: #fff;" />`;
+          $('viewer-student-info').innerHTML = `<img src="${grade.nameCropDataUrl}" alt="Name" style="max-height: 40px; max-width: 220px; height: 36px; object-fit: contain; vertical-align: middle; border-radius: var(--radius-sm, 6px); border: 1px solid var(--border); background: #fff; box-shadow: var(--shadow-xs);" />`;
         } else {
-          const hasRealSid = grade.studentId && !String(grade.studentId).startsWith('STU-');
-          const nameDisplay = (grade.studentName && !grade.studentName.startsWith('Student STU-')) ? grade.studentName : (hasRealSid ? grade.studentId : 'Student');
-          const sidDisplay = hasRealSid && grade.studentName ? ` (${grade.studentId})` : '';
-          $('viewer-student-info').textContent = `${nameDisplay}${sidDisplay}`;
+          const nameDisplay = (grade.studentName && !grade.studentName.startsWith('Student STU-')) ? grade.studentName : (grade.studentId && !String(grade.studentId).startsWith('STU-') ? grade.studentId : 'Student');
+          $('viewer-student-info').textContent = nameDisplay;
         }
       }
       if ($('viewer-score-badge')) {
@@ -11834,6 +11856,7 @@
           const c = document.createElement('canvas');
           c.width = g.targetW || 840;
           c.height = g.targetH || 1188;
+          c._isBlankCanvas = true;
           const ctx = c.getContext ? c.getContext('2d') : null;
           if (ctx) {
             ctx.fillStyle = '#ffffff';
@@ -11869,6 +11892,38 @@
         psychometrics: data.results.psychometrics || computePsychometrics(restoredGrades, state.key),
         grades: restoredGrades,
       };
+
+      // If any restored grade lacked scanData, asynchronously retrieve high-fidelity scanData from ToolkitDB (IndexedDB)
+      if (restoredGrades.some(g => !g.scanData) && typeof ToolkitDB !== 'undefined' && ToolkitDB.loadSession) {
+        ToolkitDB.loadSession().then((idbSession) => {
+          if (idbSession?.results?.grades) {
+            let updatedAny = false;
+            idbSession.results.grades.forEach((idbGrade, gIdx) => {
+              if (restoredGrades[gIdx] && !restoredGrades[gIdx].scanData && idbGrade.scanData) {
+                restoredGrades[gIdx].scanData = idbGrade.scanData;
+                restoredGrades[gIdx]._cachedScanData = idbGrade.scanData;
+                const img = new Image();
+                img.onload = () => {
+                  restoredGrades[gIdx].scanImg = img;
+                  if (state.selectedStudentIdx === gIdx) {
+                    const canvas = $('roster-preview-canvas') || $('roster-inspector-canvas');
+                    if (canvas) drawGradeOnCanvas(restoredGrades[gIdx], canvas);
+                    const modalCanvas = $('viewer-canvas');
+                    if (modalCanvas && $('modal-viewer')?.open) {
+                      drawGradeOnCanvas(restoredGrades[gIdx], modalCanvas);
+                    }
+                  }
+                };
+                img.src = idbGrade.scanData;
+                updatedAny = true;
+              }
+            });
+            if (updatedAny) {
+              state.scans = restoredGrades.map((g) => ({ name: g.examId, img: g.scanImg }));
+            }
+          }
+        }).catch(() => {});
+      }
 
       if (state.layout) {
         updateLayoutDisplay(state.layout.title || 'Loaded Layout');
@@ -13428,6 +13483,8 @@
       if (!selectItem || selectItem.options.length === 0) return;
       const curIdx = selectItem.selectedIndex;
       if (curIdx > 0) {
+        const prevOpt = selectItem.options[curIdx - 1];
+        if (prevOpt) selectItem.value = prevOpt.value;
         selectItem.selectedIndex = curIdx - 1;
         horizontalDeckState.currentIndex = 0;
         renderHorizontalGradingView();
@@ -13439,6 +13496,8 @@
       if (!selectItem || selectItem.options.length === 0) return;
       const curIdx = selectItem.selectedIndex;
       if (curIdx < selectItem.options.length - 1 && curIdx !== -1) {
+        const nextOpt = selectItem.options[curIdx + 1];
+        if (nextOpt) selectItem.value = nextOpt.value;
         selectItem.selectedIndex = curIdx + 1;
         horizontalDeckState.currentIndex = 0;
         renderHorizontalGradingView();

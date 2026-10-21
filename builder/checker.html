@@ -416,7 +416,6 @@
       border-radius: var(--radius-sm, 6px);
       transition: all 140ms var(--ease);
       flex-shrink: 0;
-      overflow: hidden;
     }
     .btn-google-drive:hover {
       border-color: #4285F4;
@@ -426,6 +425,11 @@
       border-color: #34A853 !important;
       background: color-mix(in srgb, #34A853 10%, var(--panel)) !important;
       color: var(--text) !important;
+    }
+    .btn-google-drive .google-sync-indicator,
+    .btn-google-drive .google-status-dot,
+    .btn-google-drive #label-google-drive {
+      display: none !important;
     }
     .google-status-badge {
       position: absolute;
@@ -2424,7 +2428,6 @@
                     <th class="sortable" data-sort="rawScore">Score <span class="sort-icon"></span></th>
                     <th class="sortable" data-sort="percentage">Percentage <span class="sort-icon"></span></th>
                     <th class="sortable" data-sort="status">Pass / Fail <span class="sort-icon"></span></th>
-                    <th>Sheet Inspector</th>
                     <th class="sortable" style="display: none;" data-sort="classOffer">Class / Offer No. <span class="sort-icon"></span></th>
                   </tr>
                 </thead>
@@ -2993,43 +2996,33 @@
   <div id="chart-floating-tooltip" class="chart-tooltip"></div>
 
   <!-- Modal: Sheet Inspector -->
-  <dialog id="modal-viewer" style="border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 0; background: var(--panel); color: var(--text); max-width: 95vw; max-height: 95vh; width: 900px; box-shadow: var(--shadow-xl); overflow: hidden;">
+  <dialog id="modal-viewer" style="border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 0; background: var(--panel); color: var(--text); max-width: 95vw; max-height: 95vh; width: 960px; box-shadow: var(--shadow-xl); overflow: hidden;">
     <div style="display: flex; flex-direction: column; height: 100%; max-height: 95vh;">
-      <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.85rem 1.25rem; border-bottom: 1px solid var(--border); background: var(--panel-header);">
-        <div style="display: flex; align-items: center; gap: 0.75rem;">
-          <h3 style="margin: 0; font-size: 1rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg><span>Sheet Inspector</span></h3>
-          <select id="viewer-student-select" style="padding: 0.35rem 0.6rem; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-weight: 600;">
+      <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1.25rem; border-bottom: 1px solid var(--border); background: var(--panel-header); gap: 1rem; flex-wrap: wrap;">
+        <!-- Left: Student name crop + student switcher dropdown -->
+        <div style="display: flex; align-items: center; gap: 0.75rem; flex: 1; min-width: 260px;">
+          <div id="viewer-student-info" style="display: flex; align-items: center; font-weight: 600; color: var(--text);">Select a student</div>
+          <select id="viewer-student-select" style="padding: 0.35rem 0.6rem; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-weight: 600; max-width: 280px;">
             <option value="">No sheets graded</option>
           </select>
         </div>
-        <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <!-- Right: Score badge, Redact Names toggle, Download Sheet (JPEG), Close -->
+        <div style="display: flex; align-items: center; gap: 0.6rem;">
+          <span id="viewer-score-badge" class="badge-pass" style="font-size: 0.78rem; font-weight: 700; padding: 0.2rem 0.55rem; border-radius: var(--radius-sm);">—</span>
           <label style="display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.75rem; color: var(--text); cursor: pointer; user-select: none;" title="Blackout student names on exported sheets for anonymous review">
             <input type="checkbox" id="chk-redact-names-modal" style="cursor: pointer; accent-color: var(--accent);">
             <span>Redact Names</span>
           </label>
           <button type="button" id="btn-download-sheet-jpeg" class="btn btn--secondary btn--sm" disabled title="Download current student's graded sheet as JPEG">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
-            <span>Download Graded Sheet (JPEG)</span>
+            <span>Download Sheet (JPEG)</span>
           </button>
-          <button type="button" id="btn-viewer-download-zip" class="btn btn--secondary btn--sm" disabled title="Download all graded exam sheets in a ZIP archive">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5M12 12v10"/></svg>
-            <span>Download All (ZIP)</span>
-          </button>
-          <button type="button" id="btn-close-viewer" class="btn-step" style="width: 28px; height: 28px; border-radius: var(--radius-sm); font-size: 1rem;">✕</button>
+          <button type="button" id="btn-close-viewer" class="btn-step" style="width: 28px; height: 28px; border-radius: var(--radius-sm); font-size: 1rem; cursor: pointer;">✕</button>
         </div>
       </div>
 
-      <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 1.25rem; background: var(--panel); border-bottom: 1px solid var(--border); font-size: 0.76rem;">
-        <div id="viewer-student-info" style="font-weight: 600; color: var(--text);">Select a student to inspect overlay</div>
-        <div style="display: flex; gap: 0.85rem; align-items: center;">
-          <span style="display: inline-flex; align-items: center; gap: 0.3rem;"><span style="width: 10px; height: 10px; border-radius: 50%; background: #10b981; display: inline-block;"></span> Correct</span>
-          <span style="display: inline-flex; align-items: center; gap: 0.3rem;"><span style="width: 10px; height: 10px; border-radius: 50%; background: #ef4444; display: inline-block;"></span> Incorrect</span>
-          <span style="display: inline-flex; align-items: center; gap: 0.3rem;"><span style="width: 10px; height: 10px; border-radius: 50%; background: #f59e0b; display: inline-block;"></span> Key Answer</span>
-        </div>
-      </div>
-
-      <div class="canvas-container" style="flex: 1; overflow: auto; padding: 1rem; background: #262a30; min-height: 480px;">
-        <canvas id="viewer-canvas" width="800" height="1131"></canvas>
+      <div class="canvas-container" style="flex: 1; overflow: auto; padding: 1rem; background: #262a30; min-height: 480px; display: flex; justify-content: center; align-items: flex-start;">
+        <canvas id="viewer-canvas" width="800" height="1131" style="max-width: 100%; height: auto; box-shadow: 0 4px 12px rgba(0,0,0,0.3); border-radius: 4px;"></canvas>
       </div>
 
       <!-- Stepper Navigation Controls (Below the inspected sheet in Full View) -->
@@ -7017,6 +7010,37 @@
       }
       const rois = Array.from(roisMap.values());
 
+      function formatHorizontalQuestionLabel(key, rawLabel, role, type) {
+        const keyStr = String(key || '').trim();
+        if (keyStr.endsWith('_corr') || role === 'correction') {
+          const qNum = keyStr.replace(/_corr$/, '').replace(/^[^\d]*/, '');
+          return `Question ${qNum || keyStr.replace(/_corr$/, '')} (Correction)`;
+        }
+        if (rawLabel) {
+          const clean = String(rawLabel).replace(/\.+$/, '').trim();
+          if (/^Question\s+\d+/i.test(clean)) return clean;
+          if (/^Item\s+(\d+)\s+Correction/i.test(clean)) {
+            return clean.replace(/^Item\s+/i, 'Question ').replace(/\s+Correction$/i, ' (Correction)');
+          }
+          if (/^Item\s+(\d+)/i.test(clean)) {
+            return clean.replace(/^Item\s+/i, 'Question ');
+          }
+          if (/^\d+$/.test(clean)) {
+            return `Question ${clean}`;
+          }
+          const mQ = clean.match(/^q(\d+)$/i);
+          if (mQ) {
+            return `Question ${mQ[1]}`;
+          }
+          return clean;
+        }
+        const mKey = keyStr.match(/^(?:q|item)?(\d+)$/i);
+        if (mKey) {
+          return `Question ${mKey[1]}`;
+        }
+        return `Question ${keyStr}`;
+      }
+
       for (const roi of rois) {
         const isExcluded = roi.role === 'student_id' || roi.role === 'name' || roi.role === 'score' || roi.role === 'class_offer';
         if (isExcluded) continue;
@@ -7038,10 +7062,11 @@
           seen.add(itemKey);
           const keyItem = activeKey?.items?.[roi.key || roi.id];
           const rawLabel = roi.label || keyItem?.label || `Item ${roi.key || roi.id}`;
+          const formattedLabel = formatHorizontalQuestionLabel(itemKey, rawLabel, roi.role, roi.type);
           items.push({
             key: String(roi.key || roi.id),
             id: String(roi.id || roi.key),
-            label: String(rawLabel).replace(/\.+$/, ''),
+            label: formattedLabel,
             prompt: roi.prompt || keyItem?.prompt || (roi.role === 'correction' ? 'True/False Correction' : 'Written Response'),
             points: Number(keyItem?.points != null ? keyItem.points : (roi.points != null ? roi.points : 1.0)),
             type: roi.role === 'correction' ? 'correction' : (roi.multiline ? 'essay' : 'short_answer'),
@@ -7080,10 +7105,11 @@
                 seen.add(key);
                 const keyItem = activeKey?.items?.[key];
                 const rawLabel = keyItem?.label || (z.type === 'modified_tf' ? `Item ${q} Correction` : (count > 1 ? `Item ${q}` : (z.label || `Item ${q}`)));
+                const formattedLabel = formatHorizontalQuestionLabel(key, rawLabel, z.type === 'modified_tf' ? 'correction' : null, z.type);
                 items.push({
                   key,
                   id,
-                  label: String(rawLabel).replace(/\.+$/, ''),
+                  label: formattedLabel,
                   prompt: keyItem?.prompt || z.prompt || (z.type === 'modified_tf' ? 'True/False Correction' : 'Written Response'),
                   points: Number(keyItem?.points != null ? keyItem.points : (z.pointsPerItem != null ? z.pointsPerItem : (z.points != null ? z.points : 1.0))),
                   type: z.type === 'modified_tf' ? 'correction' : (z.type === 'text_essay' ? 'essay' : 'short_answer'),
@@ -7102,10 +7128,11 @@
           if ((it.kind === 'text' || it.type === 'written' || it.type === 'essay' || it.correction) && !seen.has(String(k))) {
             seen.add(String(k));
             const rawLabel = it.label || `Item ${k}`;
+            const formattedLabel = formatHorizontalQuestionLabel(k, rawLabel, it.correction ? 'correction' : null, it.type);
             items.push({
               key: String(k),
               id: String(k),
-              label: String(rawLabel).replace(/\.+$/, ''),
+              label: formattedLabel,
               prompt: it.prompt || (it.correction ? 'True/False Correction' : 'Written Response'),
               points: Number(it.points != null ? it.points : 1.0),
               type: it.type || (it.correction ? 'correction' : 'short_answer'),
@@ -7795,25 +7822,59 @@
         if (!gradedItems[hItem.key]) {
           const hPts = Number(hItem.points != null ? hItem.points : 1.0);
           let cropDataUrl = null;
+          let ocrText = scan.simulatedOcr?.[hItem.key] || "";
+          let ocrConfidence = scan.simulatedOcrConf?.[hItem.key] ?? (ocrText ? 0.90 : 0.88);
+
           if (hItem.roi && typeof cropROIFromScan === 'function') {
             try {
               const itemCanvas = document.createElement('canvas');
               const tempGrade = { scanImg: rectCanvas, targetW, targetH, rotationDeg: 0 };
-              cropROIFromScan(tempGrade, hItem.roi, itemCanvas);
+              cropROIFromScan(tempGrade, hItem.roi, itemCanvas, hItem.key);
               cropDataUrl = itemCanvas.toDataURL('image/jpeg', 0.85);
+
+              // Strip box border lines so OCR receives clean handwriting without border interference
+              if (itemCanvas.getContext && typeof stripBoxWallsFromImageData === 'function') {
+                const itemCtx = itemCanvas.getContext('2d');
+                if (itemCtx && itemCtx.getImageData && itemCtx.putImageData) {
+                  const idata = itemCtx.getImageData(0, 0, itemCanvas.width, itemCanvas.height);
+                  stripBoxWallsFromImageData(idata);
+                  itemCtx.putImageData(idata, 0, 0);
+                  cropDataUrl = itemCanvas.toDataURL('image/jpeg', 0.85);
+                }
+              }
+
+              // Run handwriting transcription right during grading if simulated OCR was not supplied
+              if (!ocrText && typeof HandwritingEngine !== 'undefined' && HandwritingEngine.runTier2LocalOCR) {
+                const t2 = HandwritingEngine.runTier2LocalOCR(itemCanvas);
+                if (t2 && t2.text) {
+                  ocrText = t2.text;
+                  ocrConfidence = t2.confidence || 0.85;
+                }
+              }
             } catch (_) {}
           }
+
+          // Check if AI transcription matches expected answer
+          const isMatch = Boolean(ocrText && hItem.expected && typeof isOcrMatch === 'function' && isOcrMatch(ocrText, hItem.expected));
+          const isCorrect = isMatch;
+          const pointsAwarded = isMatch ? hPts : 0;
+          if (isCorrect) {
+            rawScore += pointsAwarded;
+          }
+
           gradedItems[hItem.key] = {
             expected: hItem.expected,
-            actual: scan.simulatedResponses?.[hItem.key] || "Handwritten response",
-            ocrText: scan.simulatedOcr?.[hItem.key] || "", // DO NOT leak expected answer!
-            ocrConfidence: scan.simulatedOcrConf?.[hItem.key] ?? 0.88,
+            actual: scan.simulatedResponses?.[hItem.key] || ocrText || "Handwritten response",
+            ocrText,
+            ocrConfidence,
+            aiOcrRead: ocrText,
+            aiOcrMatch: isMatch,
             cropDataUrl,
-            isCorrect: false,
-            pointsAwarded: 0,
+            isCorrect,
+            pointsAwarded,
             maxPoints: hPts,
-            status: 'unreviewed',
-            reviewed: false,
+            status: isMatch ? 'reviewed' : 'unreviewed',
+            reviewed: isMatch,
             kind: 'text',
             label: hItem.label,
             prompt: hItem.prompt,
@@ -8303,6 +8364,37 @@
               }
             };
           }
+          // If any handwriting items can be further transcribed via async HandwritingEngine during grading
+          if (typeof HandwritingEngine !== 'undefined' && HandwritingEngine.transcribeHandwritingCrop) {
+            const isAiActive = $('chk-ai-handwriting') ? ($('chk-ai-handwriting').checked !== false) : true;
+            if (isAiActive) {
+              for (const [k, item] of Object.entries(grade.gradedItems || {})) {
+                if (item.kind === 'text' && item.cropDataUrl && !item.ocrText) {
+                  try {
+                    const res = await HandwritingEngine.transcribeHandwritingCrop(item.cropDataUrl);
+                    if (res && res.text) {
+                      item.ocrText = res.text;
+                      item.aiOcrRead = res.text;
+                      item.ocrConfidence = res.confidence || 0.88;
+                      const isMatch = Boolean(item.expected && typeof isOcrMatch === 'function' && isOcrMatch(res.text, item.expected));
+                      if (isMatch && !item.isCorrect) {
+                        item.isCorrect = true;
+                        item.pointsAwarded = item.maxPoints;
+                        item.aiOcrMatch = true;
+                        item.status = 'reviewed';
+                        item.reviewed = true;
+                        grade.rawScore += item.maxPoints;
+                        if (grade.maxScore > 0) {
+                          grade.percentage = (grade.rawScore / grade.maxScore) * 100;
+                        }
+                      }
+                    }
+                  } catch (_) {}
+                }
+              }
+            }
+          }
+
           grades.push(grade);
 
           const pctEnd = Math.round(((i + 1) / total) * 100);
@@ -8731,7 +8823,6 @@
             <td>${(g.rawScore != null ? Number(g.rawScore) : 0).toFixed(1)} / ${(g.maxScore != null ? Number(g.maxScore) : 0).toFixed(1)}</td>
             <td><strong>${(g.percentage != null ? Number(g.percentage) : 0).toFixed(1)}%</strong></td>
             <td><span class="${(g.percentage || 0) >= passThreshold ? 'badge-pass' : 'badge-fail'}">${(g.percentage || 0) >= passThreshold ? 'PASS' : 'FAIL'}</span></td>
-            <td><button type="button" class="btn btn--secondary btn--sm" onclick="event.stopPropagation(); inspectStudent(${origIdx})">Sheet Inspector</button></td>
             <td style="display: none;">${escapeHtml(g.classOffer || '—')}</td>
           </tr>
         `;
@@ -9516,14 +9607,19 @@
 
       // Student Selector in Viewer
       const sel = $('viewer-student-select');
-      sel.innerHTML = grades.map((g, idx) => `
-        <option value="${idx}">${escapeHtml(g.studentName)} (${escapeHtml(g.studentId)}) — ${g.rawScore.toFixed(1)} pts (${g.percentage.toFixed(1)}%)</option>
-      `).join('');
-      sel.onchange = (e) => {
-        state.selectedStudentIdx = parseInt(e.target.value);
-        renderViewerSheet();
-        inspectStudent(state.selectedStudentIdx);
-      };
+      if (sel) {
+        sel.innerHTML = grades.map((g, idx) => {
+          const hasRealSid = g.studentId && !String(g.studentId).startsWith('STU-');
+          const nameDisplay = escapeHtml((g.studentName && !g.studentName.startsWith('Student STU-')) ? g.studentName : (hasRealSid ? g.studentId : `Student ${idx + 1}`));
+          const sidDisplay = hasRealSid && g.studentName ? ` (${escapeHtml(g.studentId)})` : '';
+          return `<option value="${idx}">${nameDisplay}${sidDisplay} — ${(g.rawScore != null ? Number(g.rawScore) : 0).toFixed(1)} pts (${(g.percentage != null ? Number(g.percentage) : 0).toFixed(1)}%)</option>`;
+        }).join('');
+        sel.onchange = (e) => {
+          state.selectedStudentIdx = parseInt(e.target.value);
+          renderViewerSheet();
+          inspectStudent(state.selectedStudentIdx);
+        };
+      }
 
       // Item Psychometrics Table & Visual Dashboard
       renderItemAnalysisDashboard(psychometrics);
@@ -9581,9 +9677,12 @@
       if ($('roster-student-badge')) $('roster-student-badge').style.display = 'inline-flex';
       if ($('roster-badge-name')) {
         if (grade.nameCropDataUrl) {
-          $('roster-badge-name').innerHTML = `<img src="${grade.nameCropDataUrl}" alt="Name" style="max-height: 48px; max-width: 240px; height: 44px; object-fit: contain; vertical-align: middle; border-radius: 4px; border: 1px solid var(--border); margin-right: 0.35rem; background: #fff;" /> <span>(${escapeHtml(grade.studentId)})</span>`;
+          $('roster-badge-name').innerHTML = `<img src="${grade.nameCropDataUrl}" alt="Name" style="max-height: 48px; max-width: 240px; height: 44px; object-fit: contain; vertical-align: middle; border-radius: 4px; border: 1px solid var(--border); background: #fff;" />`;
         } else {
-          $('roster-badge-name').textContent = `${grade.studentName} (${grade.studentId})`;
+          const hasRealSid = grade.studentId && !String(grade.studentId).startsWith('STU-');
+          const nameDisplay = (grade.studentName && !grade.studentName.startsWith('Student STU-')) ? grade.studentName : (hasRealSid ? grade.studentId : 'Student');
+          const sidDisplay = hasRealSid && grade.studentName ? ` (${grade.studentId})` : '';
+          $('roster-badge-name').textContent = `${nameDisplay}${sidDisplay}`;
         }
       }
       const classBadgeEl = $('roster-badge-class');
@@ -10293,9 +10392,9 @@
           <div class="horizontal-item-card ${statusClass}" id="h-card-${sIdx}">
             <!-- Submission Info Column -->
             <div>
-              <div style="font-weight: 800; font-size: 0.95rem; color: var(--text); display: flex; align-items: center; gap: 0.35rem;">
-                <span style="color: var(--text-muted); font-size: 0.8rem;">#${sIdx + 1}</span>
-                <span>Submission #${sIdx + 1}</span>
+              <div style="font-weight: 800; font-size: 0.95rem; color: var(--text); display: flex; align-items: center; gap: 0.35rem; flex-wrap: wrap;">
+                <span>${escapeHtml(activeItem.label)}</span>
+                <span style="color: var(--text-muted); font-size: 0.8rem; font-weight: 600;">• Submission #${sIdx + 1} of ${grades.length}</span>
               </div>
               
               <div style="margin-top: 0.45rem;">
@@ -10544,8 +10643,42 @@
       canvas.width = grade.targetW || 840;
       canvas.height = grade.targetH || 1188;
 
+      let activeScanImg = grade.scanImg;
+      if (!activeScanImg && typeof state !== 'undefined' && state.scans) {
+        const found = state.scans.find(s => s && (s.name === grade.examId || s.name === grade.studentId)) || (grade.studentIndex != null ? state.scans[grade.studentIndex] : null);
+        if (found && found.img) {
+          activeScanImg = found.img;
+          grade.scanImg = activeScanImg;
+        }
+      }
+      if (!activeScanImg && (grade.scanData || grade._cachedScanData)) {
+        const dataSrc = grade.scanData || grade._cachedScanData;
+        try {
+          const img = new Image();
+          img.addEventListener('load', () => {
+            grade.scanImg = img;
+            drawGradeOnCanvas(grade, canvas, options);
+          }, { once: true });
+          img.src = dataSrc;
+          activeScanImg = img;
+          grade.scanImg = img;
+        } catch (_) {}
+      }
+
+      if (activeScanImg && !activeScanImg.complete && typeof activeScanImg.addEventListener === 'function') {
+        activeScanImg.addEventListener('load', () => {
+          drawGradeOnCanvas(grade, canvas, options);
+        }, { once: true });
+      }
+
+      // Always paint clean neutral paper background first
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
       // Draw rectified/warped scan image (undoing 90/180/270 deg scan rotation when present)
-      drawUprightScanImage(ctx, grade.scanImg, canvas.width, canvas.height, grade.rotationDeg);
+      if (activeScanImg) {
+        drawUprightScanImage(ctx, activeScanImg, canvas.width, canvas.height, grade.rotationDeg);
+      }
 
       // Semi-transparent overlay layer for markup
       for (const b of (grade.bubbleDiagnostics || [])) {
@@ -10688,8 +10821,10 @@
         ctx.strokeRect(rx, ry, rw, rh);
 
         // Score: 38/100
-        const rawFmt = (grade.rawScore % 1 === 0) ? grade.rawScore.toFixed(0) : grade.rawScore.toFixed(1);
-        const maxFmt = (grade.maxScore % 1 === 0) ? grade.maxScore.toFixed(0) : grade.maxScore.toFixed(1);
+        const rawScoreVal = Number(grade.rawScore != null ? grade.rawScore : 0);
+        const maxScoreVal = Number(grade.maxScore != null ? grade.maxScore : 0);
+        const rawFmt = (rawScoreVal % 1 === 0) ? rawScoreVal.toFixed(0) : rawScoreVal.toFixed(1);
+        const maxFmt = (maxScoreVal % 1 === 0) ? maxScoreVal.toFixed(0) : maxScoreVal.toFixed(1);
         const scoreText = `${rawFmt}/${maxFmt}`;
 
         ctx.font = 'bold 16px sans-serif';
@@ -10701,15 +10836,18 @@
         ctx.textBaseline = 'alphabetic';
       } else {
         // Fallback header banner ONLY when no score ROI exists in template
+        const rawScoreVal = Number(grade.rawScore != null ? grade.rawScore : 0);
+        const maxScoreVal = Number(grade.maxScore != null ? grade.maxScore : 0);
+        const pctVal = Number(grade.percentage != null ? grade.percentage : 0);
         ctx.fillStyle = "rgba(0, 0, 0, 0.75)";
         ctx.roundRect ? ctx.roundRect(20, 20, 340, 54, 8) : ctx.fillRect(20, 20, 340, 54);
         ctx.fill();
         ctx.fillStyle = "#fff";
         ctx.font = "bold 16px sans-serif";
-        ctx.fillText(`${grade.studentName} (${grade.studentId})`, 32, 44);
+        ctx.fillText(`${grade.studentName || 'Student'} (${grade.studentId || 'ID'})`, 32, 44);
         ctx.font = "14px sans-serif";
-        ctx.fillStyle = grade.percentage >= passThreshold ? "#34d399" : "#f87171";
-        ctx.fillText(`Score: ${grade.rawScore.toFixed(1)} / ${grade.maxScore.toFixed(1)} (${grade.percentage.toFixed(1)}%)`, 32, 64);
+        ctx.fillStyle = pctVal >= passThreshold ? "#34d399" : "#f87171";
+        ctx.fillText(`Score: ${rawScoreVal.toFixed(1)} / ${maxScoreVal.toFixed(1)} (${pctVal.toFixed(1)}%)`, 32, 64);
       }
     }
 
@@ -10724,10 +10862,19 @@
       drawGradeOnCanvas(grade, canvas);
       if ($('viewer-student-info')) {
         if (grade.nameCropDataUrl) {
-          $('viewer-student-info').innerHTML = `<img src="${grade.nameCropDataUrl}" alt="Name" style="max-height: 48px; max-width: 240px; height: 44px; object-fit: contain; vertical-align: middle; border-radius: 4px; border: 1px solid var(--border); margin-right: 0.35rem; background: #fff;" /> <span>(${escapeHtml(grade.studentId)}) — Score: ${grade.rawScore.toFixed(1)} / ${grade.maxScore.toFixed(1)} (${grade.percentage.toFixed(1)}%)</span>`;
+          $('viewer-student-info').innerHTML = `<img src="${grade.nameCropDataUrl}" alt="Name" style="max-height: 40px; max-width: 220px; height: 36px; object-fit: contain; vertical-align: middle; border-radius: 4px; border: 1px solid var(--border); background: #fff;" />`;
         } else {
-          $('viewer-student-info').textContent = `${grade.studentName} (${grade.studentId}) — Score: ${grade.rawScore.toFixed(1)} / ${grade.maxScore.toFixed(1)} (${grade.percentage.toFixed(1)}%)`;
+          const hasRealSid = grade.studentId && !String(grade.studentId).startsWith('STU-');
+          const nameDisplay = (grade.studentName && !grade.studentName.startsWith('Student STU-')) ? grade.studentName : (hasRealSid ? grade.studentId : 'Student');
+          const sidDisplay = hasRealSid && grade.studentName ? ` (${grade.studentId})` : '';
+          $('viewer-student-info').textContent = `${nameDisplay}${sidDisplay}`;
         }
+      }
+      if ($('viewer-score-badge')) {
+        const passThreshold = (state.results && state.results.passThreshold != null) ? state.results.passThreshold : 60;
+        const isPass = grade.percentage >= passThreshold;
+        $('viewer-score-badge').textContent = `${(grade.rawScore != null ? Number(grade.rawScore) : 0).toFixed(1)} / ${(grade.maxScore != null ? Number(grade.maxScore) : 0).toFixed(1)} pts (${(grade.percentage != null ? Number(grade.percentage) : 0).toFixed(1)}%)`;
+        $('viewer-score-badge').className = isPass ? 'badge-pass' : 'badge-fail';
       }
       if ($('viewer-student-select')) {
         $('viewer-student-select').value = state.selectedStudentIdx;
@@ -11667,7 +11814,11 @@
           const onImgReady = () => {
             if (state.selectedStudentIdx === gIdx) {
               const canvas = $('roster-preview-canvas') || $('roster-inspector-canvas');
-              if (canvas) drawGradeOnCanvas(g, canvas);
+              if (canvas) drawGradeOnCanvas(restoredGrades[gIdx], canvas);
+              const modalCanvas = $('viewer-canvas');
+              if (modalCanvas && $('modal-viewer')?.open) {
+                drawGradeOnCanvas(restoredGrades[gIdx], modalCanvas);
+              }
             }
           };
           if (typeof img.addEventListener === 'function') {
@@ -11677,6 +11828,8 @@
           }
           img.src = g.scanData;
           scanImg = img;
+        } else if (state.scans && state.scans[gIdx]?.img) {
+          scanImg = state.scans[gIdx].img;
         } else {
           const c = document.createElement('canvas');
           c.width = g.targetW || 840;
@@ -12144,45 +12297,60 @@
     }
 
     function updateGoogleSyncStatus(status, tooltip = '') {
-      const syncBadge = $('google-drive-sync-indicator');
+      const btn = $('btn-google-drive');
+      if (btn) {
+        if (tooltip) {
+          btn.title = tooltip;
+        } else if (status === 'syncing') {
+          btn.title = 'Syncing session to Google Drive...';
+        } else if (status === 'synced') {
+          btn.title = `Synced to Google Drive (${new Date().toLocaleTimeString()})`;
+        } else if (status === 'error') {
+          btn.title = 'Google Drive sync failed. Check internet connection.';
+        } else {
+          btn.title = 'Google Drive integration';
+        }
+      }
       const statusBadge = $('google-drive-status-badge');
       if (statusBadge) {
         statusBadge.classList?.remove?.('is-syncing', 'is-synced', 'is-error');
         if (status === 'syncing') {
           statusBadge.style.display = 'flex';
           statusBadge.classList?.add?.('is-syncing');
-          statusBadge.title = tooltip || 'Syncing session to Google Drive...';
+          statusBadge.title = btn?.title || 'Syncing session to Google Drive...';
         } else if (status === 'synced') {
           statusBadge.style.display = 'flex';
           statusBadge.classList?.add?.('is-synced');
-          statusBadge.title = tooltip || `Synced to Google Drive (${new Date().toLocaleTimeString()})`;
+          statusBadge.title = btn?.title || `Synced to Google Drive (${new Date().toLocaleTimeString()})`;
         } else if (status === 'error') {
           statusBadge.style.display = 'flex';
           statusBadge.classList?.add?.('is-error');
-          statusBadge.title = tooltip || 'Google Drive sync failed. Check internet connection.';
+          statusBadge.title = btn?.title || 'Google Drive sync failed. Check internet connection.';
         } else {
           statusBadge.style.display = 'none';
         }
       }
-      if (!syncBadge) return;
-      syncBadge.classList?.remove?.('is-syncing', 'is-synced', 'is-error');
-      if (status === 'syncing') {
-        syncBadge.style.display = 'inline-flex';
-        syncBadge.classList?.add?.('is-syncing');
-        syncBadge.innerHTML = '<span class="sync-pulsing-dot"></span> Syncing...';
-        syncBadge.title = tooltip || 'Syncing session to Google Drive...';
-      } else if (status === 'synced') {
-        syncBadge.style.display = 'inline-flex';
-        syncBadge.classList?.add?.('is-synced');
-        syncBadge.innerHTML = 'Synced ✓';
-        syncBadge.title = tooltip || `Synced to Google Drive (${new Date().toLocaleTimeString()})`;
-      } else if (status === 'error') {
-        syncBadge.style.display = 'inline-flex';
-        syncBadge.classList?.add?.('is-error');
-        syncBadge.innerHTML = 'Sync Error';
-        syncBadge.title = tooltip || 'Google Drive sync failed. Check internet connection.';
-      } else {
-        syncBadge.style.display = 'none';
+      const syncBadge = $('google-drive-sync-indicator');
+      if (syncBadge) {
+        syncBadge.classList?.remove?.('is-syncing', 'is-synced', 'is-error');
+        if (status === 'syncing') {
+          syncBadge.style.display = 'inline-flex';
+          syncBadge.classList?.add?.('is-syncing');
+          syncBadge.innerHTML = '<span class="sync-pulsing-dot"></span> Syncing...';
+          syncBadge.title = tooltip || 'Syncing session to Google Drive...';
+        } else if (status === 'synced') {
+          syncBadge.style.display = 'inline-flex';
+          syncBadge.classList?.add?.('is-synced');
+          syncBadge.innerHTML = 'Synced ✓';
+          syncBadge.title = tooltip || `Synced to Google Drive (${new Date().toLocaleTimeString()})`;
+        } else if (status === 'error') {
+          syncBadge.style.display = 'inline-flex';
+          syncBadge.classList?.add?.('is-error');
+          syncBadge.innerHTML = 'Sync Error';
+          syncBadge.title = tooltip || 'Google Drive sync failed. Check internet connection.';
+        } else {
+          syncBadge.style.display = 'none';
+        }
       }
     }
     window.updateGoogleSyncStatus = updateGoogleSyncStatus;
@@ -13256,24 +13424,22 @@
     });
 
     $('btn-horizontal-item-prev')?.addEventListener('click', () => {
-      const horizontalItems = getHorizontalGradingItems();
       const selectItem = $('select-horizontal-item');
-      if (!selectItem || horizontalItems.length === 0) return;
-      const curIdx = horizontalItems.findIndex(it => it.key === selectItem.value);
+      if (!selectItem || selectItem.options.length === 0) return;
+      const curIdx = selectItem.selectedIndex;
       if (curIdx > 0) {
-        selectItem.value = horizontalItems[curIdx - 1].key;
+        selectItem.selectedIndex = curIdx - 1;
         horizontalDeckState.currentIndex = 0;
         renderHorizontalGradingView();
       }
     });
 
     $('btn-horizontal-item-next')?.addEventListener('click', () => {
-      const horizontalItems = getHorizontalGradingItems();
       const selectItem = $('select-horizontal-item');
-      if (!selectItem || horizontalItems.length === 0) return;
-      const curIdx = horizontalItems.findIndex(it => it.key === selectItem.value);
-      if (curIdx < horizontalItems.length - 1 && curIdx !== -1) {
-        selectItem.value = horizontalItems[curIdx + 1].key;
+      if (!selectItem || selectItem.options.length === 0) return;
+      const curIdx = selectItem.selectedIndex;
+      if (curIdx < selectItem.options.length - 1 && curIdx !== -1) {
+        selectItem.selectedIndex = curIdx + 1;
         horizontalDeckState.currentIndex = 0;
         renderHorizontalGradingView();
       }

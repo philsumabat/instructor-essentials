@@ -2709,7 +2709,8 @@ dialog.modal-dialog--answer-key {
   color: var(--text) !important;
 }
 .btn-google-drive .google-sync-indicator,
-.btn-google-drive .google-status-dot {
+.btn-google-drive .google-status-dot,
+.btn-google-drive #label-google-drive {
   display: none !important;
 }
 .google-status-badge {

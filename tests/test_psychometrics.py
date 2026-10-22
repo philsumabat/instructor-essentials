@@ -14,6 +14,25 @@ def test_pearson_r():
     assert abs(r_inv - (-1.0)) < 1e-4
 
 
+def test_pearson_r_edge_cases():
+    # Mismatched lengths
+    x = [1.0, 2.0, 3.0]
+    y = [1.0, 2.0]
+    assert compute_pearson_r(x, y) == 0.0
+
+    # Length < 2
+    assert compute_pearson_r([1.0], [1.0]) == 0.0
+    assert compute_pearson_r([], []) == 0.0
+
+    # Zero variance (constant values)
+    # Both constant
+    assert compute_pearson_r([1.0, 1.0, 1.0], [2.0, 2.0, 2.0]) == 0.0
+    # X constant
+    assert compute_pearson_r([1.0, 1.0, 1.0], [1.0, 2.0, 3.0]) == 0.0
+    # Y constant
+    assert compute_pearson_r([1.0, 2.0, 3.0], [5.0, 5.0, 5.0]) == 0.0
+
+
 def test_psychometric_analyzer():
     key = AnswerKey.from_dict({
         "title": "Test Exam",

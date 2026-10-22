@@ -5755,10 +5755,22 @@ function generateKeySheetHTML(layout, keyItems, css) {
   }
 
   const groups = allGroups(layout);
+
+  const allNumEls = Array.from(doc.querySelectorAll('.omr-num'));
+  const numElsMap = new Map();
+  for (const el of allNumEls) {
+    const key = el.textContent.trim();
+    if (!numElsMap.has(key)) {
+      numElsMap.set(key, []);
+    }
+    numElsMap.get(key).push(el);
+  }
+
   for (const g of groups) {
     const keyedAns = items[g.key]?.answer;
     if (!keyedAns) continue;
-    const numEls = Array.from(doc.querySelectorAll('.omr-num')).filter((el) => el.textContent.trim() === String(g.key));
+
+    const numEls = numElsMap.get(String(g.key)) || [];
     for (const numEl of numEls) {
       const parentGrid = numEl.parentElement;
       if (!parentGrid) continue;

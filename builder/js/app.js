@@ -1089,443 +1089,21 @@ function renderInspector() {
   const totalZones = state.template.zones.length;
 
   let formHtml = '';
-  const ZONE_SVGS = {
-    student_id: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
-    fields: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
-    mcq: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4" fill="currentColor"/></svg>',
-    truefalse: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>',
-    modified_tf: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>',
-    text: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
-    text_short: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>',
-    text_essay: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
-    instructions: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>',
-  };
-  const typeNames = ZONE_TYPE_NAMES;
-
-  formHtml += `
-    <div class="inspector-header">
-      <div class="inspector-header__info">
-        <span class="inspector-header__icon" aria-hidden="true">${ZONE_SVGS[zone.type] || '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>'}</span>
-        <div>
-          <h3 class="inspector-header__title">${safeEscapeHTML(zone.label || typeNames[zone.type])}</h3>
-          <span class="inspector-header__type">${typeNames[zone.type]}</span>
-        </div>
-      </div>
-      <div class="zone-quick-actions">
-        <button type="button" class="btn-zone-action" id="insp-btn-up" title="Move Up" ${idx === 0 ? 'disabled' : ''}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m18 15-6-6-6 6"/></svg></button>
-        <button type="button" class="btn-zone-action" id="insp-btn-down" title="Move Down" ${idx === totalZones - 1 ? 'disabled' : ''}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg></button>
-        <button type="button" class="btn-zone-action" id="insp-btn-dup" title="Duplicate"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="13" height="13" x="9" y="9" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
-        <button type="button" class="btn-zone-action is-danger" id="insp-btn-del" title="Delete"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
-      </div>
-    </div>
-  `;
+  formHtml += renderInspectorHeader(zone, idx, totalZones);
 
   // Specific inspector form by zone type
   if (zone.type === 'mcq' || zone.type === 'truefalse') {
-    const isTf = zone.type === 'truefalse';
-    const choicesStr = Array.isArray(zone.choices) ? zone.choices.join('') : String(zone.choices ?? 'ABCD');
-
-    formHtml += `
-      <div class="form-group">
-        <label class="form-label" for="insp-label">Section Title</label>
-        <input type="text" id="insp-label" class="form-input" value="${safeEscapeHTML(zone.label || '')}">
-      </div>
-
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label" for="insp-count">Questions</label>
-          <div class="stepper-control">
-            <button type="button" class="stepper-btn" id="insp-count-minus" aria-label="Decrease questions">−</button>
-            <input type="number" id="insp-count" class="stepper-input" value="${zone.count ?? 20}" min="1" max="100">
-            <button type="button" class="stepper-btn" id="insp-count-plus" aria-label="Increase questions">+</button>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="insp-start">Start #</label>
-          <div class="stepper-control">
-            <button type="button" class="stepper-btn" id="insp-start-minus" aria-label="Decrease start number">−</button>
-            <input type="number" id="insp-start" class="stepper-input" value="${zone.start ?? state.layout?.zones?.[idx]?.start ?? 1}" min="1" max="999">
-            <button type="button" class="stepper-btn" id="insp-start-plus" aria-label="Increase start number">+</button>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="insp-points">Pts / Item</label>
-          <div class="stepper-control">
-            <button type="button" class="stepper-btn" id="insp-points-minus" aria-label="Decrease points">−</button>
-            <input type="number" id="insp-points" class="stepper-input" value="${zone.pointsPerItem ?? zone.points ?? 1}" min="1" max="50">
-            <button type="button" class="stepper-btn" id="insp-points-plus" aria-label="Increase points">+</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="form-group" style="margin-top: -0.25rem; margin-bottom: 0.5rem;">
-        <label class="field-checkbox-label">
-          <input type="checkbox" id="insp-show-points" ${zone.showPoints === true ? 'checked' : ''}>
-          <span>Show points on sheet</span>
-        </label>
-      </div>
-
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label" for="insp-row-gap">Item / Row Spacing (mm)</label>
-          <div class="stepper-control">
-            <button type="button" class="stepper-btn" id="insp-row-gap-minus" aria-label="Decrease item spacing">−</button>
-            <input type="number" id="insp-row-gap" class="stepper-input" value="${zone.rowGap ?? 1}" min="0" max="50">
-            <button type="button" class="stepper-btn" id="insp-row-gap-plus" aria-label="Increase item spacing">+</button>
-          </div>
-        </div>
-      </div>
-
-      ${!isTf ? `
-      <div class="form-group">
-        <label class="form-label">Choices</label>
-        <div class="pills-group" id="insp-choices-pills">
-          <button type="button" class="pill-btn ${choicesStr === 'ABCD' ? 'is-active' : ''}" data-choices="ABCD">A–D (4)</button>
-          <button type="button" class="pill-btn ${choicesStr === 'ABCDE' ? 'is-active' : ''}" data-choices="ABCDE">A–E (5)</button>
-          <button type="button" class="pill-btn ${choicesStr === 'ABC' ? 'is-active' : ''}" data-choices="ABC">A–C (3)</button>
-          <button type="button" class="pill-btn ${!['ABCD', 'ABCDE', 'ABC'].includes(choicesStr) ? 'is-active' : ''}" data-choices="custom">Custom</button>
-        </div>
-        <input type="text" id="insp-choices-custom" class="form-input" style="display: ${!['ABCD', 'ABCDE', 'ABC'].includes(choicesStr) ? 'block' : 'none'}; margin-top: 0.35rem;" value="${safeEscapeHTML(choicesStr)}" placeholder="e.g. ABCDEFG">
-      </div>
-      ` : `
-      <div class="form-group">
-        <label class="form-label">Choices</label>
-        <div class="pills-group" id="insp-tf-pills">
-          <button type="button" class="pill-btn ${choicesStr.includes('T') ? 'is-active' : ''}" data-tf="TF">T / F</button>
-          <button type="button" class="pill-btn ${choicesStr.includes('Y') ? 'is-active' : ''}" data-tf="YN">Yes / No</button>
-        </div>
-      </div>
-      `}
-
-      <div class="form-group">
-        <label class="form-label">Columns within Module</label>
-        <div class="pills-group" id="insp-cols-pills">
-          <button type="button" class="pill-btn ${!zone.columns ? 'is-active' : ''}" data-cols="">Auto</button>
-          <button type="button" class="pill-btn ${zone.columns === 1 ? 'is-active' : ''}" data-cols="1">1 Col</button>
-          <button type="button" class="pill-btn ${zone.columns === 2 ? 'is-active' : ''}" data-cols="2">2 Cols</button>
-          <button type="button" class="pill-btn ${zone.columns === 3 ? 'is-active' : ''}" data-cols="3">3 Cols</button>
-          <button type="button" class="pill-btn ${zone.columns === 4 ? 'is-active' : ''}" data-cols="4">4 Cols</button>
-          <button type="button" class="pill-btn ${zone.columns === 5 ? 'is-active' : ''}" data-cols="5">5 Cols</button>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">Module Page Placement</label>
-        <div class="pills-group" id="insp-placement-pills">
-          <button type="button" class="pill-btn ${(!zone.layout && !zone.side && !zone.inline) || zone.layout === 'full' ? 'is-active' : ''}" data-placement="full">Full Width</button>
-          <button type="button" class="pill-btn ${zone.layout === 'half-left' || zone.side === 'left' ? 'is-active' : ''}" data-placement="left">Side-by-Side (Left)</button>
-          <button type="button" class="pill-btn ${zone.layout === 'half-right' || zone.side === 'right' || zone.inline ? 'is-active' : ''}" data-placement="right">Side-by-Side (Right)</button>
-        </div>
-        <button type="button" class="btn btn--secondary btn--sm" id="insp-btn-pull-vacant" style="width: 100%; margin-top: 0.4rem;" title="Switch side to fill vacant column space">
-          ⇄ Move to Opposite / Vacant Side
-        </button>
-      </div>
-    `;
+    formHtml += renderMcqInspector(zone, idx);
   } else if (zone.type === 'modified_tf') {
-    const corrW = zone.boxWidth ?? zone.correctionWidth ?? zone.corrWidth ?? 42;
-    const corrH = zone.boxHeight ?? zone.fieldHeight ?? 6;
-
-    formHtml += `
-      <div class="form-group">
-        <label class="form-label" for="insp-label">Section Title</label>
-        <input type="text" id="insp-label" class="form-input" value="${safeEscapeHTML(zone.label || '')}">
-      </div>
-
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label" for="insp-count">Questions</label>
-          <div class="stepper-control">
-            <button type="button" class="stepper-btn" id="insp-count-minus" aria-label="Decrease questions">−</button>
-            <input type="number" id="insp-count" class="stepper-input" value="${zone.count ?? 5}" min="1" max="100">
-            <button type="button" class="stepper-btn" id="insp-count-plus" aria-label="Increase questions">+</button>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="insp-start">Start #</label>
-          <div class="stepper-control">
-            <button type="button" class="stepper-btn" id="insp-start-minus" aria-label="Decrease start number">−</button>
-            <input type="number" id="insp-start" class="stepper-input" value="${zone.start ?? state.layout?.zones?.[idx]?.start ?? 1}" min="1" max="999">
-            <button type="button" class="stepper-btn" id="insp-start-plus" aria-label="Increase start number">+</button>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="insp-points">Pts / Item</label>
-          <div class="stepper-control">
-            <button type="button" class="stepper-btn" id="insp-points-minus" aria-label="Decrease points">−</button>
-            <input type="number" id="insp-points" class="stepper-input" value="${zone.pointsPerItem ?? zone.points ?? 2}" min="1" max="50">
-            <button type="button" class="stepper-btn" id="insp-points-plus" aria-label="Increase points">+</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="form-group" style="margin-top: -0.25rem; margin-bottom: 0.5rem;">
-        <label class="field-checkbox-label">
-          <input type="checkbox" id="insp-show-points" ${zone.showPoints === true ? 'checked' : ''}>
-          <span>Show points on sheet</span>
-        </label>
-      </div>
-
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label" for="insp-corr-width">Box Width (mm)</label>
-          <div class="stepper-control">
-            <button type="button" class="stepper-btn" id="insp-corr-width-minus" aria-label="Decrease box width">−</button>
-            <input type="number" id="insp-corr-width" class="stepper-input" value="${corrW}" min="15" max="120">
-            <button type="button" class="stepper-btn" id="insp-corr-width-plus" aria-label="Increase box width">+</button>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="insp-corr-height">Box Height (mm)</label>
-          <div class="stepper-control">
-            <button type="button" class="stepper-btn" id="insp-corr-height-minus" aria-label="Decrease box height">−</button>
-            <input type="number" id="insp-corr-height" class="stepper-input" value="${corrH}" min="3" max="40">
-            <button type="button" class="stepper-btn" id="insp-corr-height-plus" aria-label="Increase box height">+</button>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="insp-row-gap">Row Spacing (mm)</label>
-          <div class="stepper-control">
-            <button type="button" class="stepper-btn" id="insp-row-gap-minus" aria-label="Decrease row spacing">−</button>
-            <input type="number" id="insp-row-gap" class="stepper-input" value="${zone.rowGap ?? 2}" min="0" max="50">
-            <button type="button" class="stepper-btn" id="insp-row-gap-plus" aria-label="Increase row spacing">+</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">Columns within Module</label>
-        <div class="pills-group" id="insp-cols-pills">
-          <button type="button" class="pill-btn ${(zone.columns || 1) === 1 ? 'is-active' : ''}" data-cols="1">1 Col</button>
-          <button type="button" class="pill-btn ${(zone.columns || 1) === 2 ? 'is-active' : ''}" data-cols="2">2 Cols</button>
-          <button type="button" class="pill-btn ${(zone.columns || 1) === 3 ? 'is-active' : ''}" data-cols="3">3 Cols</button>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">Module Page Placement</label>
-        <div class="pills-group" id="insp-placement-pills">
-          <button type="button" class="pill-btn ${(!zone.layout && !zone.side && !zone.inline) || zone.layout === 'full' ? 'is-active' : ''}" data-placement="full">Full Width</button>
-          <button type="button" class="pill-btn ${zone.layout === 'half-left' || zone.side === 'left' ? 'is-active' : ''}" data-placement="left">Side-by-Side (Left)</button>
-          <button type="button" class="pill-btn ${zone.layout === 'half-right' || zone.side === 'right' || zone.inline ? 'is-active' : ''}" data-placement="right">Side-by-Side (Right)</button>
-        </div>
-        <button type="button" class="btn btn--secondary btn--sm" id="insp-btn-pull-vacant" style="width: 100%; margin-top: 0.4rem;" title="Switch side to fill vacant column space">
-          ⇄ Move to Opposite / Vacant Side
-        </button>
-      </div>
-    `;
+    formHtml += renderModifiedTfInspector(zone, idx);
   } else if (zone.type === 'student_id') {
-    const isShading = zone.shading !== false && zone.mode !== 'ocr' && zone.mode !== 'digits';
-
-    formHtml += `
-      <div class="form-group">
-        <label class="form-label" for="insp-label">Zone Title</label>
-        <input type="text" id="insp-label" class="form-input" value="${safeEscapeHTML(zone.label || '')}">
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">Recognition Mode</label>
-        <div class="pills-group" id="insp-sid-mode">
-          <button type="button" class="pill-btn ${isShading ? 'is-active' : ''}" data-mode="shading">Bubble Grid (OMR)</button>
-          <button type="button" class="pill-btn ${!isShading ? 'is-active' : ''}" data-mode="ocr">Handwritten Digits (OCR)</button>
-        </div>
-      </div>
-    `;
+    formHtml += renderStudentIdInspector(zone);
   } else if (zone.type === 'fields') {
-    const currentFields = zone.fields || [];
-    const hasField = (id) => currentFields.some((f) => f.id === id);
-    const hasSidField = currentFields.some((f) => f.id === 'sid' || f.role === 'student_id');
-
-    formHtml += `
-      <div class="form-group">
-        <label class="form-label" for="insp-label">Section Title</label>
-        <input type="text" id="insp-label" class="form-input" value="${safeEscapeHTML(zone.label || '')}" placeholder="(Leave blank to hide heading)">
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">Included Fields</label>
-        <div class="checkbox-grid">
-          <label class="field-checkbox-label">
-            <input type="checkbox" id="field-name" ${hasField('name') ? 'checked' : ''}>
-            <span>Name</span>
-          </label>
-          <label class="field-checkbox-label">
-            <input type="checkbox" id="field-sid" ${hasSidField ? 'checked' : ''}>
-            <span>ID no. (8 Digits)</span>
-          </label>
-          <label class="field-checkbox-label">
-            <input type="checkbox" id="field-offer" ${hasField('offer') || hasField('section') ? 'checked' : ''}>
-            <span>Offer No.</span>
-          </label>
-          <label class="field-checkbox-label">
-            <input type="checkbox" id="field-sched" ${hasField('sched') || hasField('section') ? 'checked' : ''}>
-            <span>Sched</span>
-          </label>
-          <label class="field-checkbox-label">
-            <input type="checkbox" id="field-date" ${hasField('date') ? 'checked' : ''}>
-            <span>Date</span>
-          </label>
-          <label class="field-checkbox-label">
-            <input type="checkbox" id="field-score" ${hasField('score') ? 'checked' : ''}>
-            <span>Score Box</span>
-          </label>
-          <label class="field-checkbox-label">
-            <input type="checkbox" id="field-sig" ${hasField('signature') ? 'checked' : ''}>
-            <span>Signature</span>
-          </label>
-        </div>
-        <div class="form-row" style="margin-top: 0.6rem;">
-          <div class="form-group">
-            <label class="form-label" for="insp-row-gap">Row Spacing (mm)</label>
-            <div class="stepper-control">
-              <button type="button" class="stepper-btn" id="insp-row-gap-minus" aria-label="Decrease row spacing">−</button>
-              <input type="number" id="insp-row-gap" class="stepper-input" value="${zone.rowGap ?? zone.gapY ?? 2}" min="0" max="50">
-              <button type="button" class="stepper-btn" id="insp-row-gap-plus" aria-label="Increase row spacing">+</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    `;
+    formHtml += renderFieldsInspector(zone);
   } else if (zone.type === 'text' || zone.type === 'text_short' || zone.type === 'text_essay') {
-    const defaultPts = zone.type === 'text_essay' ? 5 : 1;
-    const defaultH = zone.type === 'text_essay' ? 35 : (zone.type === 'text_short' ? 10 : 12);
-    const count = zone.count ?? 1;
-    const cols = zone.columns ?? 1;
-    const startVal = zone.start ?? state.layout?.zones?.[idx]?.start ?? state.layout?.zones?.[idx]?.items?.[0]?.q ?? 1;
-    const autoW = state.layout?.zones?.[idx]?.items?.[0]?.boxW ?? state.layout?.zones?.[idx]?.rois?.[0]?.w;
-    const maxBoxW = state.layout?.zones?.[idx]?.maxBoxW ?? (cols === 2 ? 84 : 176);
-    const boxWidthVal = zone.boxWidth ?? '';
-    const boxWidthPlaceholder = autoW ? `Auto (${Math.round(autoW)}mm)` : (zone.type === 'text_essay' ? 'Auto (176mm)' : 'Auto (83mm)');
-    const ptsVal = zone.pointsPerItem ?? zone.points ?? state.layout?.zones?.[idx]?.pointsPerItem ?? defaultPts;
-    const rowGapVal = zone.rowGap ?? state.layout?.zones?.[idx]?.rowGap ?? 3;
-
-    formHtml += `
-      <div class="form-group">
-        <label class="form-label" for="insp-label">Section Title</label>
-        <input type="text" id="insp-label" class="form-input" value="${safeEscapeHTML(zone.label || '')}">
-      </div>
-
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label" for="insp-count">Questions</label>
-          <div class="stepper-control">
-            <button type="button" class="stepper-btn" id="insp-count-minus" aria-label="Decrease question count">−</button>
-            <input type="number" id="insp-count" class="stepper-input" value="${count}" min="1" max="50">
-            <button type="button" class="stepper-btn" id="insp-count-plus" aria-label="Increase question count">+</button>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="insp-start">Start No.</label>
-          <div class="stepper-control">
-            <button type="button" class="stepper-btn" id="insp-start-minus" aria-label="Decrease start number">−</button>
-            <input type="number" id="insp-start" class="stepper-input" value="${startVal}" min="1" max="999">
-            <button type="button" class="stepper-btn" id="insp-start-plus" aria-label="Increase start number">+</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">Columns</label>
-        <div class="pills-group" id="insp-cols-pills">
-          <button type="button" class="pill-btn ${cols === 1 ? 'is-active' : ''}" data-cols="1">1 Col</button>
-          <button type="button" class="pill-btn ${cols === 2 ? 'is-active' : ''}" data-cols="2">2 Cols</button>
-          <button type="button" class="pill-btn ${cols === 3 ? 'is-active' : ''}" data-cols="3">3 Cols</button>
-        </div>
-      </div>
-
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label" for="insp-box-width">Box Width (mm)</label>
-          <div class="stepper-control">
-            <button type="button" class="stepper-btn" id="insp-box-width-minus" aria-label="Decrease box width">−</button>
-            <input type="number" id="insp-box-width" class="stepper-input" value="${boxWidthVal}" placeholder="${boxWidthPlaceholder}" min="12" max="${maxBoxW}">
-            <button type="button" class="stepper-btn" id="insp-box-width-plus" aria-label="Increase box width">+</button>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="insp-box-height">Box Height (mm)</label>
-          <div class="stepper-control">
-            <button type="button" class="stepper-btn" id="insp-box-height-minus" aria-label="Decrease box height">−</button>
-            <input type="number" id="insp-box-height" class="stepper-input" value="${zone.boxHeight ?? defaultH}" min="3" max="120">
-            <button type="button" class="stepper-btn" id="insp-box-height-plus" aria-label="Increase box height">+</button>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="insp-points">Pts / Item</label>
-          <div class="stepper-control">
-            <button type="button" class="stepper-btn" id="insp-points-minus" aria-label="Decrease points">−</button>
-            <input type="number" id="insp-points" class="stepper-input" value="${ptsVal}" min="1" max="50">
-            <button type="button" class="stepper-btn" id="insp-points-plus" aria-label="Increase points">+</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="form-group" style="margin-top: -0.25rem; margin-bottom: 0.5rem;">
-        <label class="field-checkbox-label">
-          <input type="checkbox" id="insp-show-points" ${zone.showPoints !== false ? 'checked' : ''}>
-          <span>Show points on sheet</span>
-        </label>
-      </div>
-
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label" for="insp-row-gap">Item Spacing (mm)</label>
-          <div class="stepper-control">
-            <button type="button" class="stepper-btn" id="insp-row-gap-minus" aria-label="Decrease item spacing">−</button>
-            <input type="number" id="insp-row-gap" class="stepper-input" value="${rowGapVal}" min="0" max="50">
-            <button type="button" class="stepper-btn" id="insp-row-gap-plus" aria-label="Increase item spacing">+</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">Module Page Placement</label>
-        <div class="pills-group" id="insp-placement-pills">
-          <button type="button" class="pill-btn ${(!zone.layout && !zone.side && !zone.inline) || zone.layout === 'full' ? 'is-active' : ''}" data-placement="full">Full Width</button>
-          <button type="button" class="pill-btn ${zone.layout === 'half-left' || zone.side === 'left' ? 'is-active' : ''}" data-placement="left">Side-by-Side (Left)</button>
-          <button type="button" class="pill-btn ${zone.layout === 'half-right' || zone.side === 'right' || zone.inline ? 'is-active' : ''}" data-placement="right">Side-by-Side (Right)</button>
-        </div>
-        <button type="button" class="btn btn--secondary btn--sm" id="insp-btn-pull-vacant" style="width: 100%; margin-top: 0.4rem;" title="Switch side to fill vacant column space">
-          ⇄ Move to Opposite / Vacant Side
-        </button>
-      </div>
-    `;
+    formHtml += renderTextInspector(zone, idx);
   } else if (zone.type === 'instructions') {
-    formHtml += `
-      <div class="form-group">
-        <label class="form-label" for="insp-text">Instructions Text</label>
-        <textarea id="insp-text" class="form-textarea" rows="4">${safeEscapeHTML(zone.text || '')}</textarea>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">Font Size</label>
-        <div class="pills-group" id="insp-font-pills">
-          <button type="button" class="pill-btn ${zone.fontSize <= 2.4 ? 'is-active' : ''}" data-size="2.4">Compact (2.4mm)</button>
-          <button type="button" class="pill-btn ${zone.fontSize > 2.4 && zone.fontSize <= 2.8 ? 'is-active' : ''}" data-size="2.8">Normal (2.8mm)</button>
-          <button type="button" class="pill-btn ${zone.fontSize > 2.8 ? 'is-active' : ''}" data-size="3.2">Large (3.2mm)</button>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">Module Page Placement</label>
-        <div class="pills-group" id="insp-placement-pills">
-          <button type="button" class="pill-btn ${(!zone.layout && !zone.side && !zone.inline) || zone.layout === 'full' ? 'is-active' : ''}" data-placement="full">Full Width</button>
-          <button type="button" class="pill-btn ${zone.layout === 'half-left' || zone.side === 'left' ? 'is-active' : ''}" data-placement="left">Side-by-Side (Left)</button>
-          <button type="button" class="pill-btn ${zone.layout === 'half-right' || zone.side === 'right' || zone.inline ? 'is-active' : ''}" data-placement="right">Side-by-Side (Right)</button>
-        </div>
-        <button type="button" class="btn btn--secondary btn--sm" id="insp-btn-pull-vacant" style="width: 100%; margin-top: 0.4rem;" title="Switch side to fill vacant column space">
-          ⇄ Move to Opposite / Vacant Side
-        </button>
-      </div>
-    `;
+    formHtml += renderInstructionsInspector(zone);
   }
 
   els.inspectorContent.innerHTML = formHtml;
@@ -4858,6 +4436,456 @@ async function init() {
   await loadSample('blank');
 }
 
+
+
+function renderInspectorHeader(zone, idx, totalZones) {
+  const ZONE_SVGS = {
+    student_id: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+    fields: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+    mcq: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4" fill="currentColor"/></svg>',
+    truefalse: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>',
+    modified_tf: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>',
+    text: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
+    text_short: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>',
+    text_essay: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
+    instructions: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>',
+  };
+  const typeNames = ZONE_TYPE_NAMES;
+
+  return `
+    <div class="inspector-header">
+      <div class="inspector-header__info">
+        <span class="inspector-header__icon" aria-hidden="true">${ZONE_SVGS[zone.type] || '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>'}</span>
+        <div>
+          <h3 class="inspector-header__title">${safeEscapeHTML(zone.label || typeNames[zone.type])}</h3>
+          <span class="inspector-header__type">${typeNames[zone.type]}</span>
+        </div>
+      </div>
+      <div class="zone-quick-actions">
+        <button type="button" class="btn-zone-action" id="insp-btn-up" title="Move Up" ${idx === 0 ? 'disabled' : ''}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m18 15-6-6-6 6"/></svg></button>
+        <button type="button" class="btn-zone-action" id="insp-btn-down" title="Move Down" ${idx === totalZones - 1 ? 'disabled' : ''}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg></button>
+        <button type="button" class="btn-zone-action" id="insp-btn-dup" title="Duplicate"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="13" height="13" x="9" y="9" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
+        <button type="button" class="btn-zone-action is-danger" id="insp-btn-del" title="Delete"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2-2v2"/></svg></button>
+      </div>
+    </div>
+  `;
+}
+
+function renderMcqInspector(zone, idx) {
+  const isTf = zone.type === 'truefalse';
+  const choicesStr = Array.isArray(zone.choices) ? zone.choices.join('') : String(zone.choices ?? 'ABCD');
+
+  return `
+    <div class="form-group">
+      <label class="form-label" for="insp-label">Section Title</label>
+      <input type="text" id="insp-label" class="form-input" value="${safeEscapeHTML(zone.label || '')}">
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label" for="insp-count">Questions</label>
+        <div class="stepper-control">
+          <button type="button" class="stepper-btn" id="insp-count-minus" aria-label="Decrease questions">−</button>
+          <input type="number" id="insp-count" class="stepper-input" value="${zone.count ?? 20}" min="1" max="100">
+          <button type="button" class="stepper-btn" id="insp-count-plus" aria-label="Increase questions">+</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="insp-start">Start #</label>
+        <div class="stepper-control">
+          <button type="button" class="stepper-btn" id="insp-start-minus" aria-label="Decrease start number">−</button>
+          <input type="number" id="insp-start" class="stepper-input" value="${zone.start ?? state.layout?.zones?.[idx]?.start ?? 1}" min="1" max="999">
+          <button type="button" class="stepper-btn" id="insp-start-plus" aria-label="Increase start number">+</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="insp-points">Pts / Item</label>
+        <div class="stepper-control">
+          <button type="button" class="stepper-btn" id="insp-points-minus" aria-label="Decrease points">−</button>
+          <input type="number" id="insp-points" class="stepper-input" value="${zone.pointsPerItem ?? zone.points ?? 1}" min="1" max="50">
+          <button type="button" class="stepper-btn" id="insp-points-plus" aria-label="Increase points">+</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group" style="margin-top: -0.25rem; margin-bottom: 0.5rem;">
+      <label class="field-checkbox-label">
+        <input type="checkbox" id="insp-show-points" ${zone.showPoints === true ? 'checked' : ''}>
+        <span>Show points on sheet</span>
+      </label>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label" for="insp-row-gap">Item / Row Spacing (mm)</label>
+        <div class="stepper-control">
+          <button type="button" class="stepper-btn" id="insp-row-gap-minus" aria-label="Decrease item spacing">−</button>
+          <input type="number" id="insp-row-gap" class="stepper-input" value="${zone.rowGap ?? 1}" min="0" max="50">
+          <button type="button" class="stepper-btn" id="insp-row-gap-plus" aria-label="Increase item spacing">+</button>
+        </div>
+      </div>
+    </div>
+
+    ${!isTf ? `
+    <div class="form-group">
+      <label class="form-label">Choices</label>
+      <div class="pills-group" id="insp-choices-pills">
+        <button type="button" class="pill-btn ${choicesStr === 'ABCD' ? 'is-active' : ''}" data-choices="ABCD">A–D (4)</button>
+        <button type="button" class="pill-btn ${choicesStr === 'ABCDE' ? 'is-active' : ''}" data-choices="ABCDE">A–E (5)</button>
+        <button type="button" class="pill-btn ${choicesStr === 'ABC' ? 'is-active' : ''}" data-choices="ABC">A–C (3)</button>
+        <button type="button" class="pill-btn ${!['ABCD', 'ABCDE', 'ABC'].includes(choicesStr) ? 'is-active' : ''}" data-choices="custom">Custom</button>
+      </div>
+      <input type="text" id="insp-choices-custom" class="form-input" style="display: ${!['ABCD', 'ABCDE', 'ABC'].includes(choicesStr) ? 'block' : 'none'}; margin-top: 0.35rem;" value="${safeEscapeHTML(choicesStr)}" placeholder="e.g. ABCDEFG">
+    </div>
+    ` : `
+    <div class="form-group">
+      <label class="form-label">Choices</label>
+      <div class="pills-group" id="insp-tf-pills">
+        <button type="button" class="pill-btn ${choicesStr.includes('T') ? 'is-active' : ''}" data-tf="TF">T / F</button>
+        <button type="button" class="pill-btn ${choicesStr.includes('Y') ? 'is-active' : ''}" data-tf="YN">Yes / No</button>
+      </div>
+    </div>
+    `}
+
+    <div class="form-group">
+      <label class="form-label">Columns within Module</label>
+      <div class="pills-group" id="insp-cols-pills">
+        <button type="button" class="pill-btn ${!zone.columns ? 'is-active' : ''}" data-cols="">Auto</button>
+        <button type="button" class="pill-btn ${zone.columns === 1 ? 'is-active' : ''}" data-cols="1">1 Col</button>
+        <button type="button" class="pill-btn ${zone.columns === 2 ? 'is-active' : ''}" data-cols="2">2 Cols</button>
+        <button type="button" class="pill-btn ${zone.columns === 3 ? 'is-active' : ''}" data-cols="3">3 Cols</button>
+        <button type="button" class="pill-btn ${zone.columns === 4 ? 'is-active' : ''}" data-cols="4">4 Cols</button>
+        <button type="button" class="pill-btn ${zone.columns === 5 ? 'is-active' : ''}" data-cols="5">5 Cols</button>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Module Page Placement</label>
+      <div class="pills-group" id="insp-placement-pills">
+        <button type="button" class="pill-btn ${(!zone.layout && !zone.side && !zone.inline) || zone.layout === 'full' ? 'is-active' : ''}" data-placement="full">Full Width</button>
+        <button type="button" class="pill-btn ${zone.layout === 'half-left' || zone.side === 'left' ? 'is-active' : ''}" data-placement="left">Side-by-Side (Left)</button>
+        <button type="button" class="pill-btn ${zone.layout === 'half-right' || zone.side === 'right' || zone.inline ? 'is-active' : ''}" data-placement="right">Side-by-Side (Right)</button>
+      </div>
+      <button type="button" class="btn btn--secondary btn--sm" id="insp-btn-pull-vacant" style="width: 100%; margin-top: 0.4rem;" title="Switch side to fill vacant column space">
+        ⇄ Move to Opposite / Vacant Side
+      </button>
+    </div>
+  `;
+}
+
+function renderModifiedTfInspector(zone, idx) {
+  const corrW = zone.boxWidth ?? zone.correctionWidth ?? zone.corrWidth ?? 42;
+  const corrH = zone.boxHeight ?? zone.fieldHeight ?? 6;
+
+  return `
+    <div class="form-group">
+      <label class="form-label" for="insp-label">Section Title</label>
+      <input type="text" id="insp-label" class="form-input" value="${safeEscapeHTML(zone.label || '')}">
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label" for="insp-count">Questions</label>
+        <div class="stepper-control">
+          <button type="button" class="stepper-btn" id="insp-count-minus" aria-label="Decrease questions">−</button>
+          <input type="number" id="insp-count" class="stepper-input" value="${zone.count ?? 10}" min="1" max="100">
+          <button type="button" class="stepper-btn" id="insp-count-plus" aria-label="Increase questions">+</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="insp-start">Start No.</label>
+        <div class="stepper-control">
+          <button type="button" class="stepper-btn" id="insp-start-minus" aria-label="Decrease start number">−</button>
+          <input type="number" id="insp-start" class="stepper-input" value="${zone.start ?? state.layout?.zones?.[idx]?.start ?? 1}" min="1" max="999">
+          <button type="button" class="stepper-btn" id="insp-start-plus" aria-label="Increase start number">+</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="insp-points">Pts / Item</label>
+        <div class="stepper-control">
+          <button type="button" class="stepper-btn" id="insp-points-minus" aria-label="Decrease points">−</button>
+          <input type="number" id="insp-points" class="stepper-input" value="${zone.pointsPerItem ?? zone.points ?? 2}" min="1" max="50">
+          <button type="button" class="stepper-btn" id="insp-points-plus" aria-label="Increase points">+</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group" style="margin-top: -0.25rem; margin-bottom: 0.5rem;">
+      <label class="field-checkbox-label">
+        <input type="checkbox" id="insp-show-points" ${zone.showPoints === true ? 'checked' : ''}>
+        <span>Show points on sheet</span>
+      </label>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Columns within Module</label>
+      <div class="pills-group" id="insp-cols-pills">
+        <button type="button" class="pill-btn ${!zone.columns ? 'is-active' : ''}" data-cols="">Auto</button>
+        <button type="button" class="pill-btn ${zone.columns === 1 ? 'is-active' : ''}" data-cols="1">1 Col</button>
+        <button type="button" class="pill-btn ${zone.columns === 2 ? 'is-active' : ''}" data-cols="2">2 Cols</button>
+        <button type="button" class="pill-btn ${zone.columns === 3 ? 'is-active' : ''}" data-cols="3">3 Cols</button>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label" for="insp-corr-width">Box Width (mm)</label>
+        <div class="stepper-control">
+          <button type="button" class="stepper-btn" id="insp-corr-width-minus" aria-label="Decrease box width">−</button>
+          <input type="number" id="insp-corr-width" class="stepper-input" value="${corrW}" min="20" max="100">
+          <button type="button" class="stepper-btn" id="insp-corr-width-plus" aria-label="Increase box width">+</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="insp-corr-height">Box Height (mm)</label>
+        <div class="stepper-control">
+          <button type="button" class="stepper-btn" id="insp-corr-height-minus" aria-label="Decrease box height">−</button>
+          <input type="number" id="insp-corr-height" class="stepper-input" value="${corrH}" min="3" max="30">
+          <button type="button" class="stepper-btn" id="insp-corr-height-plus" aria-label="Increase box height">+</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="insp-row-gap">Item Spacing (mm)</label>
+        <div class="stepper-control">
+          <button type="button" class="stepper-btn" id="insp-row-gap-minus" aria-label="Decrease item spacing">−</button>
+          <input type="number" id="insp-row-gap" class="stepper-input" value="${zone.rowGap ?? 1}" min="0" max="50">
+          <button type="button" class="stepper-btn" id="insp-row-gap-plus" aria-label="Increase item spacing">+</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Module Page Placement</label>
+      <div class="pills-group" id="insp-placement-pills">
+        <button type="button" class="pill-btn ${(!zone.layout && !zone.side && !zone.inline) || zone.layout === 'full' ? 'is-active' : ''}" data-placement="full">Full Width</button>
+        <button type="button" class="pill-btn ${zone.layout === 'half-left' || zone.side === 'left' ? 'is-active' : ''}" data-placement="left">Side-by-Side (Left)</button>
+        <button type="button" class="pill-btn ${zone.layout === 'half-right' || zone.side === 'right' || zone.inline ? 'is-active' : ''}" data-placement="right">Side-by-Side (Right)</button>
+      </div>
+      <button type="button" class="btn btn--secondary btn--sm" id="insp-btn-pull-vacant" style="width: 100%; margin-top: 0.4rem;" title="Switch side to fill vacant column space">
+        ⇄ Move to Opposite / Vacant Side
+      </button>
+    </div>
+  `;
+}
+
+function renderStudentIdInspector(zone) {
+  const isShading = zone.shading !== false && zone.mode !== 'ocr' && zone.mode !== 'digits';
+
+  return `
+    <div class="form-group">
+      <label class="form-label" for="insp-label">Zone Title</label>
+      <input type="text" id="insp-label" class="form-input" value="${safeEscapeHTML(zone.label || '')}">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Recognition Mode</label>
+      <div class="pills-group" id="insp-sid-mode">
+        <button type="button" class="pill-btn ${isShading ? 'is-active' : ''}" data-mode="shading">Bubble Grid (OMR)</button>
+        <button type="button" class="pill-btn ${!isShading ? 'is-active' : ''}" data-mode="ocr">Handwritten Digits (OCR)</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderFieldsInspector(zone) {
+  const currentFields = zone.fields || [];
+  const hasField = (id) => currentFields.some((f) => f.id === id);
+  const hasSidField = currentFields.some((f) => f.id === 'sid' || f.role === 'student_id');
+
+  return `
+    <div class="form-group">
+      <label class="form-label" for="insp-label">Section Title</label>
+      <input type="text" id="insp-label" class="form-input" value="${safeEscapeHTML(zone.label || '')}" placeholder="(Leave blank to hide heading)">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Included Fields</label>
+      <div class="checkbox-grid">
+        <label class="field-checkbox-label">
+          <input type="checkbox" id="field-name" ${hasField('name') ? 'checked' : ''}>
+          <span>Name</span>
+        </label>
+        <label class="field-checkbox-label">
+          <input type="checkbox" id="field-sid" ${hasSidField ? 'checked' : ''}>
+          <span>ID no. (8 Digits)</span>
+        </label>
+        <label class="field-checkbox-label">
+          <input type="checkbox" id="field-offer" ${hasField('offer') || hasField('section') ? 'checked' : ''}>
+          <span>Offer No.</span>
+        </label>
+        <label class="field-checkbox-label">
+          <input type="checkbox" id="field-sched" ${hasField('sched') || hasField('section') ? 'checked' : ''}>
+          <span>Sched</span>
+        </label>
+        <label class="field-checkbox-label">
+          <input type="checkbox" id="field-date" ${hasField('date') ? 'checked' : ''}>
+          <span>Date</span>
+        </label>
+        <label class="field-checkbox-label">
+          <input type="checkbox" id="field-score" ${hasField('score') ? 'checked' : ''}>
+          <span>Score Box</span>
+        </label>
+        <label class="field-checkbox-label">
+          <input type="checkbox" id="field-sig" ${hasField('signature') ? 'checked' : ''}>
+          <span>Signature</span>
+        </label>
+      </div>
+      <div class="form-row" style="margin-top: 0.6rem;">
+        <div class="form-group">
+          <label class="form-label" for="insp-row-gap">Row Spacing (mm)</label>
+          <div class="stepper-control">
+            <button type="button" class="stepper-btn" id="insp-row-gap-minus" aria-label="Decrease row spacing">−</button>
+            <input type="number" id="insp-row-gap" class="stepper-input" value="${zone.rowGap ?? zone.gapY ?? 2}" min="0" max="50">
+            <button type="button" class="stepper-btn" id="insp-row-gap-plus" aria-label="Increase row spacing">+</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderTextInspector(zone, idx) {
+  const defaultPts = zone.type === 'text_essay' ? 5 : 1;
+  const defaultH = zone.type === 'text_essay' ? 35 : (zone.type === 'text_short' ? 10 : 12);
+  const count = zone.count ?? 1;
+  const cols = zone.columns ?? 1;
+  const startVal = zone.start ?? state.layout?.zones?.[idx]?.start ?? state.layout?.zones?.[idx]?.items?.[0]?.q ?? 1;
+  const autoW = state.layout?.zones?.[idx]?.items?.[0]?.boxW ?? state.layout?.zones?.[idx]?.rois?.[0]?.w;
+  const maxBoxW = state.layout?.zones?.[idx]?.maxBoxW ?? (cols === 2 ? 84 : 176);
+  const boxWidthVal = zone.boxWidth ?? '';
+  const boxWidthPlaceholder = autoW ? `Auto (${Math.round(autoW)}mm)` : (zone.type === 'text_essay' ? 'Auto (176mm)' : 'Auto (83mm)');
+  const ptsVal = zone.pointsPerItem ?? zone.points ?? state.layout?.zones?.[idx]?.pointsPerItem ?? defaultPts;
+  const rowGapVal = zone.rowGap ?? state.layout?.zones?.[idx]?.rowGap ?? 3;
+
+  return `
+    <div class="form-group">
+      <label class="form-label" for="insp-label">Section Title</label>
+      <input type="text" id="insp-label" class="form-input" value="${safeEscapeHTML(zone.label || '')}">
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label" for="insp-count">Questions</label>
+        <div class="stepper-control">
+          <button type="button" class="stepper-btn" id="insp-count-minus" aria-label="Decrease question count">−</button>
+          <input type="number" id="insp-count" class="stepper-input" value="${count}" min="1" max="50">
+          <button type="button" class="stepper-btn" id="insp-count-plus" aria-label="Increase question count">+</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="insp-start">Start No.</label>
+        <div class="stepper-control">
+          <button type="button" class="stepper-btn" id="insp-start-minus" aria-label="Decrease start number">−</button>
+          <input type="number" id="insp-start" class="stepper-input" value="${startVal}" min="1" max="999">
+          <button type="button" class="stepper-btn" id="insp-start-plus" aria-label="Increase start number">+</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Columns</label>
+      <div class="pills-group" id="insp-cols-pills">
+        <button type="button" class="pill-btn ${cols === 1 ? 'is-active' : ''}" data-cols="1">1 Col</button>
+        <button type="button" class="pill-btn ${cols === 2 ? 'is-active' : ''}" data-cols="2">2 Cols</button>
+        <button type="button" class="pill-btn ${cols === 3 ? 'is-active' : ''}" data-cols="3">3 Cols</button>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label" for="insp-box-width">Box Width (mm)</label>
+        <div class="stepper-control">
+          <button type="button" class="stepper-btn" id="insp-box-width-minus" aria-label="Decrease box width">−</button>
+          <input type="number" id="insp-box-width" class="stepper-input" value="${boxWidthVal}" placeholder="${boxWidthPlaceholder}" min="12" max="${maxBoxW}">
+          <button type="button" class="stepper-btn" id="insp-box-width-plus" aria-label="Increase box width">+</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="insp-box-height">Box Height (mm)</label>
+        <div class="stepper-control">
+          <button type="button" class="stepper-btn" id="insp-box-height-minus" aria-label="Decrease box height">−</button>
+          <input type="number" id="insp-box-height" class="stepper-input" value="${zone.boxHeight ?? defaultH}" min="3" max="120">
+          <button type="button" class="stepper-btn" id="insp-box-height-plus" aria-label="Increase box height">+</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="insp-points">Pts / Item</label>
+        <div class="stepper-control">
+          <button type="button" class="stepper-btn" id="insp-points-minus" aria-label="Decrease points">−</button>
+          <input type="number" id="insp-points" class="stepper-input" value="${ptsVal}" min="1" max="50">
+          <button type="button" class="stepper-btn" id="insp-points-plus" aria-label="Increase points">+</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group" style="margin-top: -0.25rem; margin-bottom: 0.5rem;">
+      <label class="field-checkbox-label">
+        <input type="checkbox" id="insp-show-points" ${zone.showPoints !== false ? 'checked' : ''}>
+        <span>Show points on sheet</span>
+      </label>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label" for="insp-row-gap">Item Spacing (mm)</label>
+        <div class="stepper-control">
+          <button type="button" class="stepper-btn" id="insp-row-gap-minus" aria-label="Decrease item spacing">−</button>
+          <input type="number" id="insp-row-gap" class="stepper-input" value="${rowGapVal}" min="0" max="50">
+          <button type="button" class="stepper-btn" id="insp-row-gap-plus" aria-label="Increase item spacing">+</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Module Page Placement</label>
+      <div class="pills-group" id="insp-placement-pills">
+        <button type="button" class="pill-btn ${(!zone.layout && !zone.side && !zone.inline) || zone.layout === 'full' ? 'is-active' : ''}" data-placement="full">Full Width</button>
+        <button type="button" class="pill-btn ${zone.layout === 'half-left' || zone.side === 'left' ? 'is-active' : ''}" data-placement="left">Side-by-Side (Left)</button>
+        <button type="button" class="pill-btn ${zone.layout === 'half-right' || zone.side === 'right' || zone.inline ? 'is-active' : ''}" data-placement="right">Side-by-Side (Right)</button>
+      </div>
+      <button type="button" class="btn btn--secondary btn--sm" id="insp-btn-pull-vacant" style="width: 100%; margin-top: 0.4rem;" title="Switch side to fill vacant column space">
+        ⇄ Move to Opposite / Vacant Side
+      </button>
+    </div>
+  `;
+}
+
+function renderInstructionsInspector(zone) {
+  return `
+    <div class="form-group">
+      <label class="form-label" for="insp-text">Instructions Text</label>
+      <textarea id="insp-text" class="form-textarea" rows="4">${safeEscapeHTML(zone.text || '')}</textarea>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Font Size</label>
+      <div class="pills-group" id="insp-font-pills">
+        <button type="button" class="pill-btn ${zone.fontSize <= 2.4 ? 'is-active' : ''}" data-size="2.4">Compact (2.4mm)</button>
+        <button type="button" class="pill-btn ${zone.fontSize > 2.4 && zone.fontSize <= 2.8 ? 'is-active' : ''}" data-size="2.8">Normal (2.8mm)</button>
+        <button type="button" class="pill-btn ${zone.fontSize > 2.8 ? 'is-active' : ''}" data-size="3.2">Large (3.2mm)</button>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Module Page Placement</label>
+      <div class="pills-group" id="insp-placement-pills">
+        <button type="button" class="pill-btn ${(!zone.layout && !zone.side && !zone.inline) || zone.layout === 'full' ? 'is-active' : ''}" data-placement="full">Full Width</button>
+        <button type="button" class="pill-btn ${zone.layout === 'half-left' || zone.side === 'left' ? 'is-active' : ''}" data-placement="left">Side-by-Side (Left)</button>
+        <button type="button" class="pill-btn ${zone.layout === 'half-right' || zone.side === 'right' || zone.inline ? 'is-active' : ''}" data-placement="right">Side-by-Side (Right)</button>
+      </div>
+      <button type="button" class="btn btn--secondary btn--sm" id="insp-btn-pull-vacant" style="width: 100%; margin-top: 0.4rem;" title="Switch side to fill vacant column space">
+        ⇄ Move to Opposite / Vacant Side
+      </button>
+    </div>
+  `;
+}
 
 onReady(init);
 

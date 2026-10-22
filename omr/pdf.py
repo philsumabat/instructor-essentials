@@ -6,11 +6,8 @@ and flatbed/sheet-fed office scanners.
 """
 from __future__ import annotations
 
-import math
-import os
 import re
 from pathlib import Path
-from typing import Sequence
 
 import cv2
 import numpy as np
@@ -160,64 +157,57 @@ def extract_pdf_pages(
     raise PDFError(f"Unable to render PDF '{path.name}' (document contains no renderable pages or is invalid){err_detail}")
 
 
-def _extract_raw_scanner_streams(path: Path) -> list[tuple[str, np.ndarray]]:
-    """Fallback parser that extracts raw JPEG scanner streams and applies PDF rotation."""
-    raw_bytes = path.read_bytes()
-    latin1 = raw_bytes.decode("latin1", errors="replace")
+def _get_obj_body(oid: int, obj_index: dict[int, int], latin1: str) -> str:
+    start = obj_index.get(oid)
+    if start is None:
+        return ""
+    end = latin1.find("endobj", start)
+    return latin1[start:end] if end != -1 else latin1[start:]
 
-    # Locate indirect objects
-    obj_index: dict[int, int] = {}
-    for m in re.finditer(r"(\d+)\s+(\d+)\s+obj", latin1):
-        obj_index[int(m.group(1))] = m.start() + len(m.group(0))
 
-    def get_obj_body(oid: int) -> str:
-        start = obj_index.get(oid)
-        if start is None:
-            return ""
-        end = latin1.find("endobj", start)
-        return latin1[start:end] if end != -1 else latin1[start:]
+def _get_stream_bytes(oid: int, obj_index: dict[int, int], latin1: str, raw_bytes: bytes) -> bytes | None:
+    start = obj_index.get(oid)
+    if start is None:
+        return None
+    st_tag = "stream"
+    sp = latin1.find(st_tag, start)
+    if sp == -1:
+        return None
+    d_start = sp + len(st_tag)
+    if d_start < len(latin1) and latin1[d_start] == "\r":
+        d_start += 1
+    if d_start < len(latin1) and latin1[d_start] == "\n":
+        d_start += 1
+    end_sp = latin1.find("endstream", d_start)
+    if end_sp == -1:
+        return None
+    d_end = end_sp
+    while d_end > d_start and latin1[d_end - 1] in "\r\n":
+        d_end -= 1
+    return raw_bytes[d_start:d_end]
 
-    def get_stream_bytes(oid: int) -> bytes | None:
-        start = obj_index.get(oid)
-        if start is None:
-            return None
-        st_tag = "stream"
-        sp = latin1.find(st_tag, start)
-        if sp == -1:
-            return None
-        d_start = sp + len(st_tag)
-        if d_start < len(latin1) and latin1[d_start] == "\r":
-            d_start += 1
-        if d_start < len(latin1) and latin1[d_start] == "\n":
-            d_start += 1
-        end_sp = latin1.find("endstream", d_start)
-        if end_sp == -1:
-            return None
-        d_end = end_sp
-        while d_end > d_start and latin1[d_end - 1] in "\r\n":
-            d_end -= 1
-        return raw_bytes[d_start:d_end]
 
-    def get_cm_rotation(content: str) -> int:
-        m = re.search(r"([-\d.]+)\s+([-\d.]+)\s+([-\d.]+)\s+([-\d.]+)\s+([-\d.]+)\s+([-\d.]+)\s+cm", content)
-        if not m:
-            return 0
-        a, b, c, d = float(m.group(1)), float(m.group(2)), float(m.group(3)), float(m.group(4))
-        if abs(b) > abs(a):
-            if b < 0 and c > 0:
-                return 90
-            if b > 0 and c < 0:
-                return 270
-        else:
-            if a < 0 and d < 0:
-                return 180
+def _get_cm_rotation(content: str) -> int:
+    m = re.search(r"([-\d.]+)\s+([-\d.]+)\s+([-\d.]+)\s+([-\d.]+)\s+([-\d.]+)\s+([-\d.]+)\s+cm", content)
+    if not m:
         return 0
+    a, b, c, d = float(m.group(1)), float(m.group(2)), float(m.group(3)), float(m.group(4))
+    if abs(b) > abs(a):
+        if b < 0 and c > 0:
+            return 90
+        if b > 0 and c < 0:
+            return 270
+    else:
+        if a < 0 and d < 0:
+            return 180
+    return 0
 
-    # Collect page objects
+
+def _parse_page_objects(obj_index: dict[int, int], latin1: str) -> tuple[list[dict], dict[int, dict]]:
     page_objs: list[dict] = []
     page_objs_map: dict[int, dict] = {}
     for oid, start in obj_index.items():
-        body = get_obj_body(oid)
+        body = _get_obj_body(oid, obj_index, latin1)
         if ("/Type/Page" in body or "/Type /Page" in body) and ("/Type/Pages" not in body and "/Type /Pages" not in body):
             rot = 0
             rot_m = re.search(r"/Rotate\s+(\d+)", body)
@@ -240,7 +230,7 @@ def _extract_raw_scanner_streams(path: Path) -> list[tuple[str, np.ndarray]]:
                 else:
                     res_m = re.search(r"/Resources\s+(\d+)\s+\d+\s+R", body)
                     if res_m:
-                        res_body = get_obj_body(int(res_m.group(1)))
+                        res_body = _get_obj_body(int(res_m.group(1)), obj_index, latin1)
                         sub_img = re.search(r"/XObject\s*<<[^\/]*\/[A-Za-z0-9_]+\s+(\d+)\s+\d+\s+R", res_body) or re.search(r"/Im\w*\s+(\d+)\s+\d+\s+R", res_body)
                         if sub_img:
                             img_id = int(sub_img.group(1))
@@ -248,35 +238,37 @@ def _extract_raw_scanner_streams(path: Path) -> list[tuple[str, np.ndarray]]:
             entry = {"id": oid, "rotate": rot, "contents_id": cont_id, "image_id": img_id}
             page_objs.append(entry)
             page_objs_map[oid] = entry
+    return page_objs, page_objs_map
 
-    # Recursive page tree traversal
-    def collect_page_ids(node_id: int, visited: set[int] | None = None) -> list[int]:
-        if visited is None:
-            visited = set()
-        if node_id in visited:
-            return []
-        visited.add(node_id)
-        b = get_obj_body(node_id)
-        if not b:
-            return []
-        if ("/Type/Page" in b or "/Type /Page" in b) and ("/Type/Pages" not in b and "/Type /Pages" not in b):
-            return [node_id]
-        if "/Type/Pages" in b or "/Type /Pages" in b:
-            km = re.search(r"/Kids\s*\[([^\]]+)\]", b)
-            if not km:
-                return []
-            kids = [int(k) for k in re.findall(r"(\d+)\s+\d+\s+R", km.group(1))]
-            result: list[int] = []
-            for k in kids:
-                result.extend(collect_page_ids(k, visited))
-            return result
+
+def _collect_page_ids(node_id: int, obj_index: dict[int, int], latin1: str, visited: set[int] | None = None) -> list[int]:
+    if visited is None:
+        visited = set()
+    if node_id in visited:
         return []
+    visited.add(node_id)
+    b = _get_obj_body(node_id, obj_index, latin1)
+    if not b:
+        return []
+    if ("/Type/Page" in b or "/Type /Page" in b) and ("/Type/Pages" not in b and "/Type /Pages" not in b):
+        return [node_id]
+    if "/Type/Pages" in b or "/Type /Pages" in b:
+        km = re.search(r"/Kids\s*\[([^\]]+)\]", b)
+        if not km:
+            return []
+        kids = [int(k) for k in re.findall(r"(\d+)\s+\d+\s+R", km.group(1))]
+        result: list[int] = []
+        for k in kids:
+            result.extend(_collect_page_ids(k, obj_index, latin1, visited))
+        return result
+    return []
 
-    # Find root Catalog /Pages
+
+def _resolve_ordered_pages(obj_index: dict[int, int], latin1: str, page_objs: list[dict], page_objs_map: dict[int, dict]) -> list[dict]:
     ordered = page_objs
     root_pages_id = None
     for oid in obj_index:
-        b = get_obj_body(oid)
+        b = _get_obj_body(oid, obj_index, latin1)
         if "/Type/Catalog" in b or "/Type /Catalog" in b:
             pm = re.search(r"/Pages\s+(\d+)\s+\d+\s+R", b)
             if pm:
@@ -284,16 +276,32 @@ def _extract_raw_scanner_streams(path: Path) -> list[tuple[str, np.ndarray]]:
                 break
     if root_pages_id is None:
         for oid in obj_index:
-            b = get_obj_body(oid)
+            b = _get_obj_body(oid, obj_index, latin1)
             if ("/Type/Pages" in b or "/Type /Pages" in b) and "/Parent" not in b:
                 root_pages_id = oid
                 break
 
     if root_pages_id is not None:
-        leaf_ids = collect_page_ids(root_pages_id)
+        leaf_ids = _collect_page_ids(root_pages_id, obj_index, latin1)
         resolved = [page_objs_map[lid] for lid in leaf_ids if lid in page_objs_map]
         if len(resolved) == len(page_objs):
             ordered = resolved
+
+    return ordered
+
+
+def _extract_raw_scanner_streams(path: Path) -> list[tuple[str, np.ndarray]]:
+    """Fallback parser that extracts raw JPEG scanner streams and applies PDF rotation."""
+    raw_bytes = path.read_bytes()
+    latin1 = raw_bytes.decode("latin1", errors="replace")
+
+    # Locate indirect objects
+    obj_index: dict[int, int] = {}
+    for m in re.finditer(r"(\d+)\s+(\d+)\s+obj", latin1):
+        obj_index[int(m.group(1))] = m.start() + len(m.group(0))
+
+    page_objs, page_objs_map = _parse_page_objects(obj_index, latin1)
+    ordered = _resolve_ordered_pages(obj_index, latin1, page_objs, page_objs_map)
 
     if not ordered:
         return []
@@ -305,13 +313,13 @@ def _extract_raw_scanner_streams(path: Path) -> list[tuple[str, np.ndarray]]:
     for idx, p in enumerate(ordered):
         rot = p["rotate"]
         if p["contents_id"]:
-            cbody = get_obj_body(p["contents_id"])
-            rot = (rot + get_cm_rotation(cbody)) % 360
+            cbody = _get_obj_body(p["contents_id"], obj_index, latin1)
+            rot = (rot + _get_cm_rotation(cbody)) % 360
 
         if not p["image_id"]:
             continue
 
-        sbytes = get_stream_bytes(p["image_id"])
+        sbytes = _get_stream_bytes(p["image_id"], obj_index, latin1, raw_bytes)
         if not sbytes:
             continue
 

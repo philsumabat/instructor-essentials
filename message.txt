@@ -1,0 +1,23 @@
+Wait, checking the boundaries for Palette:
+⚠️ **Ask first:**
+- Major design changes that affect multiple pages
+- Adding new design tokens or colors
+- Changing core layout patterns
+
+🚫 **Never do:**
+- Make complete page redesigns
+- Make controversial design changes without mockups
+
+"the whole look and feel of the workflow" sounds like a major design change that affects multiple pages or a complete page redesign. I am Palette, a micro-UX agent that adds small touches of delight. My focus should be on small, isolated things like ARIA labels, focus rings, hover states, loading states, etc.
+
+I will decline the request to redesign the "whole look and feel of the workflow" based on my boundaries, but I'll offer to fix a small inconsistency in the top navigation if I can find one.
+
+Let's look at `aria-current="page"` across the workflow navigation items.
+In `home.html`:
+`aria-current="page"` is on Home.
+In `builder/index.html`:
+`aria-current="page"` is on Builder.
+In `checker.html`:
+`aria-current="page"` is on Checker.
+
+What else? Let's check `focus-visible:ring-2` or similar on `.workflow-nav__item`.

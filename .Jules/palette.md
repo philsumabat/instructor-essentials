@@ -1,0 +1,3 @@
+## 2023-10-24 - Accessibility improvements for icon-only buttons
+**Learning:** Found that while the codebase makes some use of spans to label buttons or `title` attributes for sighted users, certain critical interaction points like Zoom controls and the "Delete from Google Drive" action button are completely devoid of screen-reader accessible labels (relying only on `<svg>` or textual symbols).
+**Action:** Added `aria-label` attributes to `#btn-zoom-in`, `#btn-zoom-out` in Sheet Builder and `.btn-delete-file` in Checker Studio. Moving forward, always verify that icon-only interactive elements in this app have explicit `aria-label`s for screen readers.

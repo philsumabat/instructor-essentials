@@ -4,6 +4,7 @@ Generates derivative JPEG images using OpenCV drawing routines to superimpose
 visual grading feedback (green correct markers, red error outlines, missed
 correct answers, and composite score banners) onto the scan.
 """
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -13,15 +14,15 @@ import numpy as np
 
 from omr.grading import ExamGrade, ItemGrade
 from omr.layout import Layout, TextROI
-from omr.vision import GroupResult, WarpResult
+from omr.vision import GroupResult
 
 # BGR Color Palette
-COLOR_CORRECT = (46, 125, 50)      # Forest Green
-COLOR_INCORRECT = (30, 30, 210)    # Crimson Red
-COLOR_MISSED = (0, 165, 255)       # Amber / Orange
+COLOR_CORRECT = (46, 125, 50)  # Forest Green
+COLOR_INCORRECT = (30, 30, 210)  # Crimson Red
+COLOR_MISSED = (0, 165, 255)  # Amber / Orange
 COLOR_BANNER_BG = (245, 247, 250)  # Off-white / light slate
-COLOR_BANNER_BORDER = (50, 50, 50) # Dark gray
-COLOR_TEXT = (20, 20, 20)          # Near-black
+COLOR_BANNER_BORDER = (50, 50, 50)  # Dark gray
+COLOR_TEXT = (20, 20, 20)  # Near-black
 COLOR_WHITE = (255, 255, 255)
 
 
@@ -55,13 +56,19 @@ class ExamAnnotator:
         if grade.is_duplicate:
             status_color = (0, 140, 255)  # Orange
         else:
-            status_color = COLOR_CORRECT if grade.percentage >= 60.0 else COLOR_INCORRECT
-        cv2.rectangle(canvas, (banner_x1, banner_y1), (banner_x2, banner_y2), status_color, 2)
+            status_color = (
+                COLOR_CORRECT if grade.percentage >= 60.0 else COLOR_INCORRECT
+            )
+        cv2.rectangle(
+            canvas, (banner_x1, banner_y1), (banner_x2, banner_y2), status_color, 2
+        )
 
         # Content text
         font = cv2.FONT_HERSHEY_SIMPLEX
         dup_tag = " [DUPLICATE]" if grade.is_duplicate else ""
-        student_label = f"Student: {grade.student_name} (ID: {grade.student_id}){dup_tag}"
+        student_label = (
+            f"Student: {grade.student_name} (ID: {grade.student_id}){dup_tag}"
+        )
         score_label = f"Score: {grade.score:.1f} / {grade.max_score:.1f}  ({grade.percentage:.1f}%)"
 
         cv2.putText(
@@ -113,7 +120,9 @@ class ExamAnnotator:
 
         # Tint inside score box
         sub = canvas[ry : ry + rh, rx : rx + rw]
-        card = np.full_like(sub, (235, 248, 235) if grade.percentage >= 60.0 else (235, 235, 252))
+        card = np.full_like(
+            sub, (235, 248, 235) if grade.percentage >= 60.0 else (235, 235, 252)
+        )
         cv2.addWeighted(card, 0.40, sub, 0.60, 0, sub)
         canvas[ry : ry + rh, rx : rx + rw] = sub
 
@@ -175,17 +184,46 @@ class ExamAnnotator:
                     cv2.circle(canvas, (cx, cy), r, COLOR_INCORRECT, 3, cv2.LINE_AA)
                     # Small red X over wrong selection
                     d = int(r * 0.65)
-                    cv2.line(canvas, (cx - d, cy - d), (cx + d, cy + d), COLOR_INCORRECT, 2, cv2.LINE_AA)
-                    cv2.line(canvas, (cx - d, cy + d), (cx + d, cy - d), COLOR_INCORRECT, 2, cv2.LINE_AA)
-                elif getattr(meas, "mark_type", "") in {"check_or_cross", "erasure", "faint"}:
+                    cv2.line(
+                        canvas,
+                        (cx - d, cy - d),
+                        (cx + d, cy + d),
+                        COLOR_INCORRECT,
+                        2,
+                        cv2.LINE_AA,
+                    )
+                    cv2.line(
+                        canvas,
+                        (cx - d, cy + d),
+                        (cx + d, cy - d),
+                        COLOR_INCORRECT,
+                        2,
+                        cv2.LINE_AA,
+                    )
+                elif getattr(meas, "mark_type", "") in {
+                    "check_or_cross",
+                    "erasure",
+                    "faint",
+                }:
                     # Ambiguous / non-standard mark flagged for review: Amber/Purple warning ring
-                    warn_color = (247, 85, 168) if getattr(meas, "mark_type", "") == "check_or_cross" else COLOR_MISSED
+                    warn_color = (
+                        (247, 85, 168)
+                        if getattr(meas, "mark_type", "") == "check_or_cross"
+                        else COLOR_MISSED
+                    )
                     cv2.circle(canvas, (cx, cy), r, warn_color, 2, cv2.LINE_AA)
                 elif is_opt_correct:
                     # Missed correct answer: Green dashed/thick ring
                     cv2.circle(canvas, (cx, cy), r, COLOR_CORRECT, 2, cv2.LINE_AA)
                     # Mini green arrow / dot indicator
-                    cv2.circle(canvas, (cx, cy), max(2, int(r * 0.3)), COLOR_CORRECT, -1, cv2.LINE_AA)
+                    cv2.circle(
+                        canvas,
+                        (cx, cy),
+                        max(2, int(r * 0.3)),
+                        COLOR_CORRECT,
+                        -1,
+                        cv2.LINE_AA,
+                    )
 
         if item_grade.is_blank:
             # Indicate missed or review-held answer near the question number
@@ -208,7 +246,9 @@ class ExamAnnotator:
     def _draw_roi_feedback(self, canvas: np.ndarray, item_grade: ItemGrade):
         """Draws outline and points badge on handwritten answer boxes."""
         # Find corresponding ROI from layout
-        roi = next((r for r in self.layout.graded_rois if r.key == item_grade.key), None)
+        roi = next(
+            (r for r in self.layout.graded_rois if r.key == item_grade.key), None
+        )
         if not roi:
             return
 
@@ -245,7 +285,9 @@ class ExamAnnotator:
             cv2.LINE_AA,
         )
 
-    def annotate(self, warped_bgr: np.ndarray, grade: ExamGrade, redact_names: bool = False) -> np.ndarray:
+    def annotate(
+        self, warped_bgr: np.ndarray, grade: ExamGrade, redact_names: bool = False
+    ) -> np.ndarray:
         """Produces a derivative visual feedback image."""
         annotated = warped_bgr.copy()
 

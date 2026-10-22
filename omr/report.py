@@ -105,7 +105,7 @@ class BatchPsychometrics:
 def compute_pearson_r(x: Sequence[float], y: Sequence[float]) -> float:
     """Computes Pearson correlation coefficient between two numeric sequences."""
     n = len(x)
-    if n < 3:
+    if n < 2 or n != len(y):
         return 0.0
 
     mean_x = sum(x) / n

@@ -5145,6 +5145,23 @@ const Templates = (function() {
  * Embedded sample templates for offline and zero-CORS execution.
  * Allows the builder to boot instantly with zero network dependencies.
  */
+
+const createInfoZone = (w, nameW, sidW, offerW, schedW, dateW, scoreW) => ({
+  type: 'fields',
+  id: 'info',
+  label: '',
+  w,
+  fieldHeight: 7.5,
+  fields: [
+    { id: 'name', label: 'Name', role: 'name', row: 0, w: nameW },
+    { id: 'sid', label: 'ID no.', role: 'student_id', digits: 8, row: 0, w: sidW },
+    { id: 'offer', label: 'Offer No.', row: 1, w: offerW },
+    { id: 'sched', label: 'Sched', row: 1, w: schedW },
+    { id: 'date', label: 'Date', row: 1, w: dateW },
+    { id: 'score', label: 'Score', role: 'score', row: 1, w: scoreW },
+  ],
+});
+
 const SAMPLE_TEMPLATES = {
   'exam-50': {
     id: 'bio101-midterm-50',
@@ -5152,21 +5169,7 @@ const SAMPLE_TEMPLATES = {
     paper: 'A4',
     bubble: { diameter: 4.2, pitchX: 5.6, pitchY: 5.4 },
     zones: [
-      {
-        type: 'fields',
-        id: 'info',
-        label: '',
-        w: 186,
-        fieldHeight: 7.5,
-        fields: [
-          { id: 'name', label: 'Name', role: 'name', row: 0, w: 108 },
-          { id: 'sid', label: 'ID no.', role: 'student_id', digits: 8, row: 0, w: 75 },
-          { id: 'offer', label: 'Offer No.', row: 1, w: 48 },
-          { id: 'sched', label: 'Sched', row: 1, w: 52 },
-          { id: 'date', label: 'Date', row: 1, w: 43 },
-          { id: 'score', label: 'Score', role: 'score', row: 1, w: 40 },
-        ],
-      },
+      createInfoZone(186, 108, 75, 48, 52, 43, 40),
       {
         type: 'instructions',
         id: 'notes',
@@ -5221,21 +5224,7 @@ const SAMPLE_TEMPLATES = {
     paper: 'Letter',
     bubble: { diameter: 4.0, pitchX: 5.4, pitchY: 5.0, groupEvery: 5, groupGap: 1.4 },
     zones: [
-      {
-        type: 'fields',
-        id: 'info',
-        label: '',
-        w: 191.9,
-        fieldHeight: 7.5,
-        fields: [
-          { id: 'name', label: 'Name', role: 'name', row: 0, w: 112 },
-          { id: 'sid', label: 'ID no.', role: 'student_id', digits: 8, row: 0, w: 79.9 },
-          { id: 'offer', label: 'Offer No.', row: 1, w: 50 },
-          { id: 'sched', label: 'Sched', row: 1, w: 54 },
-          { id: 'date', label: 'Date', row: 1, w: 45 },
-          { id: 'score', label: 'Score', role: 'score', row: 1, w: 42.9 },
-        ],
-      },
+      createInfoZone(191.9, 112, 79.9, 50, 54, 45, 42.9),
       {
         type: 'mcq',
         id: 'items',
@@ -5254,21 +5243,7 @@ const SAMPLE_TEMPLATES = {
     title: 'Quiz (True / False & Short Answer)',
     paper: 'Folio',
     zones: [
-      {
-        type: 'fields',
-        id: 'info',
-        label: '',
-        w: 191.9,
-        fieldHeight: 7.5,
-        fields: [
-          { id: 'name', label: 'Name', role: 'name', row: 0, w: 112 },
-          { id: 'sid', label: 'ID no.', role: 'student_id', digits: 8, row: 0, w: 77 },
-          { id: 'offer', label: 'Offer No.', row: 1, w: 50 },
-          { id: 'sched', label: 'Sched', row: 1, w: 54 },
-          { id: 'date', label: 'Date', row: 1, w: 45 },
-          { id: 'score', label: 'Score', role: 'score', row: 1, w: 40 },
-        ],
-      },
+      createInfoZone(191.9, 112, 77, 50, 54, 45, 40),
       {
         type: 'truefalse',
         id: 'tf',
@@ -5316,21 +5291,7 @@ const SAMPLE_TEMPLATES = {
     paper: 'A4',
     bubble: { diameter: 4.2, pitchX: 5.6, pitchY: 5.4 },
     zones: [
-      {
-        type: 'fields',
-        id: 'info',
-        label: '',
-        w: 186,
-        fieldHeight: 7.5,
-        fields: [
-          { id: 'name', label: 'Name', role: 'name', row: 0, w: 108 },
-          { id: 'sid', label: 'ID no.', role: 'student_id', digits: 8, row: 0, w: 75 },
-          { id: 'offer', label: 'Offer No.', row: 1, w: 48 },
-          { id: 'sched', label: 'Sched', row: 1, w: 52 },
-          { id: 'date', label: 'Date', row: 1, w: 43 },
-          { id: 'score', label: 'Score', role: 'score', row: 1, w: 40 },
-        ],
-      },
+      createInfoZone(186, 108, 75, 48, 52, 43, 40),
       {
         type: 'instructions',
         id: 'notes',

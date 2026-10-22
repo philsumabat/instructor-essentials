@@ -1,4 +1,5 @@
-from omr.roster import Roster, Student
+import pytest
+from omr.roster import Roster, Student, _norm_header
 
 
 def test_roster_loading_and_exact_match(tmp_path):
@@ -49,3 +50,19 @@ def test_roster_one_digit_error_recovery(tmp_path):
     m = roster.match("87654320")
     assert m.status == "probable"
     assert m.student.full_name == "John Smith"
+
+
+@pytest.mark.parametrize(
+    "input_val, expected",
+    [
+        ("Student ID", "studentid"),
+        ("Student-ID", "studentid"),
+        ("STUDENT_ID", "studentid"),
+        (" First_Name ", "firstname"),
+        (" ", ""),
+        ("", ""),
+    ],
+)
+def test_norm_header(input_val, expected):
+    """Test that _norm_header correctly normalizes CSV headers."""
+    assert _norm_header(input_val) == expected

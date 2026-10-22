@@ -143,34 +143,59 @@ class AnswerKey:
             import zipfile
 
             with zipfile.ZipFile(p, "r") as zf:
-                names = zf.namelist()
-                # 1. Exact priority files (actual keys before templates)
-                for cand in ("answer_key.csv", "key.csv", "answer_key.json", "key.json"):
-                    for n in names:
-                        if Path(n).name.lower() == cand:
-                            with zf.open(n) as bfh:
-                                if cand.endswith(".json"):
-                                    return cls.from_dict(json.load(bfh))
-                                text = io.TextIOWrapper(bfh, encoding="utf-8", errors="replace").read()
-                                return cls.from_csv_text(text, title=Path(n).stem)
-                # 2. Key patterns (excluding template)
-                for n in names:
-                    base = Path(n).name.lower()
-                    if "key" in base and base.endswith(".csv") and base != "answer_key_template.csv":
-                        with zf.open(n) as bfh:
-                            text = io.TextIOWrapper(bfh, encoding="utf-8", errors="replace").read()
-                            return cls.from_csv_text(text, title=Path(n).stem)
-                for n in names:
-                    base = Path(n).name.lower()
-                    if "key" in base and base.endswith(".json"):
-                        with zf.open(n) as bfh:
+                best_match = None
+                best_priority = 999
+
+                # Priority levels:
+                # 0: answer_key.csv
+                # 1: key.csv
+                # 2: answer_key.json
+                # 3: key.json
+                # 4: *key*.csv (excluding template)
+                # 5: *key*.json
+                # 6: answer_key_template.csv
+
+                for n in zf.namelist():
+                    # Faster filename extraction compared to Path(n).name
+                    base = n.rsplit('/', 1)[-1].lower()
+
+                    if base == "answer_key.csv":
+                        best_match = n
+                        best_priority = 0
+                        break  # Highest priority found, can stop searching
+                    elif base == "key.csv":
+                        if best_priority > 1:
+                            best_match = n
+                            best_priority = 1
+                    elif base == "answer_key.json":
+                        if best_priority > 2:
+                            best_match = n
+                            best_priority = 2
+                    elif base == "key.json":
+                        if best_priority > 3:
+                            best_match = n
+                            best_priority = 3
+                    elif "key" in base and base.endswith(".csv") and base != "answer_key_template.csv":
+                        if best_priority > 4:
+                            best_match = n
+                            best_priority = 4
+                    elif "key" in base and base.endswith(".json"):
+                        if best_priority > 5:
+                            best_match = n
+                            best_priority = 5
+                    elif base == "answer_key_template.csv":
+                        if best_priority > 6:
+                            best_match = n
+                            best_priority = 6
+
+                if best_match is not None:
+                    with zf.open(best_match) as bfh:
+                        if best_match.lower().endswith(".json"):
                             return cls.from_dict(json.load(bfh))
-                # 3. Fallback to answer_key_template.csv
-                for n in names:
-                    if Path(n).name.lower() == "answer_key_template.csv":
-                        with zf.open(n) as bfh:
-                            text = io.TextIOWrapper(bfh, encoding="utf-8", errors="replace").read()
-                            return cls.from_csv_text(text, title=Path(n).stem)
+                        text = io.TextIOWrapper(bfh, encoding="utf-8", errors="replace").read()
+                        # Use Path for title generation to match original behaviour
+                        return cls.from_csv_text(text, title=Path(best_match).stem)
+
                 raise FileNotFoundError(f"No answer key CSV or JSON found in zip package {p}")
 
         if p.suffix.lower() == ".csv":

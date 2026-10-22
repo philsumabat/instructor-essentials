@@ -245,7 +245,7 @@ class OMRPipeline:
         by_sid: dict[str, list[int]] = {}
         for idx, g in enumerate(grades):
             sid = g.student_id.strip() if g.student_id else ""
-            if sid and not sid.startswith("STU-") and set(sid) > {"?"}:
+            if sid and not sid.startswith("STU-") and set(sid) - {"?"}:
                 by_sid.setdefault(sid, []).append(idx)
 
         for sid, indices in by_sid.items():

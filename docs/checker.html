@@ -9610,6 +9610,28 @@
     }
     window.updateHorizontalBadges = updateHorizontalBadges;
 
+    function updateMetricsDashboard() {
+      if (!state.results || !state.results.psychometrics) return;
+      const { grades, psychometrics, passThreshold } = state.results;
+      if ($('metric-mean')) $('metric-mean').textContent = psychometrics.meanScore.toFixed(1);
+      if ($('metric-mean-sub')) $('metric-mean-sub').textContent = `${((psychometrics.meanScore / psychometrics.totalPossible) * 100).toFixed(1)}%`;
+      const passCount = grades.filter(g => g.percentage >= passThreshold).length;
+      const failCount = grades.length - passCount;
+      const passRate = grades.length > 0 ? (passCount / grades.length) * 100 : 0;
+      const failRate = grades.length > 0 ? (failCount / grades.length) * 100 : 0;
+      if ($('metric-passrate')) $('metric-passrate').textContent = `${passRate.toFixed(1)}%`;
+      if ($('metric-passrate-sub')) $('metric-passrate-sub').textContent = `${passCount} passed / ${failCount} failed`;
+      if ($('metric-alpha')) $('metric-alpha').textContent = psychometrics.cronbachAlpha.toFixed(3);
+      if ($('metric-stddev')) $('metric-stddev').textContent = `±${psychometrics.stdDev.toFixed(2)}`;
+      if ($('metric-median')) $('metric-median').textContent = `Median: ${psychometrics.median.toFixed(1)}`;
+      if ($('dist-bar-pass')) $('dist-bar-pass').style.width = `${passRate.toFixed(1)}%`;
+      if ($('dist-bar-fail')) $('dist-bar-fail').style.width = `${failRate.toFixed(1)}%`;
+      if ($('dist-label-pass')) $('dist-label-pass').textContent = `Pass: ${passCount} (${passRate.toFixed(1)}%)`;
+      if ($('dist-label-fail')) $('dist-label-fail').textContent = `Fail: ${failCount} (${failRate.toFixed(1)}%)`;
+      if (typeof renderBellCurve === 'function') renderBellCurve(grades, passThreshold);
+    }
+    window.updateMetricsDashboard = updateMetricsDashboard;
+
     function gradeHorizontalItem(studentIdx, itemKey, action, customPoints) {
       if (!state.results || !state.results.grades || !state.results.grades[studentIdx]) return;
       const grade = state.results.grades[studentIdx];
@@ -9617,7 +9639,7 @@
 
       const horizontalItems = getHorizontalGradingItems();
       const hItem = horizontalItems.find(it => it.key === itemKey) || { points: 1.0, maxPoints: 1.0 };
-      const maxPts = Number(hItem.points != null ? hItem.points : 1.0);
+      const maxPts = Number(hItem.points != null ? hItem.points : (hItem.maxPoints != null ? hItem.maxPoints : (grade.gradedItems[itemKey]?.maxPoints != null ? grade.gradedItems[itemKey].maxPoints : 1.0)));
 
       let ptsAwarded = 0;
       let status = 'unreviewed';
@@ -9629,7 +9651,7 @@
         isCorrect = true;
       } else if (action === 'partial') {
         if (customPoints != null && !isNaN(customPoints)) {
-          ptsAwarded = Math.round(Number(customPoints) * 10) / 10;
+          ptsAwarded = Math.round(Number(customPoints) * 100) / 100;
         } else {
           ptsAwarded = Math.round(maxPts * 0.5 * 10) / 10;
         }
@@ -9663,7 +9685,10 @@
         totalMax += (it.maxPoints || 0);
       }
       grade.rawScore = Math.round(totalScore * 100) / 100;
-      if (totalMax > 0) grade.maxScore = Math.round(totalMax * 100) / 100;
+      const effectiveMax = (state.key && typeof state.key.total_points === 'number' && state.key.total_points > 0)
+        ? state.key.total_points
+        : (totalMax > 0 ? totalMax : (grade.maxScore || 100));
+      grade.maxScore = Math.round(effectiveMax * 100) / 100;
       grade.percentage = grade.maxScore > 0 ? Math.round(((grade.rawScore / grade.maxScore) * 100) * 100) / 100 : 0;
 
       // Recompute psychometrics and update summary / roster UI
@@ -9672,25 +9697,7 @@
       }
 
       // Update Summary Cards & distribution metrics
-      if (state.results.psychometrics) {
-        const { grades, psychometrics, passThreshold } = state.results;
-        if ($('metric-mean')) $('metric-mean').textContent = psychometrics.meanScore.toFixed(1);
-        if ($('metric-mean-sub')) $('metric-mean-sub').textContent = `${((psychometrics.meanScore / psychometrics.totalPossible) * 100).toFixed(1)}%`;
-        const passCount = grades.filter(g => g.percentage >= passThreshold).length;
-        const failCount = grades.length - passCount;
-        const passRate = grades.length > 0 ? (passCount / grades.length) * 100 : 0;
-        const failRate = grades.length > 0 ? (failCount / grades.length) * 100 : 0;
-        if ($('metric-passrate')) $('metric-passrate').textContent = `${passRate.toFixed(1)}%`;
-        if ($('metric-passrate-sub')) $('metric-passrate-sub').textContent = `${passCount} passed / ${failCount} failed`;
-        if ($('metric-alpha')) $('metric-alpha').textContent = psychometrics.cronbachAlpha.toFixed(3);
-        if ($('metric-stddev')) $('metric-stddev').textContent = `±${psychometrics.stdDev.toFixed(2)}`;
-        if ($('metric-median')) $('metric-median').textContent = `Median: ${psychometrics.median.toFixed(1)}`;
-        if ($('dist-bar-pass')) $('dist-bar-pass').style.width = `${passRate.toFixed(1)}%`;
-        if ($('dist-bar-fail')) $('dist-bar-fail').style.width = `${failRate.toFixed(1)}%`;
-        if ($('dist-label-pass')) $('dist-label-pass').textContent = `Pass: ${passCount} (${passRate.toFixed(1)}%)`;
-        if ($('dist-label-fail')) $('dist-label-fail').textContent = `Fail: ${failCount} (${failRate.toFixed(1)}%)`;
-        renderBellCurve(grades, passThreshold);
-      }
+      updateMetricsDashboard();
 
       renderHorizontalGradingView();
       renderSummaryTable();
@@ -9976,19 +9983,14 @@
         return `<span class="badge" style="background: var(--panel-alt); color: var(--text-muted); border: 1px solid var(--border);">Unreviewed</span>`;
       }
 
-      function makeConfBadge(ocrConf) {
-        const conf = ocrConf != null ? ocrConf : 0.88;
-        if (conf < 0.80) {
-          return `<span class="badge" style="background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; font-size: 0.7rem; font-weight: 700; display: inline-flex; align-items: center; gap: 0.25rem;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Low OCR Conf (${(conf * 100).toFixed(0)}%)</span>`;
-        }
-        return `<span class="badge" style="background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; font-size: 0.7rem;">OCR Conf: ${(conf * 100).toFixed(0)}%</span>`;
-      }
-
       // 1. Render Flashcard Deck (Primary Rapid View)
       const matchingIndices = getFilteredFlashcardIndices(activeItem.key);
       const prevCardBtn = $('btn-flashcard-prev');
       const nextCardBtn = $('btn-flashcard-next');
       const stepperLabel = $('flashcard-stepper-label');
+
+      const itemMaxPts = Number(activeItem.points != null ? activeItem.points : (activeItem.maxPoints != null ? activeItem.maxPoints : 1.0));
+      const defaultPartial = Math.round(itemMaxPts * 0.5 * 10) / 10;
 
       if (matchingIndices.length === 0) {
         if (stepperLabel) stepperLabel.textContent = `Card 0 of 0`;
@@ -10016,13 +10018,9 @@
         const cardItemData = curGrade?.gradedItems?.[activeItem.key] || {
           status: 'unreviewed',
           pointsAwarded: 0,
-          maxPoints: activeItem.points,
-          reviewed: false,
-          ocrText: '',
-          ocrConfidence: 0.88
+          maxPoints: itemMaxPts,
+          reviewed: false
         };
-
-        const defaultPartial = Math.round(activeItem.points * 0.5 * 10) / 10;
 
         if (stepperLabel) {
           stepperLabel.textContent = `Card ${horizontalDeckState.currentIndex + 1} of ${matchingIndices.length} (Submission #${activeSubIdx + 1})`;
@@ -10042,7 +10040,7 @@
               <div class="flashcard-actions-row">
                 <button type="button" class="btn btn-horizontal-accept" title="Accept response as correct [Shortcut: A]" onclick="flashcardGradeAction(${activeSubIdx}, '${activeItem.key}', 'accept');">
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                  <span>Accept (+${activeItem.points.toFixed(1)} pts)</span>
+                  <span>Accept (+${itemMaxPts.toFixed(1)} pts)</span>
                   <kbd style="font-size: 0.65rem; background: rgba(0,0,0,0.2); padding: 1px 4px; border-radius: 3px;">A</kbd>
                 </button>
                 <button type="button" class="btn btn-horizontal-unsure" title="Flag as unsure to revisit later [Shortcut: U]" onclick="flashcardGradeAction(${activeSubIdx}, '${activeItem.key}', 'unsure');">
@@ -10051,13 +10049,13 @@
                   <kbd style="font-size: 0.65rem; background: rgba(0,0,0,0.15); padding: 1px 4px; border-radius: 3px;">U</kbd>
                 </button>
                 <div style="display: inline-flex; align-items: center; gap: 0.25rem;">
-                  <button type="button" class="btn btn-horizontal-partial" title="Award partial credit [Shortcut: P]" onclick="flashcardGradeAction(${activeSubIdx}, '${activeItem.key}', 'partial', parseFloat($('flashcard-custom-pts')?.value));">
+                  <button type="button" class="btn btn-horizontal-partial" title="Award default 50% partial credit (+${defaultPartial.toFixed(1)} pts) [Shortcut: P]" onclick="flashcardGradeAction(${activeSubIdx}, '${activeItem.key}', 'partial', ${defaultPartial});">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 0 20Z" fill="currentColor"/></svg>
                     <span>Partial (+${defaultPartial.toFixed(1)} pts)</span>
                     <kbd style="font-size: 0.65rem; background: rgba(0,0,0,0.2); padding: 1px 4px; border-radius: 3px;">P</kbd>
                   </button>
                   <div style="display: inline-flex; align-items: center; gap: 0.2rem; background: var(--panel-alt); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.15rem 0.35rem;">
-                    <input type="number" id="flashcard-custom-pts" min="0" max="${activeItem.points}" step="0.5" value="${cardItemData.status === 'partial' ? (cardItemData.pointsAwarded != null ? cardItemData.pointsAwarded : defaultPartial) : defaultPartial}" style="width: 55px; padding: 0.2rem 0.35rem; font-size: 0.8rem; font-weight: 700; border: 1px solid var(--border); border-radius: 4px; background: var(--panel); color: var(--text);" title="Custom partial points (0 to ${activeItem.points})">
+                    <input type="number" id="flashcard-custom-pts" min="0" max="${itemMaxPts}" step="0.5" value="${cardItemData.status === 'partial' ? (cardItemData.pointsAwarded != null ? cardItemData.pointsAwarded : defaultPartial) : defaultPartial}" onkeydown="if (event.key === 'Enter') { event.preventDefault(); flashcardGradeAction(${activeSubIdx}, '${activeItem.key}', 'partial', parseFloat(this.value)); }" style="width: 55px; padding: 0.2rem 0.35rem; font-size: 0.8rem; font-weight: 700; border: 1px solid var(--border); border-radius: 4px; background: var(--panel); color: var(--text);" title="Custom partial points (0 to ${itemMaxPts} in 0.5 increments)">
                     <button type="button" class="btn btn--secondary btn-xs" onclick="flashcardGradeAction(${activeSubIdx}, '${activeItem.key}', 'partial', parseFloat($('flashcard-custom-pts')?.value));" style="font-size: 0.72rem; padding: 0.25rem 0.45rem;" title="Apply custom points">Set</button>
                   </div>
                 </div>
@@ -10090,7 +10088,7 @@
                 ctx.font = 'italic 16px sans-serif';
                 ctx.fillStyle = '#64748b';
                 const hasScan = !!(curGrade?.scanImg && !isBlankCanvas(curGrade.scanImg));
-                const msg = hasScan ? '(Handwritten response)' : 'Attach scans folder to inspect handwritten crop';
+                const msg = hasScan ? '(Handwritten response)' : 'Attach original exam PDF or scans to inspect handwritten crop';
                 ctx.fillText(`"${msg}"`, 24, 75);
               }
             }
@@ -10105,10 +10103,8 @@
         const itemData = g.gradedItems?.[activeItem.key] || {
           status: 'unreviewed',
           pointsAwarded: 0,
-          maxPoints: activeItem.points,
-          reviewed: false,
-          ocrText: '',
-          ocrConfidence: 0.88
+          maxPoints: itemMaxPts,
+          reviewed: false
         };
 
         const statusClass = itemData.status === 'accepted' ? 'is-accepted' :
@@ -10116,7 +10112,7 @@
                             (itemData.status === 'unsure' ? 'is-unsure' :
                             (itemData.status === 'rejected' ? 'is-rejected' : '')));
 
-        const defaultStreamPartial = Math.round(activeItem.points * 0.5 * 10) / 10;
+        const defaultStreamPartial = Math.round(itemMaxPts * 0.5 * 10) / 10;
 
         return `
           <div class="horizontal-item-card ${statusClass}" id="h-card-${sIdx}">
@@ -10148,7 +10144,7 @@
             <div style="display: flex; flex-direction: column; gap: 0.4rem;">
               <button type="button" class="btn btn-horizontal-accept btn-sm" onclick="gradeHorizontalItem(${sIdx}, '${activeItem.key}', 'accept');" style="font-weight: 700; padding: 0.45rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem;">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
-                <span>Accept (${activeItem.points.toFixed(1)} pts)</span>
+                <span>Accept (${itemMaxPts.toFixed(1)} pts)</span>
               </button>
               <button type="button" class="btn btn-horizontal-unsure btn-sm" onclick="gradeHorizontalItem(${sIdx}, '${activeItem.key}', 'unsure');" style="font-weight: 700; padding: 0.45rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem;">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
@@ -10521,7 +10517,7 @@
           isDashed = true;
           ptsText = `Unsure (0/${Number(item.maxPoints != null ? item.maxPoints : 1)} pts)`;
         } else if (status === 'partial') {
-          color = '#10b981';
+          color = '#f59e0b';
           isDashed = false;
           ptsText = `Partial (${Number(item.pointsAwarded || 0)}/${Number(item.maxPoints != null ? item.maxPoints : 1)} pts)`;
         } else if (status === 'accepted' || item.isCorrect) {
@@ -10587,17 +10583,20 @@
         const rw = Math.round((scoreRoi.w != null ? scoreRoi.w : scoreRoi.width || 0) * pxPerMm);
         const rh = Math.round((scoreRoi.h != null ? scoreRoi.h : scoreRoi.height || 0) * pxPerMm);
 
+        const hasUnreviewed = typeof hasUnreviewedItems === 'function' ? hasUnreviewedItems(grade) : false;
         const isPass = grade.percentage >= passThreshold;
-        const statusColor = isPass ? '#10b981' : '#ef4444';
+        const statusColor = hasUnreviewed ? '#3b82f6' : (isPass ? '#10b981' : '#ef4444');
 
         // Tint inside score box
-        ctx.fillStyle = isPass ? 'rgba(235, 248, 235, 0.40)' : 'rgba(235, 235, 252, 0.40)';
+        ctx.fillStyle = hasUnreviewed ? 'rgba(239, 246, 255, 0.40)' : (isPass ? 'rgba(235, 248, 235, 0.40)' : 'rgba(254, 242, 242, 0.40)');
         ctx.fillRect(rx, ry, rw, rh);
 
         // Clean border
         ctx.strokeStyle = statusColor;
         ctx.lineWidth = 2;
+        if (hasUnreviewed) ctx.setLineDash([4, 2]);
         ctx.strokeRect(rx, ry, rw, rh);
+        if (hasUnreviewed) ctx.setLineDash([]);
 
         // Score: 38/100
         const rawScoreVal = Number(grade.rawScore != null ? grade.rawScore : 0);
@@ -10626,8 +10625,14 @@
         const bannerName = (grade.studentName && !grade.studentName.startsWith('Student STU-')) ? grade.studentName : (grade.studentId && !String(grade.studentId).startsWith('STU-') ? grade.studentId : 'Student');
         ctx.fillText(bannerName, 32, 44);
         ctx.font = "14px sans-serif";
-        ctx.fillStyle = pctVal >= passThreshold ? "#34d399" : "#f87171";
-        ctx.fillText(`Score: ${rawScoreVal.toFixed(1)} / ${maxScoreVal.toFixed(1)} (${pctVal.toFixed(1)}%)`, 32, 64);
+        const hasUnreviewed = typeof hasUnreviewedItems === 'function' ? hasUnreviewedItems(grade) : false;
+        if (hasUnreviewed) {
+          ctx.fillStyle = "#60a5fa";
+          ctx.fillText(`Score: ${rawScoreVal.toFixed(1)} / ${maxScoreVal.toFixed(1)} (IN REVIEW)`, 32, 64);
+        } else {
+          ctx.fillStyle = pctVal >= passThreshold ? "#34d399" : "#f87171";
+          ctx.fillText(`Score: ${rawScoreVal.toFixed(1)} / ${maxScoreVal.toFixed(1)} (${pctVal.toFixed(1)}%)`, 32, 64);
+        }
       }
     }
 
@@ -10711,8 +10716,9 @@
     function correctBubbleMark(grade, hitBubble) {
       if (!grade || !hitBubble) return;
 
-      // Toggle marked state
+      // Toggle marked state and resolve ambiguous flag
       hitBubble.isMarked = !hitBubble.isMarked;
+      hitBubble.markType = hitBubble.isMarked ? 'solid' : null;
 
       const isSid = hitBubble.role === 'sid' || String(hitBubble.item).startsWith('sid');
 
@@ -10725,8 +10731,14 @@
           if (!colMap.has(colKey)) colMap.set(colKey, []);
           colMap.get(colKey).push(sb);
         }
+        const sortedColKeys = Array.from(colMap.keys()).sort((a, b) => {
+          const na = parseInt(String(a).match(/\d+/)?.[0] || '0');
+          const nb = parseInt(String(b).match(/\d+/)?.[0] || '0');
+          return na - nb;
+        });
         let reconstructed = '';
-        for (const [colKey, bubbles] of colMap.entries()) {
+        for (const colKey of sortedColKeys) {
+          const bubbles = colMap.get(colKey);
           const marked = bubbles.filter(b => b.isMarked);
           if (marked.length === 1) {
             reconstructed += String(marked[0].digit != null ? marked[0].digit : (marked[0].choice != null ? marked[0].choice : ''));
@@ -10739,12 +10751,19 @@
         if (reconstructed && !reconstructed.includes('_')) {
           grade.studentId = reconstructed;
         }
-        // Match against roster if available
-        if (state.roster && state.roster.students && grade.studentId) {
-          const matched = state.roster.students.find(s => String(s.studentId).toLowerCase() === String(grade.studentId).toLowerCase());
+        // Match against roster if available (state.roster is an array of { id, name, classOffer })
+        const rosterList = Array.isArray(state.roster) ? state.roster : (state.roster?.students || []);
+        if (rosterList.length > 0 && grade.studentId) {
+          const matched = rosterList.find(s => {
+            const sid = String(s.id != null ? s.id : (s.studentId || '')).trim().toLowerCase();
+            return sid === String(grade.studentId).trim().toLowerCase();
+          });
           if (matched) {
             grade.studentName = matched.name;
             grade.classOffer = matched.classOffer || grade.classOffer;
+            if (grade.reviewFlags?.reasons) {
+              grade.reviewFlags.reasons = grade.reviewFlags.reasons.filter(r => !r.includes('Unmatched Student ID') && !r.includes('Roster Mismatch') && !r.includes('No Student ID'));
+            }
           }
         }
       } else {
@@ -10760,7 +10779,7 @@
         const markedBubbles = itemBubbles.filter(b => b.isMarked);
         const markedChoices = markedBubbles.map(b => b.choice);
 
-        let actual = '';
+        let actual = 'BLANK';
         let isCorrect = false;
         let pointsAwarded = 0;
         let status = 'blank';
@@ -10776,7 +10795,7 @@
           pointsAwarded = 0;
           status = 'multi';
         } else {
-          actual = '';
+          actual = 'BLANK';
           isCorrect = false;
           pointsAwarded = 0;
           status = 'blank';
@@ -10801,30 +10820,46 @@
           totalMax += (it.maxPoints || 0);
         }
         grade.rawScore = Math.round(totalScore * 100) / 100;
-        if (totalMax > 0) grade.maxScore = Math.round(totalMax * 100) / 100;
+        const effectiveMax = (state.key && typeof state.key.total_points === 'number' && state.key.total_points > 0)
+          ? state.key.total_points
+          : (totalMax > 0 ? totalMax : (grade.maxScore || 100));
+        grade.maxScore = Math.round(effectiveMax * 100) / 100;
         grade.percentage = grade.maxScore > 0 ? Math.round(((grade.rawScore / grade.maxScore) * 100) * 100) / 100 : 0;
 
         // Recalculate reviewFlags
         let blankCount = 0;
         let multiMarkCount = 0;
-        for (const it of Object.values(grade.gradedItems)) {
-          if (!it.actual) blankCount++;
+        for (const [itemNumStr, it] of Object.entries(grade.gradedItems)) {
+          if (it.kind === 'text') continue;
+          if (itemNumStr.endsWith('_corr')) {
+            const parentQ = itemNumStr.replace(/_corr$/, '');
+            const parentItem = state.key?.items?.[parentQ];
+            if (parentItem && String(parentItem.answer || parentItem.correct || '').toUpperCase() === 'T') {
+              continue;
+            }
+          }
+          if (!it.actual || it.actual === 'BLANK') blankCount++;
           else if (it.actual.includes(',')) multiMarkCount++;
         }
         if (!grade.reviewFlags) grade.reviewFlags = {};
         grade.reviewFlags.blankCount = blankCount;
         grade.reviewFlags.multiMarkCount = multiMarkCount;
-        const reasons = [];
-        if (blankCount > 0) reasons.push(`${blankCount} blank item(s)`);
-        if (multiMarkCount > 0) reasons.push(`${multiMarkCount} multi-mark item(s)`);
+        const preservedReasons = (grade.reviewFlags.reasons || []).filter(r =>
+          !r.includes('blank response') && !r.includes('blank item') &&
+          !r.includes('multiple mark') && !r.includes('multi-mark')
+        );
+        const reasons = [...preservedReasons];
+        if (blankCount > 0) reasons.push(`${blankCount} blank response${blankCount > 1 ? 's' : ''}`);
+        if (multiMarkCount > 0) reasons.push(`${multiMarkCount} multiple mark${multiMarkCount > 1 ? 's' : ''}`);
         grade.reviewFlags.reasons = reasons;
-        grade.reviewFlags.needsReview = (reasons.length > 0);
+        grade.reviewFlags.needsReview = (reasons.length > 0 || !!grade.isDuplicate);
       }
 
       // Recompute psychometrics
       if (state.key && state.results?.grades) {
         state.results.psychometrics = computePsychometrics(state.results.grades, state.key);
       }
+      updateMetricsDashboard();
 
       // Redraw active preview and viewer canvases
       const previewCanvas = $('roster-preview-canvas') || $('roster-inspector-canvas');
@@ -11062,7 +11097,7 @@
           g.rawScore.toFixed(2),
           g.maxScore.toFixed(2),
           g.percentage.toFixed(2),
-          g.percentage >= state.results.passThreshold ? "PASS" : "FAIL",
+          (typeof hasUnreviewedItems === 'function' && hasUnreviewedItems(g)) ? "IN_REVIEW" : (g.percentage >= state.results.passThreshold ? "PASS" : "FAIL"),
           needsReview ? "NEEDS_REVIEW" : "VERIFIED",
           safeCsvCell(reasons)
         ].join(","));
@@ -13180,26 +13215,6 @@
 
     $('btn-gdrive-disconnect')?.addEventListener('click', () => {
       disconnectGoogleDrive();
-    });
-
-    // TrOCR / Handwriting Engine Settings listeners
-    $('btn-trocr-settings')?.addEventListener('click', () => {
-      const autoChk = $('chk-auto-trocr');
-      const hwChk = $('chk-ai-handwriting');
-      if (autoChk && hwChk) {
-        autoChk.checked = hwChk.checked;
-      }
-      $('modal-trocr-settings')?.showModal();
-    });
-
-    $('chk-auto-trocr')?.addEventListener('change', (e) => {
-      const hwChk = $('chk-ai-handwriting');
-      if (hwChk) {
-        hwChk.checked = e.target.checked;
-        if (typeof renderHorizontalGradingView === 'function') {
-          renderHorizontalGradingView();
-        }
-      }
     });
 
     $('btn-gdrive-save-now')?.addEventListener('click', () => {

@@ -507,3 +507,186 @@ test('11. Home portal contrast and button styling', async () => {
   assert.ok(!homeHtml.includes('.btn--secondary:hover {\n      border-color: var(--border-focus);\n      background: #27354a;\n      color: #fff;\n    }'), 'btn--secondary:hover must not have hardcoded dark background and white text');
 });
 
+test('12. Partial Score Calculation, Floating-Point Precision, and Canvas Visuals', async () => {
+  const { context, checkerHtml } = await loadCheckerSandbox();
+
+  // Verify dead code removal
+  assert.ok(!checkerHtml.includes('function makeConfBadge'), 'makeConfBadge function must be removed');
+  assert.ok(!checkerHtml.includes('ocrConfidence: 0.88'), 'Dummy ocrConfidence must be removed');
+  assert.ok(!checkerHtml.includes('btn-trocr-settings'), 'btn-trocr-settings listeners must be removed');
+
+  // Verify custom points stepper and enter key handler
+  assert.ok(checkerHtml.includes('id="flashcard-custom-pts" min="0" max="${itemMaxPts}" step="0.5"'), 'Custom points stepper with 0.5 step');
+  assert.ok(checkerHtml.includes("if (event.key === 'Enter')"), 'Custom points input has Enter key shortcut');
+
+  // Setup student for horizontal grading
+  const student = {
+    studentId: 'STU-001',
+    studentName: 'Bob',
+    rawScore: 0,
+    maxScore: 10,
+    percentage: 0,
+    gradedItems: {
+      'q_essay': {
+        kind: 'text',
+        pointsAwarded: 0,
+        maxPoints: 5.0,
+        status: 'unreviewed',
+        reviewed: false
+      },
+      'q_short': {
+        kind: 'text',
+        pointsAwarded: 0,
+        maxPoints: 2.0,
+        status: 'unreviewed',
+        reviewed: false
+      },
+      'q_one': {
+        kind: 'text',
+        pointsAwarded: 0,
+        maxPoints: 1.0,
+        status: 'unreviewed',
+        reviewed: false
+      }
+    }
+  };
+
+  context.state.results = {
+    grades: [student],
+    passThreshold: 60
+  };
+  context.state.layout = {
+    rois: [
+      { id: 'q_essay', key: 'q_essay', type: 'text_essay', points: 5.0, graded: true },
+      { id: 'q_short', key: 'q_short', type: 'text_short', points: 2.0, graded: true },
+      { id: 'q_one', key: 'q_one', type: 'text_short', points: 1.0, graded: true }
+    ]
+  };
+  context.state.key = {
+    total_points: 10,
+    items: {
+      'q_essay': { answer: 'Mitosis', points: 5.0, kind: 'text' },
+      'q_short': { answer: 'Nucleus', points: 2.0, kind: 'text' },
+      'q_one': { answer: 'Cell', points: 1.0, kind: 'text' }
+    }
+  };
+
+  // Case 1: Default 50% partial quick action
+  // On a 5-pt item -> 2.5 pts
+  context.gradeHorizontalItem(0, 'q_essay', 'partial');
+  assert.equal(student.gradedItems['q_essay'].pointsAwarded, 2.5, '5-pt item awards 2.5 pts default partial');
+  assert.equal(student.gradedItems['q_essay'].status, 'partial');
+
+  // On a 2-pt item -> 1.0 pt
+  context.gradeHorizontalItem(0, 'q_short', 'partial');
+  assert.equal(student.gradedItems['q_short'].pointsAwarded, 1.0, '2-pt item awards 1.0 pt default partial');
+
+  // On a 1-pt item -> 0.5 pt
+  context.gradeHorizontalItem(0, 'q_one', 'partial');
+  assert.equal(student.gradedItems['q_one'].pointsAwarded, 0.5, '1-pt item awards 0.5 pt default partial');
+
+  // Raw score is 2.5 + 1.0 + 0.5 = 4.0; maxScore strictly preserves key.total_points (10); percentage = 40%
+  assert.equal(student.rawScore, 4.0);
+  assert.equal(student.maxScore, 10, 'maxScore strictly preserves key.total_points');
+  assert.equal(student.percentage, 40);
+
+  // Case 2: Custom partial points adjustment
+  context.gradeHorizontalItem(0, 'q_essay', 'partial', 3.5);
+  assert.equal(student.gradedItems['q_essay'].pointsAwarded, 3.5, 'Custom points 3.5 awarded');
+
+  context.gradeHorizontalItem(0, 'q_short', 'partial', 1.25);
+  assert.equal(student.gradedItems['q_short'].pointsAwarded, 1.25, 'Custom points 1.25 awarded');
+
+  // Clamping test: custom points cannot exceed maxPoints or be negative
+  context.gradeHorizontalItem(0, 'q_one', 'partial', 99);
+  assert.equal(student.gradedItems['q_one'].pointsAwarded, 1.0, 'Clamped to maxPoints');
+
+  context.gradeHorizontalItem(0, 'q_one', 'partial', -5);
+  assert.equal(student.gradedItems['q_one'].pointsAwarded, 0, 'Clamped to 0 minimum');
+
+  // Case 3: Floating point precision check: 3.5 + 1.25 + 0.1 = 4.85
+  context.gradeHorizontalItem(0, 'q_one', 'partial', 0.1);
+  assert.equal(student.rawScore, 4.85, 'Sum of fractional points has no floating point rounding artifacts');
+  assert.equal(student.percentage, 48.5);
+
+  // Canvas visual verification
+  assert.ok(checkerHtml.includes("color = '#f59e0b';\n          isDashed = false;\n          ptsText = `Partial"), 'Partial status draws with amber #f59e0b on canvas');
+});
+
+test('13. Interactive Bubble Correction: Mark Type Resolution, Roster Array Matching, and Strict MaxScore Preservation', async () => {
+  const { context } = await loadCheckerSandbox();
+
+  // Setup active roster as standard Array of { id, name, classOffer }
+  context.state.roster = [
+    { id: '2026-9999', name: 'Maria Makiling', classOffer: 'BIO-101' },
+    { id: '2026-8888', name: 'Juan Luna', classOffer: 'BIO-101' }
+  ];
+
+  const student = {
+    studentId: '2026-0000',
+    studentName: 'Unknown Student',
+    rawScore: 0,
+    maxScore: 25,
+    percentage: 0,
+    bubbleDiagnostics: [
+      // Ambiguous faint mark on Question 1, Choice A
+      { item: '1', choice: 'A', canX: 50, canY: 50, rad: 6, isMarked: false, markType: 'faint' },
+      { item: '1', choice: 'B', canX: 70, canY: 50, rad: 6, isMarked: false, markType: null },
+      // SID bubbles: 2 columns
+      { item: 'sid[1]', choice: '9', digit: 9, canX: 100, canY: 100, rad: 6, isMarked: false, role: 'sid' },
+      { item: 'sid[0]', choice: '2', digit: 2, canX: 80, canY: 100, rad: 6, isMarked: false, role: 'sid' }
+    ],
+    gradedItems: {
+      '1': { expected: 'A', actual: 'BLANK', pointsAwarded: 0, maxPoints: 1.0, isCorrect: false },
+      '2': { expected: 'B', actual: 'BLANK', pointsAwarded: 0, maxPoints: 1.0, isCorrect: false }
+    },
+    reviewFlags: {
+      blankCount: 2,
+      multiMarkCount: 0,
+      needsReview: true,
+      reasons: ['2 blank responses', 'Unmatched Student ID']
+    }
+  };
+
+  context.state.results = {
+    grades: [student],
+    passThreshold: 60
+  };
+  context.state.key = {
+    total_points: 25,
+    items: {
+      '1': { answer: 'A', points: 1.0 },
+      '2': { answer: 'B', points: 1.0 }
+    }
+  };
+
+  // 1. Correct ambiguous mark on Question 1
+  const hitFaint = student.bubbleDiagnostics[0];
+  context.correctBubbleMark(student, hitFaint);
+  assert.equal(hitFaint.isMarked, true, 'Bubble toggled to marked');
+  assert.equal(hitFaint.markType, 'solid', 'Ambiguous faint mark resolved to solid');
+  assert.equal(student.gradedItems['1'].actual, 'A');
+  assert.equal(student.gradedItems['1'].isCorrect, true);
+  assert.equal(student.rawScore, 1.0);
+  assert.equal(student.maxScore, 25, 'maxScore strictly preserves key.total_points');
+  assert.equal(student.percentage, 4.0); // 1 / 25 * 100
+
+  // Verify blank item count correctly preserved remaining BLANK item
+  assert.equal(student.reviewFlags.blankCount, 1, 'Blank count decremented to 1 (item 2 still BLANK)');
+
+  // 2. Correct SID bubbles and match against roster
+  const sidCol0 = student.bubbleDiagnostics[3]; // sid[0]
+  const sidCol1 = student.bubbleDiagnostics[2]; // sid[1]
+  sidCol0.isMarked = true;
+  sidCol1.isMarked = true;
+
+  // Let's set studentId to full match '2026-9999'
+  student.studentId = '2026-9999';
+  context.correctBubbleMark(student, sidCol0); // trigger SID reconstruction & roster match
+
+  assert.equal(student.studentName, 'Maria Makiling', 'Matched student name from state.roster');
+  assert.equal(student.classOffer, 'BIO-101', 'Matched classOffer from state.roster');
+  assert.ok(!student.reviewFlags.reasons.some(r => r.includes('Unmatched Student ID')), 'Unmatched Student ID flag cleared');
+});
+
+

@@ -352,8 +352,9 @@ test('Feature 5: Anti-Slop & UI Quality Standards', () => {
   assert.match(checkerHtml, /btn-horizontal-partial[\s\S]*?<svg/, 'Partial button contains SVG icon');
   assert.match(checkerHtml, /btn-horizontal-reject[\s\S]*?<svg/, 'Reject button contains SVG icon');
 
-  // 4. Low OCR Conf badge uses inline SVG icon
-  assert.match(checkerHtml, /Low OCR Conf[\s\S]*?<svg/, 'Low OCR confidence badge contains SVG icon');
+  // 4. Unsure button uses inline SVG icon and AI OCR confidence badge is removed
+  assert.match(checkerHtml, /btn-horizontal-unsure[\s\S]*?<svg/, 'Unsure button contains SVG icon');
+  assert.ok(!checkerHtml.includes('Low OCR Conf'), 'AI OCR confidence badge completely removed');
 });
 
 test('Feature 6: Asynchronous batch grading execution, UI progress updating, and main-thread non-blocking guarantee', async () => {

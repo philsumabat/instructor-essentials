@@ -3100,6 +3100,12 @@ function updateGoogleUiState() {
   const userEmail = $('#gdrive-user-email');
   const userAvatar = $('#gdrive-user-avatar');
 
+  // Header user-auth-wrap
+  const headerDisc = $('#google-disconnected-view');
+  const headerConn = $('#google-connected-view');
+  const headerName = $('#user-display-name');
+  const headerAvatar = $('#user-avatar-img');
+
   if (googleDriveState.isConnected && googleDriveState.user) {
     if (btn) {
       btn.style.display = 'inline-flex';
@@ -3121,6 +3127,17 @@ function updateGoogleUiState() {
         userAvatar.style.display = 'none';
       }
     }
+    if (headerDisc) headerDisc.style.display = 'none';
+    if (headerConn) headerConn.style.display = 'flex';
+    if (headerName) headerName.textContent = googleDriveState.user.name || googleDriveState.user.email || 'Instructor';
+    if (headerAvatar) {
+      if (googleDriveState.user.picture) {
+        headerAvatar.src = googleDriveState.user.picture;
+        headerAvatar.style.display = 'inline-block';
+      } else {
+        headerAvatar.style.display = 'none';
+      }
+    }
   } else {
     if (btn) {
       btn.style.display = 'none';
@@ -3132,6 +3149,8 @@ function updateGoogleUiState() {
     if (label) label.textContent = 'Sign in with Google';
     if (viewDisc) viewDisc.style.display = 'flex';
     if (viewConn) viewConn.style.display = 'none';
+    if (headerDisc) headerDisc.style.display = 'flex';
+    if (headerConn) headerConn.style.display = 'none';
   }
 }
 
@@ -4279,6 +4298,13 @@ function initEvents() {
     } else {
       openGoogleDriveModal();
     }
+  });
+
+  $('#btn-header-google-signin')?.addEventListener('click', () => {
+    initGoogleDriveAuth();
+  });
+  $('#btn-google-logout')?.addEventListener('click', () => {
+    disconnectGoogleDrive();
   });
 
   els.btnCloseGdrive?.addEventListener('click', () => closeModal(els.modalGoogleDrive));

@@ -2809,4 +2809,40 @@ dialog.modal-dialog--answer-key {
   animation: pulseSync 1.2s infinite ease-in-out;
 }
 
+.user-auth-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.google-user-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--panel-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  padding: 0.25rem 0.65rem 0.25rem 0.4rem;
+  font-size: 0.8rem;
+  color: var(--text);
+  box-shadow: var(--shadow-xs);
+}
+
+.user-avatar {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.sync-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--success);
+  box-shadow: 0 0 6px rgba(5, 150, 105, 0.8);
+  flex-shrink: 0;
+}
+
+
 

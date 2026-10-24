@@ -527,6 +527,41 @@
       animation: pulseSync 1.2s infinite ease-in-out;
     }
 
+    .user-auth-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+    }
+
+    .google-user-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--panel-alt);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-full);
+      padding: 0.25rem 0.65rem 0.25rem 0.4rem;
+      font-size: 0.8rem;
+      color: var(--text);
+      box-shadow: var(--shadow-xs);
+    }
+
+    .user-avatar {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .sync-status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 6px rgba(5, 150, 105, 0.8);
+      flex-shrink: 0;
+    }
+
     /* Main Workspace Layout */
     .workspace {
       display: grid;
@@ -1974,21 +2009,44 @@
       <button type="button" id="btn-save-progress" class="btn btn--secondary btn-save-progress" style="display: none;" aria-hidden="true">
         <span id="badge-save-status" class="badge-save-status" style="display: none;"></span>
       </button>
-      <button type="button" id="btn-google-drive" class="btn btn--secondary btn-google-drive" style="display: none;" aria-hidden="true" title="Google Drive integration">
-        <svg class="google-icon" width="16" height="16" viewBox="0 0 24 24">
-          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-        </svg>
-        <span id="google-drive-status-badge" class="google-status-badge is-synced" title="Connected &amp; Synced">
-          <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" class="google-status-check"><polyline points="20 6 9 17 4 12"/></svg>
-          <span class="google-status-spinner"></span>
-        </span>
-        <span id="label-google-drive" class="visually-hidden">Google Drive</span>
-        <span id="google-drive-sync-indicator" class="google-sync-indicator is-synced" style="display: none;">Synced ✓</span>
-        <span id="google-drive-dot" class="google-status-dot" style="display: none;"></span>
-      </button>
+      <div class="user-auth-wrap">
+        <button type="button" id="btn-google-drive" class="btn btn--secondary btn-google-drive" style="display: none;" aria-hidden="true" title="Google Drive integration">
+          <svg class="google-icon" width="16" height="16" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+          </svg>
+          <span id="google-drive-status-badge" class="google-status-badge is-synced" title="Connected &amp; Synced">
+            <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" class="google-status-check"><polyline points="20 6 9 17 4 12"/></svg>
+            <span class="google-status-spinner"></span>
+          </span>
+          <span id="label-google-drive" class="visually-hidden">Google Drive</span>
+          <span id="google-drive-sync-indicator" class="google-sync-indicator is-synced" style="display: none;">Synced ✓</span>
+          <span id="google-drive-dot" class="google-status-dot" style="display: none;"></span>
+        </button>
+
+        <div id="google-disconnected-view" style="display: flex; align-items: center; gap: 0.5rem;">
+          <button type="button" id="btn-checker-google-signin" class="btn btn--secondary" title="Sign in with Google to sync sessions across Sheet Builder and Checker Studio">
+            <svg width="14" height="14" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+            </svg>
+            <span>Sign in with Google</span>
+          </button>
+        </div>
+
+        <div id="google-connected-view" style="display: none; align-items: center; gap: 0.65rem;">
+          <div class="google-user-chip" title="Signed into institutional Google account">
+            <span class="sync-status-dot"></span>
+            <img id="user-avatar-img" class="user-avatar" src="" alt="" style="display: none;">
+            <span id="user-display-name" style="font-weight: 600; color: var(--text);">Instructor</span>
+          </div>
+          <button type="button" id="btn-google-logout" class="btn btn--secondary btn--sm is-danger" title="Sign out of Google account">Sign Out</button>
+        </div>
+      </div>
       <button type="button" id="btn-trocr-settings" class="btn btn--secondary" style="display: none;" aria-hidden="true"></button>
       <div class="dropdown-menu" id="dropdown-export-reports" style="display: none;" aria-hidden="true">
         <button type="button" id="btn-export-reports-toggle" style="display: none;"></button>
@@ -2486,6 +2544,17 @@
                 <div id="roster-preview-empty" class="roster-preview-empty">
                   <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.6; margin-bottom: 0.5rem;" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><circle cx="12" cy="14" r="3"/></svg>
                   <span>Select a student from the roster to inspect their graded exam sheet</span>
+                </div>
+                <!-- Cloud session restored placeholder when raw scan images are not stored in cloud progress -->
+                <div id="roster-scans-placeholder" class="roster-preview-empty" style="display: none; padding: 2rem 1.5rem; text-align: center; flex-direction: column; align-items: center; justify-content: center; background: var(--panel-alt); border-radius: var(--radius-md); border: 1.5px dashed var(--border);">
+                  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary); margin-bottom: 0.75rem;"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                  <h4 style="margin: 0 0 0.35rem 0; font-size: 0.95rem; font-weight: 700;">Cloud Session Restored</h4>
+                  <p style="margin: 0 0 1rem 0; font-size: 0.78rem; color: var(--text-muted); max-width: 280px; line-height: 1.4;">Scores, item analyses, and keys are safely loaded. Raw scan images were excluded to conserve cloud quota. Attach your scans to inspect original sheets.</p>
+                  <label class="btn btn--secondary btn-sm" style="cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                    <span>Attach Scans Folder</span>
+                    <input type="file" id="input-attach-scans-folder" multiple accept="image/*,.pdf,application/pdf" style="display: none;" />
+                  </label>
                 </div>
                 <!-- Accessible via #roster-preview-canvas and legacy alias -->
                 <canvas id="roster-preview-canvas" width="800" height="1131" style="display: none; max-width: 100%; height: auto;"></canvas>
@@ -3178,9 +3247,16 @@
 
       <!-- Advanced / Custom Client ID Override (optional for self-hosters or custom domains) -->
       <details style="font-size: 0.72rem; color: var(--text-muted); background: var(--panel-alt); padding: 0.45rem 0.65rem; border-radius: var(--radius-sm); border: 1px solid var(--border);">
-        <summary style="cursor: pointer; font-weight: 600; color: var(--text-muted);">Advanced: Custom Google Client ID</summary>
-        <div style="margin-top: 0.35rem;">
-          <input type="text" id="input-gdrive-client-id" placeholder="998750275888-cbvmqvjbfopbsv0oe5pu238grrpv7chm.apps.googleusercontent.com" style="width: 100%; padding: 0.35rem 0.5rem; font-size: 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--panel); color: var(--text); box-sizing: border-box;">
+        <summary style="cursor: pointer; font-weight: 600; color: var(--text-muted);">Advanced: Custom Google Client ID &amp; TrOCR Token</summary>
+        <div style="margin-top: 0.35rem; display: flex; flex-direction: column; gap: 0.5rem;">
+          <div>
+            <label style="display: block; margin-bottom: 0.2rem; font-weight: 600;">Custom Google Client ID:</label>
+            <input type="text" id="input-gdrive-client-id" placeholder="998750275888-cbvmqvjbfopbsv0oe5pu238grrpv7chm.apps.googleusercontent.com" style="width: 100%; padding: 0.35rem 0.5rem; font-size: 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--panel); color: var(--text); box-sizing: border-box;">
+          </div>
+          <div>
+            <label style="display: block; margin-bottom: 0.2rem; font-weight: 600;">Hugging Face Token (Optional Serverless Booster):</label>
+            <input type="password" id="input-hf-token" class="input-hf-token-field" placeholder="hf_... (free serverless TrOCR)" style="width: 100%; padding: 0.35rem 0.5rem; font-size: 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--panel); color: var(--text); box-sizing: border-box;">
+          </div>
         </div>
       </details>
     </div>
@@ -3299,6 +3375,11 @@
         </label>
         <div style="font-size: 0.7rem; color: var(--text-muted); background: var(--panel-alt); padding: 0.5rem 0.65rem; border-radius: var(--radius-sm); border: 1px solid var(--border);">
           Runs client-side TrOCR / ONNX in your browser or automatically connects to free serverless inference. No API keys or passwords required.
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 0.35rem; margin-top: 0.25rem;">
+          <label for="input-hf-token" style="font-size: 0.76rem; font-weight: 600; color: var(--text);">Hugging Face API Token (Free Serverless Booster)</label>
+          <input type="password" id="input-hf-token" class="input-hf-token-field" placeholder="hf_... (free serverless TrOCR)" style="width: 100%; padding: 0.4rem 0.6rem; font-size: 0.78rem; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--panel-alt); color: var(--text); box-sizing: border-box;">
+          <div style="font-size: 0.7rem; color: var(--text-muted);">Optional free token from huggingface.co to boost transcription speed during heavy loads.</div>
         </div>
       </div>
 
@@ -7319,6 +7400,7 @@
     // Crop ROI from rectified scan image into HTMLCanvasElement (with Stage 4 wall stripping)
     function cropROIFromScan(grade, roi, destCanvas, optionalKey = null) {
       if (!grade || !roi || !destCanvas || typeof destCanvas.getContext !== 'function') return;
+      if (grade.scanImg && grade.scanImg._isBlankCanvas) return null;
       const pxPerMm = 4.0;
       const roiW = Math.max(10, Number(roi.w ?? roi.width ?? 0));
       const roiH = Math.max(5, Number(roi.h ?? roi.height ?? 0));
@@ -7410,7 +7492,7 @@
 
       function getHFToken() {
         try {
-          return localStorage.getItem('toolkit_hf_token') || localStorage.getItem('hf_inference_token') || '';
+          return localStorage.getItem('toolkit_hf_token') || localStorage.getItem('instructor_hf_token') || localStorage.getItem('hf_inference_token') || '';
         } catch {
           return '';
         }
@@ -7418,8 +7500,14 @@
 
       function setHFToken(token) {
         try {
-          if (token) localStorage.setItem('toolkit_hf_token', token.trim());
-          else localStorage.removeItem('toolkit_hf_token');
+          if (token) {
+            const clean = token.trim();
+            localStorage.setItem('toolkit_hf_token', clean);
+            localStorage.setItem('instructor_hf_token', clean);
+          } else {
+            localStorage.removeItem('toolkit_hf_token');
+            localStorage.removeItem('instructor_hf_token');
+          }
         } catch {}
       }
 
@@ -7497,9 +7585,8 @@
             if (colHasDark[x] && !inChar) { inChar = true; charSegments++; }
             else if (!colHasDark[x] && inChar) { inChar = false; }
           }
-          const detectedChars = Math.max(1, charSegments);
           return {
-            text: options?.expected ? options.expected : `[${detectedChars} stroke${detectedChars > 1 ? 's' : ''}]`,
+            text: '[Handwritten Text]',
             confidence: 0.75,
             tier: 2,
             source: 'local-canvas-morphology'
@@ -8087,8 +8174,8 @@
       const n = grades.length;
       if (n === 0) return null;
 
-      const scores = grades.map(g => g.rawScore);
-      const totalPossible = (key && typeof key.total_points === 'number') ? key.total_points : grades[0].maxScore;
+      const scores = grades.map(g => g.rawScore || 0);
+      const totalPossible = (key && typeof key.total_points === 'number') ? key.total_points : (grades[0]?.maxScore || 100);
       const meanScore = scores.reduce((a, b) => a + b, 0) / n;
       const sorted = [...scores].sort((a, b) => a - b);
       const median = n % 2 === 0 ? (sorted[n / 2 - 1] + sorted[n / 2]) / 2 : sorted[Math.floor(n / 2)];
@@ -8101,11 +8188,13 @@
       const itemStats = {};
       let sumItemVar = 0;
       let highQualityCount = 0;
-      const itemKeys = Object.keys(key.items).filter(k => key.items[k].kind !== 'text').sort((a, b) => {
-        const na = Number(a), nb = Number(b);
-        if (!isNaN(na) && !isNaN(nb)) return na - nb;
-        return a.localeCompare(b);
-      });
+      const itemKeys = (key && key.items)
+        ? Object.keys(key.items).filter(k => key.items[k] && key.items[k].kind !== 'text').sort((a, b) => {
+            const na = Number(a), nb = Number(b);
+            if (!isNaN(na) && !isNaN(nb)) return na - nb;
+            return a.localeCompare(b);
+          })
+        : [];
 
       for (const itemNum of itemKeys) {
         const keyItem = key.items[itemNum];
@@ -9572,12 +9661,21 @@
       document.querySelector('.main-content')?.classList.add('has-data');
       $('advanced-layout-key-toggle')?.setAttribute('open', '');
       const { grades, psychometrics, passThreshold } = state.results;
+      const defaultPsychometrics = {
+        meanScore: grades.length > 0 ? grades.reduce((a, b) => a + (b.rawScore || 0), 0) / grades.length : 0,
+        totalPossible: (grades[0]?.maxScore) || 100,
+        cronbachAlpha: 0.0,
+        stdDev: 0.0,
+        median: 0.0,
+        itemStats: {}
+      };
+      const psych = psychometrics || defaultPsychometrics;
 
       // Summary Cards
       $('metric-count').textContent = grades.length;
       $('metric-count-sub').textContent = `${grades.length} / ${state.scans.length} valid`;
-      $('metric-mean').textContent = psychometrics.meanScore.toFixed(1);
-      $('metric-mean-sub').textContent = `${((psychometrics.meanScore / psychometrics.totalPossible) * 100).toFixed(1)}%`;
+      $('metric-mean').textContent = psych.meanScore.toFixed(1);
+      $('metric-mean-sub').textContent = `${((psych.meanScore / (psych.totalPossible || 1)) * 100).toFixed(1)}%`;
 
       const passCount = grades.filter(g => g.percentage >= passThreshold).length;
       const failCount = grades.length - passCount;
@@ -9586,9 +9684,9 @@
       $('metric-passrate').textContent = `${passRate.toFixed(1)}%`;
       $('metric-passrate-sub').textContent = `${passCount} passed / ${failCount} failed`;
 
-      $('metric-alpha').textContent = psychometrics.cronbachAlpha.toFixed(3);
-      $('metric-stddev').textContent = `±${psychometrics.stdDev.toFixed(2)}`;
-      $('metric-median').textContent = `Median: ${psychometrics.median.toFixed(1)}`;
+      $('metric-alpha').textContent = psych.cronbachAlpha.toFixed(3);
+      $('metric-stddev').textContent = `±${psych.stdDev.toFixed(2)}`;
+      $('metric-median').textContent = `Median: ${psych.median.toFixed(1)}`;
 
       // Update Pass/Fail Distribution Bar
       if ($('dist-bar-pass')) $('dist-bar-pass').style.width = `${passRate.toFixed(1)}%`;
@@ -9762,14 +9860,37 @@
         if (reviewAlertEl) reviewAlertEl.style.display = 'none';
       }
 
-      if ($('btn-roster-download-jpeg')) $('btn-roster-download-jpeg').disabled = false;
-      if ($('btn-roster-expand-modal')) $('btn-roster-expand-modal').disabled = false;
-
+      if ($('roster-scans-placeholder')) $('roster-scans-placeholder').style.display = 'none';
       if ($('roster-preview-empty')) $('roster-preview-empty').style.display = 'none';
+
+      const isBlank = (img) => {
+        if (!img) return true;
+        if (img._isBlankCanvas) return true;
+        if (typeof HTMLCanvasElement !== 'undefined' && img instanceof HTMLCanvasElement && (!img.width || !img.height || img._isBlankCanvas)) return true;
+        return false;
+      };
+
+      const hasRealScan = !!(
+        (grade.scanImg && !isBlank(grade.scanImg)) ||
+        grade.scanData ||
+        (state.scans && state.scans.some(s => s?.img && !isBlank(s.img) && (s.name === grade.examId || s.name === grade.studentId)))
+      );
+
       const canvas = $('roster-preview-canvas') || $('roster-inspector-canvas');
-      if (canvas) {
-        canvas.style.display = 'block';
-        drawGradeOnCanvas(grade, canvas);
+
+      if (!hasRealScan) {
+        if (canvas) canvas.style.display = 'none';
+        if ($('roster-scans-placeholder')) $('roster-scans-placeholder').style.display = 'flex';
+        if ($('btn-roster-download-jpeg')) $('btn-roster-download-jpeg').disabled = true;
+        if ($('btn-roster-expand-modal')) $('btn-roster-expand-modal').disabled = true;
+      } else {
+        if ($('roster-scans-placeholder')) $('roster-scans-placeholder').style.display = 'none';
+        if ($('btn-roster-download-jpeg')) $('btn-roster-download-jpeg').disabled = false;
+        if ($('btn-roster-expand-modal')) $('btn-roster-expand-modal').disabled = false;
+        if (canvas) {
+          canvas.style.display = 'block';
+          drawGradeOnCanvas(grade, canvas);
+        }
       }
     }
 
@@ -10654,11 +10775,7 @@
         activeScanImg = null;
       }
       if (!activeScanImg && typeof state !== 'undefined' && state.scans) {
-        const gradeIdx = (state.results && state.results.grades) ? state.results.grades.indexOf(grade) : -1;
-        const found = state.scans.find(s => s && (s.name === grade.examId || s.name === grade.studentId)) ||
-                      (gradeIdx >= 0 ? state.scans[gradeIdx] : null) ||
-                      (grade.studentIndex != null ? state.scans[grade.studentIndex] : null) ||
-                      (state.selectedStudentIdx != null ? state.scans[state.selectedStudentIdx] : null);
+        const found = state.scans.find(s => s && (s.name === grade.examId || s.name === grade.studentId));
         if (found && found.img && !isBlankCanvas(found.img)) {
           activeScanImg = found.img;
           grade.scanImg = activeScanImg;
@@ -10698,10 +10815,13 @@
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Draw rectified/warped scan image (undoing 90/180/270 deg scan rotation when present)
-      if (activeScanImg) {
-        drawUprightScanImage(ctx, activeScanImg, canvas.width, canvas.height, grade.rotationDeg);
+      // If no authentic scan image exists or it is a placeholder canvas, return early without drawing floating markup
+      if (!activeScanImg || isBlankCanvas(activeScanImg)) {
+        return;
       }
+
+      // Draw rectified/warped scan image (undoing 90/180/270 deg scan rotation when present)
+      drawUprightScanImage(ctx, activeScanImg, canvas.width, canvas.height, grade.rotationDeg);
 
       // Semi-transparent overlay layer for markup
       for (const b of (grade.bubbleDiagnostics || [])) {
@@ -11727,9 +11847,9 @@
         return;
       }
 
-      // 1. Save full session with scans and crops to IndexedDB (ToolkitDB)
+      // 1. Save full session with scans and crops to IndexedDB (ToolkitDB) only on explicit manual backup/export
       try {
-        if (typeof ToolkitDB !== 'undefined' && ToolkitDB.saveSession) {
+        if (!silent && (shouldDownload || exportFile) && typeof ToolkitDB !== 'undefined' && ToolkitDB.saveSession) {
           const fullDataWithImages = serializeProgressSession({ includeImages: true });
           if (fullDataWithImages) {
             ToolkitDB.saveSession(fullDataWithImages);
@@ -11739,11 +11859,8 @@
         console.warn('Could not save session to IndexedDB:', err);
       }
 
-      // 2. Try saving session to localStorage (lightweight fallback)
-      try {
-        localStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify(data));
-      } catch (err) {
-        // If quota exceeded due to scan images, strip scanData and save data
+      // 2. Save session to localStorage (strictly lightweight metadata ~50 KB, zero quota issues)
+      if (typeof localStorage !== 'undefined') {
         try {
           const lightweight = {
             ...data,
@@ -11753,9 +11870,7 @@
             },
           };
           localStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify(lightweight));
-        } catch {
-          console.warn('LocalStorage quota exceeded');
-        }
+        } catch (_) {}
       }
 
       // Sync to Google Drive if connected
@@ -11823,6 +11938,9 @@
       }
       showLoading("Restoring Session", `Restoring ${data.results.grades.length} student grades...`);
 
+      state.scans = [];
+      state.selectedStudentIdx = null;
+
       state.layout = data.layout || null;
       state.key = data.key || null;
       state.roster = data.roster || [];
@@ -11850,8 +11968,6 @@
           }
           img.src = g.scanData;
           scanImg = img;
-        } else if (state.scans && state.scans[gIdx]?.img) {
-          scanImg = state.scans[gIdx].img;
         } else {
           const c = document.createElement('canvas');
           c.width = g.targetW || 840;
@@ -11892,38 +12008,6 @@
         psychometrics: data.results.psychometrics || computePsychometrics(restoredGrades, state.key),
         grades: restoredGrades,
       };
-
-      // If any restored grade lacked scanData, asynchronously retrieve high-fidelity scanData from ToolkitDB (IndexedDB)
-      if (restoredGrades.some(g => !g.scanData) && typeof ToolkitDB !== 'undefined' && ToolkitDB.loadSession) {
-        ToolkitDB.loadSession().then((idbSession) => {
-          if (idbSession?.results?.grades) {
-            let updatedAny = false;
-            idbSession.results.grades.forEach((idbGrade, gIdx) => {
-              if (restoredGrades[gIdx] && !restoredGrades[gIdx].scanData && idbGrade.scanData) {
-                restoredGrades[gIdx].scanData = idbGrade.scanData;
-                restoredGrades[gIdx]._cachedScanData = idbGrade.scanData;
-                const img = new Image();
-                img.onload = () => {
-                  restoredGrades[gIdx].scanImg = img;
-                  if (state.selectedStudentIdx === gIdx) {
-                    const canvas = $('roster-preview-canvas') || $('roster-inspector-canvas');
-                    if (canvas) drawGradeOnCanvas(restoredGrades[gIdx], canvas);
-                    const modalCanvas = $('viewer-canvas');
-                    if (modalCanvas && $('modal-viewer')?.open) {
-                      drawGradeOnCanvas(restoredGrades[gIdx], modalCanvas);
-                    }
-                  }
-                };
-                img.src = idbGrade.scanData;
-                updatedAny = true;
-              }
-            });
-            if (updatedAny) {
-              state.scans = restoredGrades.map((g) => ({ name: g.examId, img: g.scanImg }));
-            }
-          }
-        }).catch(() => {});
-      }
 
       if (state.layout) {
         updateLayoutDisplay(state.layout.title || 'Loaded Layout');
@@ -12568,6 +12652,11 @@
       const userEmail = $('gdrive-user-email');
       const userAvatar = $('gdrive-user-avatar');
 
+      const headerDisc = $('google-disconnected-view');
+      const headerConn = $('google-connected-view');
+      const headerName = $('user-display-name');
+      const headerAvatar = $('user-avatar-img');
+
       if (googleDriveState.isConnected && googleDriveState.user) {
         if (btn) {
           btn.style.display = 'inline-flex';
@@ -12592,6 +12681,17 @@
             userAvatar.style.display = 'none';
           }
         }
+        if (headerDisc) headerDisc.style.display = 'none';
+        if (headerConn) headerConn.style.display = 'flex';
+        if (headerName) headerName.textContent = googleDriveState.user.name || googleDriveState.user.email || 'Instructor';
+        if (headerAvatar) {
+          if (googleDriveState.user.picture) {
+            headerAvatar.src = googleDriveState.user.picture;
+            headerAvatar.style.display = 'inline-block';
+          } else {
+            headerAvatar.style.display = 'none';
+          }
+        }
       } else {
         if (btn) {
           btn.style.display = 'none';
@@ -12606,6 +12706,8 @@
         }
         if (viewDisc) viewDisc.style.display = 'flex';
         if (viewConn) viewConn.style.display = 'none';
+        if (headerDisc) headerDisc.style.display = 'flex';
+        if (headerConn) headerConn.style.display = 'none';
       }
     }
 
@@ -13194,6 +13296,14 @@
       }
     });
 
+    $('btn-checker-google-signin')?.addEventListener('click', () => {
+      initGoogleDriveAuth();
+    });
+
+    $('btn-google-logout')?.addEventListener('click', () => {
+      disconnectGoogleDrive();
+    });
+
     $('btn-gdrive-connect')?.addEventListener('click', () => {
       const inp = $('input-gdrive-client-id');
       const val = (inp?.value || '').trim();
@@ -13514,11 +13624,81 @@
     $('btn-empty-sample')?.addEventListener('click', () => $('btn-sample-grade').click());
     $('btn-empty-upload')?.addEventListener('click', () => $('input-scans').click());
 
+    // Attach scans folder to link local files back to restored cloud session
+    const inputAttachScans = $('input-attach-scans-folder');
+    if (inputAttachScans) {
+      inputAttachScans.addEventListener('change', async (e) => {
+        const files = Array.from(e.target.files || []);
+        if (files.length === 0 || !state.results || !state.results.grades) return;
+
+        showLoading('Attaching Scans', `Matching ${files.length} scan files...`);
+        let matchedCount = 0;
+
+        for (const file of files) {
+          if (!file.type.startsWith('image/')) continue;
+          try {
+            const dataUrl = await new Promise((res, rej) => {
+              const reader = new FileReader();
+              reader.onload = () => res(reader.result);
+              reader.onerror = rej;
+              reader.readAsDataURL(file);
+            });
+            const img = await new Promise((res, rej) => {
+              const i = new Image();
+              i.onload = () => res(i);
+              i.onerror = rej;
+              i.src = dataUrl;
+            });
+
+            addOrUpdateScan({ name: file.name, img });
+
+            const baseName = file.name.replace(/\.[^/.]+$/, '').toLowerCase();
+            state.results.grades.forEach(grade => {
+              const examBase = (grade.examId || '').replace(/\.[^/.]+$/, '').toLowerCase();
+              const stuId = String(grade.studentId || '').toLowerCase();
+              if (examBase === baseName || (stuId && baseName.includes(stuId)) || (examBase && baseName.includes(examBase))) {
+                grade.scanImg = img;
+                matchedCount++;
+              }
+            });
+          } catch (_) {}
+        }
+
+        hideLoading();
+        inputAttachScans.value = '';
+        if (state.selectedStudentIdx != null) {
+          inspectStudent(state.selectedStudentIdx);
+        }
+        showToast(`✓ Attached and matched ${matchedCount} scan images`);
+      });
+    }
+
+    // Sync Hugging Face TrOCR API Token inputs across modals
+    const syncHFTokenInputs = () => {
+      const currentToken = typeof HandwritingEngine !== 'undefined' && HandwritingEngine.getHFToken ? HandwritingEngine.getHFToken() : (localStorage.getItem('toolkit_hf_token') || localStorage.getItem('instructor_hf_token') || '');
+      $$('.input-hf-token-field, #input-hf-token').forEach(inp => {
+        if (inp) inp.value = currentToken;
+      });
+    };
+    $$('.input-hf-token-field, #input-hf-token').forEach(inp => {
+      inp.addEventListener('input', (e) => {
+        const token = e.target.value.trim();
+        if (typeof HandwritingEngine !== 'undefined' && HandwritingEngine.setHFToken) {
+          HandwritingEngine.setHFToken(token);
+        }
+        $$('.input-hf-token-field, #input-hf-token').forEach(other => {
+          if (other !== e.target) other.value = token;
+        });
+      });
+    });
+    $('btn-trocr-settings')?.addEventListener('click', syncHFTokenInputs);
+
     // Initial boot display and check auto-saved progress
     updateLayoutDisplay();
     updateKeyDisplay();
     updateRosterDisplay();
     restoreGoogleAuthState();
+    syncHFTokenInputs();
     checkAutoSavedProgress();
 
     // Cross-tab synchronization for Google Auth and session progress

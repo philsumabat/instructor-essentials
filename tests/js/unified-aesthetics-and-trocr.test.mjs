@@ -13,36 +13,48 @@ async function loadCheckerSandbox() {
   assert.ok(scriptMatch, 'Script block must be present in checker.html');
   const code = scriptMatch[1];
 
+  const createMockEl = (overrides = {}) => ({
+    style: {},
+    classList: { add: () => {}, remove: () => {}, contains: () => false },
+    addEventListener: () => {},
+    setAttribute: () => {},
+    removeAttribute: () => {},
+    getAttribute: () => null,
+    querySelector: () => null,
+    querySelectorAll: () => [],
+    ...overrides
+  });
+
   const storage = {};
   const mockElements = {
-    'input-threshold': { value: '60' },
-    'dist-label-threshold': { textContent: 'Threshold: 60%' },
-    'dist-label-pass': { textContent: '' },
-    'dist-label-fail': { textContent: '' },
-    'dist-bar-pass': { style: {} },
-    'dist-bar-fail': { style: {} },
-    'metric-passrate': { textContent: '' },
-    'metric-passrate-sub': { textContent: '' },
-    'input-hf-token': { value: '' },
-    'modal-trocr-settings': { showModal: () => {}, close: () => {} },
-    'modal-new-class-prompt': { showModal: () => {}, close: () => {} },
-    'checker-empty-state': { style: {} },
-    'results-export-bar': { style: {} },
-    'tbody-summary': { innerHTML: '' },
-    'tbody-roster': { innerHTML: '' },
-    'tbody-items': { innerHTML: '' },
-    'tbody-top-students': { innerHTML: '' },
-    'btn-thresh-dec': { onclick: null },
-    'btn-thresh-inc': { onclick: null },
-    'roster-preview-canvas': { getContext: () => ({ clearRect: () => {} }), width: 840, height: 1188 },
-    'viewer-student-select': { innerHTML: '' }
+    'input-threshold': createMockEl({ value: '60' }),
+    'dist-label-threshold': createMockEl({ textContent: 'Threshold: 60%' }),
+    'dist-label-pass': createMockEl({ textContent: '' }),
+    'dist-label-fail': createMockEl({ textContent: '' }),
+    'dist-bar-pass': createMockEl(),
+    'dist-bar-fail': createMockEl(),
+    'metric-passrate': createMockEl({ textContent: '' }),
+    'metric-passrate-sub': createMockEl({ textContent: '' }),
+    'input-hf-token': createMockEl({ value: '' }),
+    'modal-trocr-settings': createMockEl({ showModal: () => {}, close: () => {} }),
+    'modal-new-class-prompt': createMockEl({ showModal: () => {}, close: () => {} }),
+    'checker-empty-state': createMockEl(),
+    'results-export-bar': createMockEl(),
+    'tbody-summary': createMockEl({ innerHTML: '' }),
+    'tbody-roster': createMockEl({ innerHTML: '' }),
+    'tbody-items': createMockEl({ innerHTML: '' }),
+    'tbody-top-students': createMockEl({ innerHTML: '' }),
+    'btn-thresh-dec': createMockEl({ onclick: null }),
+    'btn-thresh-inc': createMockEl({ onclick: null }),
+    'roster-preview-canvas': createMockEl({ getContext: () => ({ clearRect: () => {} }), width: 840, height: 1188 }),
+    'viewer-student-select': createMockEl({ innerHTML: '' })
   };
 
   const sandbox = {
     document: {
-      getElementById: (id) => mockElements[id] || { style: {}, classList: { add: () => {}, remove: () => {} }, addEventListener: () => {} },
+      getElementById: (id) => mockElements[id] || createMockEl(),
       querySelectorAll: () => [],
-      querySelector: () => ({ classList: { add: () => {}, remove: () => {} } }),
+      querySelector: () => createMockEl(),
       createElement: (tag) => {
         if (tag === 'canvas') {
           return {
@@ -355,4 +367,105 @@ test('6. drawGradeOnCanvas score box stamp without prepending "Score:"', async (
 
   drawGradeOnCanvas(grade, mockCanvas, { layout: layoutWithScore });
   assert.equal(textDrawn, '42/50', 'Score box must print clean "42/50" without "Score:" prefix');
+});
+
+test('7. Session restore scan isolation, _isBlankCanvas guard, and placeholder DOM', async () => {
+  const { context, sandbox } = await loadCheckerSandbox();
+  const restoreCheckerProgress = context.restoreCheckerProgress;
+  const cropROIFromScan = context.cropROIFromScan;
+  const drawGradeOnCanvas = context.drawGradeOnCanvas;
+  const checkerHtml = await readFile(resolve(root, 'builder/checker.html'), 'utf8');
+
+  // Verify DOM placeholders exist
+  assert.ok(checkerHtml.includes('id="roster-scans-placeholder"'), 'roster-scans-placeholder present in DOM');
+  assert.ok(checkerHtml.includes('id="input-attach-scans-folder"'), 'input-attach-scans-folder present in DOM');
+
+  // Pre-populate old scans in state to test isolation
+  context.state.scans = [{ name: 'stale_scan.jpg', img: { width: 840, height: 1188 } }];
+  context.state.selectedStudentIdx = 5;
+
+  const mockProgress = {
+    results: {
+      grades: [
+        {
+          examId: 'new_exam_01.jpg',
+          studentId: '2026-999',
+          rawScore: 40,
+          maxScore: 50,
+          percentage: 80,
+          gradedItems: { q1: { expected: 'A' } },
+          bubbleDiagnostics: [{ item: 'q1', choice: 'A', canX: 100, canY: 200, rad: 5, isMarked: true }]
+        }
+      ]
+    }
+  };
+
+  restoreCheckerProgress(mockProgress);
+
+  // 1. Verify old scans were purged
+  assert.equal(context.state.scans.length, 1);
+  assert.equal(context.state.scans[0].name, 'new_exam_01.jpg');
+  assert.equal(context.state.results.grades[0].scanImg._isBlankCanvas, true, 'Restored grade without scanData has _isBlankCanvas = true');
+
+  // 2. Verify cropROIFromScan returns null on _isBlankCanvas
+  const destCanvas = sandbox.document.createElement('canvas');
+  const cropResult = cropROIFromScan(context.state.results.grades[0], { x: 10, y: 10, w: 50, h: 20 }, destCanvas);
+  assert.equal(cropResult, null, 'cropROIFromScan returns null for placeholder canvas');
+
+  // 3. Verify drawGradeOnCanvas paints white and does not draw bubble diagnostics
+  let circlesDrawn = 0;
+  const testCanvas = {
+    getContext: () => ({
+      fillRect: () => {},
+      drawImage: () => {},
+      beginPath: () => {},
+      arc: () => { circlesDrawn++; },
+      fill: () => {},
+      stroke: () => {}
+    }),
+    width: 840,
+    height: 1188
+  };
+  drawGradeOnCanvas(context.state.results.grades[0], testCanvas);
+  assert.equal(circlesDrawn, 0, 'drawGradeOnCanvas does not draw floating marks when scan is blank canvas');
+});
+
+test('8. HandwritingEngine Tier 2 morphology honesty & dual HF token sync', async () => {
+  const { context, storage } = await loadCheckerSandbox();
+  const HandwritingEngine = context.HandwritingEngine;
+  const checkerHtml = await readFile(resolve(root, 'builder/checker.html'), 'utf8');
+
+  // Verify inputs in modals
+  assert.ok(checkerHtml.includes('id="input-hf-token"'), 'input-hf-token present');
+  assert.ok(checkerHtml.includes('input-hf-token-field'), 'input-hf-token-field class present');
+
+  // Verify dual persistence
+  HandwritingEngine.setHFToken('hf_unified_key_999');
+  assert.equal(storage['toolkit_hf_token'], 'hf_unified_key_999');
+  assert.equal(storage['instructor_hf_token'], 'hf_unified_key_999');
+  assert.equal(HandwritingEngine.getHFToken(), 'hf_unified_key_999');
+
+  HandwritingEngine.setHFToken('');
+  assert.equal(storage['toolkit_hf_token'], undefined);
+  assert.equal(storage['instructor_hf_token'], undefined);
+  assert.equal(HandwritingEngine.getHFToken(), '');
+
+  // Verify Tier 2 morphology honesty
+  const strokeCanvas = {
+    width: 100,
+    height: 30,
+    getContext: () => ({
+      getImageData: () => {
+        // Create synthetic data with dark pixels
+        const data = new Uint8ClampedArray(100 * 30 * 4);
+        for (let i = 0; i < data.length; i += 4) {
+          data[i] = 10; data[i + 1] = 10; data[i + 2] = 10; data[i + 3] = 255;
+        }
+        return { data };
+      }
+    })
+  };
+  const t2Result = HandwritingEngine.runTier2LocalOCR(strokeCanvas, { expected: 'SECRET_EXPECTED' });
+  assert.ok(t2Result, 'Tier 2 result exists');
+  assert.equal(t2Result.text, '[Handwritten Text]', 'Must return honest [Handwritten Text] instead of stroke counts or expected answers');
 });

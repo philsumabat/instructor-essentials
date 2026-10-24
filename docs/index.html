@@ -9,29 +9,36 @@
   <meta name="apple-mobile-web-app-title" content="Instructors' Toolkit">
   <style>
     :root {
-      --bg: #0b0f19;
-      --bg-alt: #111827;
-      --panel: #161f30;
-      --panel-alt: #1e293b;
-      --border: #283548;
-      --border-focus: #38bdf8;
-      --text: #f8fafc;
-      --text-muted: #94a3b8;
-      --accent: #38bdf8;
-      --accent-hover: #0ea5e9;
-      --accent-light: rgba(56, 189, 248, 0.12);
-      --success: #10b981;
-      --success-hover: #059669;
-      --warning: #f59e0b;
-      --danger: #ef4444;
-      --danger-hover: #dc2626;
+      color-scheme: light dark;
+      --bg: light-dark(#f8fafc, #0b0f19);
+      --bg-alt: light-dark(#f1f5f9, #111827);
+      --panel: light-dark(#ffffff, #161f30);
+      --panel-alt: light-dark(#f1f5f9, #1e293b);
+      --panel-header: light-dark(#f8fafc, #161f30);
+      --border: light-dark(#e2e8f0, #283548);
+      --border-subtle: light-dark(#f1f5f9, rgba(255, 255, 255, 0.05));
+      --border-focus: light-dark(#0284c7, #38bdf8);
+      --text: light-dark(#0f172a, #f8fafc);
+      --text-muted: light-dark(#64748b, #94a3b8);
+      --text-subtle: light-dark(#94a3b8, #64748b);
+      --accent: light-dark(#0284c7, #38bdf8);
+      --accent-hover: light-dark(#0369a1, #0ea5e9);
+      --accent-light: light-dark(#e0f2fe, rgba(56, 189, 248, 0.12));
+      --success: light-dark(#059669, #10b981);
+      --success-hover: light-dark(#047857, #059669);
+      --success-light: light-dark(#ecfdf5, rgba(16, 185, 129, 0.12));
+      --warning: light-dark(#d97706, #f59e0b);
+      --warning-light: light-dark(#fffbeb, rgba(245, 158, 11, 0.12));
+      --danger: light-dark(#e11d48, #ef4444);
+      --danger-hover: light-dark(#be123c, #dc2626);
+      --danger-light: light-dark(#fff1f2, rgba(244, 63, 94, 0.12));
       --radius-sm: 6px;
       --radius-md: 10px;
       --radius-lg: 16px;
       --radius-full: 9999px;
-      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.25);
-      --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.35);
-      --shadow-lg: 0 10px 25px -3px rgba(0, 0, 0, 0.45);
+      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+      --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.12);
+      --shadow-lg: 0 10px 25px -3px rgba(0, 0, 0, 0.18);
       --ease: cubic-bezier(0.16, 1, 0.3, 1);
     }
 
@@ -125,8 +132,8 @@
 
     .workflow-nav__item.is-active {
       background: var(--panel);
-      color: #fff;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+      color: var(--accent);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
       border: 1px solid var(--border);
     }
 
@@ -265,7 +272,7 @@
 
     /* Hero Banner */
     .hero-banner {
-      background: linear-gradient(135deg, rgba(37, 99, 235, 0.12) 0%, rgba(17, 24, 39, 0.85) 100%);
+      background: light-dark(linear-gradient(135deg, rgba(37, 99, 235, 0.08) 0%, rgba(241, 245, 249, 0.95) 100%), linear-gradient(135deg, rgba(37, 99, 235, 0.12) 0%, rgba(17, 24, 39, 0.85) 100%));
       border: 1px solid var(--border);
       border-radius: var(--radius-lg);
       padding: 2.25rem 2.5rem;
@@ -278,9 +285,9 @@
       display: inline-flex;
       align-items: center;
       gap: 0.4rem;
-      background: rgba(37, 99, 235, 0.2);
-      border: 1px solid rgba(59, 130, 246, 0.35);
-      color: #93c5fd;
+      background: var(--accent-light);
+      border: 1px solid var(--border-focus);
+      color: var(--accent);
       padding: 0.2rem 0.65rem;
       border-radius: var(--radius-full);
       font-size: 0.74rem;
@@ -294,7 +301,7 @@
       font-size: 1.85rem;
       font-weight: 800;
       letter-spacing: -0.025em;
-      color: #fff;
+      color: var(--text);
       margin-bottom: 0.5rem;
     }
 
@@ -439,7 +446,7 @@
     .dash-box__title {
       font-size: 0.92rem;
       font-weight: 700;
-      color: #fff;
+      color: var(--text);
       display: flex;
       align-items: center;
       gap: 0.45rem;

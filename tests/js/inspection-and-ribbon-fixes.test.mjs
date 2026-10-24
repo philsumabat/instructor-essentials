@@ -380,7 +380,7 @@ test('6. Removal of Synthetic Student IDs in Parentheses', () => {
   assert.ok(!viewerInfo.textContent.includes('(') && !viewerInfo.textContent.includes(')'), 'No parentheses in viewer student name');
 });
 
-test('7. AI Transcription During Grading & Point Auto-Awarding', () => {
+test('7. Written Items Initialized Unreviewed with 0 Points During Scanning', () => {
   const { ctx } = loadCheckerSandbox();
 
   const mockLayout = {
@@ -405,32 +405,17 @@ test('7. AI Transcription During Grading & Point Auto-Awarding', () => {
     }
   };
 
-  // Scan with matching OCR transcription
-  const mockScanMatching = {
-    name: 'scan_match.jpg',
-    img: new ctx.Image(),
-    simulatedOcr: { '33': 'Mitochondria' },
-    simulatedOcrConf: { '33': 0.95 }
+  const mockScan = {
+    name: 'scan_01.jpg',
+    img: new ctx.Image()
   };
 
-  const gradeMatch = ctx.processExamScan(mockScanMatching, mockLayout, mockKey, 0.20);
-  assert.equal(gradeMatch.gradedItems['33'].isCorrect, true, 'Matching handwriting OCR is credited as correct');
-  assert.equal(gradeMatch.gradedItems['33'].pointsAwarded, 5, 'Points awarded for exact handwriting match');
-  assert.equal(gradeMatch.gradedItems['33'].aiOcrMatch, true, 'aiOcrMatch flag is true');
-  assert.equal(gradeMatch.rawScore, 5, 'rawScore includes credited points');
-
-  // Scan with non-matching OCR transcription
-  const mockScanMismatch = {
-    name: 'scan_mismatch.jpg',
-    img: new ctx.Image(),
-    simulatedOcr: { '33': 'Chloroplast' },
-    simulatedOcrConf: { '33': 0.90 }
-  };
-
-  const gradeMismatch = ctx.processExamScan(mockScanMismatch, mockLayout, mockKey, 0.20);
-  assert.equal(gradeMismatch.gradedItems['33'].isCorrect, false, 'Non-matching OCR is not auto-credited');
-  assert.equal(gradeMismatch.gradedItems['33'].status, 'unreviewed', 'Mismatch is left unreviewed for instructor');
-  assert.equal(gradeMismatch.rawScore, 0, 'rawScore remains 0 until reviewed');
+  const grade = ctx.processExamScan(mockScan, mockLayout, mockKey, 0.20);
+  assert.equal(grade.gradedItems['33'].isCorrect, false, 'Written items start unreviewed and not auto-credited');
+  assert.equal(grade.gradedItems['33'].pointsAwarded, 0, 'Written items start with 0 points awarded');
+  assert.equal(grade.gradedItems['33'].status, 'unreviewed', 'Written items have status unreviewed');
+  assert.equal(grade.gradedItems['33'].reviewed, false, 'Written items reviewed flag is false');
+  assert.equal(grade.rawScore, 0, 'rawScore is 0 until teacher manually grades');
 });
 
 test('8. Horizontal Grading Numbering & Scoped Navigation', () => {

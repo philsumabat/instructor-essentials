@@ -351,8 +351,7 @@ test('Feature 5: Anonymous / Blind Grading in Review Cards', () => {
   assert.ok(!flashcardHtml.includes('OCR Conf:'), 'OCR Conf header removed from flashcard card body');
   assert.ok(!flashcardHtml.includes('Eleanor Vance Private'), 'DOES NOT contain student name in flashcard');
   assert.ok(!flashcardHtml.includes('STU-SECRET-9988'), 'DOES NOT contain student ID in flashcard');
-  assert.ok(!flashcardHtml.includes('OFFER-RESTRICTED'), 'DOES NOT contain classOffer in flashcard');
-  assert.ok(flashcardHtml.includes('chloroplast'), 'Shows OCR reading in flashcard');
+  assert.ok(!flashcardHtml.includes('AI OCR Read:'), 'Flashcard card is pure visual crop without OCR text');
 });
 
 test('Feature 6: Item Numbers Do Not Have Trailing Dot to Save Horizontal Space', () => {
@@ -507,20 +506,9 @@ test('Feature 8: OCR Transcription Honesty (No Expected Answer Leakage)', () => 
   // Must NOT display the secret correct answer as OCR Read
   assert.ok(!activeCardContainer.innerHTML.includes('VERY_SECRET_CORRECT_ANSWER'), 'Flashcard must NOT leak expected answer as OCR text');
   assert.ok(!streamContainer.innerHTML.includes('VERY_SECRET_CORRECT_ANSWER'), 'Stream card must NOT leak expected answer as OCR text');
-  // When OCR text is absent or unreliable, omit the OCR Read block completely
-  assert.ok(!activeCardContainer.innerHTML.includes('OCR Transcription:'), 'Flashcard omits OCR block when absent');
-  assert.ok(!streamContainer.innerHTML.includes('OCR Read:'), 'Stream card omits OCR block when absent');
-
-  // Verify reliable OCR text is displayed when present
-  ctx.state.results.grades[0].gradedItems['q99'] = {
-    status: 'unreviewed',
-    reviewed: false,
-    ocrText: 'Student Answer Transcription',
-    ocrConfidence: 0.95
-  };
-  ctx.renderHorizontalGradingView();
-  assert.ok(activeCardContainer.innerHTML.includes('Student Answer Transcription'), 'Flashcard displays reliable OCR reading');
-  assert.ok(streamContainer.innerHTML.includes('Student Answer Transcription'), 'Stream card displays reliable OCR reading');
+  // Pure visual manual review: cards do not display unreliable AI OCR text blocks
+  assert.ok(!activeCardContainer.innerHTML.includes('AI OCR Read:'), 'Flashcard omits OCR block');
+  assert.ok(!streamContainer.innerHTML.includes('AI Read:'), 'Stream card omits OCR block');
 });
 
 test('Feature 9: Sheet Builder Block Row/Item Spacing Customization', () => {

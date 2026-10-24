@@ -235,36 +235,26 @@ test('2. cropROIFromScan dimension fallback and safe minimums', async () => {
   assert.ok(destCanvas.height >= 50);
 });
 
-test('3. HandwritingEngine 4-Tier Offline-First Cascade & Token Management', async () => {
-  const { context, storage } = await loadCheckerSandbox();
-  const HandwritingEngine = context.HandwritingEngine;
-  assert.ok(HandwritingEngine, 'HandwritingEngine must exist');
+test('3. +1.0mm Crop Extraction with No Wall Stripping', async () => {
+  const { context, sandbox, checkerHtml } = await loadCheckerSandbox();
+  const cropROIFromScan = context.cropROIFromScan;
+  assert.equal(typeof cropROIFromScan, 'function', 'cropROIFromScan must be exported');
 
-  // Token management in localStorage
-  HandwritingEngine.setHFToken('hf_test_token_12345');
-  assert.equal(HandwritingEngine.getHFToken(), 'hf_test_token_12345');
-  assert.equal(storage['toolkit_hf_token'], 'hf_test_token_12345');
+  // Verify stripBoxWallsFromImageData is removed
+  assert.ok(!checkerHtml.includes('function stripBoxWallsFromImageData'), 'stripBoxWallsFromImageData completely removed');
 
-  HandwritingEngine.setHFToken('');
-  assert.equal(HandwritingEngine.getHFToken(), '');
-  assert.equal(storage['toolkit_hf_token'], undefined);
+  const destCanvas = sandbox.document.createElement('canvas');
+  const grade = {
+    scanImg: sandbox.document.createElement('canvas'),
+    targetW: 840,
+    targetH: 1188,
+    rotationDeg: 0
+  };
 
-  // Tier 2: Blank detector on empty/white canvas
-  const canvas = context.document.createElement('canvas');
-  const t2Result = HandwritingEngine.runTier2LocalOCR(canvas);
-  assert.ok(t2Result, 'Tier 2 should classify blank canvas');
-  assert.equal(t2Result.tier, 2);
-  assert.equal(t2Result.text, '');
-  assert.ok(t2Result.confidence > 0.9);
-
-  // Tier 3: Zero-failure visual crop fallback
-  const result = await HandwritingEngine.transcribeHandwritingCrop(null);
-  assert.equal(result.tier, 3, 'Null canvas must yield Tier 3 visual fallback');
-  assert.equal(result.source, 'visual-fallback');
-
-  // Offline robustness: Serverless booster returns null when offline
-  const t4Offline = await HandwritingEngine.runTier4HFServerless(canvas);
-  assert.equal(t4Offline, null, 'Serverless booster must safely resolve null when offline');
+  const roi = { x: 50, y: 100, w: 100, h: 30 };
+  const res = cropROIFromScan(grade, roi, destCanvas, 'item1');
+  assert.equal(res, destCanvas);
+  assert.ok(destCanvas.width > 400, 'Crop canvas width incorporates outward +1mm padding');
 });
 
 test('4. Passing score stepper handles 0% threshold without reverting to 60%', async () => {
@@ -323,10 +313,10 @@ test('5. Branding, Single Sign-in, and Header Ribbon Cleanliness across pages', 
   assert.ok(indexHtml.includes('id="btn-google-drive" class="btn btn--secondary btn-google-drive" style="display: none;"'), 'Sheet Builder hides gdrive button by default');
   assert.ok(checkerHtml.includes('id="btn-google-drive" class="btn btn--secondary btn-google-drive" style="display: none;"'), 'Checker Studio hides gdrive button by default');
 
-  // 3. New Class / Clear button rename and TrOCR settings button
+  // 3. New Class / Clear button rename and TrOCR settings button removal
   assert.ok(checkerHtml.includes('<span>New Class / Clear</span>'), 'Checker Studio reset button renamed to New Class / Clear');
-  assert.ok(checkerHtml.includes('id="btn-trocr-settings"'), 'Checker Studio has TrOCR settings button in ribbon');
-  assert.ok(checkerHtml.includes('id="modal-trocr-settings"'), 'Checker Studio has TrOCR settings modal');
+  assert.ok(!checkerHtml.includes('id="btn-trocr-settings"'), 'Checker Studio does not have TrOCR settings button');
+  assert.ok(!checkerHtml.includes('id="modal-trocr-settings"'), 'Checker Studio does not have TrOCR settings modal');
   assert.ok(checkerHtml.includes('id="modal-new-class-prompt"'), 'Checker Studio has non-blocking new class prompt modal');
 
   // 4. Student Roster table clean: no Exam ID column
@@ -441,97 +431,42 @@ test('7. Session restore scan isolation, _isBlankCanvas guard, and placeholder D
   assert.equal(circlesDrawn, 0, 'drawGradeOnCanvas does not draw floating marks when scan is blank canvas');
 });
 
-test('8. HandwritingEngine Tier 2 morphology honesty & dual HF token sync', async () => {
-  const { context, storage } = await loadCheckerSandbox();
-  const HandwritingEngine = context.HandwritingEngine;
-  const checkerHtml = await readFile(resolve(root, 'builder/checker.html'), 'utf8');
+test('8. Unreviewed items render with neutral pending styling and IN REVIEW status pill', async () => {
+  const { context, checkerHtml } = await loadCheckerSandbox();
+  assert.ok(checkerHtml.includes('.badge-in-review'), '.badge-in-review style class present');
+  assert.ok(checkerHtml.includes('Pending Review (—/'), 'Pending Review label used in canvas rendering');
 
-  // Verify inputs in modals
-  assert.ok(checkerHtml.includes('id="input-hf-token"'), 'input-hf-token present');
-  assert.ok(checkerHtml.includes('input-hf-token-field'), 'input-hf-token-field class present');
-
-  // Verify dual persistence
-  HandwritingEngine.setHFToken('hf_unified_key_999');
-  assert.equal(storage['toolkit_hf_token'], 'hf_unified_key_999');
-  assert.equal(storage['instructor_hf_token'], 'hf_unified_key_999');
-  assert.equal(HandwritingEngine.getHFToken(), 'hf_unified_key_999');
-
-  HandwritingEngine.setHFToken('');
-  assert.equal(storage['toolkit_hf_token'], undefined);
-  assert.equal(storage['instructor_hf_token'], undefined);
-  assert.equal(HandwritingEngine.getHFToken(), '');
-
-  // Verify Tier 2 morphology honesty
-  const strokeCanvas = {
-    width: 100,
-    height: 30,
-    getContext: () => ({
-      getImageData: () => {
-        // Create synthetic data with dark pixels
-        const data = new Uint8ClampedArray(100 * 30 * 4);
-        for (let i = 0; i < data.length; i += 4) {
-          data[i] = 10; data[i + 1] = 10; data[i + 2] = 10; data[i + 3] = 255;
-        }
-        return { data };
+  const grade = {
+    studentId: 'STU-100',
+    studentName: 'Alice',
+    rawScore: 0,
+    maxScore: 5,
+    percentage: 0,
+    gradedItems: {
+      'text_item': {
+        kind: 'text',
+        roi: { x: 10, y: 10, w: 50, h: 20 },
+        maxPoints: 5,
+        pointsAwarded: 0,
+        status: 'unreviewed',
+        reviewed: false
       }
-    })
+    }
   };
-  const t2Result = HandwritingEngine.runTier2LocalOCR(strokeCanvas, { expected: 'SECRET_EXPECTED' });
-  assert.ok(t2Result, 'Tier 2 result exists');
-  assert.equal(t2Result.text, '[Handwritten Text]', 'Must return honest [Handwritten Text] instead of stroke counts or expected answers');
+
+  assert.equal(context.hasUnreviewedItems(grade), true, 'hasUnreviewedItems returns true for unreviewed write-ins');
 });
 
-test('9. HandwritingEngine cascade prioritizes Tier 4 HF serverless when token is set', async () => {
-  const { context, sandbox } = await loadCheckerSandbox();
-  const HandwritingEngine = context.HandwritingEngine;
-  
-  // Set token
-  HandwritingEngine.setHFToken('hf_mock_token');
-  context.navigator.onLine = true;
-  
-  // Create a canvas with content so it's not detected as blank
-  const strokeCanvas = {
-    width: 100,
-    height: 30,
-    getContext: () => ({
-      getImageData: () => {
-        const data = new Uint8ClampedArray(100 * 30 * 4);
-        for (let i = 0; i < data.length; i += 4) {
-          data[i] = 10; data[i + 1] = 10; data[i + 2] = 10; data[i + 3] = 255;
-        }
-        return { data };
-      }
-    }),
-    toBlob: (cb) => cb(new sandbox.Blob(['mock_image_bytes']))
-  };
-  
-  // Mock XMLHttpRequest for Hugging Face Inference API
-  let xhrCalled = false;
-  context.XMLHttpRequest = class {
-    constructor() {
-      this.status = 200;
-      this.responseText = JSON.stringify([{ generated_text: 'Mitochondria' }]);
-    }
-    open(method, url) {
-      this.url = url;
-    }
-    setRequestHeader(k, v) {
-      this.headers = this.headers || {};
-      this.headers[k] = v;
-    }
-    send(blob) {
-      xhrCalled = true;
-      assert.ok(this.url.includes('microsoft/trocr-small-handwritten') || this.url.includes('api-inference.huggingface.co'));
-      assert.equal(this.headers['Authorization'], 'Bearer hf_mock_token');
-      if (typeof this.onload === 'function') this.onload();
-    }
-  };
+test('9. MessageChannel unthrottled background yielding and Screen Wake Lock', async () => {
+  const checkerHtml = await readFile(resolve(root, 'builder/checker.html'), 'utf8');
 
-  const result = await HandwritingEngine.transcribeHandwritingCrop(strokeCanvas);
-  assert.equal(xhrCalled, true, 'XMLHttpRequest must be dispatched when HF token is set');
-  assert.equal(result.tier, 4, 'Tier 4 must be prioritized over Tier 2 when token is present');
-  assert.equal(result.text, 'Mitochondria');
-  assert.equal(typeof HandwritingEngine.runTier2CanvasMorphology, 'function', 'runTier2CanvasMorphology alias must exist');
+  // Verify MessageChannel yielding when tab is hidden
+  assert.ok(checkerHtml.includes('MessageChannel'), 'MessageChannel used for background yielding');
+  assert.ok(checkerHtml.includes('document.hidden'), 'document.hidden checked for background mode');
+
+  // Verify Screen Wake Lock and title progress
+  assert.ok(checkerHtml.includes('wakeLock'), 'Screen Wake Lock requested during grading');
+  assert.ok(checkerHtml.includes('Grading... - Checker Studio'), 'Dynamic title updates during grading');
 });
 
 test('10. cropROIFromScan returns cached crop even when scan is _isBlankCanvas', async () => {

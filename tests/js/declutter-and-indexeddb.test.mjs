@@ -30,8 +30,8 @@ test('Header Ribbon: Decluttered actions, protected brand logo, and hidden compa
     'btn-google-drive is hidden from ribbon'
   );
   assert.ok(
-    checkerHtml.includes('id="btn-trocr-settings"') && checkerHtml.includes('id="btn-trocr-settings" class="btn btn--secondary" style="display: none;"'),
-    'btn-trocr-settings is hidden from ribbon'
+    !checkerHtml.includes('id="btn-trocr-settings"'),
+    'btn-trocr-settings is completely removed from ribbon'
   );
 
   // 3. Brand protection: .app-brand has flex-shrink: 0
@@ -64,14 +64,13 @@ test('IndexedDB Persistence: ToolkitDB module with session save, load, and clear
   assert.ok(checkerHtml.includes('clearSession()'), 'ToolkitDB has clearSession');
 });
 
-test('Zero-Config AI Handwriting OCR: Toggle, batch transcribe, and isOcrMatch matching logic', async () => {
+test('Pure Manual Handwriting Review: AI OCR toggle removed, isOcrMatch matching logic preserved', async () => {
   const checkerHtml = await readFile(resolve(root, 'builder/checker.html'), 'utf8');
 
-  // 1. DOM UI elements
-  assert.ok(checkerHtml.includes('id="chk-ai-handwriting"'), 'chk-ai-handwriting switch present');
-  assert.ok(checkerHtml.includes('id="btn-batch-ai-transcribe"'), 'btn-batch-ai-transcribe button present');
+  // 1. DOM UI elements removed
+  assert.ok(!checkerHtml.includes('id="chk-ai-handwriting"'), 'chk-ai-handwriting switch removed');
+  assert.ok(!checkerHtml.includes('id="btn-batch-ai-transcribe"'), 'btn-batch-ai-transcribe button removed');
   assert.ok(checkerHtml.includes('function isOcrMatch('), 'isOcrMatch function defined');
-  assert.ok(checkerHtml.includes('function autoTranscribeActiveItem()'), 'autoTranscribeActiveItem function defined');
 
   // 2. Test isOcrMatch in VM
   const distMatch = checkerHtml.match(/function levenshteinDistance[\s\S]*?window\.stringSimilarity = stringSimilarity;/);

@@ -3144,6 +3144,10 @@ function updateGoogleUiState() {
     if (headerDisc) headerDisc.style.display = 'none';
     if (headerConn) headerConn.style.display = 'flex';
     if (headerName) headerName.textContent = googleDriveState.user.name || googleDriveState.user.email || 'Instructor';
+    const userChip = document.querySelector('.google-user-chip');
+    if (userChip) {
+      userChip.title = `Signed in with Google (${googleDriveState.user.name || ''}${googleDriveState.user.email ? ' - ' + googleDriveState.user.email : ''})`;
+    }
     if (headerAvatar) {
       if (googleDriveState.user.picture) {
         headerAvatar.src = googleDriveState.user.picture;

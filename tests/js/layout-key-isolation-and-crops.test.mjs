@@ -201,69 +201,58 @@ test('2. Layout Upload Key Isolation: Preserves embedded authentic key if presen
   assert.equal(context.state.key.items['1'].answer, 'B');
 });
 
-test('3. AI Handwriting Transcription: autoTranscribeActiveItem accesses state.results.grades and sets match badge', async () => {
+test('3. Interactive Bubble Mark Correction: correctBubbleMark toggles mark and recalculates score & flags', async () => {
   const { context } = await loadCheckerSandbox();
 
   let toastMessage = '';
   context.showToast = (msg) => { toastMessage = msg; };
 
-  // Mock active grading results in state.results.grades
+  // Setup student with 1 question and 2 bubbles
+  const student = {
+    studentId: '2026-0001',
+    studentName: 'Alice Santos',
+    rawScore: 0,
+    maxScore: 1,
+    percentage: 0,
+    bubbleDiagnostics: [
+      { item: '1', choice: 'A', canX: 100, canY: 200, rad: 8, isMarked: false },
+      { item: '1', choice: 'B', canX: 120, canY: 200, rad: 8, isMarked: false }
+    ],
+    gradedItems: {
+      '1': { expected: 'B', actual: '', pointsAwarded: 0, maxPoints: 1.0, isCorrect: false }
+    },
+    reviewFlags: { blankCount: 1, multiMarkCount: 0, needsReview: true }
+  };
+
   context.state.results = {
-    grades: [
-      {
-        studentId: '2026-0001',
-        studentName: 'Alice Santos',
-        gradedItems: {
-          'item_33': {
-            cropDataUrl: 'data:image/jpeg;base64,sampleCropAlice',
-            status: 'unreviewed',
-            ocrText: '',
-            aiOcrMatch: false
-          }
-        }
-      },
-      {
-        studentId: '2026-0002',
-        studentName: 'Bob Reyes',
-        gradedItems: {
-          'item_33': {
-            cropDataUrl: 'data:image/jpeg;base64,sampleCropBob',
-            status: 'unreviewed',
-            ocrText: '',
-            aiOcrMatch: false
-          }
-        }
-      }
-    ]
+    grades: [student],
+    passThreshold: 60
   };
-
   context.state.key = {
-    items: {
-      'item_33': { answer: 'Photosynthesis', points: 2.0 }
-    }
+    total_points: 1,
+    items: { '1': { answer: 'B', points: 1.0 } }
   };
+  context.state.selectedStudentIdx = 0;
 
-  // Mock HandwritingEngine transcription
-  context.HandwritingEngine.transcribeHandwritingCrop = async (cropUrl) => {
-    if (cropUrl.includes('Alice')) {
-      return { text: 'Photosynthesis', confidence: 0.95 };
-    }
-    return { text: 'Cellular Respiration', confidence: 0.91 };
-  };
+  // 1. Hit test
+  const hit = context.findBubbleAtCanvasCoords(
+    { getBoundingClientRect: () => ({ left: 0, top: 0, width: 840, height: 1188 }), width: 840, height: 1188 },
+    student,
+    120,
+    200
+  );
+  assert.ok(hit, 'Bubble B hit detected');
+  assert.equal(hit.choice, 'B');
 
-  // Run autoTranscribeActiveItem
-  await context.autoTranscribeActiveItem();
-
-  const aliceItem = context.state.results.grades[0].gradedItems['item_33'];
-  const bobItem = context.state.results.grades[1].gradedItems['item_33'];
-
-  assert.equal(aliceItem.ocrText, 'Photosynthesis', 'Alice OCR text transcribed');
-  assert.equal(aliceItem.aiOcrMatch, true, 'Alice answer matched expected key');
-
-  assert.equal(bobItem.ocrText, 'Cellular Respiration', 'Bob OCR text transcribed');
-  assert.equal(bobItem.aiOcrMatch, false, 'Bob answer did not match expected key');
-
-  assert.ok(toastMessage.includes('Auto-transcribed 2 student answers'), 'Toast confirms 2 transcribed answers');
+  // 2. Correct bubble mark
+  context.correctBubbleMark(student, hit);
+  assert.equal(hit.isMarked, true, 'Choice B marked');
+  assert.equal(student.gradedItems['1'].actual, 'B', 'Actual updated to B');
+  assert.equal(student.gradedItems['1'].isCorrect, true, 'Marked item is correct');
+  assert.equal(student.rawScore, 1, 'Raw score updated to 1');
+  assert.equal(student.percentage, 100, 'Percentage updated to 100%');
+  assert.equal(student.reviewFlags.blankCount, 0, 'Blank count resolved to 0');
+  assert.ok(toastMessage.includes('Marked Item 1 (B)'), 'Toast confirms correction');
 });
 
 test('4. Zero-Loss Restore: cropROIFromScan returns early without blanking canvas when cachedCrop exists', async () => {
@@ -381,8 +370,7 @@ test('7. Emoji Audit: Decorative emojis removed from signal badges, legend, and 
   assert.ok(!checkerHtml.includes('>✨ Optimal</span>'), 'Sparkles emoji removed from optimal badge');
 
   // Check buttons & toasts
-  assert.ok(!checkerHtml.includes('<span>✨ Auto-Transcribe Item</span>'), 'Sparkles emoji removed from auto-transcribe button');
-  assert.ok(checkerHtml.includes('<span>Auto-Transcribe Item</span>'), 'Clean Auto-Transcribe Item button text');
+  assert.ok(!checkerHtml.includes('Auto-Transcribe Item'), 'Auto-Transcribe Item button removed');
   assert.ok(!checkerHtml.includes('💾 Progress saved'), 'Floppy disk emoji removed from save progress toast');
 });
 

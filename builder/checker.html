@@ -858,6 +858,17 @@
       font-size: 0.72rem;
     }
 
+    .badge-in-review {
+      display: inline-block;
+      padding: 0.2rem 0.5rem;
+      background: #eff6ff;
+      color: #2563eb;
+      font-weight: 700;
+      border-radius: var(--radius-full);
+      font-size: 0.72rem;
+      border: 1px solid #bfdbfe;
+    }
+
     /* Sheet Viewer Modal / Canvas */
     .viewer-panel {
       background: var(--panel);
@@ -2040,14 +2051,19 @@
 
         <div id="google-connected-view" style="display: none; align-items: center; gap: 0.65rem;">
           <div class="google-user-chip" title="Signed into institutional Google account">
+            <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+            </svg>
             <span class="sync-status-dot"></span>
             <img id="user-avatar-img" class="user-avatar" src="" alt="" style="display: none;">
-            <span id="user-display-name" style="font-weight: 600; color: var(--text);">Instructor</span>
+            <span id="user-display-name" style="display: none;" aria-hidden="true">Instructor</span>
           </div>
           <button type="button" id="btn-google-logout" class="btn btn--secondary btn--sm is-danger" title="Sign out of Google account">Sign Out</button>
         </div>
       </div>
-      <button type="button" id="btn-trocr-settings" class="btn btn--secondary" style="display: none;" aria-hidden="true"></button>
       <div class="dropdown-menu" id="dropdown-export-reports" style="display: none;" aria-hidden="true">
         <button type="button" id="btn-export-reports-toggle" style="display: none;"></button>
         <button type="button" id="btn-ribbon-export-zip" style="display: none;"></button>
@@ -2537,6 +2553,7 @@
                 <span class="legend-item"><span class="legend-dot legend-dot--correct"></span> Correct</span>
                 <span class="legend-item"><span class="legend-dot legend-dot--incorrect"></span> Incorrect</span>
                 <span class="legend-item"><span class="legend-dot legend-dot--missed"></span> Missed Key</span>
+                <span class="legend-item" style="color: var(--primary); font-weight: 600; margin-left: auto; font-size: 0.74rem;">💡 Click any bubble to correct mark detection</span>
               </div>
 
               <!-- Canvas container with canvas & empty state -->
@@ -2549,11 +2566,11 @@
                 <div id="roster-scans-placeholder" class="roster-preview-empty" style="display: none; padding: 2rem 1.5rem; text-align: center; flex-direction: column; align-items: center; justify-content: center; background: var(--panel-alt); border-radius: var(--radius-md); border: 1.5px dashed var(--border);">
                   <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary); margin-bottom: 0.75rem;"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
                   <h4 style="margin: 0 0 0.35rem 0; font-size: 0.95rem; font-weight: 700;">Cloud Session Restored</h4>
-                  <p style="margin: 0 0 1rem 0; font-size: 0.78rem; color: var(--text-muted); max-width: 280px; line-height: 1.4;">Scores, item analyses, and keys are safely loaded. Raw scan images were excluded to conserve cloud quota. Attach your scans to inspect original sheets.</p>
+                  <p style="margin: 0 0 1rem 0; font-size: 0.78rem; color: var(--text-muted); max-width: 280px; line-height: 1.4;">Scores, item analyses, and keys are safely loaded. Attach your original scanned exam PDF or image files to view original sheets and crops.</p>
                   <label class="btn btn--secondary btn-sm" style="cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem;">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-                    <span>Attach Scans Folder</span>
-                    <input type="file" id="input-attach-scans-folder" multiple accept="image/*,.pdf,application/pdf" style="display: none;" />
+                    <span>[ Attach Original Exam PDF / Scans ]</span>
+                    <input type="file" id="input-attach-scans-folder" multiple accept=".pdf,application/pdf,image/*,.jpg,.jpeg,.png,.webp,.bmp,.tiff" style="display: none;" />
                   </label>
                 </div>
                 <!-- Accessible via #roster-preview-canvas and legacy alias -->
@@ -2960,16 +2977,6 @@
               </button>
             </div>
 
-            <!-- Zero-Config AI Handwriting Toggle & Auto-Transcribe -->
-            <label class="toggle-switch" style="display: inline-flex; align-items: center; gap: 0.35rem; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.3rem 0.6rem; cursor: pointer; user-select: none;" title="Automatically transcribe student handwriting and pre-match against answer key">
-              <input type="checkbox" id="chk-ai-handwriting" checked style="accent-color: var(--accent); cursor: pointer;">
-              <span style="font-size: 0.78rem; font-weight: 600; color: var(--text);">AI Handwriting OCR</span>
-            </label>
-            <button type="button" id="btn-batch-ai-transcribe" class="btn btn--accent btn--sm" style="display: inline-flex; align-items: center; gap: 0.35rem;" title="Transcribe all student answers for this item">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg>
-              <span>Auto-Transcribe Item</span>
-            </button>
-
             <button type="button" id="btn-horizontal-accept-all" class="btn btn--secondary btn--sm" style="display: inline-flex; align-items: center; gap: 0.35rem;" title="Accept all remaining unreviewed responses for this item with full points">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
               <span>Accept All Unreviewed</span>
@@ -3247,15 +3254,11 @@
 
       <!-- Advanced / Custom Client ID Override (optional for self-hosters or custom domains) -->
       <details style="font-size: 0.72rem; color: var(--text-muted); background: var(--panel-alt); padding: 0.45rem 0.65rem; border-radius: var(--radius-sm); border: 1px solid var(--border);">
-        <summary style="cursor: pointer; font-weight: 600; color: var(--text-muted);">Advanced: Custom Google Client ID &amp; TrOCR Token</summary>
+        <summary style="cursor: pointer; font-weight: 600; color: var(--text-muted);">Advanced: Custom Google Client ID</summary>
         <div style="margin-top: 0.35rem; display: flex; flex-direction: column; gap: 0.5rem;">
           <div>
             <label style="display: block; margin-bottom: 0.2rem; font-weight: 600;">Custom Google Client ID:</label>
             <input type="text" id="input-gdrive-client-id" placeholder="998750275888-cbvmqvjbfopbsv0oe5pu238grrpv7chm.apps.googleusercontent.com" style="width: 100%; padding: 0.35rem 0.5rem; font-size: 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--panel); color: var(--text); box-sizing: border-box;">
-          </div>
-          <div>
-            <label style="display: block; margin-bottom: 0.2rem; font-weight: 600;">Hugging Face Token (Optional Serverless Booster):</label>
-            <input type="password" id="input-gdrive-hf-token" class="input-hf-token-field" placeholder="hf_... (free serverless TrOCR)" style="width: 100%; padding: 0.35rem 0.5rem; font-size: 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--panel); color: var(--text); box-sizing: border-box;">
           </div>
         </div>
       </details>
@@ -3337,57 +3340,6 @@
     </div>
   </dialog>
 
-  <!-- Modal: TrOCR & Handwriting Recognition Settings -->
-  <dialog id="modal-trocr-settings" style="display: none; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 0; background: var(--panel); color: var(--text); max-width: 520px; width: 95vw; box-shadow: var(--shadow-xl); overflow: hidden;">
-    <div style="display: flex; align-items: center; justify-content: space-between; padding: 1.1rem 1.4rem; border-bottom: 1px solid var(--border); background: var(--panel-header);">
-      <div style="display: flex; align-items: center; gap: 0.5rem;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--accent);"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-        <h3 style="font-size: 1.05rem; font-weight: 700; margin: 0;">TrOCR &amp; Handwriting Engine</h3>
-      </div>
-      <button type="button" class="btn btn--secondary btn-xs" onclick="$('modal-trocr-settings')?.close();" aria-label="Close dialog">✕</button>
-    </div>
-    <div style="padding: 1.35rem 1.4rem; display: flex; flex-direction: column; gap: 1rem;">
-      <div style="display: flex; align-items: center; justify-content: space-between; background: var(--panel-alt); padding: 0.65rem 0.85rem; border-radius: var(--radius-sm); border: 1px solid var(--border);">
-        <div>
-          <div style="font-weight: 700; font-size: 0.82rem; color: var(--text);">Offline-First Architecture</div>
-          <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.15rem;">100% Client-Side • Zero Mandatory Cloud</div>
-        </div>
-        <span class="badge-reviewed" style="font-size: 0.7rem; background: var(--success-light); color: var(--success); border: 1px solid var(--success); padding: 0.15rem 0.45rem; border-radius: var(--radius-full);">✓ Guaranteed</span>
-      </div>
-
-      <div style="font-size: 0.78rem; color: var(--text-muted); line-height: 1.5;">
-        <strong style="color: var(--text);">4-Tier Grading Cascade:</strong>
-        <ol style="margin: 0.4rem 0 0 1.2rem; padding: 0;">
-          <li><strong>Tier 1:</strong> Local cached ONNX TrOCR (WebAssembly/WebGL).</li>
-          <li><strong>Tier 2:</strong> Embedded heuristic analyzer &amp; blank detector.</li>
-          <li><strong>Tier 3:</strong> Zero-failure visual crop fallback (1-click manual scoring).</li>
-          <li><strong>Tier 4:</strong> Optional free Hugging Face Serverless API booster.</li>
-        </ol>
-      </div>
-
-      <div style="display: flex; flex-direction: column; gap: 0.6rem; border-top: 1px solid var(--border); padding-top: 0.85rem;">
-        <label style="display: flex; align-items: center; justify-content: space-between; cursor: pointer;">
-          <div>
-            <div style="font-size: 0.82rem; font-weight: 600; color: var(--text);">Zero-Config AI Handwriting Recognition</div>
-            <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.15rem;">Automatically transcribes written answer crops with zero keys or setup needed.</div>
-          </div>
-          <input type="checkbox" id="chk-auto-trocr" checked style="accent-color: var(--accent); width: 1.15rem; height: 1.15rem; cursor: pointer;">
-        </label>
-        <div style="font-size: 0.7rem; color: var(--text-muted); background: var(--panel-alt); padding: 0.5rem 0.65rem; border-radius: var(--radius-sm); border: 1px solid var(--border);">
-          Runs client-side TrOCR / ONNX in your browser or automatically connects to free serverless inference. No API keys or passwords required.
-        </div>
-        <div style="display: flex; flex-direction: column; gap: 0.35rem; margin-top: 0.25rem;">
-          <label for="input-hf-token" style="font-size: 0.76rem; font-weight: 600; color: var(--text);">Hugging Face API Token (Free Serverless Booster)</label>
-          <input type="password" id="input-hf-token" class="input-hf-token-field" placeholder="hf_... (free serverless TrOCR)" style="width: 100%; padding: 0.4rem 0.6rem; font-size: 0.78rem; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--panel-alt); color: var(--text); box-sizing: border-box;">
-          <div style="font-size: 0.7rem; color: var(--text-muted);">Optional free token from huggingface.co to boost transcription speed during heavy loads.</div>
-        </div>
-      </div>
-
-      <div style="display: flex; justify-content: flex-end; border-top: 1px solid var(--border); padding-top: 0.85rem;">
-        <button type="button" class="btn btn--secondary btn-sm" onclick="$('modal-trocr-settings')?.close();">Done</button>
-      </div>
-    </div>
-  </dialog>
 
   <!-- Embedded Sample Data & Client-Side Engine -->
   <script>
@@ -7228,123 +7180,7 @@
     }
     window.getHorizontalGradingItems = getHorizontalGradingItems;
 
-    // Stage 4: Morphological Box-Wall Stripping for OCR & ROI Crops
-    function stripBoxWallsFromImageData(imgData) {
-      if (!imgData || !imgData.data || !imgData.width || !imgData.height) return imgData;
-      const w = imgData.width;
-      const h = imgData.height;
-      const data = imgData.data;
-      if (w < 6 || h < 6 || data.length < w * h * 4) return imgData;
 
-      const isDark = (x, y) => {
-        const idx = (y * w + x) * 4;
-        const lum = 0.299 * data[idx] + 0.587 * data[idx + 1] + 0.114 * data[idx + 2];
-        return lum < 165;
-      };
-      const setWhite = (x, y) => {
-        const idx = (y * w + x) * 4;
-        data[idx] = 255;
-        data[idx + 1] = 255;
-        data[idx + 2] = 255;
-        data[idx + 3] = 255;
-      };
-
-      const bandY = Math.max(1, Math.round(h * 0.20));
-      const bandX = Math.max(1, Math.round(w * 0.20));
-
-      const isRowWall = (y) => {
-        let darkCnt = 0, maxRun = 0, curRun = 0;
-        for (let x = 0; x < w; x++) {
-          if (isDark(x, y)) {
-            darkCnt++;
-            curRun++;
-            if (curRun > maxRun) maxRun = curRun;
-          } else {
-            curRun = 0;
-          }
-        }
-        return (darkCnt > w * 0.75) || (maxRun >= w * 0.72);
-      };
-
-      const isColWall = (x) => {
-        let darkCnt = 0, maxRun = 0, curRun = 0;
-        for (let y = 0; y < h; y++) {
-          if (isDark(x, y)) {
-            darkCnt++;
-            curRun++;
-            if (curRun > maxRun) maxRun = curRun;
-          } else {
-            curRun = 0;
-          }
-        }
-        return (darkCnt > h * 0.75) || (maxRun >= h * 0.72);
-      };
-
-      // 1. Strip horizontal border walls in top 20% and bottom 20% perimeter bands
-      const topWallRows = [];
-      for (let y = 0; y < bandY; y++) {
-        if (isRowWall(y)) topWallRows.push(y);
-      }
-      if (topWallRows.length > 0) {
-        const refY = Math.min(h - 1, Math.max(...topWallRows) + 2);
-        const refIsWall = isRowWall(refY);
-        for (const y of topWallRows) {
-          for (let x = 0; x < w; x++) {
-            const connectedToStroke = !refIsWall && isDark(x, refY);
-            if (!connectedToStroke) setWhite(x, y);
-          }
-        }
-      }
-
-      const botWallRows = [];
-      for (let y = h - bandY; y < h; y++) {
-        if (isRowWall(y)) botWallRows.push(y);
-      }
-      if (botWallRows.length > 0) {
-        const refY = Math.max(0, Math.min(...botWallRows) - 2);
-        const refIsWall = isRowWall(refY);
-        for (const y of botWallRows) {
-          for (let x = 0; x < w; x++) {
-            const connectedToStroke = !refIsWall && isDark(x, refY);
-            if (!connectedToStroke) setWhite(x, y);
-          }
-        }
-      }
-
-      // 2. Strip vertical border walls in left 20% and right 20% perimeter bands
-      const leftWallCols = [];
-      for (let x = 0; x < bandX; x++) {
-        if (isColWall(x)) leftWallCols.push(x);
-      }
-      if (leftWallCols.length > 0) {
-        const refX = Math.min(w - 1, Math.max(...leftWallCols) + 2);
-        const refIsWall = isColWall(refX);
-        for (const x of leftWallCols) {
-          for (let y = 0; y < h; y++) {
-            const connectedToStroke = !refIsWall && isDark(refX, y);
-            if (!connectedToStroke) setWhite(x, y);
-          }
-        }
-      }
-
-      const rightWallCols = [];
-      for (let x = w - bandX; x < w; x++) {
-        if (isColWall(x)) rightWallCols.push(x);
-      }
-      if (rightWallCols.length > 0) {
-        const refX = Math.max(0, Math.min(...rightWallCols) - 2);
-        const refIsWall = isColWall(refX);
-        for (const x of rightWallCols) {
-          for (let y = 0; y < h; y++) {
-            const connectedToStroke = !refIsWall && isDark(refX, y);
-            if (!connectedToStroke) setWhite(x, y);
-          }
-        }
-      }
-
-      return imgData;
-    }
-    window.stripBoxWallsFromImageData = stripBoxWallsFromImageData;
 
     // Helper to draw grade.scanImg into a canonical upright canvas (undoing 90/180/270 deg scan rotation)
     function drawUprightScanImage(ctx, scanImg, targetW, targetH, rotationDeg) {
@@ -7397,7 +7233,7 @@
     }
     window.findStudentNameROI = findStudentNameROI;
 
-    // Crop ROI from rectified scan image into HTMLCanvasElement (with Stage 4 wall stripping)
+    // Crop ROI from rectified scan image into HTMLCanvasElement (+1.0mm padding, full printed box visible)
     function cropROIFromScan(grade, roi, destCanvas, optionalKey = null) {
       if (!grade || !roi || !destCanvas || typeof destCanvas.getContext !== 'function') return null;
       const pxPerMm = 4.0;
@@ -7411,16 +7247,19 @@
       const canW = Math.round(roiW * pxPerMm);
       const canH = Math.round(roiH * pxPerMm);
 
-      // Minimal 4% safety inset so edge handwriting is preserved
-      const insetPx = Math.max(0, Math.round(Math.min(canW, canH) * 0.04));
-      const cropX = canX + insetPx;
-      const cropY = canY + insetPx;
-      const cropW = Math.max(1, canW - insetPx * 2);
-      const cropH = Math.max(1, canH - insetPx * 2);
+      const padMm = 1.0;
+      const padPx = Math.round(padMm * pxPerMm); // 4px padding to capture complete printed box
+      const targetW = grade.targetW || 840;
+      const targetH = grade.targetH || 1188;
+
+      const cropX = Math.max(0, canX - padPx);
+      const cropY = Math.max(0, canY - padPx);
+      const cropW = Math.min(targetW - cropX, canW + (canX - cropX) + padPx);
+      const cropH = Math.min(targetH - cropY, canH + (canY - cropY) + padPx);
 
       const scale = 1.6;
-      destCanvas.width = Math.max(200, Math.round(canW * scale));
-      destCanvas.height = Math.max(50, Math.round(canH * scale));
+      destCanvas.width = Math.max(200, Math.round(cropW * scale));
+      destCanvas.height = Math.max(50, Math.round(cropH * scale));
       const destCtx = destCanvas.getContext('2d');
       if (!destCtx) return null;
       destCtx.imageSmoothingEnabled = true;
@@ -7470,11 +7309,6 @@
         if (offCtx && offCtx.drawImage) {
           drawUprightScanImage(offCtx, grade.scanImg, off.width, off.height, grade.rotationDeg);
           destCtx.drawImage(off, cropX, cropY, cropW, cropH, 0, 0, destCanvas.width, destCanvas.height);
-          if (destCtx.getImageData && destCtx.putImageData) {
-            const croppedData = destCtx.getImageData(0, 0, destCanvas.width, destCanvas.height);
-            stripBoxWallsFromImageData(croppedData);
-            destCtx.putImageData(croppedData, 0, 0);
-          }
           if (roiKey && grade.gradedItems && grade.gradedItems[roiKey] && !grade.gradedItems[roiKey].cropDataUrl) {
             try {
               grade.gradedItems[roiKey].cropDataUrl = destCanvas.toDataURL('image/jpeg', 0.85);
@@ -7491,250 +7325,6 @@
       return null;
     }
     window.cropROIFromScan = cropROIFromScan;
-
-    // 4-Tier Offline-First Handwriting Recognition Pipeline (TrOCR & Visual Fallback)
-    const HandwritingEngine = (function() {
-      let _pipeline = null;
-      let _isLoading = false;
-
-      function getHFToken() {
-        try {
-          return localStorage.getItem('toolkit_hf_token') || localStorage.getItem('instructor_hf_token') || localStorage.getItem('hf_inference_token') || '';
-        } catch {
-          return '';
-        }
-      }
-
-      function setHFToken(token) {
-        try {
-          if (token) {
-            const clean = token.trim();
-            localStorage.setItem('toolkit_hf_token', clean);
-            localStorage.setItem('instructor_hf_token', clean);
-          } else {
-            localStorage.removeItem('toolkit_hf_token');
-            localStorage.removeItem('instructor_hf_token');
-          }
-        } catch {}
-      }
-
-      // Tier 1: On-device cached TrOCR via @xenova/transformers / ONNX WebAssembly
-      async function runTier1LocalTrOCR(canvas) {
-        if (!_pipeline) {
-          if (typeof window !== 'undefined' && !window.transformers && (typeof navigator === 'undefined' || navigator?.onLine)) {
-            try {
-              const mod = await import('https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2');
-              if (mod) window.transformers = mod;
-            } catch (_) {}
-          }
-          if (window.transformers?.pipeline) {
-            try {
-              _isLoading = true;
-              _pipeline = await window.transformers.pipeline('image-to-text', 'Xenova/trocr-small-handwritten', {
-                quantized: true,
-              });
-            } catch (err) {
-              _pipeline = null;
-            } finally {
-              _isLoading = false;
-            }
-          }
-        }
-        if (_pipeline) {
-          const dataUrl = canvas.toDataURL ? canvas.toDataURL('image/png') : canvas;
-          const output = await _pipeline(dataUrl);
-          if (Array.isArray(output) && output[0]?.generated_text) {
-            return {
-              text: output[0].generated_text.trim(),
-              confidence: 0.92,
-              tier: 1,
-              source: 'local-trocr-wasm'
-            };
-          }
-        }
-        return null;
-      }
-
-      // Tier 2: Embedded local OCR engine (fast heuristic analysis & canvas stroke morphology)
-      function runTier2LocalOCR(canvas, options = {}) {
-        try {
-          const ctx = canvas.getContext ? canvas.getContext('2d') : null;
-          if (!ctx) return null;
-          const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-          let darkCount = 0;
-          for (let i = 0; i < imgData.data.length; i += 4) {
-            const a = imgData.data[i + 3];
-            if (a < 30) continue;
-            const lum = 0.299 * imgData.data[i] + 0.587 * imgData.data[i + 1] + 0.114 * imgData.data[i + 2];
-            if (lum < 110) darkCount++;
-          }
-          const density = darkCount / (canvas.width * canvas.height);
-          if (density < 0.005) {
-            return { text: '', confidence: 0.95, tier: 2, source: 'local-blank-detector' };
-          }
-
-          // Embedded lightweight stroke morphology OCR fallback
-          const w = canvas.width;
-          const h = canvas.height;
-          const colHasDark = new Uint8Array(w);
-          for (let x = 0; x < w; x++) {
-            for (let y = 0; y < h; y++) {
-              const idx = (y * w + x) * 4;
-              if (imgData.data[idx + 3] >= 30) {
-                const lum = 0.299 * imgData.data[idx] + 0.587 * imgData.data[idx + 1] + 0.114 * imgData.data[idx + 2];
-                if (lum < 110) { colHasDark[x] = 1; break; }
-              }
-            }
-          }
-          let charSegments = 0;
-          let inChar = false;
-          for (let x = 0; x < w; x++) {
-            if (colHasDark[x] && !inChar) { inChar = true; charSegments++; }
-            else if (!colHasDark[x] && inChar) { inChar = false; }
-          }
-          return {
-            text: '[Handwritten Text]',
-            confidence: 0.75,
-            tier: 2,
-            source: 'local-canvas-morphology'
-          };
-        } catch {}
-        return null;
-      }
-
-      // Tier 4: Opt-in Free Hugging Face Serverless API Booster (via XMLHttpRequest to preserve strict zero-fetch offline contract)
-      async function runTier4HFServerless(canvas) {
-        const token = getHFToken();
-        if (!token || (typeof navigator !== 'undefined' && navigator.onLine === false)) return null;
-
-        return new Promise((resolve) => {
-          try {
-            const sendBlob = (blob) => {
-              if (!blob) return resolve(null);
-              const xhr = new XMLHttpRequest();
-              xhr.open('POST', 'https://api-inference.huggingface.co/models/microsoft/trocr-small-handwritten', true);
-              xhr.timeout = 8000;
-              xhr.setRequestHeader('Authorization', `Bearer ${token}`);
-              xhr.setRequestHeader('Content-Type', 'application/octet-stream');
-              xhr.onload = function() {
-                if (xhr.status >= 200 && xhr.status < 300) {
-                  try {
-                    const data = JSON.parse(xhr.responseText);
-                    if (Array.isArray(data) && data[0]?.generated_text) {
-                      return resolve({
-                        text: data[0].generated_text.trim(),
-                        confidence: 0.94,
-                        tier: 4,
-                        source: 'hf-serverless-trocr'
-                      });
-                    }
-                  } catch {}
-                }
-                resolve(null);
-              };
-              xhr.onerror = () => resolve(null);
-              xhr.ontimeout = () => resolve(null);
-              xhr.send(blob);
-            };
-
-            if (typeof canvas.toBlob === 'function') {
-              canvas.toBlob(sendBlob, 'image/jpeg', 0.92);
-            } else if (typeof canvas.toDataURL === 'function') {
-              try {
-                const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
-                const byteString = atob(dataUrl.split(',')[1]);
-                const ab = new ArrayBuffer(byteString.length);
-                const ia = new Uint8Array(ab);
-                for (let i = 0; i < byteString.length; i++) ia[i] = byteString.charCodeAt(i);
-                sendBlob(new Blob([ab], { type: 'image/jpeg' }));
-              } catch {
-                resolve(null);
-              }
-            } else {
-              resolve(null);
-            }
-          } catch {
-            resolve(null);
-          }
-        });
-      }
-
-      // 4-Tier Cascade: Tier 4 (Cloud Booster if token configured) -> Tier 1 (Local ONNX) -> Tier 2 (Local Canvas Morphology) -> Tier 3 (Zero-failure Visual Fallback)
-      async function transcribeHandwritingCrop(canvas, options = {}) {
-        if (!canvas) {
-          return { text: '', confidence: 0.0, tier: 3, source: 'visual-fallback' };
-        }
-
-        let targetCanvas = canvas;
-        if (typeof canvas === 'string') {
-          if (typeof document !== 'undefined') {
-            try {
-              const img = new Image();
-              await new Promise((resolve, reject) => {
-                img.onload = resolve;
-                img.onerror = reject;
-                img.src = canvas;
-              });
-              const c = document.createElement('canvas');
-              c.width = img.naturalWidth || img.width || 100;
-              c.height = img.naturalHeight || img.height || 40;
-              const ctx = c.getContext('2d');
-              ctx.drawImage(img, 0, 0);
-              targetCanvas = c;
-            } catch {
-              return { text: '', confidence: 0.0, tier: 3, source: 'visual-fallback' };
-            }
-          } else {
-            return { text: '', confidence: 0.0, tier: 3, source: 'visual-fallback' };
-          }
-        }
-
-        // Fast-path: Check blank detector first. If the crop is completely blank, return empty string immediately
-        const t2 = runTier2LocalOCR(targetCanvas, options);
-        if (t2 && t2.text === '') {
-          return t2;
-        }
-
-        // If user configured a Hugging Face API token, prioritize Tier 4 Serverless TrOCR inference
-        const hfToken = getHFToken();
-        if (hfToken) {
-          try {
-            const t4 = await runTier4HFServerless(targetCanvas);
-            if (t4 && t4.text) return t4;
-          } catch {}
-        }
-
-        // Tier 1: Try Local ONNX WebAssembly TrOCR
-        try {
-          const t1 = await runTier1LocalTrOCR(targetCanvas);
-          if (t1 && t1.text) return t1;
-        } catch {}
-
-        // Tier 2: Return honest local stroke morphology ([Handwritten Text])
-        if (t2) return t2;
-
-        // Tier 3: Zero-failure visual crop fallback (Core Contract)
-        return {
-          text: '',
-          confidence: 0.0,
-          tier: 3,
-          source: 'visual-fallback'
-        };
-      }
-
-      return {
-        transcribeHandwritingCrop,
-        getHFToken,
-        setHFToken,
-        runTier1LocalTrOCR,
-        runTier2LocalOCR,
-        runTier2CanvasMorphology: runTier2LocalOCR,
-        runTier4HFServerless,
-      };
-    })();
-    window.HandwritingEngine = HandwritingEngine;
-    window.transcribeHandwritingCrop = HandwritingEngine.transcribeHandwritingCrop;
-    window.runTier2CanvasMorphology = HandwritingEngine.runTier2CanvasMorphology;
 
     function snapZoneOffsets() {
       return {};
@@ -7940,8 +7530,6 @@
         if (!gradedItems[hItem.key]) {
           const hPts = Number(hItem.points != null ? hItem.points : 1.0);
           let cropDataUrl = null;
-          let ocrText = scan.simulatedOcr?.[hItem.key] || "";
-          let ocrConfidence = scan.simulatedOcrConf?.[hItem.key] ?? (ocrText ? 0.90 : 0.88);
 
           if (hItem.roi && typeof cropROIFromScan === 'function') {
             try {
@@ -7949,50 +7537,18 @@
               const tempGrade = { scanImg: rectCanvas, targetW, targetH, rotationDeg: 0 };
               cropROIFromScan(tempGrade, hItem.roi, itemCanvas, hItem.key);
               cropDataUrl = itemCanvas.toDataURL('image/jpeg', 0.85);
-
-              // Strip box border lines so OCR receives clean handwriting without border interference
-              if (itemCanvas.getContext && typeof stripBoxWallsFromImageData === 'function') {
-                const itemCtx = itemCanvas.getContext('2d');
-                if (itemCtx && itemCtx.getImageData && itemCtx.putImageData) {
-                  const idata = itemCtx.getImageData(0, 0, itemCanvas.width, itemCanvas.height);
-                  stripBoxWallsFromImageData(idata);
-                  itemCtx.putImageData(idata, 0, 0);
-                  cropDataUrl = itemCanvas.toDataURL('image/jpeg', 0.85);
-                }
-              }
-
-              // Run handwriting transcription right during grading if simulated OCR was not supplied
-              if (!ocrText && typeof HandwritingEngine !== 'undefined' && HandwritingEngine.runTier2LocalOCR) {
-                const t2 = HandwritingEngine.runTier2LocalOCR(itemCanvas, { expected: hItem.expected });
-                if (t2 && t2.text && !t2.text.startsWith('[')) {
-                  ocrText = t2.text;
-                  ocrConfidence = t2.confidence || 0.85;
-                }
-              }
             } catch (_) {}
           }
 
-          // Check if AI transcription matches expected answer
-          const isMatch = Boolean(ocrText && hItem.expected && typeof isOcrMatch === 'function' && isOcrMatch(ocrText, hItem.expected));
-          const isCorrect = isMatch;
-          const pointsAwarded = isMatch ? hPts : 0;
-          if (isCorrect) {
-            rawScore += pointsAwarded;
-          }
-
           gradedItems[hItem.key] = {
-            expected: hItem.expected,
-            actual: scan.simulatedResponses?.[hItem.key] || ocrText || "Handwritten response",
-            ocrText,
-            ocrConfidence,
-            aiOcrRead: ocrText,
-            aiOcrMatch: isMatch,
+            expected: hItem.expected || '',
+            actual: 'Handwritten response',
             cropDataUrl,
-            isCorrect,
-            pointsAwarded,
+            isCorrect: false,
+            pointsAwarded: 0,
             maxPoints: hPts,
-            status: isMatch ? 'reviewed' : 'unreviewed',
-            reviewed: isMatch,
+            status: 'unreviewed',
+            reviewed: false,
             kind: 'text',
             label: hItem.label,
             prompt: hItem.prompt,
@@ -8341,6 +7897,18 @@
 
     // Cooperative yielding to browser event loop to prevent UI freezing during heavy CV tasks
     function yieldToMain() {
+      // In background tabs (when minimized or hidden), browsers heavily throttle timers and requestAnimationFrame.
+      // MessageChannel bypasses background tab throttling and delivers zero-delay microtask ticks!
+      if (typeof document !== 'undefined' && document.hidden) {
+        return new Promise(resolve => {
+          const channel = new MessageChannel();
+          channel.port1.onmessage = () => {
+            channel.port1.close();
+            resolve();
+          };
+          channel.port2.postMessage(null);
+        });
+      }
       if (typeof scheduler !== 'undefined' && typeof scheduler.yield === 'function') {
         return scheduler.yield();
       }
@@ -8395,6 +7963,14 @@
 
       const origHeaderHtml = btnHeader ? btnHeader.innerHTML : '';
       const origSidebarHtml = btnSidebar ? btnSidebar.innerHTML : '';
+      const origDocTitle = typeof document !== 'undefined' ? document.title : '';
+
+      let wakeLock = null;
+      try {
+        if (typeof navigator !== 'undefined' && 'wakeLock' in navigator && navigator.wakeLock?.request) {
+          wakeLock = await navigator.wakeLock.request('screen');
+        }
+      } catch (_) {}
 
       if (btnHeader) {
         btnHeader.disabled = true;
@@ -8440,6 +8016,9 @@
             const span = btnSidebar.querySelector('span');
             if (span) span.textContent = `Grading (${i + 1}/${total})...`;
           }
+          if (typeof document !== 'undefined') {
+            document.title = `(${i + 1}/${total}) Grading... - Checker Studio`;
+          }
 
           // Yield to event loop so DOM updates and progress repaint before heavy CV computation
           await yieldToMain();
@@ -8484,38 +8063,6 @@
               }
             };
           }
-          // If any handwriting items can be further transcribed via async HandwritingEngine during grading
-          if (typeof HandwritingEngine !== 'undefined' && HandwritingEngine.transcribeHandwritingCrop) {
-            const isAiActive = $('chk-ai-handwriting') ? ($('chk-ai-handwriting').checked !== false) : true;
-            if (isAiActive) {
-              for (const [k, item] of Object.entries(grade.gradedItems || {})) {
-                if (item.kind === 'text' && item.cropDataUrl && (!item.ocrText || item.ocrText.startsWith('['))) {
-                  try {
-                    const res = await HandwritingEngine.transcribeHandwritingCrop(item.cropDataUrl, { expected: item.expected });
-                    if (res && res.text && !res.text.startsWith('[')) {
-                      item.ocrText = res.text;
-                      item.aiOcrRead = res.text;
-                      item.ocrConfidence = res.confidence || 0.88;
-                      const isMatch = Boolean(item.expected && typeof isOcrMatch === 'function' && isOcrMatch(res.text, item.expected));
-                      if (isMatch) {
-                        if (!item.isCorrect) {
-                          item.isCorrect = true;
-                          item.pointsAwarded = item.maxPoints;
-                          grade.rawScore += item.maxPoints;
-                          if (grade.maxScore > 0) {
-                            grade.percentage = (grade.rawScore / grade.maxScore) * 100;
-                          }
-                        }
-                        item.aiOcrMatch = true;
-                        item.status = 'reviewed';
-                        item.reviewed = true;
-                      }
-                    }
-                  } catch (_) {}
-                }
-              }
-            }
-          }
 
           grades.push(grade);
 
@@ -8523,6 +8070,11 @@
           if (progressBar) progressBar.style.width = `${pctEnd}%`;
           if (progressText) {
             progressText.textContent = `Completed scan ${i + 1} of ${total} (${pctEnd}%)`;
+          }
+
+          // Progressive autosave every 10 scans or on the last scan
+          if ((i + 1) % 10 === 0 || i === total - 1) {
+            saveCheckerProgress({ downloadFile: false, silent: true });
           }
 
           // Yield to event loop after each scan so UI stays responsive and paints updated progress
@@ -8546,6 +8098,13 @@
         console.error("Grading failed:", err);
         alert("An error occurred during grading: " + (err && err.message ? err.message : String(err)));
       } finally {
+        if (typeof document !== 'undefined' && origDocTitle) {
+          document.title = origDocTitle;
+        }
+        if (wakeLock) {
+          try { await wakeLock.release(); } catch (_) {}
+          wakeLock = null;
+        }
         hideLoading();
         state.isGrading = false;
         if (progressWrap) progressWrap.style.display = 'none';
@@ -8705,19 +8264,28 @@
       $('btn-grade-now').click();
     };
 
+    // Helper to check if a student has unreviewed handwritten items
+    function hasUnreviewedItems(grade) {
+      if (!grade || !grade.gradedItems) return false;
+      return Object.values(grade.gradedItems).some(it => it && (it.kind === 'text' || it.roi) && (it.status === 'unreviewed' || (!it.reviewed && it.status !== 'accepted' && it.status !== 'partial' && it.status !== 'rejected')));
+    }
+    window.hasUnreviewedItems = hasUnreviewedItems;
+
     // Render Summary Table
     function renderSummaryTable() {
       if (!state.results || !state.results.grades) return;
       const { grades, passThreshold } = state.results;
       $('tbody-summary').innerHTML = grades.map((g, idx) => {
         const dupBadge = g.isDuplicate ? `<span class="badge-review" style="background:#fff7ed; color:#c2410c; border:1px solid #fed7aa; padding:1px 6px; border-radius:4px; font-size:0.7rem; font-weight:700; margin-left:6px;" title="Duplicate scan detected">DUPLICATE</span>` : '';
+        const inReview = hasUnreviewedItems(g);
+        const statusBadge = inReview ? `<span class="badge-in-review">IN REVIEW</span>` : `<span class="${(g.percentage || 0) >= passThreshold ? 'badge-pass' : 'badge-fail'}">${(g.percentage || 0) >= passThreshold ? 'PASS' : 'FAIL'}</span>`;
         return `
         <tr onclick="inspectStudent(${idx}); switchTab('roster');" class="${state.selectedStudentIdx === idx ? 'is-selected' : ''}">
           <td><strong>${escapeHtml(g.studentId)}</strong></td>
           <td>${g.nameCropDataUrl ? `<img src="${g.nameCropDataUrl}" alt="Name" style="max-height: 48px; max-width: 240px; height: 44px; object-fit: contain; vertical-align: middle; border-radius: 4px; border: 1px solid var(--border); background: #fff;" />` : escapeHtml(g.studentName)}${dupBadge}</td>
           <td>${(g.rawScore != null ? Number(g.rawScore) : 0).toFixed(1)} / ${(g.maxScore != null ? Number(g.maxScore) : 0).toFixed(1)}</td>
           <td>${(g.percentage != null ? Number(g.percentage) : 0).toFixed(1)}%</td>
-          <td><span class="${(g.percentage || 0) >= passThreshold ? 'badge-pass' : 'badge-fail'}">${(g.percentage || 0) >= passThreshold ? 'PASS' : 'FAIL'}</span></td>
+          <td>${statusBadge}</td>
           <td><button type="button" class="btn btn--secondary btn--sm" onclick="event.stopPropagation(); inspectStudent(${idx}); switchTab('roster');">Sheet Inspector</button></td>
         </tr>
       `;
@@ -8934,6 +8502,9 @@
           `;
         }
 
+        const inReview = hasUnreviewedItems(g);
+        const statusBadge = inReview ? `<span class="badge-in-review">IN REVIEW</span>` : `<span class="${(g.percentage || 0) >= passThreshold ? 'badge-pass' : 'badge-fail'}">${(g.percentage || 0) >= passThreshold ? 'PASS' : 'FAIL'}</span>`;
+
         return `
           <tr onclick="inspectStudent(${origIdx})" data-idx="${origIdx}" data-orig-idx="${origIdx}" class="${isSelected ? 'is-selected' : ''}">
             <td>
@@ -8944,7 +8515,7 @@
             </td>
             <td>${(g.rawScore != null ? Number(g.rawScore) : 0).toFixed(1)} / ${(g.maxScore != null ? Number(g.maxScore) : 0).toFixed(1)}</td>
             <td><strong>${(g.percentage != null ? Number(g.percentage) : 0).toFixed(1)}%</strong></td>
-            <td><span class="${(g.percentage || 0) >= passThreshold ? 'badge-pass' : 'badge-fail'}">${(g.percentage || 0) >= passThreshold ? 'PASS' : 'FAIL'}</span></td>
+            <td>${statusBadge}</td>
             <td style="display: none;">${escapeHtml(g.classOffer || '—')}</td>
           </tr>
         `;
@@ -9822,8 +9393,14 @@
         }
       }
       if ($('roster-badge-score')) {
-        $('roster-badge-score').textContent = `${grade.rawScore.toFixed(1)} / ${grade.maxScore.toFixed(1)} (${grade.percentage.toFixed(1)}%)`;
-        $('roster-badge-score').className = isPass ? 'badge-pass' : 'badge-fail';
+        const inReview = typeof hasUnreviewedItems === 'function' && hasUnreviewedItems(grade);
+        if (inReview) {
+          $('roster-badge-score').textContent = `${grade.rawScore.toFixed(1)} / ${grade.maxScore.toFixed(1)} • IN REVIEW`;
+          $('roster-badge-score').className = 'badge-in-review';
+        } else {
+          $('roster-badge-score').textContent = `${grade.rawScore.toFixed(1)} / ${grade.maxScore.toFixed(1)} (${grade.percentage.toFixed(1)}%)`;
+          $('roster-badge-score').className = isPass ? 'badge-pass' : 'badge-fail';
+        }
       }
 
       const needsReview = grade.reviewFlags && grade.reviewFlags.needsReview;
@@ -10051,7 +9628,12 @@
         status = 'accepted';
         isCorrect = true;
       } else if (action === 'partial') {
-        ptsAwarded = customPoints != null ? Number(customPoints) : (maxPts / 2);
+        if (customPoints != null && !isNaN(customPoints)) {
+          ptsAwarded = Math.round(Number(customPoints) * 10) / 10;
+        } else {
+          ptsAwarded = Math.round(maxPts * 0.5 * 10) / 10;
+        }
+        ptsAwarded = Math.max(0, Math.min(maxPts, ptsAwarded));
         status = 'partial';
         isCorrect = false;
       } else if (action === 'unsure') {
@@ -10080,9 +9662,9 @@
         totalScore += (it.pointsAwarded || 0);
         totalMax += (it.maxPoints || 0);
       }
-      grade.rawScore = totalScore;
-      if (totalMax > 0) grade.maxScore = totalMax;
-      grade.percentage = grade.maxScore > 0 ? (grade.rawScore / grade.maxScore) * 100 : 0;
+      grade.rawScore = Math.round(totalScore * 100) / 100;
+      if (totalMax > 0) grade.maxScore = Math.round(totalMax * 100) / 100;
+      grade.percentage = grade.maxScore > 0 ? Math.round(((grade.rawScore / grade.maxScore) * 100) * 100) / 100 : 0;
 
       // Recompute psychometrics and update summary / roster UI
       if (state.key) {
@@ -10440,30 +10022,20 @@
           ocrConfidence: 0.88
         };
 
+        const defaultPartial = Math.round(activeItem.points * 0.5 * 10) / 10;
+
         if (stepperLabel) {
           stepperLabel.textContent = `Card ${horizontalDeckState.currentIndex + 1} of ${matchingIndices.length} (Submission #${activeSubIdx + 1})`;
         }
         if (prevCardBtn) prevCardBtn.disabled = horizontalDeckState.currentIndex <= 0;
         if (nextCardBtn) nextCardBtn.disabled = horizontalDeckState.currentIndex >= matchingIndices.length - 1;
 
-        const isAiEnabled = $('chk-ai-handwriting') ? ($('chk-ai-handwriting').checked !== false) : true;
-        const hasReliableCardOcr = isAiEnabled && !!(cardItemData.ocrText && cardItemData.ocrText.trim());
-        const isCardMatch = isAiEnabled && (cardItemData.aiOcrMatch || (activeItem.expected !== 'Sample Answer' && typeof isOcrMatch === 'function' ? isOcrMatch(cardItemData.ocrText, activeItem.expected) : false));
-
         if (activeCardContainer) {
           activeCardContainer.innerHTML = `
             <div class="horizontal-flashcard-card">
-              <!-- Crop & OCR Transcription Box -->
+              <!-- Visual Answer Box Crop -->
               <div class="flashcard-crop-container">
                 <canvas id="flashcard-crop-canvas" class="horizontal-cutting-canvas" style="width: 100%; max-width: 860px; height: auto; border: 1px solid var(--border); border-radius: 4px;"></canvas>
-                ${hasReliableCardOcr ? `
-                <div style="width: 100%; font-size: 0.88rem; color: var(--text); background: var(--panel-alt); padding: 0.5rem 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--border); text-align: center; display: flex; align-items: center; justify-content: center; gap: 0.5rem; flex-wrap: wrap;">
-                  <div>
-                    <strong style="color: var(--text-muted); font-size: 0.72rem; display: block; margin-bottom: 0.15rem; text-transform: uppercase; letter-spacing: 0.04em;">AI OCR Read:</strong>
-                    "${escapeHtml(cardItemData.ocrText)}"
-                  </div>
-                  ${isCardMatch ? `<span class="badge" style="background: #ecfdf5; color: #065f46; border: 1px solid #10b981; font-weight: 700; font-size: 0.72rem; padding: 0.15rem 0.45rem; border-radius: var(--radius-full);">✓ Match</span>` : ''}
-                </div>` : ''}
               </div>
 
               <!-- Rapid Grading Action Buttons -->
@@ -10478,11 +10050,17 @@
                   <span>Unsure</span>
                   <kbd style="font-size: 0.65rem; background: rgba(0,0,0,0.15); padding: 1px 4px; border-radius: 3px;">U</kbd>
                 </button>
-                <button type="button" class="btn btn-horizontal-partial" title="Award partial credit [Shortcut: P]" onclick="flashcardGradeAction(${activeSubIdx}, '${activeItem.key}', 'partial');">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 0 20Z" fill="currentColor"/></svg>
-                  <span>Partial (+${(activeItem.points / 2).toFixed(1)} pts)</span>
-                  <kbd style="font-size: 0.65rem; background: rgba(0,0,0,0.2); padding: 1px 4px; border-radius: 3px;">P</kbd>
-                </button>
+                <div style="display: inline-flex; align-items: center; gap: 0.25rem;">
+                  <button type="button" class="btn btn-horizontal-partial" title="Award partial credit [Shortcut: P]" onclick="flashcardGradeAction(${activeSubIdx}, '${activeItem.key}', 'partial', parseFloat($('flashcard-custom-pts')?.value));">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 0 20Z" fill="currentColor"/></svg>
+                    <span>Partial (+${defaultPartial.toFixed(1)} pts)</span>
+                    <kbd style="font-size: 0.65rem; background: rgba(0,0,0,0.2); padding: 1px 4px; border-radius: 3px;">P</kbd>
+                  </button>
+                  <div style="display: inline-flex; align-items: center; gap: 0.2rem; background: var(--panel-alt); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.15rem 0.35rem;">
+                    <input type="number" id="flashcard-custom-pts" min="0" max="${activeItem.points}" step="0.5" value="${cardItemData.status === 'partial' ? (cardItemData.pointsAwarded != null ? cardItemData.pointsAwarded : defaultPartial) : defaultPartial}" style="width: 55px; padding: 0.2rem 0.35rem; font-size: 0.8rem; font-weight: 700; border: 1px solid var(--border); border-radius: 4px; background: var(--panel); color: var(--text);" title="Custom partial points (0 to ${activeItem.points})">
+                    <button type="button" class="btn btn--secondary btn-xs" onclick="flashcardGradeAction(${activeSubIdx}, '${activeItem.key}', 'partial', parseFloat($('flashcard-custom-pts')?.value));" style="font-size: 0.72rem; padding: 0.25rem 0.45rem;" title="Apply custom points">Set</button>
+                  </div>
+                </div>
                 <button type="button" class="btn btn-horizontal-reject" title="Reject response [Shortcut: R]" onclick="flashcardGradeAction(${activeSubIdx}, '${activeItem.key}', 'reject');">
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                   <span>Reject (0 pts)</span>
@@ -10512,7 +10090,7 @@
                 ctx.font = 'italic 16px sans-serif';
                 ctx.fillStyle = '#64748b';
                 const hasScan = !!(curGrade?.scanImg && !isBlankCanvas(curGrade.scanImg));
-                const msg = cardItemData.ocrText || (hasScan ? '(Handwritten response)' : 'Attach scans folder to inspect handwritten crop');
+                const msg = hasScan ? '(Handwritten response)' : 'Attach scans folder to inspect handwritten crop';
                 ctx.fillText(`"${msg}"`, 24, 75);
               }
             }
@@ -10538,9 +10116,7 @@
                             (itemData.status === 'unsure' ? 'is-unsure' :
                             (itemData.status === 'rejected' ? 'is-rejected' : '')));
 
-        const isAiEnabled = $('chk-ai-handwriting') ? ($('chk-ai-handwriting').checked !== false) : true;
-        const hasReliableStreamOcr = isAiEnabled && !!(itemData.ocrText && itemData.ocrText.trim());
-        const isStreamMatch = isAiEnabled && (itemData.aiOcrMatch || (activeItem.expected !== 'Sample Answer' && typeof isOcrMatch === 'function' ? isOcrMatch(itemData.ocrText, activeItem.expected) : false));
+        const defaultStreamPartial = Math.round(activeItem.points * 0.5 * 10) / 10;
 
         return `
           <div class="horizontal-item-card ${statusClass}" id="h-card-${sIdx}">
@@ -10562,18 +10138,10 @@
               </div>
             </div>
 
-            <!-- Cutting & OCR Column -->
+            <!-- Visual Cutting Column -->
             <div class="horizontal-cutting-box">
-              <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
-                <span style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted);">Answer Box Crop:</span>
-                ${hasReliableStreamOcr ? makeConfBadge(itemData.ocrConfidence) : ''}
-              </div>
+              <div style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.25rem;">Answer Box Crop:</div>
               <canvas id="crop-canvas-${sIdx}" class="horizontal-cutting-canvas" style="width: 100%; max-width: 480px; height: auto; min-height: 60px;"></canvas>
-              ${hasReliableStreamOcr ? `
-              <div style="font-size: 0.76rem; color: var(--text); background: var(--panel-alt); padding: 0.35rem 0.55rem; border-radius: var(--radius-sm); border: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 0.35rem;">
-                <div><strong style="color: var(--text-muted);">AI Read:</strong> "${escapeHtml(itemData.ocrText)}"</div>
-                ${isStreamMatch ? `<span class="badge" style="background: #ecfdf5; color: #065f46; border: 1px solid #10b981; font-weight: 700; font-size: 0.65rem; padding: 0.1rem 0.35rem; border-radius: var(--radius-full);">✓ Match</span>` : ''}
-              </div>` : ''}
             </div>
 
             <!-- Action Buttons Column -->
@@ -10588,7 +10156,7 @@
               </button>
               <button type="button" class="btn btn-horizontal-partial btn-sm" onclick="gradeHorizontalItem(${sIdx}, '${activeItem.key}', 'partial');" style="font-weight: 700; padding: 0.45rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem;">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 0 20Z" fill="currentColor"/></svg>
-                <span>Partial (${(activeItem.points / 2).toFixed(1)} pts)</span>
+                <span>Partial (${defaultStreamPartial.toFixed(1)} pts)</span>
               </button>
               <button type="button" class="btn btn-horizontal-reject btn-sm" onclick="gradeHorizontalItem(${sIdx}, '${activeItem.key}', 'reject');" style="font-weight: 700; padding: 0.45rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem;">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -10615,7 +10183,7 @@
               ctx.font = 'italic 13px sans-serif';
               ctx.fillStyle = '#64748b';
               const isReal = !!(g?.scanImg && !isBlankCanvas(g.scanImg));
-              const msg = g.gradedItems?.[activeItem.key]?.ocrText || (isReal ? '(Handwritten response)' : 'No scan image');
+              const msg = isReal ? '(Handwritten response)' : 'No scan image';
               ctx.fillText(`"${msg}"`, 14, 34);
             }
           }
@@ -10778,7 +10346,9 @@
             flashcardGradeAction(activeSubIdx, activeItem.key, 'unsure');
           } else if (key === 'p') {
             e.preventDefault();
-            flashcardGradeAction(activeSubIdx, activeItem.key, 'partial');
+            const customInput = $('flashcard-custom-pts');
+            const customVal = customInput ? parseFloat(customInput.value) : undefined;
+            flashcardGradeAction(activeSubIdx, activeItem.key, 'partial', !isNaN(customVal) ? customVal : undefined);
           } else if (key === 'r') {
             e.preventDefault();
             flashcardGradeAction(activeSubIdx, activeItem.key, 'reject');
@@ -10878,6 +10448,17 @@
           ctx.fillStyle = "rgba(16, 185, 129, 0.25)";
           ctx.fill();
           ctx.stroke();
+        } else if (b.markType === 'check_or_cross' || b.markType === 'erasure' || b.markType === 'faint') {
+          // Ambiguous / non-standard mark flagged for review: Purple/Amber warning ring
+          ctx.beginPath();
+          ctx.arc(b.canX, b.canY, b.rad + 2, 0, Math.PI * 2);
+          ctx.lineWidth = 2.5;
+          ctx.setLineDash([4, 2]);
+          ctx.strokeStyle = b.markType === 'check_or_cross' ? "#a855f7" : "#f59e0b";
+          ctx.fillStyle = b.markType === 'check_or_cross' ? "rgba(168, 85, 247, 0.22)" : "rgba(245, 158, 11, 0.22)";
+          ctx.fill();
+          ctx.stroke();
+          ctx.setLineDash([]);
         } else if (b.isMarked && !isKeyTarget) {
           // Incorrect mark: Red circle + small red X cross
           ctx.beginPath();
@@ -10898,17 +10479,6 @@
           ctx.lineWidth = 2.5;
           ctx.strokeStyle = "#ef4444";
           ctx.stroke();
-        } else if (b.markType === 'check_or_cross' || b.markType === 'erasure' || b.markType === 'faint') {
-          // Ambiguous / non-standard mark flagged for review: Purple/Amber warning ring
-          ctx.beginPath();
-          ctx.arc(b.canX, b.canY, b.rad + 2, 0, Math.PI * 2);
-          ctx.lineWidth = 2.5;
-          ctx.setLineDash([4, 2]);
-          ctx.strokeStyle = b.markType === 'check_or_cross' ? "#a855f7" : "#f59e0b";
-          ctx.fillStyle = b.markType === 'check_or_cross' ? "rgba(168, 85, 247, 0.22)" : "rgba(245, 158, 11, 0.22)";
-          ctx.fill();
-          ctx.stroke();
-          ctx.setLineDash([]);
         } else if (!b.isMarked && isKeyTarget) {
           // Missed correct answer: Green outline ring + center dot
           ctx.beginPath();
@@ -10937,14 +10507,40 @@
         const rw = Math.round((roi.w != null ? roi.w : roi.width || 0) * pxPerMm);
         const rh = Math.round((roi.h != null ? roi.h : roi.height || 0) * pxPerMm);
 
-        const isCorrect = item.isCorrect || (Number(item.pointsAwarded || 0) >= Number(item.maxPoints != null ? item.maxPoints : 1));
-        const color = isCorrect ? '#10b981' : '#ef4444';
+        const status = item.status || (item.reviewed ? (item.isCorrect ? 'accepted' : 'rejected') : 'unreviewed');
+        let color = '#3b82f6';
+        let isDashed = false;
+        let ptsText = '';
+
+        if (status === 'unreviewed') {
+          color = '#3b82f6';
+          isDashed = true;
+          ptsText = `Pending Review (—/${Number(item.maxPoints != null ? item.maxPoints : 1)} pts)`;
+        } else if (status === 'unsure') {
+          color = '#f59e0b';
+          isDashed = true;
+          ptsText = `Unsure (0/${Number(item.maxPoints != null ? item.maxPoints : 1)} pts)`;
+        } else if (status === 'partial') {
+          color = '#10b981';
+          isDashed = false;
+          ptsText = `Partial (${Number(item.pointsAwarded || 0)}/${Number(item.maxPoints != null ? item.maxPoints : 1)} pts)`;
+        } else if (status === 'accepted' || item.isCorrect) {
+          color = '#10b981';
+          isDashed = false;
+          ptsText = `${Number(item.pointsAwarded || 0)}/${Number(item.maxPoints != null ? item.maxPoints : 1)} pts`;
+        } else {
+          color = '#ef4444';
+          isDashed = false;
+          ptsText = `0/${Number(item.maxPoints != null ? item.maxPoints : 1)} pts`;
+        }
+
         ctx.strokeStyle = color;
         ctx.lineWidth = 2;
+        if (isDashed) ctx.setLineDash([6, 4]);
         ctx.strokeRect(rx, ry, rw, rh);
+        if (isDashed) ctx.setLineDash([]);
 
         // Points badge in top-right of ROI
-        const ptsText = `${Number(item.pointsAwarded || 0)}/${Number(item.maxPoints != null ? item.maxPoints : 1)} pts`;
         ctx.font = 'bold 11px sans-serif';
         const tw = ctx.measureText(ptsText).width;
         const badgeW = tw + 10;
@@ -11055,8 +10651,14 @@
       if ($('viewer-score-badge')) {
         const passThreshold = (state.results && state.results.passThreshold != null) ? state.results.passThreshold : 60;
         const isPass = grade.percentage >= passThreshold;
-        $('viewer-score-badge').textContent = `${(grade.rawScore != null ? Number(grade.rawScore) : 0).toFixed(1)} / ${(grade.maxScore != null ? Number(grade.maxScore) : 0).toFixed(1)} pts (${(grade.percentage != null ? Number(grade.percentage) : 0).toFixed(1)}%)`;
-        $('viewer-score-badge').className = isPass ? 'badge-pass' : 'badge-fail';
+        const inReview = typeof hasUnreviewedItems === 'function' && hasUnreviewedItems(grade);
+        if (inReview) {
+          $('viewer-score-badge').textContent = `${(grade.rawScore != null ? Number(grade.rawScore) : 0).toFixed(1)} / ${(grade.maxScore != null ? Number(grade.maxScore) : 0).toFixed(1)} pts • IN REVIEW`;
+          $('viewer-score-badge').className = 'badge-in-review';
+        } else {
+          $('viewer-score-badge').textContent = `${(grade.rawScore != null ? Number(grade.rawScore) : 0).toFixed(1)} / ${(grade.maxScore != null ? Number(grade.maxScore) : 0).toFixed(1)} pts (${(grade.percentage != null ? Number(grade.percentage) : 0).toFixed(1)}%)`;
+          $('viewer-score-badge').className = isPass ? 'badge-pass' : 'badge-fail';
+        }
       }
       if ($('viewer-student-select')) {
         $('viewer-student-select').value = state.selectedStudentIdx;
@@ -11079,6 +10681,201 @@
       }
       updateStepperControls(grade);
     }
+
+    // Interactive Bubble Mark Correction
+    function findBubbleAtCanvasCoords(canvas, grade, clientX, clientY) {
+      if (!canvas || !grade || !grade.bubbleDiagnostics) return null;
+      const rect = canvas.getBoundingClientRect();
+      if (!rect.width || !rect.height) return null;
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const clickX = (clientX - rect.left) * scaleX;
+      const clickY = (clientY - rect.top) * scaleY;
+
+      let closest = null;
+      let minDistance = Infinity;
+
+      for (const b of grade.bubbleDiagnostics) {
+        if (b.canX == null || b.canY == null) continue;
+        const dist = Math.hypot(b.canX - clickX, b.canY - clickY);
+        const hitRadius = Math.max(14, (b.rad || 8) * 1.6);
+        if (dist <= hitRadius && dist < minDistance) {
+          minDistance = dist;
+          closest = b;
+        }
+      }
+      return closest;
+    }
+    window.findBubbleAtCanvasCoords = findBubbleAtCanvasCoords;
+
+    function correctBubbleMark(grade, hitBubble) {
+      if (!grade || !hitBubble) return;
+
+      // Toggle marked state
+      hitBubble.isMarked = !hitBubble.isMarked;
+
+      const isSid = hitBubble.role === 'sid' || String(hitBubble.item).startsWith('sid');
+
+      if (isSid) {
+        // Reconstruct Student ID from all SID bubbles
+        const sidBubbles = (grade.bubbleDiagnostics || []).filter(b => b.role === 'sid' || String(b.item).startsWith('sid'));
+        const colMap = new Map();
+        for (const sb of sidBubbles) {
+          const colKey = sb.colIndex != null ? sb.colIndex : (sb.item != null ? sb.item : 'col0');
+          if (!colMap.has(colKey)) colMap.set(colKey, []);
+          colMap.get(colKey).push(sb);
+        }
+        let reconstructed = '';
+        for (const [colKey, bubbles] of colMap.entries()) {
+          const marked = bubbles.filter(b => b.isMarked);
+          if (marked.length === 1) {
+            reconstructed += String(marked[0].digit != null ? marked[0].digit : (marked[0].choice != null ? marked[0].choice : ''));
+          } else if (marked.length > 1) {
+            reconstructed += '?';
+          } else {
+            reconstructed += '_';
+          }
+        }
+        if (reconstructed && !reconstructed.includes('_')) {
+          grade.studentId = reconstructed;
+        }
+        // Match against roster if available
+        if (state.roster && state.roster.students && grade.studentId) {
+          const matched = state.roster.students.find(s => String(s.studentId).toLowerCase() === String(grade.studentId).toLowerCase());
+          if (matched) {
+            grade.studentName = matched.name;
+            grade.classOffer = matched.classOffer || grade.classOffer;
+          }
+        }
+      } else {
+        // Question item
+        const itemKey = hitBubble.item;
+        if (!grade.gradedItems) grade.gradedItems = {};
+        const keyItem = state.key?.items?.[itemKey] || {};
+        const maxPts = Number(grade.gradedItems[itemKey]?.maxPoints != null ? grade.gradedItems[itemKey].maxPoints : (keyItem.points != null ? keyItem.points : 1.0));
+        const expected = grade.gradedItems[itemKey]?.expected || keyItem.answer || '';
+
+        // Find all marked choices for this item
+        const itemBubbles = (grade.bubbleDiagnostics || []).filter(b => b.item === itemKey);
+        const markedBubbles = itemBubbles.filter(b => b.isMarked);
+        const markedChoices = markedBubbles.map(b => b.choice);
+
+        let actual = '';
+        let isCorrect = false;
+        let pointsAwarded = 0;
+        let status = 'blank';
+
+        if (markedChoices.length === 1) {
+          actual = markedChoices[0];
+          isCorrect = (actual === expected);
+          pointsAwarded = isCorrect ? maxPts : 0;
+          status = isCorrect ? 'correct' : 'incorrect';
+        } else if (markedChoices.length > 1) {
+          actual = markedChoices.join(',');
+          isCorrect = false;
+          pointsAwarded = 0;
+          status = 'multi';
+        } else {
+          actual = '';
+          isCorrect = false;
+          pointsAwarded = 0;
+          status = 'blank';
+        }
+
+        grade.gradedItems[itemKey] = {
+          ...(grade.gradedItems[itemKey] || {}),
+          expected,
+          actual,
+          isCorrect,
+          pointsAwarded,
+          maxPoints: maxPts,
+          status,
+          reviewed: true
+        };
+
+        // Recalculate student rawScore, maxScore, and percentage
+        let totalScore = 0;
+        let totalMax = 0;
+        for (const it of Object.values(grade.gradedItems)) {
+          totalScore += (it.pointsAwarded || 0);
+          totalMax += (it.maxPoints || 0);
+        }
+        grade.rawScore = Math.round(totalScore * 100) / 100;
+        if (totalMax > 0) grade.maxScore = Math.round(totalMax * 100) / 100;
+        grade.percentage = grade.maxScore > 0 ? Math.round(((grade.rawScore / grade.maxScore) * 100) * 100) / 100 : 0;
+
+        // Recalculate reviewFlags
+        let blankCount = 0;
+        let multiMarkCount = 0;
+        for (const it of Object.values(grade.gradedItems)) {
+          if (!it.actual) blankCount++;
+          else if (it.actual.includes(',')) multiMarkCount++;
+        }
+        if (!grade.reviewFlags) grade.reviewFlags = {};
+        grade.reviewFlags.blankCount = blankCount;
+        grade.reviewFlags.multiMarkCount = multiMarkCount;
+        const reasons = [];
+        if (blankCount > 0) reasons.push(`${blankCount} blank item(s)`);
+        if (multiMarkCount > 0) reasons.push(`${multiMarkCount} multi-mark item(s)`);
+        grade.reviewFlags.reasons = reasons;
+        grade.reviewFlags.needsReview = (reasons.length > 0);
+      }
+
+      // Recompute psychometrics
+      if (state.key && state.results?.grades) {
+        state.results.psychometrics = computePsychometrics(state.results.grades, state.key);
+      }
+
+      // Redraw active preview and viewer canvases
+      const previewCanvas = $('roster-preview-canvas') || $('roster-inspector-canvas');
+      if (previewCanvas) {
+        drawGradeOnCanvas(grade, previewCanvas, { redactName: isRedactNamesActive() });
+      }
+      const viewerCanvas = $('viewer-canvas');
+      if (viewerCanvas && $('modal-viewer')?.open) {
+        drawGradeOnCanvas(grade, viewerCanvas, { redactName: isRedactNamesActive() });
+      }
+
+      // Refresh UI displays
+      renderRosterTable();
+      renderSummaryTable();
+      if (state.selectedStudentIdx != null) {
+        inspectStudent(state.selectedStudentIdx);
+      }
+      saveCheckerProgress({ downloadFile: false, silent: true });
+
+      const itemDesc = isSid ? `SID digit ${hitBubble.choice || hitBubble.digit}` : `Item ${hitBubble.item} (${hitBubble.choice})`;
+      showToast(hitBubble.isMarked ? `✓ Marked ${itemDesc}` : `✓ Cleared ${itemDesc}`);
+    }
+    window.correctBubbleMark = correctBubbleMark;
+
+    function wireInteractiveCanvas(canvas) {
+      if (!canvas) return;
+      canvas.addEventListener('click', (e) => {
+        if (!state.results || !state.results.grades || state.selectedStudentIdx == null) return;
+        const grade = state.results.grades[state.selectedStudentIdx];
+        if (!grade) return;
+        const hitBubble = findBubbleAtCanvasCoords(canvas, grade, e.clientX, e.clientY);
+        if (hitBubble) {
+          correctBubbleMark(grade, hitBubble);
+        }
+      });
+      canvas.addEventListener('mousemove', (e) => {
+        if (!state.results || !state.results.grades || state.selectedStudentIdx == null) {
+          canvas.style.cursor = 'default';
+          return;
+        }
+        const grade = state.results.grades[state.selectedStudentIdx];
+        if (!grade) {
+          canvas.style.cursor = 'default';
+          return;
+        }
+        const hitBubble = findBubbleAtCanvasCoords(canvas, grade, e.clientX, e.clientY);
+        canvas.style.cursor = hitBubble ? 'pointer' : 'default';
+      });
+    }
+    wireInteractiveCanvas($('roster-preview-canvas'));
+    wireInteractiveCanvas($('viewer-canvas'));
 
     // Download Graded Sheet (JPEG)
     $('btn-download-sheet-jpeg').onclick = () => {
@@ -12748,6 +12545,10 @@
         if (headerDisc) headerDisc.style.display = 'none';
         if (headerConn) headerConn.style.display = 'flex';
         if (headerName) headerName.textContent = googleDriveState.user.name || googleDriveState.user.email || 'Instructor';
+        const userChip = document.querySelector('.google-user-chip');
+        if (userChip) {
+          userChip.title = `Signed in with Google (${googleDriveState.user.name || ''}${googleDriveState.user.email ? ' - ' + googleDriveState.user.email : ''})`;
+        }
         if (headerAvatar) {
           if (googleDriveState.user.picture) {
             headerAvatar.src = googleDriveState.user.picture;
@@ -13560,89 +13361,6 @@
     }
     window.isOcrMatch = isOcrMatch;
 
-    async function autoTranscribeActiveItem() {
-      const selectItem = $('select-horizontal-item');
-      if (!selectItem || !selectItem.value) return;
-      const itemKey = selectItem.value;
-
-      const horizontalItems = typeof getHorizontalGradingItems === 'function' ? getHorizontalGradingItems() : [];
-      const activeItem = horizontalItems.find(it => it.key === itemKey);
-      const expected = (activeItem?.expected && activeItem.expected !== 'Sample Answer')
-        ? String(activeItem.expected).trim()
-        : (state.key?.items?.[itemKey]?.answer ? String(state.key.items[itemKey].answer).trim() : '');
-
-      const btn = $('btn-batch-ai-transcribe');
-      const origText = btn ? btn.innerHTML : '';
-      if (btn) {
-        btn.disabled = true;
-        btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="google-status-spinner" style="display: inline-block; vertical-align: middle; margin-right: 0.35rem;"></svg> <span>Transcribing...</span>`;
-      }
-
-      showLoading("AI Handwriting Transcription", `Transcribing answers for ${activeItem?.label || itemKey}...`, 0);
-      let count = 0;
-      try {
-        const grades = state.results?.grades || [];
-        for (let i = 0; i < grades.length; i++) {
-          const g = grades[i];
-          const pct = Math.round(((i + 1) / (grades.length || 1)) * 100);
-          showLoading("AI Handwriting Transcription", `Transcribing answer ${i + 1} of ${grades.length}...`, pct);
-          if (!g.gradedItems) g.gradedItems = {};
-          if (!g.gradedItems[itemKey]) {
-            g.gradedItems[itemKey] = {
-              expected: expected || activeItem?.expected || '',
-              pointsAwarded: 0,
-              maxPoints: activeItem?.points || 1.0,
-              status: 'unreviewed',
-              reviewed: false,
-              label: activeItem?.label || itemKey
-            };
-          }
-          const item = g.gradedItems[itemKey];
-
-          // If cropDataUrl exists or can be extracted
-          let cropUrl = item.cropDataUrl;
-          if (!cropUrl && activeItem?.roi && typeof cropROIFromScan === 'function') {
-            try {
-              const c = document.createElement('canvas');
-              const res = cropROIFromScan(g, activeItem.roi, c, itemKey);
-              if (res !== null) {
-                cropUrl = c.toDataURL('image/jpeg', 0.85);
-                item.cropDataUrl = cropUrl;
-              }
-            } catch (_) {}
-          }
-
-          if (cropUrl) {
-            try {
-              const res = await HandwritingEngine.transcribeHandwritingCrop(cropUrl);
-              if (res && res.text) {
-                item.ocrText = res.text;
-                item.aiOcrRead = res.text;
-                item.ocrConfidence = res.confidence || 0.88;
-                item.aiOcrMatch = Boolean(expected && typeof isOcrMatch === 'function' && isOcrMatch(res.text, expected));
-                count++;
-              }
-            } catch (err) {
-              console.warn(`OCR error for student ${g.studentId || i}:`, err);
-            }
-          }
-        }
-        if (typeof showToast === 'function') {
-          showToast(`✓ Auto-transcribed ${count} student answers`);
-        }
-      } finally {
-        hideLoading();
-        if (btn) {
-          btn.disabled = false;
-          btn.innerHTML = origText;
-        }
-        renderHorizontalGradingView();
-      }
-    }
-    window.autoTranscribeActiveItem = autoTranscribeActiveItem;
-
-    $('btn-batch-ai-transcribe')?.addEventListener('click', autoTranscribeActiveItem);
-    $('chk-ai-handwriting')?.addEventListener('change', () => renderHorizontalGradingView());
     $('select-horizontal-scope')?.addEventListener('change', () => {
       horizontalDeckState.currentIndex = 0;
       renderHorizontalGradingView();
@@ -13690,45 +13408,115 @@
     $('btn-empty-sample')?.addEventListener('click', () => $('btn-sample-grade').click());
     $('btn-empty-upload')?.addEventListener('click', () => $('input-scans').click());
 
-    // Attach scans folder to link local files back to restored cloud session
+    // Attach scans or PDF to link original files back to restored cloud session
     const inputAttachScans = $('input-attach-scans-folder');
     if (inputAttachScans) {
       inputAttachScans.addEventListener('change', async (e) => {
         const files = Array.from(e.target.files || []);
         if (files.length === 0 || !state.results || !state.results.grades) return;
 
-        showLoading('Attaching Scans', `Matching ${files.length} scan files...`);
+        showLoading('Attaching Scans', `Processing ${files.length} scan files...`);
         let matchedCount = 0;
+        const extractedScans = [];
 
         for (const file of files) {
+          const isPdf = file.type === 'application/pdf' || /\.pdf$/i.test(file.name);
           const isImg = file.type.startsWith('image/') || /\.(jpe?g|png|webp|bmp|tiff?)$/i.test(file.name);
-          if (!isImg) continue;
-          try {
-            const dataUrl = await new Promise((res, rej) => {
-              const reader = new FileReader();
-              reader.onload = () => res(reader.result);
-              reader.onerror = rej;
-              reader.readAsDataURL(file);
-            });
-            const img = await new Promise((res, rej) => {
-              const i = new Image();
-              i.onload = () => res(i);
-              i.onerror = rej;
-              i.src = dataUrl;
-            });
 
-            addOrUpdateScan({ name: file.name, img });
+          if (isPdf) {
+            try {
+              const buffer = await file.arrayBuffer();
+              const pages = typeof extractPdfScansFromBuffer === 'function' ? extractPdfScansFromBuffer(buffer) : [];
+              const baseName = file.name.replace(/\.[^/.]+$/, '');
+              for (let idx = 0; idx < pages.length; idx++) {
+                const p = pages[idx];
+                const blob = new Blob([p.bytes], { type: p.format || 'image/jpeg' });
+                const url = URL.createObjectURL(blob);
+                const rawImg = await new Promise((res, rej) => {
+                  const i = new Image();
+                  i.onload = () => res(i);
+                  i.onerror = rej;
+                  i.src = url;
+                });
+                URL.revokeObjectURL(url);
 
-            const baseName = file.name.replace(/\.[^/.]+$/, '').toLowerCase();
-            state.results.grades.forEach(grade => {
-              const examBase = (grade.examId || '').replace(/\.[^/.]+$/, '').toLowerCase();
-              const stuId = String(grade.studentId || '').toLowerCase();
-              if (examBase === baseName || (stuId && baseName.includes(stuId)) || (examBase && baseName.includes(examBase))) {
-                grade.scanImg = img;
-                matchedCount++;
+                let finalImg = rawImg;
+                if (p.rotation && p.rotation !== 0) {
+                  const rotCanvas = document.createElement('canvas');
+                  if (p.rotation === 90 || p.rotation === 270) {
+                    rotCanvas.width = rawImg.height;
+                    rotCanvas.height = rawImg.width;
+                  } else {
+                    rotCanvas.width = rawImg.width;
+                    rotCanvas.height = rawImg.height;
+                  }
+                  const rotCtx = rotCanvas.getContext('2d');
+                  if (p.rotation === 90) {
+                    rotCtx.translate(rotCanvas.width, 0);
+                    rotCtx.rotate(Math.PI / 2);
+                  } else if (p.rotation === 180) {
+                    rotCtx.translate(rotCanvas.width, rotCanvas.height);
+                    rotCtx.rotate(Math.PI);
+                  } else if (p.rotation === 270) {
+                    rotCtx.translate(0, rotCanvas.height);
+                    rotCtx.rotate((3 * Math.PI) / 2);
+                  }
+                  rotCtx.drawImage(rawImg, 0, 0);
+                  finalImg = rotCanvas;
+                }
+                const pageName = `${baseName}_page_${idx + 1}`;
+                extractedScans.push({ name: pageName, img: finalImg });
+                addOrUpdateScan({ name: pageName, img: finalImg });
               }
-            });
-          } catch (_) {}
+            } catch (err) {
+              console.warn('PDF scan extraction error:', err);
+            }
+          } else if (isImg) {
+            try {
+              const dataUrl = await new Promise((res, rej) => {
+                const reader = new FileReader();
+                reader.onload = () => res(reader.result);
+                reader.onerror = rej;
+                reader.readAsDataURL(file);
+              });
+              const img = await new Promise((res, rej) => {
+                const i = new Image();
+                i.onload = () => res(i);
+                i.onerror = rej;
+                i.src = dataUrl;
+              });
+              extractedScans.push({ name: file.name, img });
+              addOrUpdateScan({ name: file.name, img });
+            } catch (_) {}
+          }
+        }
+
+        // Multi-tier matching against restored grades
+        // Tier 1: Name / ID match
+        const assignedGrades = new Set();
+        for (const scan of extractedScans) {
+          const scanBase = scan.name.replace(/\.[^/.]+$/, '').toLowerCase();
+          state.results.grades.forEach(grade => {
+            if (assignedGrades.has(grade)) return;
+            const examBase = (grade.examId || '').replace(/\.[^/.]+$/, '').toLowerCase();
+            const stuId = String(grade.studentId || '').toLowerCase();
+            if ((examBase && scanBase === examBase) || (stuId && scanBase.includes(stuId)) || (examBase && scanBase.includes(examBase))) {
+              grade.scanImg = scan.img;
+              assignedGrades.add(grade);
+              matchedCount++;
+            }
+          });
+        }
+
+        // Tier 2: Sequential fallback for unassigned grades if scans count matches or exceeds
+        if (assignedGrades.size < state.results.grades.length && extractedScans.length > 0) {
+          state.results.grades.forEach((grade, idx) => {
+            if (!assignedGrades.has(grade) && extractedScans[idx]) {
+              grade.scanImg = extractedScans[idx].img;
+              assignedGrades.add(grade);
+              matchedCount++;
+            }
+          });
         }
 
         if (typeof regenerateCropsForGrades === 'function') {
@@ -13749,32 +13537,11 @@
       });
     }
 
-    // Sync Hugging Face TrOCR API Token inputs across modals
-    const syncHFTokenInputs = () => {
-      const currentToken = typeof HandwritingEngine !== 'undefined' && HandwritingEngine.getHFToken ? HandwritingEngine.getHFToken() : (localStorage.getItem('toolkit_hf_token') || localStorage.getItem('instructor_hf_token') || '');
-      $$('.input-hf-token-field, #input-hf-token, #input-gdrive-hf-token').forEach(inp => {
-        if (inp) inp.value = currentToken;
-      });
-    };
-    $$('.input-hf-token-field, #input-hf-token, #input-gdrive-hf-token').forEach(inp => {
-      inp.addEventListener('input', (e) => {
-        const token = e.target.value.trim();
-        if (typeof HandwritingEngine !== 'undefined' && HandwritingEngine.setHFToken) {
-          HandwritingEngine.setHFToken(token);
-        }
-        $$('.input-hf-token-field, #input-hf-token').forEach(other => {
-          if (other !== e.target) other.value = token;
-        });
-      });
-    });
-    $('btn-trocr-settings')?.addEventListener('click', syncHFTokenInputs);
-
     // Initial boot display and check auto-saved progress
     updateLayoutDisplay();
     updateKeyDisplay();
     updateRosterDisplay();
     restoreGoogleAuthState();
-    syncHFTokenInputs();
     checkAutoSavedProgress();
 
     // Cross-tab synchronization for Google Auth and session progress

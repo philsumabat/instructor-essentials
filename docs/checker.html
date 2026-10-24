@@ -3255,7 +3255,7 @@
           </div>
           <div>
             <label style="display: block; margin-bottom: 0.2rem; font-weight: 600;">Hugging Face Token (Optional Serverless Booster):</label>
-            <input type="password" id="input-hf-token" class="input-hf-token-field" placeholder="hf_... (free serverless TrOCR)" style="width: 100%; padding: 0.35rem 0.5rem; font-size: 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--panel); color: var(--text); box-sizing: border-box;">
+            <input type="password" id="input-gdrive-hf-token" class="input-hf-token-field" placeholder="hf_... (free serverless TrOCR)" style="width: 100%; padding: 0.35rem 0.5rem; font-size: 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--panel); color: var(--text); box-sizing: border-box;">
           </div>
         </div>
       </details>
@@ -7399,8 +7399,7 @@
 
     // Crop ROI from rectified scan image into HTMLCanvasElement (with Stage 4 wall stripping)
     function cropROIFromScan(grade, roi, destCanvas, optionalKey = null) {
-      if (!grade || !roi || !destCanvas || typeof destCanvas.getContext !== 'function') return;
-      if (grade.scanImg && grade.scanImg._isBlankCanvas) return null;
+      if (!grade || !roi || !destCanvas || typeof destCanvas.getContext !== 'function') return null;
       const pxPerMm = 4.0;
       const roiW = Math.max(10, Number(roi.w ?? roi.width ?? 0));
       const roiH = Math.max(5, Number(roi.h ?? roi.height ?? 0));
@@ -7423,7 +7422,7 @@
       destCanvas.width = Math.max(200, Math.round(canW * scale));
       destCanvas.height = Math.max(50, Math.round(canH * scale));
       const destCtx = destCanvas.getContext('2d');
-      if (!destCtx) return;
+      if (!destCtx) return null;
       destCtx.imageSmoothingEnabled = true;
       destCtx.imageSmoothingQuality = 'high';
       destCtx.fillStyle = '#ffffff';
@@ -7435,6 +7434,7 @@
         ? (grade.nameCropDataUrl || grade.gradedItems?.['name']?.cropDataUrl)
         : (grade.gradedItems?.[roiKey]?.cropDataUrl);
 
+      // 1. If an authentic cached crop is already present, paint it and return
       if (cachedCrop) {
         try {
           const cachedImg = new Image();
@@ -7445,43 +7445,50 @@
           if (cachedImg.complete) {
             destCtx.drawImage(cachedImg, 0, 0, destCanvas.width, destCanvas.height);
           }
-          return;
+          return destCanvas;
         } catch (_) {}
       }
 
-      if (grade.scanImg) {
-        try {
-          const off = document.createElement('canvas');
-          off.width = grade.targetW || 840;
-          off.height = grade.targetH || 1188;
-          const offCtx = off.getContext('2d');
-          if (offCtx && offCtx.drawImage) {
-            drawUprightScanImage(offCtx, grade.scanImg, off.width, off.height, grade.rotationDeg);
-            destCtx.drawImage(off, cropX, cropY, cropW, cropH, 0, 0, destCanvas.width, destCanvas.height);
-            if (destCtx.getImageData && destCtx.putImageData) {
-              const croppedData = destCtx.getImageData(0, 0, destCanvas.width, destCanvas.height);
-              stripBoxWallsFromImageData(croppedData);
-              destCtx.putImageData(croppedData, 0, 0);
-            }
-            if (roiKey && grade.gradedItems && grade.gradedItems[roiKey] && !grade.gradedItems[roiKey].cropDataUrl) {
-              try {
-                grade.gradedItems[roiKey].cropDataUrl = destCanvas.toDataURL('image/jpeg', 0.85);
-              } catch (_) {}
-            }
-          }
-        } catch (_) {
-          destCtx.fillStyle = '#333333';
-          destCtx.font = '12px sans-serif';
-          destCtx.fillText(`[Crop: ${roiW}x${roiH}mm]`, 10, 24);
-        }
-      } else {
-        destCtx.fillStyle = '#f8fafc';
-        destCtx.fillRect(0, 0, destCanvas.width, destCanvas.height);
-        destCtx.font = 'italic 16px sans-serif';
-        destCtx.fillStyle = '#334155';
-        const txt = (roiKey && grade.gradedItems?.[roiKey]?.ocrText) || 'Handwritten Answer';
-        destCtx.fillText(`"${txt}"`, 16, Math.round(destCanvas.height / 2) + 5);
+      // 2. If scanImg is missing or is a placeholder blank canvas, do not create or cache blank crops
+      const isBlank = (img) => {
+        if (!img) return true;
+        if (img._isBlankCanvas) return true;
+        if (typeof HTMLCanvasElement !== 'undefined' && img instanceof HTMLCanvasElement && (!img.width || !img.height || img._isBlankCanvas)) return true;
+        return false;
+      };
+
+      if (!grade.scanImg || isBlank(grade.scanImg)) {
+        return null;
       }
+
+      // 3. Extract crop from authentic rectified scan image
+      try {
+        const off = document.createElement('canvas');
+        off.width = grade.targetW || 840;
+        off.height = grade.targetH || 1188;
+        const offCtx = off.getContext('2d');
+        if (offCtx && offCtx.drawImage) {
+          drawUprightScanImage(offCtx, grade.scanImg, off.width, off.height, grade.rotationDeg);
+          destCtx.drawImage(off, cropX, cropY, cropW, cropH, 0, 0, destCanvas.width, destCanvas.height);
+          if (destCtx.getImageData && destCtx.putImageData) {
+            const croppedData = destCtx.getImageData(0, 0, destCanvas.width, destCanvas.height);
+            stripBoxWallsFromImageData(croppedData);
+            destCtx.putImageData(croppedData, 0, 0);
+          }
+          if (roiKey && grade.gradedItems && grade.gradedItems[roiKey] && !grade.gradedItems[roiKey].cropDataUrl) {
+            try {
+              grade.gradedItems[roiKey].cropDataUrl = destCanvas.toDataURL('image/jpeg', 0.85);
+            } catch (_) {}
+          }
+          return destCanvas;
+        }
+      } catch (_) {
+        destCtx.fillStyle = '#333333';
+        destCtx.font = '12px sans-serif';
+        destCtx.fillText(`[Crop: ${roiW}x${roiH}mm]`, 10, 24);
+        return destCanvas;
+      }
+      return null;
     }
     window.cropROIFromScan = cropROIFromScan;
 
@@ -7598,15 +7605,15 @@
       // Tier 4: Opt-in Free Hugging Face Serverless API Booster (via XMLHttpRequest to preserve strict zero-fetch offline contract)
       async function runTier4HFServerless(canvas) {
         const token = getHFToken();
-        if (!token || (typeof navigator !== 'undefined' && !navigator.onLine)) return null;
+        if (!token || (typeof navigator !== 'undefined' && navigator.onLine === false)) return null;
 
         return new Promise((resolve) => {
           try {
-            canvas.toBlob((blob) => {
+            const sendBlob = (blob) => {
               if (!blob) return resolve(null);
               const xhr = new XMLHttpRequest();
               xhr.open('POST', 'https://api-inference.huggingface.co/models/microsoft/trocr-small-handwritten', true);
-              xhr.timeout = 4000;
+              xhr.timeout = 8000;
               xhr.setRequestHeader('Authorization', `Bearer ${token}`);
               xhr.setRequestHeader('Content-Type', 'application/octet-stream');
               xhr.onload = function() {
@@ -7628,14 +7635,31 @@
               xhr.onerror = () => resolve(null);
               xhr.ontimeout = () => resolve(null);
               xhr.send(blob);
-            }, 'image/jpeg', 0.92);
+            };
+
+            if (typeof canvas.toBlob === 'function') {
+              canvas.toBlob(sendBlob, 'image/jpeg', 0.92);
+            } else if (typeof canvas.toDataURL === 'function') {
+              try {
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+                const byteString = atob(dataUrl.split(',')[1]);
+                const ab = new ArrayBuffer(byteString.length);
+                const ia = new Uint8Array(ab);
+                for (let i = 0; i < byteString.length; i++) ia[i] = byteString.charCodeAt(i);
+                sendBlob(new Blob([ab], { type: 'image/jpeg' }));
+              } catch {
+                resolve(null);
+              }
+            } else {
+              resolve(null);
+            }
           } catch {
             resolve(null);
           }
         });
       }
 
-      // 4-Tier Cascade: Tier 1 (Local ONNX) -> Tier 2 (Local OCR) -> Tier 4 (Optional Cloud) -> Tier 3 (Zero-failure Visual Fallback)
+      // 4-Tier Cascade: Tier 4 (Cloud Booster if token configured) -> Tier 1 (Local ONNX) -> Tier 2 (Local Canvas Morphology) -> Tier 3 (Zero-failure Visual Fallback)
       async function transcribeHandwritingCrop(canvas, options = {}) {
         if (!canvas) {
           return { text: '', confidence: 0.0, tier: 3, source: 'visual-fallback' };
@@ -7665,23 +7689,29 @@
           }
         }
 
-        if (options.preferCloud && getHFToken()) {
-          const t4 = await runTier4HFServerless(targetCanvas);
-          if (t4) return t4;
+        // Fast-path: Check blank detector first. If the crop is completely blank, return empty string immediately
+        const t2 = runTier2LocalOCR(targetCanvas, options);
+        if (t2 && t2.text === '') {
+          return t2;
         }
 
+        // If user configured a Hugging Face API token, prioritize Tier 4 Serverless TrOCR inference
+        const hfToken = getHFToken();
+        if (hfToken) {
+          try {
+            const t4 = await runTier4HFServerless(targetCanvas);
+            if (t4 && t4.text) return t4;
+          } catch {}
+        }
+
+        // Tier 1: Try Local ONNX WebAssembly TrOCR
         try {
           const t1 = await runTier1LocalTrOCR(targetCanvas);
-          if (t1) return t1;
+          if (t1 && t1.text) return t1;
         } catch {}
 
-        const t2 = runTier2LocalOCR(targetCanvas, options);
+        // Tier 2: Return honest local stroke morphology ([Handwritten Text])
         if (t2) return t2;
-
-        if (!options.preferCloud && getHFToken()) {
-          const t4 = await runTier4HFServerless(targetCanvas);
-          if (t4) return t4;
-        }
 
         // Tier 3: Zero-failure visual crop fallback (Core Contract)
         return {
@@ -7698,11 +7728,13 @@
         setHFToken,
         runTier1LocalTrOCR,
         runTier2LocalOCR,
+        runTier2CanvasMorphology: runTier2LocalOCR,
         runTier4HFServerless,
       };
     })();
     window.HandwritingEngine = HandwritingEngine;
     window.transcribeHandwritingCrop = HandwritingEngine.transcribeHandwritingCrop;
+    window.runTier2CanvasMorphology = HandwritingEngine.runTier2CanvasMorphology;
 
     function snapZoneOffsets() {
       return {};
@@ -10466,18 +10498,22 @@
           // Draw crop on flashcard canvas
           const fCanvas = $('flashcard-crop-canvas');
           if (fCanvas && curGrade) {
+            let res = null;
             if (activeItem.roi) {
-              cropROIFromScan(curGrade, activeItem.roi, fCanvas, activeItem.key);
-            } else {
+              res = cropROIFromScan(curGrade, activeItem.roi, fCanvas, activeItem.key);
+            }
+            if (res === null || !activeItem.roi) {
               const ctx = fCanvas.getContext ? fCanvas.getContext('2d') : null;
               if (ctx && ctx.fillText) {
                 fCanvas.width = 720;
                 fCanvas.height = 140;
-                ctx.fillStyle = '#ffffff';
+                ctx.fillStyle = '#f8fafc';
                 ctx.fillRect(0, 0, fCanvas.width, fCanvas.height);
-                ctx.font = 'italic 18px sans-serif';
-                ctx.fillStyle = '#222222';
-                ctx.fillText(`"${cardItemData.ocrText || '(Handwritten response)'}"`, 24, 75);
+                ctx.font = 'italic 16px sans-serif';
+                ctx.fillStyle = '#64748b';
+                const hasScan = !!(curGrade?.scanImg && !isBlankCanvas(curGrade.scanImg));
+                const msg = cardItemData.ocrText || (hasScan ? '(Handwritten response)' : 'Attach scans folder to inspect handwritten crop');
+                ctx.fillText(`"${msg}"`, 24, 75);
               }
             }
           }
@@ -10567,16 +10603,20 @@
       grades.forEach((g, sIdx) => {
         const c = $(`crop-canvas-${sIdx}`);
         if (c) {
+          let res = null;
           if (activeItem.roi) {
-            cropROIFromScan(g, activeItem.roi, c, activeItem.key);
-          } else {
+            res = cropROIFromScan(g, activeItem.roi, c, activeItem.key);
+          }
+          if (res === null || !activeItem.roi) {
             const ctx = c.getContext ? c.getContext('2d') : null;
             if (ctx && ctx.fillText) {
-              ctx.fillStyle = '#ffffff';
+              ctx.fillStyle = '#f8fafc';
               ctx.fillRect(0, 0, c.width, c.height);
               ctx.font = 'italic 13px sans-serif';
-              ctx.fillStyle = '#222222';
-              ctx.fillText(`"${g.gradedItems?.[activeItem.key]?.ocrText || '(Handwritten response)'}"`, 14, 34);
+              ctx.fillStyle = '#64748b';
+              const isReal = !!(g?.scanImg && !isBlankCanvas(g.scanImg));
+              const msg = g.gradedItems?.[activeItem.key]?.ocrText || (isReal ? '(Handwritten response)' : 'No scan image');
+              ctx.fillText(`"${msg}"`, 14, 34);
             }
           }
         }
@@ -10800,7 +10840,7 @@
         } catch (_) {}
       }
 
-      if (activeScanImg && !activeScanImg.complete) {
+      if (activeScanImg && !(typeof HTMLCanvasElement !== 'undefined' && activeScanImg instanceof HTMLCanvasElement) && !activeScanImg.complete) {
         const onImgLoad = () => {
           drawGradeOnCanvas(grade, canvas, options);
         };
@@ -11932,6 +11972,59 @@
     }
     window.saveCheckerProgress = saveCheckerProgress;
 
+    function regenerateCropsForGrades(grades = (state.results && state.results.grades), layout = state.layout) {
+      if (!grades || !Array.isArray(grades)) return;
+      const l = layout || state.layout;
+      if (!l) return;
+      const nameRoi = (typeof findStudentNameROI === 'function') ? findStudentNameROI(l) : null;
+      const hItems = (typeof getHorizontalGradingItems === 'function') ? getHorizontalGradingItems(l, state.key) : [];
+
+      for (const g of grades) {
+        if (!g.nameCropDataUrl && nameRoi && g.scanImg && typeof cropROIFromScan === 'function') {
+          try {
+            const c = document.createElement('canvas');
+            const res = cropROIFromScan(g, nameRoi, c, 'name');
+            if (res !== null) {
+              g.nameCropDataUrl = c.toDataURL('image/jpeg', 0.90);
+            }
+          } catch (_) {}
+        }
+        if (!g.gradedItems) g.gradedItems = {};
+        for (const hItem of hItems) {
+          if (hItem.type === 'correction' || hItem.role === 'correction' || (hItem.key && hItem.key.endsWith('_corr'))) {
+            const qNum = hItem.key.replace(/_corr$/, '');
+            const parentItem = (state.key)?.items?.[qNum];
+            if (parentItem && String(parentItem.answer || parentItem.correct || '').toUpperCase() === 'T') {
+              continue;
+            }
+          }
+          if (hItem.roi && (!g.gradedItems[hItem.key] || !g.gradedItems[hItem.key].cropDataUrl)) {
+            if (!g.gradedItems[hItem.key]) {
+              g.gradedItems[hItem.key] = {
+                expected: hItem.expected,
+                pointsAwarded: 0,
+                maxPoints: hItem.points,
+                status: 'unreviewed',
+                reviewed: false,
+                label: hItem.label,
+                prompt: hItem.prompt
+              };
+            }
+            if (g.scanImg && typeof cropROIFromScan === 'function') {
+              try {
+                const c = document.createElement('canvas');
+                const res = cropROIFromScan(g, hItem.roi, c, hItem.key);
+                if (res !== null) {
+                  g.gradedItems[hItem.key].cropDataUrl = c.toDataURL('image/jpeg', 0.85);
+                }
+              } catch (_) {}
+            }
+          }
+        }
+      }
+    }
+    window.regenerateCropsForGrades = regenerateCropsForGrades;
+
     function restoreCheckerProgress(data) {
       if (!data || !data.results || !Array.isArray(data.results.grades)) {
         throw new Error('Invalid or corrupted grading session progress file.');
@@ -12039,50 +12132,7 @@
 
       // Ensure missing crops are generated and cached once images finish decoding
       const postDecode = () => {
-        const l = data.layout || state.layout;
-        if (l) {
-          const nameRoi = (typeof findStudentNameROI === 'function') ? findStudentNameROI(l) : null;
-          const hItems = (typeof getHorizontalGradingItems === 'function') ? getHorizontalGradingItems(l, state.key) : [];
-          for (const g of restoredGrades) {
-            if (!g.nameCropDataUrl && nameRoi && g.scanImg && typeof cropROIFromScan === 'function') {
-              try {
-                const c = document.createElement('canvas');
-                cropROIFromScan(g, nameRoi, c, 'name');
-                g.nameCropDataUrl = c.toDataURL('image/jpeg', 0.90);
-              } catch (_) {}
-            }
-            if (!g.gradedItems) g.gradedItems = {};
-            for (const hItem of hItems) {
-              if (hItem.type === 'correction' || hItem.role === 'correction' || (hItem.key && hItem.key.endsWith('_corr'))) {
-                const qNum = hItem.key.replace(/_corr$/, '');
-                const parentItem = (state.key)?.items?.[qNum];
-                if (parentItem && String(parentItem.answer || parentItem.correct || '').toUpperCase() === 'T') {
-                  continue;
-                }
-              }
-              if (hItem.roi && (!g.gradedItems[hItem.key] || !g.gradedItems[hItem.key].cropDataUrl)) {
-                if (!g.gradedItems[hItem.key]) {
-                  g.gradedItems[hItem.key] = {
-                    expected: hItem.expected,
-                    pointsAwarded: 0,
-                    maxPoints: hItem.points,
-                    status: 'unreviewed',
-                    reviewed: false,
-                    label: hItem.label,
-                    prompt: hItem.prompt
-                  };
-                }
-                if (g.scanImg && typeof cropROIFromScan === 'function') {
-                  try {
-                    const c = document.createElement('canvas');
-                    cropROIFromScan(g, hItem.roi, c, hItem.key);
-                    g.gradedItems[hItem.key].cropDataUrl = c.toDataURL('image/jpeg', 0.85);
-                  } catch (_) {}
-                }
-              }
-            }
-          }
-        }
+        regenerateCropsForGrades(restoredGrades, data.layout || state.layout);
         if (typeof renderHorizontalGradingView === 'function') {
           renderHorizontalGradingView();
         }
@@ -12576,6 +12626,13 @@
         } else {
           googleDriveState.user = { name: 'Google User' };
         }
+        try {
+          localStorage.setItem('toolkit_google_auth', JSON.stringify({
+            token,
+            expiry: Date.now() + (expiresIn * 1000),
+            user: googleDriveState.user
+          }));
+        } catch {}
         updateGoogleUiState();
         showToast('✓ Signed in with Google (' + (googleDriveState.user.email || googleDriveState.user.name || 'Account') + ')');
         $('modal-google-drive')?.close();
@@ -12585,6 +12642,13 @@
       };
       xhr.onerror = function() {
         googleDriveState.user = { name: 'Google User' };
+        try {
+          localStorage.setItem('toolkit_google_auth', JSON.stringify({
+            token,
+            expiry: Date.now() + (expiresIn * 1000),
+            user: googleDriveState.user
+          }));
+        } catch {}
         updateGoogleUiState();
         showToast('✓ Signed in with Google');
         $('modal-google-drive')?.close();
@@ -13540,9 +13604,11 @@
           if (!cropUrl && activeItem?.roi && typeof cropROIFromScan === 'function') {
             try {
               const c = document.createElement('canvas');
-              cropROIFromScan(g, activeItem.roi, c, itemKey);
-              cropUrl = c.toDataURL('image/jpeg', 0.85);
-              item.cropDataUrl = cropUrl;
+              const res = cropROIFromScan(g, activeItem.roi, c, itemKey);
+              if (res !== null) {
+                cropUrl = c.toDataURL('image/jpeg', 0.85);
+                item.cropDataUrl = cropUrl;
+              }
             } catch (_) {}
           }
 
@@ -13635,7 +13701,8 @@
         let matchedCount = 0;
 
         for (const file of files) {
-          if (!file.type.startsWith('image/')) continue;
+          const isImg = file.type.startsWith('image/') || /\.(jpe?g|png|webp|bmp|tiff?)$/i.test(file.name);
+          if (!isImg) continue;
           try {
             const dataUrl = await new Promise((res, rej) => {
               const reader = new FileReader();
@@ -13664,6 +13731,15 @@
           } catch (_) {}
         }
 
+        if (typeof regenerateCropsForGrades === 'function') {
+          regenerateCropsForGrades(state.results.grades);
+        }
+        if (typeof renderRosterTable === 'function') renderRosterTable();
+        if (typeof renderSummaryTable === 'function') renderSummaryTable();
+        if (typeof renderHorizontalGradingView === 'function' && state.activeTab === 'horizontal') {
+          renderHorizontalGradingView();
+        }
+
         hideLoading();
         inputAttachScans.value = '';
         if (state.selectedStudentIdx != null) {
@@ -13676,11 +13752,11 @@
     // Sync Hugging Face TrOCR API Token inputs across modals
     const syncHFTokenInputs = () => {
       const currentToken = typeof HandwritingEngine !== 'undefined' && HandwritingEngine.getHFToken ? HandwritingEngine.getHFToken() : (localStorage.getItem('toolkit_hf_token') || localStorage.getItem('instructor_hf_token') || '');
-      $$('.input-hf-token-field, #input-hf-token').forEach(inp => {
+      $$('.input-hf-token-field, #input-hf-token, #input-gdrive-hf-token').forEach(inp => {
         if (inp) inp.value = currentToken;
       });
     };
-    $$('.input-hf-token-field, #input-hf-token').forEach(inp => {
+    $$('.input-hf-token-field, #input-hf-token, #input-gdrive-hf-token').forEach(inp => {
       inp.addEventListener('input', (e) => {
         const token = e.target.value.trim();
         if (typeof HandwritingEngine !== 'undefined' && HandwritingEngine.setHFToken) {

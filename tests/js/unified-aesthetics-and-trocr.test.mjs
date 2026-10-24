@@ -114,6 +114,17 @@ async function loadCheckerSandbox() {
     URLSearchParams: class {
       constructor(str) { this.params = new URLSearchParams(str); }
       get(k) { return this.params.get(k); }
+    },
+    setTimeout: (fn, ms) => setTimeout(fn, ms),
+    clearTimeout: (id) => clearTimeout(id),
+    XMLHttpRequest: class MockXHR {
+      constructor() {
+        this.status = 200;
+        this.responseText = '[]';
+      }
+      open() {}
+      setRequestHeader() {}
+      send() {}
     }
   };
   sandbox.window = sandbox;
@@ -469,3 +480,95 @@ test('8. HandwritingEngine Tier 2 morphology honesty & dual HF token sync', asyn
   assert.ok(t2Result, 'Tier 2 result exists');
   assert.equal(t2Result.text, '[Handwritten Text]', 'Must return honest [Handwritten Text] instead of stroke counts or expected answers');
 });
+
+test('9. HandwritingEngine cascade prioritizes Tier 4 HF serverless when token is set', async () => {
+  const { context, sandbox } = await loadCheckerSandbox();
+  const HandwritingEngine = context.HandwritingEngine;
+  
+  // Set token
+  HandwritingEngine.setHFToken('hf_mock_token');
+  context.navigator.onLine = true;
+  
+  // Create a canvas with content so it's not detected as blank
+  const strokeCanvas = {
+    width: 100,
+    height: 30,
+    getContext: () => ({
+      getImageData: () => {
+        const data = new Uint8ClampedArray(100 * 30 * 4);
+        for (let i = 0; i < data.length; i += 4) {
+          data[i] = 10; data[i + 1] = 10; data[i + 2] = 10; data[i + 3] = 255;
+        }
+        return { data };
+      }
+    }),
+    toBlob: (cb) => cb(new sandbox.Blob(['mock_image_bytes']))
+  };
+  
+  // Mock XMLHttpRequest for Hugging Face Inference API
+  let xhrCalled = false;
+  context.XMLHttpRequest = class {
+    constructor() {
+      this.status = 200;
+      this.responseText = JSON.stringify([{ generated_text: 'Mitochondria' }]);
+    }
+    open(method, url) {
+      this.url = url;
+    }
+    setRequestHeader(k, v) {
+      this.headers = this.headers || {};
+      this.headers[k] = v;
+    }
+    send(blob) {
+      xhrCalled = true;
+      assert.ok(this.url.includes('microsoft/trocr-small-handwritten') || this.url.includes('api-inference.huggingface.co'));
+      assert.equal(this.headers['Authorization'], 'Bearer hf_mock_token');
+      if (typeof this.onload === 'function') this.onload();
+    }
+  };
+
+  const result = await HandwritingEngine.transcribeHandwritingCrop(strokeCanvas);
+  assert.equal(xhrCalled, true, 'XMLHttpRequest must be dispatched when HF token is set');
+  assert.equal(result.tier, 4, 'Tier 4 must be prioritized over Tier 2 when token is present');
+  assert.equal(result.text, 'Mitochondria');
+  assert.equal(typeof HandwritingEngine.runTier2CanvasMorphology, 'function', 'runTier2CanvasMorphology alias must exist');
+});
+
+test('10. cropROIFromScan returns cached crop even when scan is _isBlankCanvas', async () => {
+  const { context, sandbox } = await loadCheckerSandbox();
+  const cropROIFromScan = context.cropROIFromScan;
+  
+  const destCanvas = sandbox.document.createElement('canvas');
+  const dummyCanvas = sandbox.document.createElement('canvas');
+  dummyCanvas._isBlankCanvas = true;
+  
+  const grade = {
+    scanImg: dummyCanvas,
+    targetW: 840,
+    targetH: 1188,
+    rotationDeg: 0,
+    gradedItems: {
+      q1: {
+        cropDataUrl: 'data:image/jpeg;base64,existing_cached_crop'
+      }
+    }
+  };
+  
+  // When roi id matches cached crop, it returns destCanvas with cached crop
+  const roi = { id: 'q1', x: 20, y: 30, w: 75, h: 10 };
+  const res = cropROIFromScan(grade, roi, destCanvas);
+  assert.equal(res, destCanvas, 'Must return destCanvas with cached crop even when scanImg is blank canvas');
+  
+  // When roi id does NOT have a cached crop and scanImg is blank canvas, it returns null
+  const roiUncached = { id: 'q2', x: 20, y: 30, w: 75, h: 10 };
+  const resNull = cropROIFromScan(grade, roiUncached, destCanvas);
+  assert.equal(resNull, null, 'Must return null when uncached and scanImg is blank canvas');
+});
+
+test('11. Home portal contrast and button styling', async () => {
+  const homeHtml = await readFile(resolve(root, 'builder/home.html'), 'utf8');
+  assert.ok(!homeHtml.includes('.tool-card__title {\n      font-size: 1.1rem;\n      font-weight: 700;\n      color: #fff;'), 'tool-card__title must not have hardcoded white text');
+  assert.ok(!homeHtml.includes('color: #fff; margin-bottom: 0.2rem;">${examTitle}'), 'examTitle must not have hardcoded white text');
+  assert.ok(!homeHtml.includes('.btn--secondary:hover {\n      border-color: var(--border-focus);\n      background: #27354a;\n      color: #fff;\n    }'), 'btn--secondary:hover must not have hardcoded dark background and white text');
+});
+

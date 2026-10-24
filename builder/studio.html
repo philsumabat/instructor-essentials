@@ -8455,6 +8455,13 @@ function handleGoogleAuthSuccess(token, expiresIn = 3600) {
     } else {
       googleDriveState.user = { name: 'Google User' };
     }
+    try {
+      localStorage.setItem('toolkit_google_auth', JSON.stringify({
+        token,
+        expiry: Date.now() + (expiresIn * 1000),
+        user: googleDriveState.user
+      }));
+    } catch {}
     updateGoogleUiState();
     showToast('✓ Connected to Google Drive (' + (googleDriveState.user.email || googleDriveState.user.name || 'Account') + ')');
     if (els.modalLibrary && els.modalLibrary.open && els.cloudBuildsList && els.cloudBuildsList.style.display !== 'none') {
@@ -8463,6 +8470,13 @@ function handleGoogleAuthSuccess(token, expiresIn = 3600) {
   };
   xhr.onerror = function() {
     googleDriveState.user = { name: 'Google User' };
+    try {
+      localStorage.setItem('toolkit_google_auth', JSON.stringify({
+        token,
+        expiry: Date.now() + (expiresIn * 1000),
+        user: googleDriveState.user
+      }));
+    } catch {}
     updateGoogleUiState();
     showToast('✓ Connected to Google Drive');
   };

@@ -197,8 +197,8 @@
     }
     .btn--secondary:hover {
       border-color: var(--border-focus);
-      background: #27354a;
-      color: #fff;
+      background: var(--panel-alt);
+      color: var(--text);
     }
 
     .btn--danger,
@@ -211,7 +211,7 @@
     .btn.is-danger:hover {
       background: rgba(239, 68, 68, 0.15);
       border-color: var(--danger);
-      color: #fca5a5;
+      color: var(--danger);
     }
 
     .btn--sm {
@@ -356,21 +356,21 @@
     }
 
     .tool-icon--builder {
-      background: rgba(37, 99, 235, 0.15);
-      color: #60a5fa;
-      border: 1px solid rgba(59, 130, 246, 0.3);
+      background: light-dark(rgba(37, 99, 235, 0.1), rgba(37, 99, 235, 0.2));
+      color: light-dark(#0284c7, #60a5fa);
+      border: 1px solid light-dark(rgba(2, 132, 199, 0.25), rgba(59, 130, 246, 0.3));
     }
 
     .tool-icon--checker {
-      background: rgba(5, 150, 105, 0.15);
-      color: #34d399;
-      border: 1px solid rgba(16, 185, 129, 0.3);
+      background: light-dark(rgba(5, 150, 105, 0.1), rgba(5, 150, 105, 0.2));
+      color: light-dark(#059669, #34d399);
+      border: 1px solid light-dark(rgba(5, 150, 105, 0.25), rgba(16, 185, 129, 0.3));
     }
 
     .tool-card__title {
       font-size: 1.2rem;
       font-weight: 700;
-      color: #fff;
+      color: var(--text);
       margin-bottom: 0.3rem;
     }
 
@@ -911,7 +911,7 @@
       container.innerHTML = `
         <div style="display: flex; flex-direction: column; gap: 0.75rem;">
           <div>
-            <h4 style="font-size: 1rem; font-weight: 700; color: #fff; margin-bottom: 0.2rem;">${examTitle}</h4>
+            <h4 style="font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 0.2rem;">${examTitle}</h4>
             <div style="font-size: 0.78rem; color: var(--text-muted);">
               <strong>${count}</strong> student sheet${count === 1 ? '' : 's'} graded • Saved: ${dateStr}
             </div>

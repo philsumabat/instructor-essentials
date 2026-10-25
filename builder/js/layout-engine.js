@@ -797,14 +797,17 @@ export function buildLayout(input) {
 
     let effectiveRaw = (isHalfLeft || isHalfRight) && raw.w == null ? { ...raw, w: halfW } : raw;
     if (hasMidlineFiducials) {
-      const clampedW = effectiveRaw.w != null ? Math.min(effectiveRaw.w, content.w) : null;
+      if (x < content.x) x = content.x;
       const clampedX = effectiveRaw.x != null ? Math.max(effectiveRaw.x, content.x) : null;
+      if (clampedX != null && clampedX > x) x = clampedX;
+      const maxAllowedW = Math.max(0, contentRight - x);
+      const clampedW = effectiveRaw.w != null ? Math.min(effectiveRaw.w, content.w, maxAllowedW) : null;
       effectiveRaw = {
         ...effectiveRaw,
         ...(clampedW != null ? { w: clampedW } : {}),
         ...(clampedX != null ? { x: clampedX } : {})
       };
-      if (x < content.x) x = content.x;
+      if (availW > maxAllowedW) availW = maxAllowedW;
       if (availW > content.w) availW = content.w;
     }
     const res = layoutFn(effectiveRaw, ctx, x, y, availW);

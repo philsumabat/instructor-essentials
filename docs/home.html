@@ -1008,7 +1008,7 @@
       if (typeof window === 'undefined' || !window.location || typeof window.location.href !== 'string') return;
       if (window.location.protocol === 'file:') return; // Allow offline local execution
 
-      const isConnected = state && state.isConnected;
+      const isConnected = Boolean(typeof getGoogleUser === 'function' ? getGoogleUser() : null);
       if (!isConnected) {
         e.preventDefault();
         showToast('Please sign in with your institutional Google account to access this workflow.');

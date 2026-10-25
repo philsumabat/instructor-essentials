@@ -3192,6 +3192,9 @@ function updateGoogleUiState() {
     if (headerDisc) headerDisc.style.display = 'flex';
     if (headerConn) headerConn.style.display = 'none';
   }
+  if (typeof checkAuthGating === 'function') {
+    checkAuthGating();
+  }
 }
 
 function openGoogleDriveModal() {
@@ -4914,6 +4917,7 @@ async function init() {
   initElements();
   initEvents();
   restoreGoogleAuthState();
+  checkAuthGating();
 
   // Cross-tab synchronization for Google Auth and Saved Builds
   if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {

@@ -615,6 +615,8 @@
       display: flex;
       align-items: center;
       gap: 0.4rem;
+      flex-wrap: wrap;
+      row-gap: 0.35rem;
     }
 
     .dropzone {
@@ -12842,7 +12844,7 @@
       }
       if (status1) {
         status1.className = 'step-status-pill ' + (hasLayout ? 'is-complete' : 'is-pending');
-        status1.textContent = hasLayout ? 'Ready' : 'Pending';
+        status1.textContent = hasLayout ? '✓ Step 1 Complete' : 'Pending';
       }
 
       // Sidebar Card 2: Answer Key (Unlocked only if hasLayout)
@@ -12874,7 +12876,8 @@
           status2.textContent = 'Locked';
         } else if (hasKey) {
           status2.className = 'step-status-pill is-complete';
-          status2.textContent = 'Ready';
+          const count = Object.keys(state.key.items).length;
+          status2.textContent = `✓ Step 2 Complete • ${count} Items Keyed`;
         } else {
           status2.className = 'step-status-pill is-pending';
           status2.textContent = 'Pending';
@@ -13043,6 +13046,9 @@
         if (viewConn) viewConn.style.display = 'none';
         if (headerDisc) headerDisc.style.display = 'flex';
         if (headerConn) headerConn.style.display = 'none';
+      }
+      if (typeof checkAuthGating === 'function') {
+        checkAuthGating();
       }
     }
 

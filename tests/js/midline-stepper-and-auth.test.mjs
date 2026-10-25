@@ -24,6 +24,13 @@ test('midline fiducials (6-marker setup) enforce lateral margin and prevent zone
         text: 'Midline Clearance Test Instructions'
       },
       {
+        id: 'offset-zone',
+        type: 'instructions',
+        x: 25,
+        w: 186,
+        text: 'Custom offset zone'
+      },
+      {
         id: 'mcq-zone',
         type: 'mcq',
         count: 30,
@@ -188,7 +195,7 @@ test('checker studio 1-2-3 sequential stepper progression and validation alerts'
   sandbox.window.state.layout = { bubbles: [{ id: 'b1' }], page: { width: 210, height: 297 } };
   sandbox.window.updateStepperUI();
 
-  assert.equal(elements['step-status-1'].textContent, 'Ready');
+  assert.equal(elements['step-status-1'].textContent, '✓ Step 1 Complete');
   assert.ok(!elements['card-key-quick'].classList.contains('step--locked'), 'Step 2 card must be unlocked');
   assert.ok(elements['card-scans-quick'].classList.contains('step--locked'), 'Step 3 card must still be locked');
   assert.equal(elements['step-status-2'].textContent, 'Pending');
@@ -203,7 +210,7 @@ test('checker studio 1-2-3 sequential stepper progression and validation alerts'
   sandbox.window.state.key = { items: { 'q1': { answer: 'A', points: 1 } } };
   sandbox.window.updateStepperUI();
 
-  assert.equal(elements['step-status-2'].textContent, 'Ready');
+  assert.equal(elements['step-status-2'].textContent, '✓ Step 2 Complete • 1 Items Keyed');
   assert.ok(!elements['card-scans-quick'].classList.contains('step--locked'), 'Step 3 card must be unlocked');
   assert.equal(elements['step-status-3'].textContent, 'Pending');
 
@@ -262,4 +269,13 @@ test('institutional Google Sign-In auth gating overlay and local bypass', async 
 
   checkGateFn(true, 'https:');
   assert.equal(gateEl.style.display, 'none', 'Gate should be hidden when authenticated');
+
+  // Verify home.html does not use undefined state in click interceptor
+  assert.ok(!homeHtml.includes('state && state.isConnected'), 'home.html must not reference undefined state');
+  assert.ok(homeHtml.includes('getGoogleUser'), 'home.html must use getGoogleUser to verify authentication');
+
+  // Verify checker.html and app.js updateGoogleUiState synchronizes gate overlay
+  assert.ok(checkerHtml.includes('if (typeof checkAuthGating === \'function\') {\n        checkAuthGating();\n      }'), 'checker.html updateGoogleUiState must trigger checkAuthGating');
+  const appJs = await readFile(resolve(root, 'builder/js/app.js'), 'utf8');
+  assert.ok(appJs.includes('if (typeof checkAuthGating === \'function\') {\n    checkAuthGating();\n  }'), 'app.js updateGoogleUiState must trigger checkAuthGating');
 });

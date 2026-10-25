@@ -62,16 +62,18 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 1.5rem;
+      padding: 0 1.25rem;
       position: sticky;
       top: 0;
       z-index: 100;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
     }
 
     .app-brand {
       display: flex;
       align-items: center;
-      gap: 1.25rem;
+      gap: 0.65rem;
     }
 
     .app-brand__main {
@@ -103,38 +105,40 @@
 
     /* Segmented Navigation */
     .workflow-nav {
-      display: flex;
+      display: inline-flex;
       align-items: center;
-      gap: 0.25rem;
-      background: var(--bg);
-      padding: 0.2rem;
-      border-radius: var(--radius-sm);
+      background: var(--panel-alt);
       border: 1px solid var(--border);
+      border-radius: var(--radius-full);
+      padding: 2px;
+      gap: 2px;
+      margin-left: 0.5rem;
     }
 
     .workflow-nav__item {
       display: inline-flex;
       align-items: center;
-      gap: 0.4rem;
-      padding: 0.32rem 0.75rem;
-      border-radius: 4px;
-      font-size: 0.8rem;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: var(--radius-full);
+      font-size: 0.76rem;
       font-weight: 600;
       color: var(--text-muted);
       text-decoration: none;
-      transition: all 140ms var(--ease);
+      transition: all 0.15s ease;
+      user-select: none;
     }
 
     .workflow-nav__item:hover {
       color: var(--text);
-      background: var(--panel-alt);
+      background: rgba(0, 0, 0, 0.04);
     }
 
     .workflow-nav__item.is-active {
-      background: var(--panel);
       color: var(--accent);
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
-      border: 1px solid var(--border);
+      background: var(--panel);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+      border: none;
     }
 
     /* Buttons */
@@ -996,6 +1000,24 @@
     $('btn-google-login')?.addEventListener('click', initGoogleLogin);
     $('btn-google-logout')?.addEventListener('click', logoutGoogle);
     $('btn-clear-all-workspaces')?.addEventListener('click', clearAllWorkspaces);
+
+    // Institutional Authentication Gate: Prompt sign-in before opening workflows
+    document.addEventListener('click', (e) => {
+      const link = e.target.closest('a[href*="builder.html"], a[href*="checker.html"]');
+      if (!link) return;
+      if (typeof window === 'undefined' || !window.location || typeof window.location.href !== 'string') return;
+      if (window.location.protocol === 'file:') return; // Allow offline local execution
+
+      const isConnected = state && state.isConnected;
+      if (!isConnected) {
+        e.preventDefault();
+        showToast('Please sign in with your institutional Google account to access this workflow.');
+        const googleBtn = document.getElementById('btn-google-login');
+        if (googleBtn) {
+          googleBtn.click();
+        }
+      }
+    });
 
     window.addEventListener('storage', (e) => {
       if (e.key === 'instructor_google_token' || e.key === 'instructor_google_user' || e.key === 'toolkit_google_auth') {

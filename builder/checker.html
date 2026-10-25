@@ -89,15 +89,23 @@
       flex-shrink: 0;
     }
 
+    .app-brand__main {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      text-decoration: none;
+      color: inherit;
+    }
+
     .app-brand__logo {
       width: 32px;
       height: 32px;
       border-radius: var(--radius-sm);
-      background: var(--accent);
+      background: linear-gradient(135deg, var(--accent), #4f46e5);
       color: #fff;
       display: grid;
       place-items: center;
-      box-shadow: 0 2px 6px -1px rgba(37, 99, 235, 0.4);
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
     }
 
     .app-brand__title {
@@ -1981,22 +1989,235 @@
       background: var(--panel);
       color: var(--text);
     }
+
+    /* Institutional Authentication Gate Overlay */
+    .auth-gate-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: rgba(11, 15, 25, 0.88);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+
+    .auth-gate-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 2.25rem 2rem;
+      max-width: 440px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .auth-gate-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: var(--accent-light, rgba(56, 189, 248, 0.12));
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1.25rem;
+    }
+
+    .auth-gate-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 0.65rem;
+    }
+
+    .auth-gate-desc {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      line-height: 1.55;
+      margin-bottom: 1.75rem;
+    }
+
+    .auth-gate-actions {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.85rem;
+      width: 100%;
+    }
+
+    .auth-gate-home-link {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.15s ease;
+      margin-top: 0.5rem;
+    }
+
+    .auth-gate-home-link:hover {
+      color: var(--text);
+      text-decoration: underline;
+    }
+
+    /* 1-2-3 Stepper Badges & Cards */
+    .step-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.72rem;
+      font-weight: 700;
+      margin-right: 0.35rem;
+      flex-shrink: 0;
+    }
+
+    .step-badge.is-complete {
+      background: var(--success);
+    }
+
+    .step-badge.is-locked {
+      background: var(--text-muted);
+      opacity: 0.6;
+    }
+
+    .step-status-pill {
+      margin-left: auto;
+      font-size: 0.68rem;
+      font-weight: 600;
+      padding: 0.15rem 0.5rem;
+      border-radius: var(--radius-full);
+    }
+
+    .step-status-pill.is-complete {
+      background: var(--success-light);
+      color: var(--success);
+    }
+
+    .step-status-pill.is-pending {
+      background: var(--accent-light);
+      color: var(--accent);
+    }
+
+    .step-status-pill.is-locked {
+      background: var(--panel-alt);
+      color: var(--text-muted);
+    }
+
+    .step--locked {
+      opacity: 0.55;
+      transition: opacity 0.2s ease;
+      position: relative;
+    }
+
+    .step--locked .dropzone,
+    .step--locked button:not([id="btn-sidebar-grade"]) {
+      pointer-events: none;
+      filter: grayscale(0.6);
+    }
+
+    /* 3-Step Setup Board in Empty State */
+    .stepper-board {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr auto 1fr;
+      align-items: center;
+      gap: 0.75rem;
+      margin: 1.5rem 0 1rem;
+      text-align: left;
+    }
+
+    .stepper-step {
+      background: var(--panel-alt);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 1rem;
+      display: flex;
+      gap: 0.75rem;
+      align-items: flex-start;
+      transition: all 0.2s ease;
+    }
+
+    .stepper-step.is-complete {
+      border-color: var(--success);
+      background: var(--success-light);
+    }
+
+    .stepper-step__num {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      font-size: 0.82rem;
+      flex-shrink: 0;
+    }
+
+    .stepper-step.is-complete .stepper-step__num {
+      background: var(--success);
+    }
+
+    .stepper-step.step--locked .stepper-step__num {
+      background: var(--text-muted);
+    }
+
+    .stepper-step__title {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 0.2rem;
+    }
+
+    .stepper-step__desc {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      line-height: 1.35;
+    }
+
+    .stepper-arrow {
+      color: var(--text-muted);
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+
+    @media (max-width: 768px) {
+      .stepper-board {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+      }
+      .stepper-arrow {
+        display: none;
+      }
+    }
   </style>
 </head>
 <body>
   <!-- Header Bar -->
   <header class="app-header">
     <div class="app-brand">
-      <div class="app-brand__logo" aria-hidden="true">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-          <polyline points="14 2 14 8 20 8"/>
-          <path d="m9 15 2 2 4-4"/>
-        </svg>
-      </div>
-      <div class="app-brand__title-wrap">
-        <h1 class="app-brand__title">Instructors' Toolkit</h1>
-      </div>
+      <a href="home.html" class="app-brand__main" aria-label="Instructors' Toolkit Home">
+        <div class="app-brand__logo" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <path d="m9 15 2 2 4-4"/>
+          </svg>
+        </div>
+        <div class="app-brand__title-wrap">
+          <h1 class="app-brand__title">Instructors' Toolkit</h1>
+        </div>
+      </a>
       <nav class="workflow-nav" aria-label="Workflow switcher">
         <a href="home.html" class="workflow-nav__item" id="nav-btn-home">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
@@ -2097,9 +2318,9 @@
   <div class="workspace">
     <!-- Sidebar -->
     <aside class="sidebar">
-      <!-- Exam Layout Selection -->
+      <!-- Exam Layout Selection (Step 1) -->
       <div class="section-card" id="card-layout-quick">
-        <h2 class="section-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18M9 21V9"/></svg><span>Exam Layout</span></h2>
+        <h2 class="section-title"><span class="step-badge" id="step-badge-1">1</span><span>Step 1: Exam Layout</span><span id="step-status-1" class="step-status-pill is-pending">Pending</span></h2>
         
         <!-- Empty / Unloaded State -->
         <div id="layout-empty-state" style="display: flex; flex-direction: column; gap: 0.5rem;">
@@ -2130,9 +2351,9 @@
         </div>
       </div>
 
-      <!-- Answer Key Selection -->
-      <div class="section-card" id="card-key-quick">
-        <h2 class="section-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 3-9.5 9.5"/><path d="m15.5 7.5 3 3M18 5l2 2"/></svg><span>Answer Key</span></h2>
+      <!-- Answer Key Selection (Step 2) -->
+      <div class="section-card step--locked" id="card-key-quick">
+        <h2 class="section-title"><span class="step-badge is-locked" id="step-badge-2">2</span><span>Step 2: Answer Key</span><span id="step-status-2" class="step-status-pill is-locked">Locked</span></h2>
         
         <!-- Empty / Unloaded State -->
         <div id="key-empty-state" style="display: flex; flex-direction: column; gap: 0.5rem;">
@@ -2170,9 +2391,9 @@
       </div>
 
 
-      <!-- Exam Scans Section -->
-      <div class="section-card" id="card-scans-quick">
-        <h2 class="section-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span>Exam Scans</span></h2>
+      <!-- Exam Scans Section (Step 3) -->
+      <div class="section-card step--locked" id="card-scans-quick">
+        <h2 class="section-title"><span class="step-badge is-locked" id="step-badge-3">3</span><span>Step 3: Student Scans</span><span id="step-status-3" class="step-status-pill is-locked">Locked</span></h2>
         <div class="dropzone" id="dropzone-scans">
           <div class="dropzone__icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m16 16-4-4-4 4"/></svg></div>
           <div class="dropzone__text">Drag &amp; drop exam scans here</div>
@@ -2244,7 +2465,7 @@
 
       <!-- Initial Empty State (shown before scans are graded) -->
       <div id="checker-empty-state" class="checker-empty-state">
-        <div class="checker-empty-card">
+        <div class="checker-empty-card" style="max-width: 680px; width: 100%;">
           <div class="checker-empty-icon" aria-hidden="true">
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
@@ -2252,18 +2473,44 @@
               <path d="m9 15 2 2 4-4"/>
             </svg>
           </div>
-          <h2 class="checker-empty-title">Ready to Grade Exam Scans</h2>
+          <h2 class="checker-empty-title">Automated Exam Grading Workflow</h2>
           <p class="checker-empty-desc">
-            Drop exam scans on the left panel, select your layout template, and click <strong>Grade Scans</strong>. Or try the instant 1-click sample test with pre-loaded scans.
+            Complete the 3-step setup to grade student bubble sheets and compute instant psychometric analytics:
           </p>
-          <div class="checker-empty-actions">
+
+          <div class="stepper-board">
+            <div class="stepper-step" id="empty-step-1">
+              <div class="stepper-step__num">1</div>
+              <div class="stepper-step__body">
+                <div class="stepper-step__title">Exam Layout</div>
+                <div class="stepper-step__desc" id="empty-step-1-desc">Select preset or upload layout.json</div>
+                <button type="button" id="btn-empty-layout" class="btn btn--secondary btn--xs" style="margin-top: 0.4rem;">Select Layout</button>
+              </div>
+            </div>
+            <div class="stepper-arrow">&rarr;</div>
+            <div class="stepper-step step--locked" id="empty-step-2">
+              <div class="stepper-step__num">2</div>
+              <div class="stepper-step__body">
+                <div class="stepper-step__title">Master Answer Key</div>
+                <div class="stepper-step__desc" id="empty-step-2-desc">Upload key scan or edit answers</div>
+                <button type="button" id="btn-empty-key" class="btn btn--secondary btn--xs" style="margin-top: 0.4rem;">Set Key</button>
+              </div>
+            </div>
+            <div class="stepper-arrow">&rarr;</div>
+            <div class="stepper-step step--locked" id="empty-step-3">
+              <div class="stepper-step__num">3</div>
+              <div class="stepper-step__body">
+                <div class="stepper-step__title">Student Scans</div>
+                <div class="stepper-step__desc" id="empty-step-3-desc">Upload camera scans or PDF</div>
+                <button type="button" id="btn-empty-upload" class="btn btn--secondary btn--xs" style="margin-top: 0.4rem;">Upload Scans</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="checker-empty-actions" style="margin-top: 1.5rem; justify-content: center;">
             <button type="button" id="btn-empty-sample" class="btn btn--accent">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-              <span>1-Click Sample Test</span>
-            </button>
-            <button type="button" id="btn-empty-upload" class="btn btn--secondary">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-              <span>Upload Scans</span>
+              <span>1-Click Sample Test (BIO 101 Midterm)</span>
             </button>
           </div>
         </div>
@@ -3340,6 +3587,36 @@
     </div>
   </dialog>
 
+  <!-- Institutional Authentication Gate Overlay -->
+  <div id="auth-gate-overlay" class="auth-gate-overlay" style="display: none;">
+    <div class="auth-gate-card">
+      <div class="auth-gate-icon">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+      </div>
+      <h2 class="auth-gate-title">Institutional Sign-In Required</h2>
+      <p class="auth-gate-desc">
+        Access to Instructors' Toolkit is restricted to authenticated institutional faculty. Please sign in with your institutional Google account to access this workflow.
+      </p>
+      <div class="auth-gate-actions">
+        <button type="button" id="btn-gate-google-signin" class="btn btn--primary btn--lg" style="gap: 0.6rem;">
+          <svg class="google-icon" width="18" height="18" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+          </svg>
+          <span>Sign In with Institutional Google</span>
+        </button>
+        <button type="button" id="btn-gate-local-bypass" class="btn btn--secondary btn--sm" style="display: none;">
+          Running from file:// — Continue in Local Offline Mode
+        </button>
+        <a href="home.html" class="auth-gate-home-link">&larr; Return to Home Portal</a>
+      </div>
+    </div>
+  </div>
 
   <!-- Embedded Sample Data & Client-Side Engine -->
   <script>
@@ -3890,6 +4167,7 @@
       const container = $('scans-list');
       if (state.scans.length === 0) {
         container.innerHTML = `<div style="color: var(--text-muted); font-size: 0.75rem; text-align: center; padding: 0.5rem;">No scans uploaded yet.</div>`;
+        if (typeof updateStepperUI === 'function') updateStepperUI();
         return;
       }
       container.innerHTML = state.scans.map((s, idx) => `
@@ -3901,6 +4179,7 @@
           <button type="button" class="btn-step" style="width:20px;height:20px;font-size:10px;" onclick="removeScan(${idx})">✕</button>
         </div>
       `).join('');
+      if (typeof updateStepperUI === 'function') updateStepperUI();
     }
 
     window.removeScan = (idx) => {
@@ -4516,6 +4795,7 @@
         if (emptyStateEl) emptyStateEl.style.display = 'flex';
         if (statusBoxEl) statusBoxEl.style.display = 'none';
         if (typeof updateHorizontalBadges === 'function') updateHorizontalBadges();
+        if (typeof updateStepperUI === 'function') updateStepperUI();
         return;
       }
       if (emptyStateEl) emptyStateEl.style.display = 'none';
@@ -4532,6 +4812,7 @@
         statsEl.textContent = parts.join(' • ');
       }
       if (typeof updateHorizontalBadges === 'function') updateHorizontalBadges();
+      if (typeof updateStepperUI === 'function') updateStepperUI();
     }
 
     function applyLoadedLayout(rawJson, sourceName) {
@@ -4557,10 +4838,6 @@
 
         const qCount = layoutItems.length;
         alert(`Successfully loaded layout: "${rawJson.title || sourceName}"\n${state.layout.paper || 'A4'} • ${qCount} Questions • ${state.layout.bubbles.length} Bubbles`);
-
-        if (state.scans.length > 0) {
-          $('btn-grade-now').click();
-        }
       } catch (err) {
         alert("Error loading layout: " + err.message);
       }
@@ -4735,6 +5012,7 @@
         if (titleEl) titleEl.textContent = 'No Answer Key';
         if (statsEl) statsEl.textContent = 'Choose layout or saved build';
         validatePreflightKeyLayout();
+        if (typeof updateStepperUI === 'function') updateStepperUI();
         return;
       }
       if (emptyStateEl) emptyStateEl.style.display = 'none';
@@ -4747,6 +5025,7 @@
       if (statsEl) statsEl.textContent = `${qCount} Questions • ${totalPts} Points`;
       validatePreflightKeyLayout();
       if (typeof updateHorizontalBadges === 'function') updateHorizontalBadges();
+      if (typeof updateStepperUI === 'function') updateStepperUI();
     }
 
     // Update Student Roster Status Box & Toolbar State
@@ -6016,10 +6295,6 @@
       updateKeyDisplay();
       validatePreflightKeyLayout();
       $('modal-key-editor').close();
-
-      if (state.scans.length > 0) {
-        $('btn-grade-now').click();
-      }
     });
 
     $('btn-edit-key').onclick = openAnswerKeyModal;
@@ -6078,7 +6353,6 @@
                     validatePreflightKeyLayout();
                     const count = Object.keys(decodedKey.items).length;
                     alert(`✔ Master Answer Key Decoded!\n\nRecognized ${count} question answers from "${file.name}".\n\nYou can click 'Edit Key' to verify or adjust point values.`);
-                    if (state.scans.length > 0) $('btn-grade-now').click();
                   } catch (err) {
                     alert("Error decoding answer key from PDF: " + err.message);
                   }
@@ -6092,7 +6366,6 @@
                   validatePreflightKeyLayout();
                   const count = Object.keys(decodedKey.items).length;
                   alert(`✔ Master Answer Key Decoded!\n\nRecognized ${count} question answers from "${file.name}".\n\nYou can click 'Edit Key' to verify or adjust point values.`);
-                  if (state.scans.length > 0) $('btn-grade-now').click();
                 } catch (err) {
                   alert("Error decoding answer key from PDF: " + err.message);
                 }
@@ -6126,9 +6399,6 @@
               validatePreflightKeyLayout();
               const count = Object.keys(decodedKey.items).length;
               alert(`✔ Master Answer Key Decoded!\n\nRecognized ${count} question answers from "${file.name}".\n\nYou can click 'Edit Key' to verify or adjust point values.`);
-              if (state.scans.length > 0) {
-                $('btn-grade-now').click();
-              }
             } catch (err) {
               alert("Error decoding answer key from scanned sheet: " + err.message);
             }
@@ -6150,9 +6420,6 @@
             updateKeyDisplay();
             validatePreflightKeyLayout();
             alert(`Loaded custom answer key: ${Object.keys(state.key.items).length} items.`);
-            if (state.scans.length > 0) {
-              $('btn-grade-now').click();
-            }
           } catch (err) {
             alert("Error parsing answer key JSON: " + err.message);
           }
@@ -6179,9 +6446,6 @@
             updateKeyDisplay();
             validatePreflightKeyLayout();
             alert(`Loaded CSV answer key: ${Object.keys(items).length} items.`);
-            if (state.scans.length > 0) {
-              $('btn-grade-now').click();
-            }
           } catch (err) {
             alert("Error parsing answer key CSV: " + err.message);
           }
@@ -7933,14 +8197,18 @@
     $('btn-grade-now').onclick = async () => {
       if (state.isGrading) return;
 
-      if (state.scans.length === 0) {
-        alert("Please upload at least one exam scan or click '1-Click Sample Test'.");
+      if (!state.layout) {
+        alert("Step 1 Incomplete: Please select or upload an exam layout.");
         return;
       }
 
-      // Ensure layout and key are active
-      if (!state.layout || !state.key) {
-        alert("Please drop an exam layout or choose one from saved builds before grading.");
+      if (!state.key || !state.key.items || Object.keys(state.key.items).length === 0) {
+        alert("Step 2 Incomplete: Please upload your master answer sheet or set an answer key.");
+        return;
+      }
+
+      if (!state.scans || state.scans.length === 0) {
+        alert("Step 3 Incomplete: Please upload student exam scans.");
         return;
       }
 
@@ -12522,6 +12790,7 @@
             googleDriveState.user = { name: 'Google User' };
           }
           updateGoogleUiState();
+          checkAuthGating();
         } else {
           if (token && expiry <= Date.now()) {
             localStorage.removeItem('instructor_google_token');
@@ -12533,10 +12802,176 @@
           googleDriveState.isConnected = false;
           googleDriveState.user = null;
           updateGoogleUiState();
+          checkAuthGating();
         }
       } catch {}
     }
     window.restoreGoogleAuthState = restoreGoogleAuthState;
+
+    function checkAuthGating() {
+      if (typeof window === 'undefined' || !window.location || typeof window.location.href !== 'string') {
+        return; // Never block headless test runners
+      }
+      const gate = document.getElementById('auth-gate-overlay');
+      if (!gate) return;
+
+      if (googleDriveState.isConnected) {
+        gate.style.display = 'none';
+      } else {
+        const isFileProto = window.location.protocol === 'file:';
+        const localBypassBtn = document.getElementById('btn-gate-local-bypass');
+        if (localBypassBtn) {
+          localBypassBtn.style.display = isFileProto ? 'inline-flex' : 'none';
+        }
+        gate.style.display = 'flex';
+      }
+    }
+    window.checkAuthGating = checkAuthGating;
+
+    function updateStepperUI() {
+      const hasLayout = !!(state.layout && ((state.layout.bubbles && state.layout.bubbles.length > 0) || (typeof getLayoutQuestionItems === 'function' && getLayoutQuestionItems(state.layout).length > 0)));
+      const hasKey = hasLayout && !!(state.key && state.key.items && Object.keys(state.key.items).length > 0);
+      const hasScans = Array.isArray(state.scans) && state.scans.length > 0;
+
+      // Sidebar Card 1: Layout
+      const badge1 = $('step-badge-1');
+      const status1 = $('step-status-1');
+      if (badge1) {
+        badge1.className = 'step-badge' + (hasLayout ? ' is-complete' : '');
+        badge1.textContent = hasLayout ? '✓' : '1';
+      }
+      if (status1) {
+        status1.className = 'step-status-pill ' + (hasLayout ? 'is-complete' : 'is-pending');
+        status1.textContent = hasLayout ? 'Ready' : 'Pending';
+      }
+
+      // Sidebar Card 2: Answer Key (Unlocked only if hasLayout)
+      const cardKey = $('card-key-quick');
+      const badge2 = $('step-badge-2');
+      const status2 = $('step-status-2');
+      if (cardKey && cardKey.classList) {
+        if (hasLayout) {
+          cardKey.classList.remove('step--locked');
+        } else {
+          cardKey.classList.add('step--locked');
+        }
+      }
+      if (badge2) {
+        if (!hasLayout) {
+          badge2.className = 'step-badge is-locked';
+          badge2.textContent = '2';
+        } else if (hasKey) {
+          badge2.className = 'step-badge is-complete';
+          badge2.textContent = '✓';
+        } else {
+          badge2.className = 'step-badge';
+          badge2.textContent = '2';
+        }
+      }
+      if (status2) {
+        if (!hasLayout) {
+          status2.className = 'step-status-pill is-locked';
+          status2.textContent = 'Locked';
+        } else if (hasKey) {
+          status2.className = 'step-status-pill is-complete';
+          status2.textContent = 'Ready';
+        } else {
+          status2.className = 'step-status-pill is-pending';
+          status2.textContent = 'Pending';
+        }
+      }
+
+      // Sidebar Card 3: Scans (Unlocked only if hasLayout && hasKey)
+      const cardScans = $('card-scans-quick');
+      const badge3 = $('step-badge-3');
+      const status3 = $('step-status-3');
+      if (cardScans && cardScans.classList) {
+        if (hasKey) {
+          cardScans.classList.remove('step--locked');
+        } else {
+          cardScans.classList.add('step--locked');
+        }
+      }
+      if (badge3) {
+        if (!hasKey) {
+          badge3.className = 'step-badge is-locked';
+          badge3.textContent = '3';
+        } else if (hasScans) {
+          badge3.className = 'step-badge is-complete';
+          badge3.textContent = '✓';
+        } else {
+          badge3.className = 'step-badge';
+          badge3.textContent = '3';
+        }
+      }
+      if (status3) {
+        if (!hasKey) {
+          status3.className = 'step-status-pill is-locked';
+          status3.textContent = 'Locked';
+        } else if (hasScans) {
+          status3.className = 'step-status-pill is-complete';
+          status3.textContent = `${state.scans.length} Ready`;
+        } else {
+          status3.className = 'step-status-pill is-pending';
+          status3.textContent = 'Pending';
+        }
+      }
+
+      // Stepper Board in Empty State
+      const emptyStep1 = $('empty-step-1');
+      const emptyStep2 = $('empty-step-2');
+      const emptyStep3 = $('empty-step-3');
+      const emptyDesc1 = $('empty-step-1-desc');
+      const emptyDesc2 = $('empty-step-2-desc');
+      const emptyDesc3 = $('empty-step-3-desc');
+
+      if (emptyStep1) {
+        emptyStep1.className = 'stepper-step' + (hasLayout ? ' is-complete' : '');
+      }
+      if (emptyDesc1) {
+        emptyDesc1.textContent = hasLayout ? (state.layout.title || 'Layout selected') : 'Select preset or upload layout.json';
+      }
+
+      if (emptyStep2) {
+        if (!hasLayout) {
+          emptyStep2.className = 'stepper-step step--locked';
+        } else if (hasKey) {
+          emptyStep2.className = 'stepper-step is-complete';
+        } else {
+          emptyStep2.className = 'stepper-step';
+        }
+      }
+      if (emptyDesc2) {
+        if (!hasLayout) {
+          emptyDesc2.textContent = 'Locked (awaiting exam layout)';
+        } else if (hasKey) {
+          const count = Object.keys(state.key.items).length;
+          emptyDesc2.textContent = `Master key active (${count} items)`;
+        } else {
+          emptyDesc2.textContent = 'Upload key scan or edit answers';
+        }
+      }
+
+      if (emptyStep3) {
+        if (!hasKey) {
+          emptyStep3.className = 'stepper-step step--locked';
+        } else if (hasScans) {
+          emptyStep3.className = 'stepper-step is-complete';
+        } else {
+          emptyStep3.className = 'stepper-step';
+        }
+      }
+      if (emptyDesc3) {
+        if (!hasKey) {
+          emptyDesc3.textContent = 'Locked (awaiting master key)';
+        } else if (hasScans) {
+          emptyDesc3.textContent = `${state.scans.length} scan(s) uploaded`;
+        } else {
+          emptyDesc3.textContent = 'Upload camera scans or PDF';
+        }
+      }
+    }
+    window.updateStepperUI = updateStepperUI;
 
     function updateGoogleUiState() {
       const btn = $('btn-google-drive');
@@ -13421,7 +13856,34 @@
 
     // Empty state CTA listeners
     $('btn-empty-sample')?.addEventListener('click', () => $('btn-sample-grade').click());
-    $('btn-empty-upload')?.addEventListener('click', () => $('input-scans').click());
+    $('btn-empty-upload')?.addEventListener('click', () => {
+      if (!state.layout) {
+        alert("Please select or upload an exam layout first.");
+        return;
+      }
+      if (!state.key || !state.key.items || Object.keys(state.key.items).length === 0) {
+        alert("Please upload your master answer sheet or set an answer key first.");
+        return;
+      }
+      $('input-scans').click();
+    });
+    $('btn-empty-layout')?.addEventListener('click', () => $('btn-open-saved-builds').click());
+    $('btn-empty-key')?.addEventListener('click', () => {
+      if (!state.layout) {
+        alert("Please choose or upload an exam layout first.");
+        return;
+      }
+      $('btn-edit-key').click();
+    });
+
+    // Auth gating overlay listeners
+    $('btn-gate-google-signin')?.addEventListener('click', () => {
+      initGoogleDriveAuth();
+    });
+    $('btn-gate-local-bypass')?.addEventListener('click', () => {
+      const gate = document.getElementById('auth-gate-overlay');
+      if (gate) gate.style.display = 'none';
+    });
 
     // Attach scans or PDF to link original files back to restored cloud session
     const inputAttachScans = $('input-attach-scans-folder');
@@ -13556,7 +14018,9 @@
     updateLayoutDisplay();
     updateKeyDisplay();
     updateRosterDisplay();
+    updateStepperUI();
     restoreGoogleAuthState();
+    checkAuthGating();
     checkAutoSavedProgress();
 
     // Cross-tab synchronization for Google Auth and session progress

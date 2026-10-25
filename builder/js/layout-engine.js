@@ -158,6 +158,9 @@ export function normalizeTemplate(input) {
   if (tpl.bubble.diameter >= Math.min(tpl.bubble.pitchX, tpl.bubble.pitchY)) {
     throw new TemplateError('bubble.diameter must be smaller than both pitches (bubbles would touch)');
   }
+  if ((input.midlineFiducials === true || input.fiducials === 6) && (!input.fiducial || !input.fiducial.ids || input.fiducial.ids.length === 4)) {
+    tpl.fiducial = { ...tpl.fiducial, ids: [0, 1, 4, 5, 2, 3] };
+  }
   const ids = tpl.fiducial.ids;
   if (!Array.isArray(ids) || (ids.length !== 4 && ids.length !== 6) || ids.some((id) => !SUPPORTED_MARKER_IDS.includes(id)) || new Set(ids).size !== ids.length) {
     throw new TemplateError(`fiducial.ids must be 4 or 6 distinct ids from [${SUPPORTED_MARKER_IDS.join(', ')}]`);
@@ -720,9 +723,12 @@ export function buildLayout(input) {
     };
   });
 
+  const hasMidlineFiducials = Array.isArray(tpl.fiducial.ids) && tpl.fiducial.ids.length === 6;
+  const minLateralMargin = Math.max(21, inset + size + quietZone + 1);
+  const effectiveMargin = hasMidlineFiducials ? Math.max(tpl.margin, minLateralMargin) : tpl.margin;
   const contentTop = inset + size + 3;
   const contentBottom = page.height - inset - size - 3;
-  const content = { x: tpl.margin, y: r3(contentTop), w: r3(page.width - 2 * tpl.margin), h: r3(contentBottom - contentTop) };
+  const content = { x: effectiveMargin, y: r3(contentTop), w: r3(page.width - 2 * effectiveMargin), h: r3(contentBottom - contentTop) };
   const contentRight = content.x + content.w;
 
   const ctx = { tpl, nextQuestion: 1, warn: (m) => warnings.push(m) };
@@ -789,7 +795,18 @@ export function buildLayout(input) {
       availW = isFullWidthZone ? content.w : (contentRight - x);
     }
 
-    const effectiveRaw = (isHalfLeft || isHalfRight) && raw.w == null ? { ...raw, w: halfW } : raw;
+    let effectiveRaw = (isHalfLeft || isHalfRight) && raw.w == null ? { ...raw, w: halfW } : raw;
+    if (hasMidlineFiducials) {
+      const clampedW = effectiveRaw.w != null ? Math.min(effectiveRaw.w, content.w) : null;
+      const clampedX = effectiveRaw.x != null ? Math.max(effectiveRaw.x, content.x) : null;
+      effectiveRaw = {
+        ...effectiveRaw,
+        ...(clampedW != null ? { w: clampedW } : {}),
+        ...(clampedX != null ? { x: clampedX } : {})
+      };
+      if (x < content.x) x = content.x;
+      if (availW > content.w) availW = content.w;
+    }
     const res = layoutFn(effectiveRaw, ctx, x, y, availW);
     const bbox = { x: r3(res.bbox.x), y: r3(res.bbox.y), w: r3(res.bbox.w), h: r3(res.bbox.h) };
 

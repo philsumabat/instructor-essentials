@@ -306,15 +306,23 @@ body {
   flex-shrink: 0;
 }
 
+.app-brand__main {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  text-decoration: none;
+  color: inherit;
+}
+
 .app-brand__logo {
   width: 32px;
   height: 32px;
   border-radius: var(--radius-sm);
-  background: var(--accent);
+  background: linear-gradient(135deg, var(--accent), #4f46e5);
   color: #fff;
   display: grid;
   place-items: center;
-  box-shadow: 0 2px 6px -1px rgba(37, 99, 235, 0.4);
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
 }
 
 .app-brand__title {
@@ -3048,6 +3056,81 @@ dialog.modal-dialog--answer-key {
   flex-shrink: 0;
 }
 
+/* Institutional Authentication Gate Overlay */
+.auth-gate-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(11, 15, 25, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.auth-gate-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 2.25rem 2rem;
+  max-width: 440px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.auth-gate-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--accent-light, rgba(56, 189, 248, 0.12));
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+}
+
+.auth-gate-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 0.65rem;
+}
+
+.auth-gate-desc {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.55;
+  margin-bottom: 1.75rem;
+}
+
+.auth-gate-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.85rem;
+  width: 100%;
+}
+
+.auth-gate-home-link {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color 0.15s ease;
+  margin-top: 0.5rem;
+}
+
+.auth-gate-home-link:hover {
+  color: var(--text);
+  text-decoration: underline;
+}
+
 
 
 
@@ -3058,16 +3141,18 @@ dialog.modal-dialog--answer-key {
   <!-- Top Navigation Bar -->
   <header class="app-header app-chrome">
     <div class="app-brand">
-      <div class="app-brand__logo" aria-hidden="true">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-          <polyline points="14 2 14 8 20 8"/>
-          <path d="m9 15 2 2 4-4"/>
-        </svg>
-      </div>
-      <div class="app-brand__title-wrap">
-        <h1 class="app-brand__title">Instructors' Toolkit</h1>
-      </div>
+      <a href="home.html" class="app-brand__main" aria-label="Instructors' Toolkit Home">
+        <div class="app-brand__logo" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <path d="m9 15 2 2 4-4"/>
+          </svg>
+        </div>
+        <div class="app-brand__title-wrap">
+          <h1 class="app-brand__title">Instructors' Toolkit</h1>
+        </div>
+      </a>
       <nav class="workflow-nav" aria-label="Workflow switcher">
         <a href="home.html" class="workflow-nav__item" id="nav-btn-home">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
@@ -3710,6 +3795,36 @@ dialog.modal-dialog--answer-key {
     </div>
   </dialog>
 
+  <!-- Institutional Authentication Gate Overlay -->
+  <div id="auth-gate-overlay" class="auth-gate-overlay" style="display: none;">
+    <div class="auth-gate-card">
+      <div class="auth-gate-icon">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+      </div>
+      <h2 class="auth-gate-title">Institutional Sign-In Required</h2>
+      <p class="auth-gate-desc">
+        Access to Instructors' Toolkit is restricted to authenticated institutional faculty. Please sign in with your institutional Google account to access this workflow.
+      </p>
+      <div class="auth-gate-actions">
+        <button type="button" id="btn-gate-google-signin" class="btn btn--primary btn--lg" style="gap: 0.6rem;">
+          <svg class="google-icon" width="18" height="18" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+          </svg>
+          <span>Sign In with Institutional Google</span>
+        </button>
+        <button type="button" id="btn-gate-local-bypass" class="btn btn--secondary btn--sm" style="display: none;">
+          Running from file:// — Continue in Local Offline Mode
+        </button>
+        <a href="home.html" class="auth-gate-home-link">&larr; Return to Home Portal</a>
+      </div>
+    </div>
+  </div>
 
   <script>
 
@@ -3945,6 +4060,9 @@ function normalizeTemplate(input) {
   for (const k of ['diameter', 'pitchX', 'pitchY']) positiveNumber(tpl.bubble[k], `bubble.${k}`);
   if (tpl.bubble.diameter >= Math.min(tpl.bubble.pitchX, tpl.bubble.pitchY)) {
     throw new TemplateError('bubble.diameter must be smaller than both pitches (bubbles would touch)');
+  }
+  if ((input.midlineFiducials === true || input.fiducials === 6) && (!input.fiducial || !input.fiducial.ids || input.fiducial.ids.length === 4)) {
+    tpl.fiducial = { ...tpl.fiducial, ids: [0, 1, 4, 5, 2, 3] };
   }
   const ids = tpl.fiducial.ids;
   if (!Array.isArray(ids) || (ids.length !== 4 && ids.length !== 6) || ids.some((id) => !SUPPORTED_MARKER_IDS.includes(id)) || new Set(ids).size !== ids.length) {
@@ -4508,9 +4626,12 @@ function buildLayout(input) {
     };
   });
 
+  const hasMidlineFiducials = Array.isArray(tpl.fiducial.ids) && tpl.fiducial.ids.length === 6;
+  const minLateralMargin = Math.max(21, inset + size + quietZone + 1);
+  const effectiveMargin = hasMidlineFiducials ? Math.max(tpl.margin, minLateralMargin) : tpl.margin;
   const contentTop = inset + size + 3;
   const contentBottom = page.height - inset - size - 3;
-  const content = { x: tpl.margin, y: r3(contentTop), w: r3(page.width - 2 * tpl.margin), h: r3(contentBottom - contentTop) };
+  const content = { x: effectiveMargin, y: r3(contentTop), w: r3(page.width - 2 * effectiveMargin), h: r3(contentBottom - contentTop) };
   const contentRight = content.x + content.w;
 
   const ctx = { tpl, nextQuestion: 1, warn: (m) => warnings.push(m) };
@@ -4577,7 +4698,18 @@ function buildLayout(input) {
       availW = isFullWidthZone ? content.w : (contentRight - x);
     }
 
-    const effectiveRaw = (isHalfLeft || isHalfRight) && raw.w == null ? { ...raw, w: halfW } : raw;
+    let effectiveRaw = (isHalfLeft || isHalfRight) && raw.w == null ? { ...raw, w: halfW } : raw;
+    if (hasMidlineFiducials) {
+      const clampedW = effectiveRaw.w != null ? Math.min(effectiveRaw.w, content.w) : null;
+      const clampedX = effectiveRaw.x != null ? Math.max(effectiveRaw.x, content.x) : null;
+      effectiveRaw = {
+        ...effectiveRaw,
+        ...(clampedW != null ? { w: clampedW } : {}),
+        ...(clampedX != null ? { x: clampedX } : {})
+      };
+      if (x < content.x) x = content.x;
+      if (availW > content.w) availW = content.w;
+    }
     const res = layoutFn(effectiveRaw, ctx, x, y, availW);
     const bbox = { x: r3(res.bbox.x), y: r3(res.bbox.y), w: r3(res.bbox.w), h: r3(res.bbox.h) };
 
@@ -8520,6 +8652,7 @@ function restoreGoogleAuthState() {
         googleDriveState.user = { name: 'Google User' };
       }
       updateGoogleUiState();
+      checkAuthGating();
     } else {
       if (token && expiry <= Date.now()) {
         localStorage.removeItem('instructor_google_token');
@@ -8531,10 +8664,31 @@ function restoreGoogleAuthState() {
       googleDriveState.isConnected = false;
       googleDriveState.user = null;
       updateGoogleUiState();
+      checkAuthGating();
     }
   } catch {}
 }
 window.restoreGoogleAuthState = restoreGoogleAuthState;
+
+function checkAuthGating() {
+  if (typeof window === 'undefined' || !window.location || typeof window.location.href !== 'string') {
+    return; // Never block headless test runners
+  }
+  const gate = document.getElementById('auth-gate-overlay');
+  if (!gate) return;
+
+  if (googleDriveState.isConnected) {
+    gate.style.display = 'none';
+  } else {
+    const isFileProto = window.location.protocol === 'file:';
+    const localBypassBtn = document.getElementById('btn-gate-local-bypass');
+    if (localBypassBtn) {
+      localBypassBtn.style.display = isFileProto ? 'inline-flex' : 'none';
+    }
+    gate.style.display = 'flex';
+  }
+}
+window.checkAuthGating = checkAuthGating;
 
 async function clearSheetWorkspace({ silent = false } = {}) {
   const blankTpl = JSON.parse(JSON.stringify(SAMPLE_TEMPLATES['blank']));
@@ -9392,7 +9546,9 @@ function generateExamFromGeneratorModal() {
   const includeInstructions = els.genInstructions ? els.genInstructions.checked : true;
 
   const paperSpec = PAPER_SIZES[paper] || PAPER_SIZES['A4'];
-  const availW = Math.round((paperSpec.width - 24) * 10) / 10; // 12mm margins each side
+  const isMidline = Boolean(els.genMidlineFiducials?.checked);
+  const margin = isMidline ? 21 : 12;
+  const availW = Math.round((paperSpec.width - 2 * margin) * 10) / 10;
 
   const zones = [];
 
@@ -9561,6 +9717,7 @@ function generateExamFromGeneratorModal() {
     id: `exam-${Date.now().toString(36).slice(-6)}`,
     title,
     paper,
+    margin,
     bubble: { diameter: 4.2, pitchX: 5.6, pitchY: 5.4 },
     fiducial: {
       type: 'aruco',
@@ -9568,7 +9725,7 @@ function generateExamFromGeneratorModal() {
       size: 10,
       inset: 7,
       quietZone: 3,
-      ids: els.genMidlineFiducials?.checked ? [0, 1, 4, 5, 2, 3] : [0, 1, 2, 3]
+      ids: isMidline ? [0, 1, 4, 5, 2, 3] : [0, 1, 2, 3]
     },
     zones,
   };
@@ -9642,10 +9799,27 @@ function initEvents() {
     if (!state.template.fiducial) {
       state.template.fiducial = { type: 'aruco', dictionary: 'DICT_4X4_50', size: 10, inset: 7, quietZone: 3 };
     }
+    const paperSpec = PAPER_SIZES[state.template.paper] || PAPER_SIZES['A4'];
     if (els.chkMidlineFiducials.checked) {
       state.template.fiducial.ids = [0, 1, 4, 5, 2, 3];
+      const oldFullW = paperSpec.width - 2 * (state.template.margin || 12);
+      state.template.margin = 21;
+      const newFullW = paperSpec.width - 2 * 21;
+      for (const z of state.template.zones) {
+        if (z.w && (Math.abs(z.w - oldFullW) < 1.0 || z.w > newFullW)) {
+          z.w = newFullW;
+        }
+      }
     } else {
       state.template.fiducial.ids = [0, 1, 2, 3];
+      const oldFullW = paperSpec.width - 2 * (state.template.margin || 21);
+      state.template.margin = 12;
+      const newFullW = paperSpec.width - 2 * 12;
+      for (const z of state.template.zones) {
+        if (z.w && (Math.abs(z.w - oldFullW) < 1.0 || Math.abs(z.w - (paperSpec.width - 42)) < 1.0)) {
+          z.w = newFullW;
+        }
+      }
     }
     update();
   });
@@ -9769,6 +9943,13 @@ function initEvents() {
 
   $('#btn-header-google-signin')?.addEventListener('click', () => {
     initGoogleDriveAuth();
+  });
+  $('#btn-gate-google-signin')?.addEventListener('click', () => {
+    initGoogleDriveAuth();
+  });
+  $('#btn-gate-local-bypass')?.addEventListener('click', () => {
+    const gate = document.getElementById('auth-gate-overlay');
+    if (gate) gate.style.display = 'none';
   });
   $('#btn-google-logout')?.addEventListener('click', () => {
     disconnectGoogleDrive();

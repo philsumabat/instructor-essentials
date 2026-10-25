@@ -3071,6 +3071,7 @@ function restoreGoogleAuthState() {
         googleDriveState.user = { name: 'Google User' };
       }
       updateGoogleUiState();
+      checkAuthGating();
     } else {
       if (token && expiry <= Date.now()) {
         localStorage.removeItem('instructor_google_token');
@@ -3082,10 +3083,31 @@ function restoreGoogleAuthState() {
       googleDriveState.isConnected = false;
       googleDriveState.user = null;
       updateGoogleUiState();
+      checkAuthGating();
     }
   } catch {}
 }
 window.restoreGoogleAuthState = restoreGoogleAuthState;
+
+function checkAuthGating() {
+  if (typeof window === 'undefined' || !window.location || typeof window.location.href !== 'string') {
+    return; // Never block headless test runners
+  }
+  const gate = document.getElementById('auth-gate-overlay');
+  if (!gate) return;
+
+  if (googleDriveState.isConnected) {
+    gate.style.display = 'none';
+  } else {
+    const isFileProto = window.location.protocol === 'file:';
+    const localBypassBtn = document.getElementById('btn-gate-local-bypass');
+    if (localBypassBtn) {
+      localBypassBtn.style.display = isFileProto ? 'inline-flex' : 'none';
+    }
+    gate.style.display = 'flex';
+  }
+}
+window.checkAuthGating = checkAuthGating;
 
 async function clearSheetWorkspace({ silent = false } = {}) {
   const blankTpl = JSON.parse(JSON.stringify(SAMPLE_TEMPLATES['blank']));
@@ -3943,7 +3965,9 @@ function generateExamFromGeneratorModal() {
   const includeInstructions = els.genInstructions ? els.genInstructions.checked : true;
 
   const paperSpec = PAPER_SIZES[paper] || PAPER_SIZES['A4'];
-  const availW = Math.round((paperSpec.width - 24) * 10) / 10; // 12mm margins each side
+  const isMidline = Boolean(els.genMidlineFiducials?.checked);
+  const margin = isMidline ? 21 : 12;
+  const availW = Math.round((paperSpec.width - 2 * margin) * 10) / 10;
 
   const zones = [];
 
@@ -4112,6 +4136,7 @@ function generateExamFromGeneratorModal() {
     id: `exam-${Date.now().toString(36).slice(-6)}`,
     title,
     paper,
+    margin,
     bubble: { diameter: 4.2, pitchX: 5.6, pitchY: 5.4 },
     fiducial: {
       type: 'aruco',
@@ -4119,7 +4144,7 @@ function generateExamFromGeneratorModal() {
       size: 10,
       inset: 7,
       quietZone: 3,
-      ids: els.genMidlineFiducials?.checked ? [0, 1, 4, 5, 2, 3] : [0, 1, 2, 3]
+      ids: isMidline ? [0, 1, 4, 5, 2, 3] : [0, 1, 2, 3]
     },
     zones,
   };
@@ -4193,10 +4218,27 @@ function initEvents() {
     if (!state.template.fiducial) {
       state.template.fiducial = { type: 'aruco', dictionary: 'DICT_4X4_50', size: 10, inset: 7, quietZone: 3 };
     }
+    const paperSpec = PAPER_SIZES[state.template.paper] || PAPER_SIZES['A4'];
     if (els.chkMidlineFiducials.checked) {
       state.template.fiducial.ids = [0, 1, 4, 5, 2, 3];
+      const oldFullW = paperSpec.width - 2 * (state.template.margin || 12);
+      state.template.margin = 21;
+      const newFullW = paperSpec.width - 2 * 21;
+      for (const z of state.template.zones) {
+        if (z.w && (Math.abs(z.w - oldFullW) < 1.0 || z.w > newFullW)) {
+          z.w = newFullW;
+        }
+      }
     } else {
       state.template.fiducial.ids = [0, 1, 2, 3];
+      const oldFullW = paperSpec.width - 2 * (state.template.margin || 21);
+      state.template.margin = 12;
+      const newFullW = paperSpec.width - 2 * 12;
+      for (const z of state.template.zones) {
+        if (z.w && (Math.abs(z.w - oldFullW) < 1.0 || Math.abs(z.w - (paperSpec.width - 42)) < 1.0)) {
+          z.w = newFullW;
+        }
+      }
     }
     update();
   });
@@ -4320,6 +4362,13 @@ function initEvents() {
 
   $('#btn-header-google-signin')?.addEventListener('click', () => {
     initGoogleDriveAuth();
+  });
+  $('#btn-gate-google-signin')?.addEventListener('click', () => {
+    initGoogleDriveAuth();
+  });
+  $('#btn-gate-local-bypass')?.addEventListener('click', () => {
+    const gate = document.getElementById('auth-gate-overlay');
+    if (gate) gate.style.display = 'none';
   });
   $('#btn-google-logout')?.addEventListener('click', () => {
     disconnectGoogleDrive();

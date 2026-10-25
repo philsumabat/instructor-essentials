@@ -64,10 +64,13 @@ test('3. Relocation of Persistent Export Bar & Header Ribbon Export Dropdown', a
   assert.ok(checkerHtml.includes('id="btn-results-export-html"'), 'btn-results-export-html in export bar');
   assert.ok(checkerHtml.includes('id="btn-results-save-progress"'), 'btn-results-save-progress in export bar');
 
-  // Header ribbon export dropdown wired with matching action handlers
+  // Header ribbon export dropdown active and wired with matching action handlers
+  assert.ok(checkerHtml.includes('id="dropdown-export-reports"') && !checkerHtml.includes('id="dropdown-export-reports" style="display: none;"'), 'dropdown-export-reports is active in ribbon header');
+  assert.ok(checkerHtml.includes('id="btn-export-reports-toggle"'), 'btn-export-reports-toggle in ribbon');
   assert.ok(checkerHtml.includes('id="btn-ribbon-export-zip"'), 'btn-ribbon-export-zip in ribbon');
   assert.ok(checkerHtml.includes('id="btn-ribbon-export-csv"'), 'btn-ribbon-export-csv in ribbon');
   assert.ok(checkerHtml.includes('id="btn-ribbon-export-html"'), 'btn-ribbon-export-html in ribbon');
+  assert.ok(checkerHtml.includes('id="btn-ribbon-save-progress"'), 'btn-ribbon-save-progress in ribbon');
 });
 
 test('4. Table Viewport Clamping: Max-height constraints, sticky headers, and pinned Sheet Inspector', async () => {

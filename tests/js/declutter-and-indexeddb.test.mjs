@@ -15,11 +15,10 @@ test('Header Ribbon: Decluttered actions, protected brand logo, and hidden compa
   assert.ok(checkerHtml.includes('id="btn-resume-progress"'), 'btn-resume-progress is present in header');
   assert.ok(checkerHtml.includes('id="btn-open-settings"'), 'btn-open-settings is present in header');
 
-  // 2. Uncluttered ribbon: dropdown-export-reports, btn-save-progress, btn-google-drive, btn-trocr-settings are hidden
+  // 2. Active ribbon export dropdown matching Sheet Builder; background compatibility hooks remain hidden
   assert.ok(
-    checkerHtml.includes('id="dropdown-export-reports" class="dropdown dropdown--reports" style="display: none;"') ||
-    checkerHtml.includes('id="dropdown-export-reports" style="display: none;"'),
-    'dropdown-export-reports is hidden for clean ribbon'
+    checkerHtml.includes('id="dropdown-export-reports"') && checkerHtml.includes('id="btn-export-reports-toggle"'),
+    'dropdown-export-reports is present and active with toggle button in ribbon'
   );
   assert.ok(
     checkerHtml.includes('id="btn-save-progress"') && checkerHtml.includes('style="display: none;"'),

@@ -242,7 +242,7 @@
     }
 
     .btn:active {
-      transform: scale(0.97);
+      transform: translateY(1px);
     }
 
     .btn:focus-visible {
@@ -301,8 +301,9 @@
     }
 
     .btn--sm {
-      padding: 0.28rem 0.58rem;
-      font-size: 0.75rem;
+      padding: 0.32rem 0.6rem;
+      font-size: 0.76rem;
+      letter-spacing: -0.02em;
     }
 
     .btn--xs,
@@ -571,16 +572,37 @@
     }
 
     /* Main Workspace Layout */
-    .workspace {
+    .workspace,
+    .checker-workspace {
       display: grid;
-      grid-template-columns: 360px 1fr;
+      grid-template-columns: 320px 1fr;
       flex: 1;
       min-height: 0;
       overflow: hidden;
+      transition: grid-template-columns 200ms cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+    }
+
+    .checker-workspace.is-sidebar-collapsed,
+    .workspace.is-sidebar-collapsed {
+      grid-template-columns: 0px 1fr;
+    }
+
+    .checker-workspace.is-sidebar-collapsed .sidebar,
+    .checker-workspace.is-sidebar-collapsed .app-sidebar,
+    .workspace.is-sidebar-collapsed .sidebar,
+    .workspace.is-sidebar-collapsed .app-sidebar {
+      transform: translateX(-100%);
+      opacity: 0;
+      pointer-events: none;
+      overflow: hidden;
+      padding: 0;
+      border-right: none;
     }
 
     @media (max-width: 900px) {
-      .workspace {
+      .workspace,
+      .checker-workspace {
         grid-template-columns: 1fr;
         height: auto;
         overflow: visible;
@@ -588,7 +610,8 @@
     }
 
     /* Left Sidebar: Controls */
-    .sidebar {
+    .sidebar,
+    .app-sidebar {
       background: var(--panel);
       border-right: 1px solid var(--border);
       overflow-y: auto;
@@ -596,6 +619,44 @@
       display: flex;
       flex-direction: column;
       gap: 1.25rem;
+      transition: transform 200ms cubic-bezier(0.4, 0, 0.2, 1), opacity 200ms ease, padding 200ms ease;
+    }
+
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: -0.25rem;
+    }
+
+    .sidebar-expand-pill {
+      display: none;
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 60;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.35rem 0.75rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      border-radius: var(--radius-full);
+      background: var(--panel);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-md);
+      color: var(--text);
+      cursor: pointer;
+      user-select: none;
+      transition: all 140ms ease;
+    }
+
+    .sidebar-expand-pill:hover {
+      background: var(--panel-alt);
+      border-color: var(--border-focus);
+      transform: translateX(2px);
     }
 
     .section-card {
@@ -813,7 +874,9 @@
       background: var(--panel);
       border: 1px solid var(--border);
       border-radius: var(--radius-md);
-      overflow: hidden;
+      overflow-x: auto;
+      overflow-y: auto;
+      max-height: min(65vh, 620px);
       box-shadow: var(--shadow-xs);
     }
 
@@ -924,6 +987,8 @@
 
     .roster-table-col .table-container {
       overflow-x: auto;
+      overflow-y: auto;
+      max-height: calc(100vh - 210px);
     }
 
     #tbody-roster tr {
@@ -2236,7 +2301,7 @@
       </nav>
     </div>
 
-    <div class="header-actions">
+    <div class="header-actions app-header__actions">
       <!-- Hidden compatibility hooks for automated tests and programmatic triggers -->
       <button type="button" id="btn-grade-now" style="display: none;" aria-hidden="true"></button>
       <button type="button" id="btn-sample-grade" style="display: none;" aria-hidden="true"></button>
@@ -2287,12 +2352,30 @@
           <button type="button" id="btn-google-logout" class="btn btn--secondary btn--sm is-danger" title="Sign out of Google account">Sign Out</button>
         </div>
       </div>
-      <div class="dropdown-menu" id="dropdown-export-reports" style="display: none;" aria-hidden="true">
-        <button type="button" id="btn-export-reports-toggle" style="display: none;"></button>
-        <button type="button" id="btn-ribbon-export-zip" style="display: none;"></button>
-        <button type="button" id="btn-ribbon-export-csv" style="display: none;"></button>
-        <button type="button" id="btn-ribbon-export-html" style="display: none;"></button>
-        <button type="button" id="btn-ribbon-save-progress" style="display: none;"></button>
+      <!-- Export Dropdown -->
+      <div class="dropdown-menu" id="dropdown-export-reports" style="display: none;">
+        <button type="button" id="btn-export-reports-toggle" class="btn btn--secondary" aria-haspopup="true" aria-expanded="false" title="Export reports, grades, and sheets">
+          <span>Export</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <div class="dropdown-menu__content" id="export-reports-dropdown-content">
+          <button type="button" id="btn-ribbon-export-zip" style="font-weight: 700; color: var(--accent);">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5M12 12v10"/></svg>
+            <span>Download All Graded Sheets (ZIP)</span>
+          </button>
+          <button type="button" id="btn-ribbon-export-csv">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <span>Export Student Grades (CSV)</span>
+          </button>
+          <button type="button" id="btn-ribbon-export-html">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            <span>Item Analysis &amp; Psychometrics (HTML)</span>
+          </button>
+          <button type="button" id="btn-ribbon-save-progress">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            <span>Save Session Progress (.grader.json)</span>
+          </button>
+        </div>
       </div>
       <input type="file" id="input-progress-file" accept=".json" style="display: none;">
 
@@ -2317,9 +2400,17 @@
   </header>
 
   <!-- Workspace -->
-  <div class="workspace">
+  <div class="workspace checker-workspace" id="checker-workspace">
     <!-- Sidebar -->
-    <aside class="sidebar">
+    <aside class="sidebar app-sidebar" id="checker-sidebar">
+      <!-- Sidebar Header & Collapse Toggle -->
+      <div class="sidebar-header">
+        <span style="font-weight: 700; font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Exam Setup</span>
+        <button type="button" id="btn-toggle-sidebar" class="btn btn--secondary btn-xs" title="Collapse Sidebar (Wide Workspace Mode)" style="display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.25rem 0.5rem; font-size: 0.72rem;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+          <span>Collapse</span>
+        </button>
+      </div>
       <!-- Exam Layout Selection (Step 1) -->
       <div class="section-card" id="card-layout-quick">
         <h2 class="section-title"><span class="step-badge" id="step-badge-1">1</span><span>Step 1: Exam Layout</span><span id="step-status-1" class="step-status-pill is-pending">Pending</span></h2>
@@ -2453,6 +2544,11 @@
 
     <!-- Main Content Area -->
     <main class="main-content">
+      <!-- Floating Expand Sidebar Pill (Wide Workspace Mode) -->
+      <button type="button" id="btn-expand-sidebar" class="sidebar-expand-pill" title="Expand Setup Sidebar">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+        <span>Setup ◨</span>
+      </button>
       <!-- Preflight Mismatch Warning Banner -->
       <div id="preflight-warning-banner" class="preflight-warning-banner" style="display: none;">
         <div class="preflight-warning-icon">
@@ -2518,32 +2614,6 @@
         </div>
       </div>
 
-      <!-- Prominent Export Reports Bar (revealed when scans are graded) -->
-      <div id="results-export-bar" class="results-export-bar">
-        <div class="results-export-bar__title">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          <span>Export Reports &amp; Graded Sheets</span>
-        </div>
-        <div class="results-export-bar__buttons">
-          <button type="button" id="btn-results-export-zip" class="btn btn--primary" title="Export all graded exam sheets as high-quality annotated JPEGs in a ZIP archive">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5M12 12v10"/></svg>
-            <span>Download All Sheets (ZIP)</span>
-          </button>
-          <button type="button" id="btn-results-export-csv" class="btn btn--secondary" title="Export student grades and scores as CSV">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-            <span>Export CSV</span>
-          </button>
-          <button type="button" id="btn-results-export-html" class="btn btn--secondary" title="Export item analysis and psychometrics report as HTML">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-            <span>Item Analysis</span>
-          </button>
-          <button type="button" id="btn-results-save-progress" class="btn btn--secondary" title="Save session and download progress file">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-            <span>Save Progress</span>
-          </button>
-        </div>
-      </div>
-
       <!-- Tabs Navigation -->
       <nav class="tabs-bar">
         <button type="button" class="tab-btn is-active" data-tab="summary">
@@ -2566,6 +2636,31 @@
 
       <!-- Tab 1: Cohort Summary Dashboard -->
       <div id="tab-summary" class="tab-pane">
+        <!-- Results Export Bar inside Summary Tab -->
+        <div id="results-export-bar" class="results-export-bar" style="margin-bottom: 1.25rem;">
+          <div class="results-export-bar__title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span>Export Reports &amp; Graded Sheets</span>
+          </div>
+          <div class="results-export-bar__buttons">
+            <button type="button" id="btn-results-export-zip" class="btn btn--primary" title="Export all graded exam sheets as high-quality annotated JPEGs in a ZIP archive">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5M12 12v10"/></svg>
+              <span>Download All Sheets (ZIP)</span>
+            </button>
+            <button type="button" id="btn-results-export-csv" class="btn btn--secondary" title="Export student grades and scores as CSV">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              <span>Export CSV</span>
+            </button>
+            <button type="button" id="btn-results-export-html" class="btn btn--secondary" title="Export item analysis and psychometrics report as HTML">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+              <span>Item Analysis</span>
+            </button>
+            <button type="button" id="btn-results-save-progress" class="btn btn--secondary" title="Save session and download progress file">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+              <span>Save Progress</span>
+            </button>
+          </div>
+        </div>
         <div class="metrics-grid">
           <div class="metric-card">
             <span class="metric-card__label">Total Graded</span>
@@ -7147,6 +7242,17 @@
 
       const canW = Math.round(((layout.page && layout.page.width) || 210) * pxPerMm);
       const canH = Math.round(((layout.page && layout.page.height) || 297) * pxPerMm);
+      const rectCanvas = warpScanToCanonical(offCtx, img.width, img.height, H_canToSrc, canW, canH, scanData, H_bottom, midYCan, effSag);
+      const rectCtx = rectCanvas.getContext ? rectCanvas.getContext('2d', { willReadFrequently: true }) : null;
+      let rectData = null;
+      try {
+        if (rectCtx && typeof rectCtx.getImageData === 'function') {
+          const fullImg = rectCtx.getImageData(0, 0, canW, canH);
+          if (fullImg && fullImg.data && fullImg.data.length === canW * canH * 4) {
+            rectData = fullImg.data;
+          }
+        }
+      } catch (_) {}
 
       const items = {};
       for (const [itemKey, bubbles] of Object.entries(itemBubbles)) {
@@ -7159,38 +7265,54 @@
           const canX = b.center[0] * pxPerMm;
           const canY = b.center[1] * pxPerMm;
           const rad = b.radius * pxPerMm;
-          const H = usePiecewise ? (canY <= midYCan ? H_top : H_bottom) : H_canToSrc;
-          const srcPt = applyHomography(H, { x: canX, y: canY });
 
-          const sampleR = Math.max(2, Math.round(rad * 0.65));
-          const bgR = Math.max(4, Math.round(rad * 1.25));
-          let sx = Math.round(srcPt.x);
-          let sy = Math.round(srcPt.y);
-
-          if (!usePiecewise && effSag !== 0) {
-            const sag = 4 * effSag * (canX / canW) * (1 - canX / canW) * (canY / canH) * (1 - canY / canH);
-            sy += Math.round(sag);
-          }
+          const sampleR = Math.max(3, Math.round(rad * 0.65));
+          const innerBgR = Math.round(rad + 1.2);
+          const outerBgR = Math.round(rad * 1.45);
+          const cx = Math.round(canX);
+          const cy = Math.round(canY);
 
           let bubbleLumSum = 0, bubbleCount = 0;
           let bgLumSum = 0, bgCount = 0;
 
-          if (sx >= bgR && sx < img.width - bgR && sy >= bgR && sy < img.height - bgR) {
-            const block = offCtx.getImageData(sx - bgR, sy - bgR, bgR * 2 + 1, bgR * 2 + 1).data;
-            const bSize = bgR * 2 + 1;
-            for (let dy = -bgR; dy <= bgR; dy++) {
-              for (let dx = -bgR; dx <= bgR; dx++) {
-                const d2 = dx * dx + dy * dy;
-                const idx = ((dy + bgR) * bSize + (dx + bgR)) * 4;
-                const lum = 0.299 * block[idx] + 0.587 * block[idx + 1] + 0.114 * block[idx + 2];
-                if (d2 <= sampleR * sampleR) {
-                  bubbleLumSum += lum;
-                  bubbleCount++;
-                } else if (d2 > (rad * rad) && d2 <= (bgR * bgR)) {
-                  bgLumSum += lum;
-                  bgCount++;
+          if (cx >= outerBgR && cx < canW - outerBgR && cy >= outerBgR && cy < canH - outerBgR) {
+            if (rectData) {
+              for (let dy = -outerBgR; dy <= outerBgR; dy++) {
+                const py = cy + dy;
+                const rowIdx = py * canW;
+                for (let dx = -outerBgR; dx <= outerBgR; dx++) {
+                  const d2 = dx * dx + dy * dy;
+                  const px = cx + dx;
+                  const idx = (rowIdx + px) * 4;
+                  const lum = 0.299 * rectData[idx] + 0.587 * rectData[idx + 1] + 0.114 * rectData[idx + 2];
+                  if (d2 <= sampleR * sampleR) {
+                    bubbleLumSum += lum;
+                    bubbleCount++;
+                  } else if (d2 >= innerBgR * innerBgR && d2 <= outerBgR * outerBgR) {
+                    bgLumSum += lum;
+                    bgCount++;
+                  }
                 }
               }
+            } else if (rectCtx && typeof rectCtx.getImageData === 'function') {
+              try {
+                const block = rectCtx.getImageData(cx - outerBgR, cy - outerBgR, outerBgR * 2 + 1, outerBgR * 2 + 1).data;
+                const bSize = outerBgR * 2 + 1;
+                for (let dy = -outerBgR; dy <= outerBgR; dy++) {
+                  for (let dx = -outerBgR; dx <= outerBgR; dx++) {
+                    const d2 = dx * dx + dy * dy;
+                    const idx = ((dy + outerBgR) * bSize + (dx + outerBgR)) * 4;
+                    const lum = 0.299 * block[idx] + 0.587 * block[idx + 1] + 0.114 * block[idx + 2];
+                    if (d2 <= sampleR * sampleR) {
+                      bubbleLumSum += lum;
+                      bubbleCount++;
+                    } else if (d2 >= innerBgR * innerBgR && d2 <= outerBgR * outerBgR) {
+                      bgLumSum += lum;
+                      bgCount++;
+                    }
+                  }
+                }
+              } catch (_) {}
             }
           }
 
@@ -7609,7 +7731,7 @@
     window.classifyBubbleMorphology = classifyBubbleMorphology;
 
     // Process a single scanned exam image
-    function processExamScan(scan, layout, key, bubbleThreshold = 0.16, deltaSag = 0) {
+    function processExamScan(scan, layout, key, bubbleThreshold = 0.22, deltaSag = 0) {
       // Target canonical canvas resolution: 4.0 px/mm (A4 = 840 x 1188 px)
       const pxPerMm = 4.0;
       const targetW = Math.round(layout.page.width * pxPerMm);
@@ -7670,71 +7792,124 @@
       // Rectify source scan image into canonical 4 px/mm space for crisp handwriting and name crop extraction
       const rectCanvas = warpScanToCanonical(offCtx, scan.img.width, scan.img.height, H_canToSrc, targetW, targetH, scanData, H_bottom, midYCan, effSag);
 
-      // 4. Sample each bubble in layout with direct annular contrast math
+      // 4. Sample each bubble in layout directly from rectified canonical canvas with clean annulus geometry
       const itemAnswers = {};
       const bubbleDiagnostics = [];
+
+      const rectCtx = rectCanvas.getContext ? rectCanvas.getContext('2d', { willReadFrequently: true }) : null;
+      let rectData = null;
+      try {
+        if (rectCtx && typeof rectCtx.getImageData === 'function') {
+          const fullImg = rectCtx.getImageData(0, 0, targetW, targetH);
+          if (fullImg && fullImg.data && fullImg.data.length === targetW * targetH * 4) {
+            rectData = fullImg.data;
+          }
+        }
+      } catch (_) {}
 
       for (const b of layout.bubbles) {
         const canX = b.center[0] * pxPerMm;
         const canY = b.center[1] * pxPerMm;
         const rad = b.radius * pxPerMm;
 
-        // Map canonical center to source image pixels using active homography
-        const H = usePiecewise ? (canY <= midYCan ? H_top : H_bottom) : H_canToSrc;
-        const srcPt = applyHomography(H, { x: canX, y: canY });
-
-        // Sample bubble interior (radius * 0.65) vs background annulus (radius * 1.0 to 1.25)
-        const sampleR = Math.max(2, Math.round(rad * 0.65));
-        const bgR = Math.max(4, Math.round(rad * 1.25));
+        // Clean annulus geometry strictly outside the printed 0.25mm black circle stroke
+        const sampleR = Math.max(3, Math.round(rad * 0.65));
+        const innerBgR = Math.round(rad + 1.2);
+        const outerBgR = Math.round(rad * 1.45);
 
         let bubbleLumSum = 0, bubbleCount = 0;
         let bgLumSum = 0, bgCount = 0;
 
-        let sx = Math.round(srcPt.x);
-        let sy = Math.round(srcPt.y);
+        const cx = Math.round(canX);
+        const cy = Math.round(canY);
 
-        if (!usePiecewise && effSag !== 0) {
-          const sag = 4 * effSag * (canX / targetW) * (1 - canX / targetW) * (canY / targetH) * (1 - canY / targetH);
-          sy += Math.round(sag);
-        }
+        if (cx >= outerBgR && cx < targetW - outerBgR && cy >= outerBgR && cy < targetH - outerBgR) {
+          if (rectData) {
+            for (let dy = -outerBgR; dy <= outerBgR; dy++) {
+              const py = cy + dy;
+              const rowIdx = py * targetW;
+              for (let dx = -outerBgR; dx <= outerBgR; dx++) {
+                const d2 = dx * dx + dy * dy;
+                const px = cx + dx;
+                const idx = (rowIdx + px) * 4;
+                const lum = 0.299 * rectData[idx] + 0.587 * rectData[idx + 1] + 0.114 * rectData[idx + 2];
 
-        if (sx >= bgR && sx < scan.img.width - bgR && sy >= bgR && sy < scan.img.height - bgR) {
-          const block = offCtx.getImageData(sx - bgR, sy - bgR, bgR * 2 + 1, bgR * 2 + 1).data;
-          const bSize = bgR * 2 + 1;
-
-          for (let dy = -bgR; dy <= bgR; dy++) {
-            for (let dx = -bgR; dx <= bgR; dx++) {
-              const d2 = dx * dx + dy * dy;
-              const idx = ((dy + bgR) * bSize + (dx + bgR)) * 4;
-              const lum = 0.299 * block[idx] + 0.587 * block[idx + 1] + 0.114 * block[idx + 2];
-
-              if (d2 <= sampleR * sampleR) {
-                bubbleLumSum += lum;
-                bubbleCount++;
-              } else if (d2 > (rad * rad) && d2 <= (bgR * bgR)) {
-                bgLumSum += lum;
-                bgCount++;
+                if (d2 <= sampleR * sampleR) {
+                  bubbleLumSum += lum;
+                  bubbleCount++;
+                } else if (d2 >= innerBgR * innerBgR && d2 <= outerBgR * outerBgR) {
+                  bgLumSum += lum;
+                  bgCount++;
+                }
               }
             }
+          } else if (rectCtx && typeof rectCtx.getImageData === 'function') {
+            try {
+              const block = rectCtx.getImageData(cx - outerBgR, cy - outerBgR, outerBgR * 2 + 1, outerBgR * 2 + 1).data;
+              const bSize = outerBgR * 2 + 1;
+              for (let dy = -outerBgR; dy <= outerBgR; dy++) {
+                for (let dx = -outerBgR; dx <= outerBgR; dx++) {
+                  const d2 = dx * dx + dy * dy;
+                  const idx = ((dy + outerBgR) * bSize + (dx + outerBgR)) * 4;
+                  const lum = 0.299 * block[idx] + 0.587 * block[idx + 1] + 0.114 * block[idx + 2];
+
+                  if (d2 <= sampleR * sampleR) {
+                    bubbleLumSum += lum;
+                    bubbleCount++;
+                  } else if (d2 >= innerBgR * innerBgR && d2 <= outerBgR * outerBgR) {
+                    bgLumSum += lum;
+                    bgCount++;
+                  }
+                }
+              }
+            } catch (_) {}
           }
         }
 
         const bubbleLum = bubbleCount > 0 ? (bubbleLumSum / bubbleCount) : 255;
         const bgLum = bgCount > 0 ? (bgLumSum / bgCount) : 240;
         const fillDensity = bgLum > 0 ? Math.max(0, (bgLum - bubbleLum) / bgLum) : 0;
-        const isMarked = fillDensity >= bubbleThreshold;
 
         bubbleDiagnostics.push({
           item: b.item,
           choice: b.choice,
           canX, canY, rad,
           fillDensity,
-          isMarked
+          isMarked: false
         });
+      }
 
-        if (isMarked) {
-          if (!itemAnswers[b.item]) itemAnswers[b.item] = [];
-          itemAnswers[b.item].push(b.choice);
+      // Group-level relative contrast disambiguation (matching crates/grader-core/src/vision.rs)
+      const bubbleGroups = {};
+      for (const diag of bubbleDiagnostics) {
+        if (!bubbleGroups[diag.item]) bubbleGroups[diag.item] = [];
+        bubbleGroups[diag.item].push(diag);
+      }
+
+      for (const [itemKey, diags] of Object.entries(bubbleGroups)) {
+        diags.sort((a, b) => b.fillDensity - a.fillDensity);
+        const top = diags[0];
+        const second = diags[1];
+        const marked = diags.filter(d => d.fillDensity >= bubbleThreshold);
+
+        if (marked.length === 1) {
+          marked[0].isMarked = true;
+          itemAnswers[itemKey] = [marked[0].choice];
+        } else if (marked.length > 1) {
+          const margin = second ? (top.fillDensity - second.fillDensity) : top.fillDensity;
+          if (margin >= 0.12) {
+            // Resolve to topChoice without flagging spurious multiple marks from printed letters
+            top.isMarked = true;
+            itemAnswers[itemKey] = [top.choice];
+          } else {
+            // Legitimate multiple mark
+            for (const m of marked) {
+              m.isMarked = true;
+            }
+            itemAnswers[itemKey] = marked.map(m => m.choice);
+          }
+        } else {
+          itemAnswers[itemKey] = [];
         }
       }
 
@@ -11827,7 +12002,7 @@
       }
 
       async function saveSession(sessionData) {
-        if (!sessionData) return;
+        if (!sessionData || typeof indexedDB === 'undefined') return;
         try {
           const db = await openDB();
           return new Promise((resolve, reject) => {
@@ -11848,6 +12023,7 @@
       }
 
       async function loadSession() {
+        if (typeof indexedDB === 'undefined') return null;
         try {
           const db = await openDB();
           return new Promise((resolve, reject) => {
@@ -11867,6 +12043,7 @@
       }
 
       async function clearSession() {
+        if (typeof indexedDB === 'undefined') return;
         try {
           const db = await openDB();
           return new Promise((resolve, reject) => {
@@ -12011,7 +12188,9 @@
               grades: data.results.grades.map(({ scanData, ...rest }) => rest),
             },
           };
-          localStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify(lightweight));
+          const jsonStr = JSON.stringify(lightweight);
+          localStorage.setItem('checker_progress_session', jsonStr);
+          localStorage.setItem(PROGRESS_STORAGE_KEY, jsonStr);
         } catch (_) {}
       }
 
@@ -12127,11 +12306,14 @@
     }
     window.regenerateCropsForGrades = regenerateCropsForGrades;
 
-    function restoreCheckerProgress(data) {
+    function restoreCheckerProgress(data, options = {}) {
       if (!data || !data.results || !Array.isArray(data.results.grades)) {
         throw new Error('Invalid or corrupted grading session progress file.');
       }
-      showLoading("Restoring Session", `Restoring ${data.results.grades.length} student grades...`);
+      const isSilent = Boolean(options && options.silent);
+      if (!isSilent) {
+        showLoading("Restoring Session", `Restoring ${data.results.grades.length} student grades...`);
+      }
 
       state.scans = [];
       state.selectedStudentIdx = null;
@@ -12270,7 +12452,7 @@
       });
 
       return Promise.all(decodePromises).then(postDecode).finally(() => {
-        hideLoading();
+        if (!isSilent) hideLoading();
       });
     }
     window.restoreCheckerProgress = restoreCheckerProgress;
@@ -12310,6 +12492,7 @@
       if (progressText) progressText.style.display = 'none';
 
       try {
+        localStorage.removeItem('checker_progress_session');
         localStorage.removeItem(PROGRESS_STORAGE_KEY);
       } catch {}
 
@@ -12449,9 +12632,9 @@
     window.clearWorkspace = clearWorkspace;
 
     function checkAutoSavedProgress() {
-      (async () => {
+      return (async () => {
         try {
-          const urlParams = new URLSearchParams(window.location.search);
+          const urlParams = (typeof window !== 'undefined' && window.location) ? new URLSearchParams(window.location.search) : new URLSearchParams();
           if (urlParams.get('action') === 'new' || urlParams.get('clear') === '1') {
             clearWorkspace({ silent: true });
             return;
@@ -12460,7 +12643,6 @@
             setTimeout(() => $('btn-sample-grade')?.click(), 100);
             return;
           }
-          const shouldAutoResume = (urlParams.get('action') === 'resume');
 
           let saved = null;
           try {
@@ -12469,19 +12651,17 @@
             }
           } catch (_) {}
 
-          if (!saved) {
+          if (!saved && typeof localStorage !== 'undefined') {
             try {
-              const raw = localStorage.getItem(PROGRESS_STORAGE_KEY);
+              const raw = localStorage.getItem('checker_progress_session') || localStorage.getItem(PROGRESS_STORAGE_KEY);
               if (raw) saved = JSON.parse(raw);
             } catch (_) {}
           }
 
           if (saved && saved.results && saved.results.grades && saved.results.grades.length > 0) {
             updateResumeStatusUI(true, saved);
-            if (shouldAutoResume) {
-              restoreCheckerProgress(saved);
-              showToast('✓ Session resumed from previous class');
-            }
+            // Automatically restore session across page switches
+            await restoreCheckerProgress(saved, { silent: true });
           } else {
             updateResumeStatusUI(false);
           }
@@ -12490,6 +12670,7 @@
         }
       })();
     }
+    window.checkAutoSavedProgress = checkAutoSavedProgress;
 
     // Highlighting & Visual State Helpers
     function updateSaveStatusUI(status) {
@@ -14020,14 +14201,49 @@
       });
     }
 
+    // Sidebar collapse controller
+    function toggleSidebar(forceState = null) {
+      const workspace = $('checker-workspace') || document.querySelector('.checker-workspace') || document.querySelector('.workspace');
+      const expandBtn = $('btn-expand-sidebar');
+      if (!workspace) return;
+      const isCollapsed = forceState != null ? forceState : !workspace.classList.contains('is-sidebar-collapsed');
+      workspace.classList.toggle('is-sidebar-collapsed', isCollapsed);
+      if (expandBtn) {
+        expandBtn.style.display = isCollapsed ? 'inline-flex' : 'none';
+      }
+      try {
+        if (isCollapsed) {
+          localStorage.setItem('checker_sidebar_collapsed', 'true');
+        } else {
+          localStorage.removeItem('checker_sidebar_collapsed');
+        }
+      } catch (_) {}
+    }
+    window.toggleSidebar = toggleSidebar;
+
+    $('btn-toggle-sidebar')?.addEventListener('click', () => toggleSidebar(true));
+    $('btn-expand-sidebar')?.addEventListener('click', () => toggleSidebar(false));
+
+    // Restore saved sidebar collapsed state if previously set
+    try {
+      if (typeof localStorage !== 'undefined' && localStorage.getItem('checker_sidebar_collapsed') === 'true') {
+        toggleSidebar(true);
+      }
+    } catch (_) {}
+
     // Initial boot display and check auto-saved progress
-    updateLayoutDisplay();
-    updateKeyDisplay();
-    updateRosterDisplay();
-    updateStepperUI();
-    restoreGoogleAuthState();
-    checkAuthGating();
-    checkAutoSavedProgress();
+    function initCheckerStudio() {
+      updateLayoutDisplay();
+      updateKeyDisplay();
+      updateRosterDisplay();
+      updateStepperUI();
+      restoreGoogleAuthState();
+      checkAuthGating();
+      return checkAutoSavedProgress();
+    }
+    window.initCheckerStudio = initCheckerStudio;
+
+    initCheckerStudio();
 
     // Cross-tab synchronization for Google Auth and session progress
     if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
@@ -14035,7 +14251,7 @@
         if (e.key === 'instructor_google_token' || e.key === 'instructor_google_user' || e.key === 'toolkit_google_auth') {
           restoreGoogleAuthState();
         }
-        if (e.key === PROGRESS_STORAGE_KEY && !state.isGrading) {
+        if ((e.key === 'checker_progress_session' || e.key === PROGRESS_STORAGE_KEY) && !state.isGrading) {
           checkAutoSavedProgress();
         }
       });

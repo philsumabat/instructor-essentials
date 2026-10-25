@@ -423,8 +423,9 @@ body {
 }
 
 .btn--sm {
-  padding: 0.28rem 0.62rem;
+  padding: 0.32rem 0.6rem;
   font-size: 0.76rem;
+  letter-spacing: -0.02em;
 }
 
 .btn--xs,

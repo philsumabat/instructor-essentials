@@ -1111,7 +1111,7 @@
       background: #1e222b;
       overflow: auto;
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: center;
       min-height: 480px;
       max-height: calc(100vh - 200px);
@@ -2812,8 +2812,8 @@
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
             </div>
             <div>
-              <div style="font-weight: 700; font-size: 0.84rem; color: var(--text);" id="summary-review-callout-title">0 students need review (e.g. blank responses or unverified IDs).</div>
-              <div style="font-size: 0.74rem; color: var(--text-muted);" id="summary-review-callout-sub">Some sheets have blank responses, multiple marks, or unverified IDs.</div>
+              <div style="font-weight: 700; font-size: 0.84rem; color: var(--text);" id="summary-review-callout-title">0 students need review (e.g. blank responses or multiple marks).</div>
+              <div style="font-size: 0.74rem; color: var(--text-muted);" id="summary-review-callout-sub">Some sheets have blank responses, multiple marks, or unreviewed responses.</div>
             </div>
           </div>
           <button type="button" class="btn btn--secondary btn-xs" id="btn-open-review-queue" style="font-weight: 600;" onclick="openReviewQueue();">
@@ -2888,7 +2888,7 @@
                   <span>All Students</span>
                   <span class="filter-count count-pill" id="count-roster-all" style="margin-left: 0.25rem; font-weight: 700;">(0)</span>
                 </button>
-                <button type="button" class="btn btn--secondary btn-xs" data-filter="needs-review" id="filter-roster-review" title="Filter to sheets flagged with blanks, multiple marks, or unverified IDs">
+                <button type="button" class="btn btn--secondary btn-xs" data-filter="needs-review" id="filter-roster-review" title="Filter to sheets flagged with blanks, multiple marks, or unreviewed responses">
                   <span style="display: inline-flex; align-items: center; gap: 0.25rem; color: var(--warning);">
                     <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
                     Needs Review
@@ -8276,7 +8276,8 @@
       let suggestedMatch = null;
       let matchScore = 0;
       let matchField = '';
-      const isUnmatchedId = (!rosterEntry && state.roster && state.roster.length > 0) || String(studentId).startsWith("STU-");
+      const hasRoster = Array.isArray(state.roster) && state.roster.length > 0;
+      const isUnmatchedId = Boolean(hasRoster && !rosterEntry);
 
       const reviewReasons = [];
       if (blankCount > 0) reviewReasons.push(`${blankCount} blank response${blankCount > 1 ? 's' : ''}`);
@@ -8290,10 +8291,8 @@
           matchScore = best.score;
           matchField = best.field;
           reviewReasons.push(`Roster Mismatch: Suggested "${best.student.name}" (${(best.score * 100).toFixed(0)}% match)`);
-        } else if (state.roster && state.roster.length > 0) {
+        } else if (hasRoster) {
           reviewReasons.push(`Unmatched Student ID`);
-        } else {
-          reviewReasons.push(`No Student ID detected on sheet`);
         }
       }
 
@@ -9036,14 +9035,14 @@
       const flaggedCount = state.results.grades.filter(g => g.reviewFlags && g.reviewFlags.needsReview).length;
       if (flaggedCount > 0) {
         callout.style.display = 'flex';
-        const msg = `${flaggedCount} student${flaggedCount > 1 ? 's' : ''} need review (${flaggedCount} Exam Sheet${flaggedCount > 1 ? 's' : ''} Need Review: e.g. blank responses or unverified IDs).`;
+        const msg = `${flaggedCount} student${flaggedCount > 1 ? 's' : ''} need review (${flaggedCount} Exam Sheet${flaggedCount > 1 ? 's' : ''} Need Review: e.g. blank responses or multiple marks).`;
         const titleEl = $('summary-review-callout-title');
         if (titleEl) {
           titleEl.textContent = msg;
         }
         const subEl = $('summary-review-callout-sub');
         if (subEl) {
-          subEl.textContent = `${flaggedCount} sheet${flaggedCount > 1 ? 's have' : ' has'} blank responses, multiple marks, or unverified IDs.`;
+          subEl.textContent = `${flaggedCount} sheet${flaggedCount > 1 ? 's have' : ' has'} blank responses, multiple marks, or unreviewed responses.`;
         }
       } else {
         callout.style.display = 'none';
@@ -11137,7 +11136,7 @@
         } catch (_) {}
       }
 
-      if (activeScanImg && !(typeof HTMLCanvasElement !== 'undefined' && activeScanImg instanceof HTMLCanvasElement) && !activeScanImg.complete) {
+      if (activeScanImg && typeof activeScanImg.getContext !== 'function' && !(typeof HTMLCanvasElement !== 'undefined' && activeScanImg instanceof HTMLCanvasElement) && activeScanImg.complete === false) {
         const onImgLoad = () => {
           drawGradeOnCanvas(grade, canvas, options);
         };
@@ -11146,6 +11145,9 @@
         } else {
           activeScanImg.onload = onImgLoad;
         }
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        return;
       }
 
       // Always paint clean neutral paper background first
@@ -11164,7 +11166,10 @@
       for (const b of (grade.bubbleDiagnostics || [])) {
         const itemInfo = grade.gradedItems ? grade.gradedItems[b.item] : null;
         if (!itemInfo) continue; // Skip non-question bubbles like student ID columns
-        const isKeyTarget = (b.choice === itemInfo.expected);
+        const expectedChoices = (Array.isArray(itemInfo.expected) ? itemInfo.expected : String(itemInfo.expected || '').split(/[,\s/]+/))
+          .map(s => String(s).trim().toUpperCase())
+          .filter(Boolean);
+        const isKeyTarget = expectedChoices.includes(String(b.choice || '').trim().toUpperCase());
 
         if (b.isMarked && isKeyTarget) {
           // Correct answer marked: Green circle with solid ring
@@ -11355,7 +11360,11 @@
         ctx.fill();
         ctx.fillStyle = "#fff";
         ctx.font = "bold 16px sans-serif";
-        const bannerName = (grade.studentName && !grade.studentName.startsWith('Student STU-')) ? grade.studentName : (grade.studentId && !String(grade.studentId).startsWith('STU-') ? grade.studentId : 'Student');
+        const bannerName = shouldRedactName
+          ? '[NAME REDACTED]'
+          : ((grade.studentName && !grade.studentName.startsWith('Student STU-'))
+              ? grade.studentName
+              : (grade.studentId && !String(grade.studentId).startsWith('STU-') ? grade.studentId : 'Student'));
         ctx.fillText(bannerName, 32, 44);
         ctx.font = "14px sans-serif";
         const hasUnreviewed = typeof hasUnreviewedItems === 'function' ? hasUnreviewedItems(grade) : false;
@@ -12653,6 +12662,14 @@
           scanImg = c;
         }
 
+        const rawReasons = g.reviewFlags?.reasons || [];
+        const cleanReasons = rawReasons.filter(r => !r.includes('No Student ID'));
+        const reviewFlags = {
+          ...(g.reviewFlags || {}),
+          needsReview: cleanReasons.length > 0,
+          reasons: cleanReasons,
+        };
+
         return {
           examId: g.examId,
           studentId: g.studentId,
@@ -12670,7 +12687,7 @@
           scanImg,
           scanData: g.scanData || null,
           _cachedScanData: g.scanData || null,
-          reviewFlags: g.reviewFlags || { needsReview: false, reasons: [] },
+          reviewFlags,
         };
       });
 
@@ -14513,6 +14530,26 @@
           }
         }
 
+        const rectifyScanForGrade = (rawImg, targetGrade) => {
+          if (!rawImg || !targetGrade) return rawImg;
+          const { H_canToSrc, targetW, targetH } = targetGrade;
+          if (!H_canToSrc || !targetW || !targetH) return rawImg;
+          if ((typeof HTMLCanvasElement !== 'undefined' && rawImg instanceof HTMLCanvasElement && rawImg.width === targetW && rawImg.height === targetH) || (typeof rawImg.getContext === 'function' && rawImg.width === targetW && rawImg.height === targetH)) {
+            return rawImg;
+          }
+          try {
+            const offscreen = document.createElement('canvas');
+            offscreen.width = rawImg.width;
+            offscreen.height = rawImg.height;
+            const offCtx = offscreen.getContext('2d', { willReadFrequently: true });
+            offCtx.drawImage(rawImg, 0, 0);
+            const rect = warpScanToCanonical(offCtx, rawImg.width, rawImg.height, H_canToSrc, targetW, targetH);
+            return rect || rawImg;
+          } catch (_) {
+            return rawImg;
+          }
+        };
+
         // Multi-tier matching against restored grades
         // Tier 1: Name / ID match
         const assignedGrades = new Set();
@@ -14523,7 +14560,7 @@
             const examBase = (grade.examId || '').replace(/\.[^/.]+$/, '').toLowerCase();
             const stuId = String(grade.studentId || '').toLowerCase();
             if ((examBase && scanBase === examBase) || (stuId && scanBase.includes(stuId)) || (examBase && scanBase.includes(examBase))) {
-              grade.scanImg = scan.img;
+              grade.scanImg = rectifyScanForGrade(scan.img, grade);
               assignedGrades.add(grade);
               matchedCount++;
             }
@@ -14534,7 +14571,7 @@
         if (assignedGrades.size < state.results.grades.length && extractedScans.length > 0) {
           state.results.grades.forEach((grade, idx) => {
             if (!assignedGrades.has(grade) && extractedScans[idx]) {
-              grade.scanImg = extractedScans[idx].img;
+              grade.scanImg = rectifyScanForGrade(extractedScans[idx].img, grade);
               assignedGrades.add(grade);
               matchedCount++;
             }

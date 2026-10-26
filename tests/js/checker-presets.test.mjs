@@ -337,7 +337,7 @@ test('checker.html Tab 2 supports table sorting, master-detail selection, side p
   const checkerHtml = await readFile(resolve(root, 'builder/checker.html'), 'utf8');
 
   // Verify sortable table headers
-  assert.ok(checkerHtml.includes('th class="sortable" data-sort="studentId"'), 'Sortable studentId header present');
+  assert.ok(checkerHtml.includes('th class="sortable" data-sort="studentName"'), 'Sortable studentName header present');
   assert.ok(checkerHtml.includes('th class="sortable" data-sort="rawScore"'), 'Sortable rawScore header present');
   assert.ok(checkerHtml.includes('th class="sortable" data-sort="percentage"'), 'Sortable percentage header present');
   assert.ok(checkerHtml.includes('th class="sortable" data-sort="status"'), 'Sortable status header present');

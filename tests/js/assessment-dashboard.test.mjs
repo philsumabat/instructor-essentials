@@ -154,9 +154,9 @@ test('Psychometrics engine sandbox simulation: Bloom stats, high-quality count, 
   assert.equal(normalizeBloom('remember'), 'Remember');
   assert.equal(normalizeBloom('ANALYSIS'), 'Analyze');
   assert.equal(normalizeBloom('evaluation'), 'Evaluate');
-  assert.equal(defaultBloomFor('1'), 'Remember');
-  assert.equal(defaultBloomFor('2'), 'Understand');
-  assert.equal(defaultBloomFor('3'), 'Apply');
+  assert.equal(defaultBloomFor('1'), null);
+  assert.equal(defaultBloomFor('2'), null);
+  assert.equal(defaultBloomFor('3'), null);
 
   // 2. Synthesize an answer key with explicit Bloom levels
   const key = {

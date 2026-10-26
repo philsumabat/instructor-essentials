@@ -5,7 +5,7 @@
  * interactive canvas with reorder handles and live drop indicators,
  * instant Answer Key generator, and millimeter-precise physical print export.
  */
-import { buildLayout, layoutStats, TemplateError, allGroups, PAPER_SIZES } from './layout-engine.js';
+import { buildLayout, layoutStats, TemplateError, allGroups, PAPER_SIZES, DENSITY_PRESETS } from './layout-engine.js';
 import { renderSheetDOM, renderStandaloneHTML, pageRule, escapeHTML } from './render-dom.js';
 import { renderSVG } from './render-svg.js';
 import { SAMPLE_TEMPLATES } from './templates.js';
@@ -59,6 +59,11 @@ function initElements() {
     paperSelect: $('#paper-select'),
     paperBtns: $$('.segmented-btn[data-paper]'),
     chkMidlineFiducials: $('#chk-midline-fiducials'),
+    btnToggleBuilderSidebar: $('#btn-toggle-builder-sidebar'),
+    btnExpandBuilderSidebar: $('#btn-expand-builder-sidebar'),
+    appLayout: $('.app-layout'),
+    examGap: $('#exam-gap'),
+    densitySelector: $('#density-selector'),
     samplePreset: $('#sample-preset'),
     btnNewSheet: $('#btn-new-sheet'),
     btnSaveBuild: $('#btn-save-build'),
@@ -1528,6 +1533,21 @@ function renderInspector() {
     `;
   }
 
+  // Global top spacing override for this block
+  formHtml += `
+    <div class="form-group" style="margin-top: 0.8rem; padding-top: 0.8rem; border-top: 1px dashed var(--border);">
+      <label class="form-label" for="insp-gap-before" style="display: flex; justify-content: space-between; align-items: center;">
+        <span>Top Spacing (mm)</span>
+        <span class="text-muted" style="font-weight: normal; font-size: 0.72rem;">Default: ${state.template?.gap ?? 3.5}mm</span>
+      </label>
+      <div class="stepper-control">
+        <button type="button" class="stepper-btn" id="insp-gap-before-minus" aria-label="Decrease spacing">−</button>
+        <input type="number" id="insp-gap-before" class="stepper-input" value="${zone.gapBefore ?? ''}" placeholder="${state.template?.gap ?? 3.5}" min="0" max="50" step="0.5">
+        <button type="button" class="stepper-btn" id="insp-gap-before-plus" aria-label="Increase spacing">+</button>
+      </div>
+    </div>
+  `;
+
   els.inspectorContent.innerHTML = formHtml;
   bindInspectorEvents(zone);
 }
@@ -2013,6 +2033,40 @@ function bindInspectorEvents(zone) {
       update();
     });
   }
+
+  // Zone top spacing (gapBefore) stepper
+  const gapInput = $('#insp-gap-before');
+  const gapMinus = $('#insp-gap-before-minus');
+  const gapPlus = $('#insp-gap-before-plus');
+  if (gapInput) {
+    const applyGap = (v) => {
+      if (v === '' || v == null) {
+        delete zone.gapBefore;
+      } else {
+        const n = parseFloat(v);
+        if (Number.isFinite(n) && n >= 0) {
+          zone.gapBefore = n;
+        } else {
+          delete zone.gapBefore;
+        }
+      }
+      update({ skipInspector: true });
+    };
+    gapInput.addEventListener('input', () => applyGap(gapInput.value));
+    gapInput.addEventListener('change', () => applyGap(gapInput.value));
+    gapMinus?.addEventListener('click', () => {
+      const cur = parseFloat(gapInput.value !== '' ? gapInput.value : (state.template?.gap ?? 3.5));
+      const next = Math.max(0, Math.round((cur - 0.5) * 2) / 2);
+      gapInput.value = next;
+      applyGap(next);
+    });
+    gapPlus?.addEventListener('click', () => {
+      const cur = parseFloat(gapInput.value !== '' ? gapInput.value : (state.template?.gap ?? 3.5));
+      const next = Math.round((cur + 0.5) * 2) / 2;
+      gapInput.value = next;
+      applyGap(next);
+    });
+  }
 }
 
 // ---- Outline List Rendering ----
@@ -2193,6 +2247,23 @@ function update(options = {}) {
     els.chkMidlineFiducials.checked = Boolean(state.template.fiducial?.ids?.length === 6);
   }
 
+  // Spacing stepper sync
+  if (els.examGap && document.activeElement !== els.examGap) {
+    els.examGap.value = state.template.gap ?? 3.5;
+  }
+
+  // Density selector sync
+  if (els.densitySelector) {
+    const curDensity = state.template.density || 'normal';
+    els.densitySelector.querySelectorAll('.btn-density-opt').forEach((b) => {
+      const active = b.dataset.density === curDensity;
+      b.classList.toggle('is-active', active);
+      b.style.background = active ? 'var(--accent)' : 'transparent';
+      b.style.color = active ? '#fff' : 'var(--text-muted)';
+      b.style.fontWeight = active ? '600' : 'normal';
+    });
+  }
+
   renderMeta(state.layout);
   renderPreview();
 
@@ -2236,23 +2307,20 @@ function closeModal(modalEl) {
 const BLOOM_LEVELS = ['Remember', 'Understand', 'Apply', 'Analyze', 'Evaluate', 'Create'];
 
 function normalizeBloom(val) {
-  if (!val || typeof val !== 'string') return 'Remember';
+  if (!val || typeof val !== 'string') return null;
   const clean = val.trim().toLowerCase();
+  if (clean === 'none' || clean === 'null' || clean === 'undefined' || clean === '' || clean === 'n/a') return null;
   if (clean.startsWith('rem') || clean.startsWith('rec') || clean === 'knowledge' || clean === '1') return 'Remember';
   if (clean.startsWith('und') || clean.startsWith('com') || clean === 'comprehension' || clean === '2') return 'Understand';
   if (clean.startsWith('app') || clean === 'application' || clean === '3') return 'Apply';
   if (clean.startsWith('ana') || clean === 'analysis' || clean === '4') return 'Analyze';
   if (clean.startsWith('eva') || clean === 'evaluation' || clean === '5') return 'Evaluate';
   if (clean.startsWith('cre') || clean.startsWith('syn') || clean === 'synthesis' || clean === 'creation' || clean === '6') return 'Create';
-  return 'Remember';
+  return null;
 }
 
 function defaultBloomFor(k) {
-  const num = parseInt(k, 10);
-  if (!isNaN(num) && num > 0) {
-    return BLOOM_LEVELS[(num - 1) % BLOOM_LEVELS.length];
-  }
-  return 'Remember';
+  return null;
 }
 
 // ---- Interactive Answer Key Editor UI ----
@@ -2525,6 +2593,7 @@ function renderAnswerKeyModalContent() {
             </div>
             <div style="display: flex; align-items: center; gap: 0.3rem; flex-shrink: 0;">
               <select class="key-bloom-select" data-key="${g.key}" title="Bloom's Cognitive Level">
+                <option value="" ${!currentBloom ? 'selected' : ''}>None</option>
                 ${BLOOM_LEVELS.map((lvl) => `<option value="${lvl}" ${currentBloom === lvl ? 'selected' : ''}>${lvl}</option>`).join('')}
               </select>
               <input type="number" class="key-pts-input" data-key="${g.key}" value="${item.points}" min="0.5" max="50" step="0.5" title="Points">
@@ -2554,6 +2623,7 @@ function renderAnswerKeyModalContent() {
             </div>
             <div style="display: flex; align-items: center; gap: 0.35rem; flex-shrink: 0;">
               <select class="key-bloom-select" data-key="${rKey}" title="Bloom's Cognitive Level">
+                <option value="" ${!currentBloom ? 'selected' : ''}>None</option>
                 ${BLOOM_LEVELS.map((lvl) => `<option value="${lvl}" ${currentBloom === lvl ? 'selected' : ''}>${lvl}</option>`).join('')}
               </select>
               <input type="number" class="key-pts-input" data-key="${rKey}" value="${item.points}" min="0.5" max="50" step="0.5" title="Points">
@@ -2597,6 +2667,7 @@ function renderAnswerKeyModalContent() {
             </div>
             <div style="display: flex; align-items: center; gap: 0.3rem; flex-shrink: 0;">
               <select class="key-bloom-select" data-key="${k}" title="Bloom's Cognitive Level">
+                <option value="" ${!currentBloom ? 'selected' : ''}>None</option>
                 ${BLOOM_LEVELS.map((lvl) => `<option value="${lvl}" ${currentBloom === lvl ? 'selected' : ''}>${lvl}</option>`).join('')}
               </select>
               <input type="number" class="key-pts-input" data-key="${k}" value="${item.points}" min="0.5" max="50" step="0.5" title="Points">
@@ -2621,6 +2692,7 @@ function renderAnswerKeyModalContent() {
             </div>
             <div style="display: flex; align-items: center; gap: 0.35rem; flex-shrink: 0;">
               <select class="key-bloom-select" data-key="${k}" title="Bloom's Cognitive Level">
+                <option value="" ${!currentBloom ? 'selected' : ''}>None</option>
                 ${BLOOM_LEVELS.map((lvl) => `<option value="${lvl}" ${currentBloom === lvl ? 'selected' : ''}>${lvl}</option>`).join('')}
               </select>
               <input type="number" class="key-pts-input" data-key="${k}" value="${item.points}" min="0.5" max="50" step="0.5" title="Points">
@@ -2653,7 +2725,7 @@ function renderAnswerKeyModalContent() {
     sel.addEventListener('change', () => {
       const k = sel.dataset.key;
       if (currentAnswerKey.items[k]) {
-        currentAnswerKey.items[k].bloom = sel.value;
+        currentAnswerKey.items[k].bloom = sel.value || null;
       }
     });
   });
@@ -3802,166 +3874,7 @@ function renderGeneratorParts() {
 }
 
 // ---- Live Exam Generator Preview ----
-function updateGeneratorLivePreview() {
-  if (!els.genWireframe) return;
-  const paper = els.genPaper?.value || 'A4';
-  const paperSpec = PAPER_SIZES[paper] || PAPER_SIZES['A4'];
-  const title = (els.genTitle?.value || '').trim() || 'MIDTERM EXAMINATION';
-  const sidMode = els.genSidMode?.value || 'fields';
-  const includeInstructions = els.genInstructions ? els.genInstructions.checked : true;
-
-  if (els.genPreviewPaperLabel) {
-    els.genPreviewPaperLabel.textContent = `${paper} · ${paperSpec.width} × ${paperSpec.height} mm`;
-  }
-
-  const toRoman = (n) => ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'][n - 1] || String(n);
-
-  let totalQuestions = 0;
-  let totalPoints = 0;
-  let estimatedHeight = 24 + 12; // margins & fiducials
-
-  let wfHtml = `
-    <div class="wf-fiducials" aria-hidden="true">
-      <span class="wf-fiducial wf-fiducial--tl"></span>
-      <span class="wf-fiducial wf-fiducial--tr"></span>
-      <span class="wf-fiducial wf-fiducial--bl"></span>
-      <span class="wf-fiducial wf-fiducial--br"></span>
-    </div>
-  `;
-
-  // 1. Header wireframe
-  wfHtml += `
-    <div class="wf-header-block">
-      <div class="wf-title-text">${safeEscapeHTML(title)}</div>
-      <div class="wf-details-row">
-        <span><strong>Name:</strong> ______________________</span>
-        <span><strong>ID no.</strong> [ 8 Digits ]</span>
-      </div>
-      <div class="wf-details-row">
-        <span><strong>Offer No.</strong> _______</span>
-        <span><strong>Sched</strong> _______</span>
-        <span><strong>Score:</strong> [____]</span>
-      </div>
-    </div>
-  `;
-  estimatedHeight += 24;
-
-  if (sidMode === 'grid') {
-    wfHtml += `
-      <div class="wf-section-block">
-        <div class="wf-sec-title"><span>ID no. (8 Digits)</span><span class="wf-sec-badge">OMR Shading Grid</span></div>
-        <div style="font-size: 0.65rem; color: #64748b; text-align: center;">[ 8 Columns × 10 Rows Bubble Matrix ]</div>
-      </div>
-    `;
-    estimatedHeight += 48;
-  }
-
-  // 2. Instructions wireframe
-  if (includeInstructions) {
-    wfHtml += `
-      <div style="font-size: 0.65rem; color: #475569; border: 1px dashed #cbd5e1; border-radius: 3px; padding: 0.25rem 0.4rem; background: #f8fafc;">
-        Instructions: Shade bubbles completely with dark pencil. Print write-in answers clearly.
-      </div>
-    `;
-    estimatedHeight += 10;
-  }
-
-  // 3. Sections wireframe
-  let curQ = 1;
-  generatorParts.forEach((part, idx) => {
-    const roman = toRoman(idx + 1);
-    const count = Math.max(1, part.count || 1);
-    const pts = Math.max(1, part.pts || 1);
-    totalQuestions += count;
-    totalPoints += count * pts;
-
-    const startQ = curQ;
-    const endQ = curQ + count - 1;
-    curQ += count;
-
-    let secTypeName = 'Multiple Choice';
-    let sampleBadges = '';
-
-    if (part.type === 'mcq') {
-      secTypeName = `Multiple Choice (${part.choices || 'ABCD'})`;
-      const numChoices = (part.choices || 'ABCD').length;
-      estimatedHeight += Math.ceil(count / 2) * 5.4 + 10;
-      sampleBadges = `
-        <div class="wf-bubbles-matrix">
-          <div class="wf-item-row">${startQ} ${Array(numChoices).fill('<span class="wf-dot"></span>').join('')}</div>
-          ${count > 1 ? `<div class="wf-item-row">${startQ + 1} ${Array(numChoices).fill('<span class="wf-dot"></span>').join('')}</div>` : ''}
-          ${count > 2 ? `<div class="wf-item-row">...</div><div class="wf-item-row">${endQ} ${Array(numChoices).fill('<span class="wf-dot"></span>').join('')}</div>` : ''}
-        </div>
-      `;
-    } else if (part.type === 'truefalse') {
-      secTypeName = 'True / False';
-      estimatedHeight += Math.ceil(count / 2) * 5.4 + 10;
-      sampleBadges = `
-        <div class="wf-bubbles-matrix">
-          <div class="wf-item-row">${startQ} <span class="wf-dot"></span> <span class="wf-dot"></span></div>
-          ${count > 1 ? `<div class="wf-item-row">${startQ + 1} <span class="wf-dot"></span> <span class="wf-dot"></span></div>` : ''}
-          ${count > 2 ? `<div class="wf-item-row">...</div><div class="wf-item-row">${endQ} <span class="wf-dot"></span> <span class="wf-dot"></span></div>` : ''}
-        </div>
-      `;
-    } else if (part.type === 'modified_tf') {
-      secTypeName = 'Modified True / False';
-      estimatedHeight += count * 7.5 + 10;
-      sampleBadges = `
-        <div class="wf-bubbles-matrix">
-          <div class="wf-item-row">${startQ} <span class="wf-dot"></span> <span class="wf-dot"></span> [ Correction Box ]</div>
-          ${count > 1 ? `<div class="wf-item-row">... ${count} items total</div>` : ''}
-        </div>
-      `;
-    } else if (part.type === 'text_short') {
-      secTypeName = 'Short Answer';
-      estimatedHeight += count * ((part.boxHeight || 12) + 4);
-      sampleBadges = `
-        <div class="wf-bubbles-matrix">
-          <div class="wf-item-row" style="width: 100%; display: flex; flex-direction: column; gap: 0.2rem;">
-            <span>${startQ}</span>
-            <div class="wf-box-writein" style="height: ${Math.min(28, (part.boxHeight || 12))}px;">Write-in answer / term</div>
-          </div>
-          ${count > 1 ? `<div class="wf-item-row" style="font-size: 0.65rem; color: #64748b; font-style: italic;">... +${count - 1} more items (${startQ + 1}–${endQ})</div>` : ''}
-        </div>
-      `;
-    } else if (part.type === 'text_essay') {
-      secTypeName = 'Essay / Discussion';
-      estimatedHeight += count * ((part.boxHeight || 36) + 4);
-      sampleBadges = `
-        <div class="wf-bubbles-matrix">
-          <div class="wf-item-row" style="width: 100%; display: flex; flex-direction: column; gap: 0.2rem;">
-            <span>${startQ}</span>
-            <div class="wf-box-writein" style="height: ${Math.min(50, (part.boxHeight || 36))}px;">Extended explanation / essay response</div>
-          </div>
-        </div>
-      `;
-    }
-
-    wfHtml += `
-      <div class="wf-section-block">
-        <div class="wf-sec-title">
-          <span>Part ${roman} — ${secTypeName} (${count} item${count > 1 ? 's' : ''})</span>
-          <span class="wf-sec-badge">${pts} pt${pts > 1 ? 's' : ''} each</span>
-        </div>
-        ${sampleBadges}
-      </div>
-    `;
-  });
-
-  const fillPct = Math.min(100, Math.round((estimatedHeight / paperSpec.height) * 100));
-
-  if (els.genStatQuestions) els.genStatQuestions.textContent = String(totalQuestions);
-  if (els.genStatPoints) els.genStatPoints.textContent = String(totalPoints);
-  if (els.genStatFill) {
-    els.genStatFill.textContent = `${fillPct}%`;
-    els.genStatFill.style.color = fillPct > 95 ? 'var(--danger)' : fillPct > 80 ? 'var(--warning)' : 'var(--text)';
-  }
-
-  els.genWireframe.innerHTML = wfHtml;
-}
-
-// ---- Exam Generator Logic ----
-function generateExamFromGeneratorModal() {
+function buildGeneratorTemplate() {
   const title = (els.genTitle?.value || '').trim() || 'General Examination';
   const paper = els.genPaper?.value || 'A4';
   const sidMode = els.genSidMode?.value || 'fields';
@@ -3969,7 +3882,7 @@ function generateExamFromGeneratorModal() {
 
   const paperSpec = PAPER_SIZES[paper] || PAPER_SIZES['A4'];
   const isMidline = Boolean(els.genMidlineFiducials?.checked);
-  const margin = isMidline ? 21 : 12;
+  const margin = isMidline ? 20 : 10;
   const availW = Math.round((paperSpec.width - 2 * margin) * 10) / 10;
 
   const zones = [];
@@ -4135,29 +4048,136 @@ function generateExamFromGeneratorModal() {
     }
   }
 
-  const generatedTemplate = {
+  return {
     id: `exam-${Date.now().toString(36).slice(-6)}`,
     title,
     paper,
     margin,
-    bubble: { diameter: 4.2, pitchX: 5.6, pitchY: 5.4 },
+    gap: 3.5,
     fiducial: {
       type: 'aruco',
       dictionary: 'DICT_4X4_50',
-      size: 10,
-      inset: 7,
-      quietZone: 3,
+      size: 7.5,
+      inset: 5.5,
+      quietZone: 2,
       ids: isMidline ? [0, 1, 4, 5, 2, 3] : [0, 1, 2, 3]
     },
     zones,
   };
+}
 
+function updateGeneratorLivePreview() {
+  if (!els.genWireframe) return;
+  const paper = els.genPaper?.value || 'A4';
+  const paperSpec = PAPER_SIZES[paper] || PAPER_SIZES['A4'];
+
+  if (els.genPreviewPaperLabel) {
+    els.genPreviewPaperLabel.textContent = `${paper} · ${paperSpec.width} × ${paperSpec.height} mm`;
+  }
+
+  let totalQuestions = 0;
+  let totalPoints = 0;
+  generatorParts.forEach((part) => {
+    const count = Math.max(1, part.count || 1);
+    const pts = Math.max(1, part.pts || 1);
+    totalQuestions += count;
+    totalPoints += count * pts;
+  });
+
+  if (els.genStatQuestions) els.genStatQuestions.textContent = String(totalQuestions);
+  if (els.genStatPoints) els.genStatPoints.textContent = String(totalPoints);
+
+  try {
+    const tpl = buildGeneratorTemplate();
+    const layout = buildLayout(tpl);
+    const maxH = layout.page.height;
+    const maxZoneBottom = layout.zones.reduce((max, z) => Math.max(max, z.bbox.y + z.bbox.h), 0);
+    const fillPct = Math.min(150, Math.round((maxZoneBottom / (maxH - 20)) * 100));
+
+    if (els.genStatFill) {
+      els.genStatFill.textContent = `${fillPct}%`;
+      els.genStatFill.style.color = fillPct > 100 ? 'var(--danger)' : fillPct > 85 ? 'var(--warning)' : 'var(--text)';
+    }
+
+    const svg = renderSVG(layout);
+    els.genWireframe.innerHTML = svg;
+    const svgEl = els.genWireframe.querySelector('svg');
+    if (svgEl) {
+      svgEl.style.width = '100%';
+      svgEl.style.height = 'auto';
+      svgEl.style.display = 'block';
+      svgEl.style.borderRadius = '3px';
+      svgEl.style.background = '#ffffff';
+      svgEl.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.15)';
+    }
+  } catch (err) {
+    els.genWireframe.innerHTML = `<div style="padding: 1.5rem; text-align: center; color: var(--text-muted); font-size: 0.8rem;">Preview unavailable: ${safeEscapeHTML(err.message)}</div>`;
+  }
+}
+
+// ---- Exam Generator Logic ----
+function generateExamFromGeneratorModal() {
+  const generatedTemplate = buildGeneratorTemplate();
   loadTemplate(generatedTemplate);
   closeModal(els.modalGenerator);
 }
 
 // ---- Event Listeners Setup ----
 function initEvents() {
+  // Sidebar collapse toggle
+  const toggleBuilderSidebar = (collapse) => {
+    const isCollapsed = collapse !== undefined ? collapse : !els.appLayout?.classList.contains('is-sidebar-collapsed');
+    els.appLayout?.classList.toggle('is-sidebar-collapsed', isCollapsed);
+    if (els.btnExpandBuilderSidebar) {
+      els.btnExpandBuilderSidebar.style.display = isCollapsed ? 'inline-flex' : 'none';
+    }
+    try {
+      localStorage.setItem('builder_sidebar_collapsed', isCollapsed ? '1' : '0');
+    } catch {}
+    fitPreview();
+  };
+
+  els.btnToggleBuilderSidebar?.addEventListener('click', () => toggleBuilderSidebar(true));
+  els.btnExpandBuilderSidebar?.addEventListener('click', () => toggleBuilderSidebar(false));
+
+  try {
+    if (localStorage.getItem('builder_sidebar_collapsed') === '1') {
+      toggleBuilderSidebar(true);
+    }
+  } catch {}
+
+  // Block spacing (#exam-gap) stepper
+  const applyExamGap = (val) => {
+    if (!state.template) return;
+    const n = parseFloat(val);
+    if (Number.isFinite(n) && n >= 0) {
+      state.template.gap = n;
+      update();
+    }
+  };
+  els.examGap?.addEventListener('change', () => applyExamGap(els.examGap.value));
+  els.examGap?.addEventListener('input', () => applyExamGap(els.examGap.value));
+
+  // Density selector (#density-selector)
+  els.densitySelector?.querySelectorAll('.btn-density-opt').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const density = btn.dataset.density;
+      if (!density || !DENSITY_PRESETS[density]) return;
+      els.densitySelector.querySelectorAll('.btn-density-opt').forEach((b) => {
+        const active = b === btn;
+        b.classList.toggle('is-active', active);
+        b.style.background = active ? 'var(--accent)' : 'transparent';
+        b.style.color = active ? '#fff' : 'var(--text-muted)';
+        b.style.fontWeight = active ? '600' : 'normal';
+      });
+      if (state.template) {
+        state.template.density = density;
+        state.template.bubble = { ...DENSITY_PRESETS[density] };
+        update();
+      }
+    });
+  });
+
   // Global title
   els.examTitle?.addEventListener('input', () => {
     state.template.title = els.examTitle.value;

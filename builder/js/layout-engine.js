@@ -43,12 +43,19 @@ const PAPER_ALIASES = {
   halffolio: 'Half-Folio',
 };
 
+export const DENSITY_PRESETS = Object.freeze({
+  compact: Object.freeze({ diameter: 3.8, pitchX: 5.0, pitchY: 4.8, groupEvery: 5, groupGap: 1.2, stroke: 0.22 }),
+  normal: Object.freeze({ diameter: 4.2, pitchX: 5.6, pitchY: 5.4, groupEvery: 5, groupGap: 1.6, stroke: 0.25 }),
+  relaxed: Object.freeze({ diameter: 4.6, pitchX: 6.2, pitchY: 6.0, groupEvery: 5, groupGap: 2.0, stroke: 0.28 }),
+});
+
 export const DEFAULTS = Object.freeze({
   paper: 'A4',
-  margin: 12, // left/right content margin (mm)
-  gap: 4, // vertical/horizontal gap between flowed zones (mm)
+  margin: 10, // left/right content margin (mm)
+  gap: 3.5, // vertical/horizontal gap between flowed zones (mm)
+  density: 'normal',
   footer: 'Use a dark pencil or black pen. Fill each bubble completely. Do not fold or staple this sheet.',
-  fiducial: Object.freeze({ type: 'aruco', dictionary: ARUCO_DICTIONARY, size: 10, inset: 7, quietZone: 2, ids: [0, 1, 2, 3] }),
+  fiducial: Object.freeze({ type: 'aruco', dictionary: ARUCO_DICTIONARY, size: 7.5, inset: 5.5, quietZone: 2, ids: [0, 1, 2, 3] }),
   bubble: Object.freeze({ diameter: 4.2, pitchX: 5.6, pitchY: 5.4, groupEvery: 5, groupGap: 1.6, stroke: 0.25 }),
   typography: Object.freeze({ title: 4.2, label: 3.0, body: 2.8, bubble: 2.1, number: 2.6, small: 2.2 }),
 });
@@ -146,7 +153,14 @@ function makeGrid(x, y, columns, rows, pitchY) {
 
 export function normalizeTemplate(input) {
   if (!isPlainObject(input)) throw new TemplateError('Template must be a JSON object');
-  const tpl = deepMerge(DEFAULTS, input);
+  const baseDefaults = { ...DEFAULTS };
+  if (input.density && DENSITY_PRESETS[input.density] && !input.bubble) {
+    baseDefaults.bubble = DENSITY_PRESETS[input.density];
+  }
+  const tpl = deepMerge(baseDefaults, input);
+  if (tpl.density && DENSITY_PRESETS[tpl.density] && (!input.bubble || typeof input.bubble !== 'object')) {
+    tpl.bubble = deepMerge(DENSITY_PRESETS[tpl.density], tpl.bubble || {});
+  }
   tpl.paper = PAPER_ALIASES[String(tpl.paper).toLowerCase()] ?? tpl.paper;
   if (!PAPER_SIZES[tpl.paper]) throw new TemplateError(`Unsupported paper "${input.paper}" (use A4 or Letter)`);
   if (!tpl.id || typeof tpl.id !== 'string') throw new TemplateError('Template requires a string "id"');
@@ -724,10 +738,10 @@ export function buildLayout(input) {
   });
 
   const hasMidlineFiducials = Array.isArray(tpl.fiducial.ids) && tpl.fiducial.ids.length === 6;
-  const minLateralMargin = Math.max(21, inset + size + quietZone + 1);
+  const minLateralMargin = Math.max(20, inset + size + quietZone + 1.5);
   const effectiveMargin = hasMidlineFiducials ? Math.max(tpl.margin, minLateralMargin) : tpl.margin;
-  const contentTop = inset + size + 3;
-  const contentBottom = page.height - inset - size - 3;
+  const contentTop = inset + size + 2;
+  const contentBottom = page.height - inset - size - 2;
   const content = { x: effectiveMargin, y: r3(contentTop), w: r3(page.width - 2 * effectiveMargin), h: r3(contentBottom - contentTop) };
   const contentRight = content.x + content.w;
 
@@ -770,10 +784,11 @@ export function buildLayout(input) {
       }
     }
 
+    const effectiveGap = parseGap(raw.gapBefore ?? raw.marginTop) ?? tpl.gap;
     let x, y, availW;
     if (isHalfLeft) {
       x = raw.x ?? content.x;
-      y = raw.y ?? (leftColBottom > content.y ? leftColBottom + tpl.gap : content.y);
+      y = raw.y ?? (leftColBottom > content.y ? leftColBottom + effectiveGap : content.y);
       rowTop = y;
       availW = halfW;
     } else if (isHalfRight) {
@@ -781,16 +796,16 @@ export function buildLayout(input) {
       if (raw.y != null) {
         y = raw.y;
       } else if (rightColBottom + 0.1 < leftColBottom) {
-        y = rightColBottom > content.y ? (rightColBottom <= rowTop ? rowTop : rightColBottom + tpl.gap) : rowTop;
+        y = rightColBottom > content.y ? (rightColBottom <= rowTop ? rowTop : rightColBottom + effectiveGap) : rowTop;
       } else {
-        y = rightColBottom > content.y ? rightColBottom + tpl.gap : content.y;
+        y = rightColBottom > content.y ? rightColBottom + effectiveGap : content.y;
       }
       availW = halfW;
     } else {
       const inline = Boolean(!isFullWidthZone && raw.inline && prev);
       const rowStart = Math.max(leftColBottom, rightColBottom);
-      x = raw.x ?? (inline ? prev.bbox.x + prev.bbox.w + tpl.gap : content.x);
-      y = raw.y ?? (inline ? prev.bbox.y : (rowStart > content.y ? rowStart + tpl.gap : content.y));
+      x = raw.x ?? (inline ? prev.bbox.x + prev.bbox.w + effectiveGap : content.x);
+      y = raw.y ?? (inline ? prev.bbox.y : (rowStart > content.y ? rowStart + effectiveGap : content.y));
       rowTop = y;
       availW = isFullWidthZone ? content.w : (contentRight - x);
     }
@@ -850,6 +865,7 @@ export function buildLayout(input) {
       groups: res.groups,
       rois: res.rois,
       ...res.extra,
+      ...(raw.gapBefore !== undefined ? { gapBefore: raw.gapBefore } : {}),
       ...(raw.showPoints !== undefined ? { showPoints: raw.showPoints } : {}),
     };
     zones.push(zone);
@@ -876,6 +892,8 @@ export function buildLayout(input) {
     templateId: tpl.id,
     title: String(tpl.title ?? ''),
     units: 'mm',
+    gap: tpl.gap,
+    density: tpl.density || 'normal',
     page,
     content,
     fiducial: { type: 'aruco', dictionary: tpl.fiducial.dictionary, size, inset, quietZone },

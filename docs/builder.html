@@ -693,6 +693,22 @@ body {
   grid-template-columns: 390px 1fr;
   height: calc(100dvh - 56px);
   overflow: hidden;
+  transition: grid-template-columns 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.app-layout.is-sidebar-collapsed {
+  grid-template-columns: 0px 1fr;
+}
+
+.app-layout.is-sidebar-collapsed .studio-sidebar {
+  padding: 0;
+  border-right: none;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  overflow: hidden;
+  width: 0;
+  min-width: 0;
 }
 
 @media (width < 960px) {
@@ -3290,7 +3306,16 @@ dialog.modal-dialog--answer-key {
   <!-- Studio Main Layout -->
   <div class="app-layout">
     <!-- Left Sidebar: Builder Studio Controls -->
-    <aside class="panel studio-sidebar app-chrome" aria-label="Sheet Builder Sidebar">
+    <aside class="panel studio-sidebar app-chrome" id="builder-sidebar" aria-label="Sheet Builder Sidebar">
+      <!-- Sidebar Header & Collapse Toggle -->
+      <div class="sidebar-header" style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 0.4rem; border-bottom: 1px solid var(--border);">
+        <span style="font-weight: 700; font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Sheet Setup</span>
+        <button type="button" id="btn-toggle-builder-sidebar" class="btn btn--secondary btn--sm" title="Collapse sidebar to expand answering canvas" style="display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.25rem 0.5rem; font-size: 0.72rem;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+          <span>Collapse</span>
+        </button>
+      </div>
+
       <!-- Exam Global Card: Title & Paper Size -->
       <div class="exam-global-card">
         <label for="exam-title-input" class="visually-hidden">Exam Title</label>
@@ -3309,6 +3334,21 @@ dialog.modal-dialog--answer-key {
             <option value="Half-Letter">Half Letter (5.5 × 8.5 in)</option>
             <option value="Half-Folio">Half Folio (6.5 × 8.5 in)</option>
           </select>
+        </div>
+        <div class="sheet-setting-row" style="margin-top: 0.45rem; display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;">
+          <label for="exam-gap" class="field-label" style="font-size: 0.76rem; color: var(--text-muted);">Block Spacing:</label>
+          <div style="display: flex; align-items: center; gap: 0.35rem;">
+            <input type="number" id="exam-gap" min="0" max="15" step="0.5" value="3.5" style="width: 58px; padding: 0.2rem 0.35rem; font-size: 0.78rem; border-radius: 4px; border: 1px solid var(--border); background: var(--bg); color: var(--text); text-align: center;">
+            <span style="font-size: 0.72rem; color: var(--text-muted);">mm</span>
+          </div>
+        </div>
+        <div class="sheet-setting-row" style="margin-top: 0.45rem; display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;">
+          <label class="field-label" style="font-size: 0.76rem; color: var(--text-muted);">Item Density:</label>
+          <div class="segmented-control" id="density-selector" style="display: inline-flex; gap: 2px; background: var(--panel); border: 1px solid var(--border); padding: 2px; border-radius: var(--radius-sm);">
+            <button type="button" class="btn-density-opt" data-density="compact" style="padding: 2px 6px; font-size: 0.7rem; border: none; border-radius: 3px; cursor: pointer; background: transparent; color: var(--text-muted);">Compact</button>
+            <button type="button" class="btn-density-opt is-active" data-density="normal" style="padding: 2px 6px; font-size: 0.7rem; border: none; border-radius: 3px; cursor: pointer; background: var(--accent); color: #fff; font-weight: 600;">Normal</button>
+            <button type="button" class="btn-density-opt" data-density="relaxed" style="padding: 2px 6px; font-size: 0.7rem; border: none; border-radius: 3px; cursor: pointer; background: transparent; color: var(--text-muted);">Relaxed</button>
+          </div>
         </div>
         <div class="sheet-setting-row" style="margin-top: 0.45rem;">
           <label class="gen-checkbox-label" style="font-size: 0.76rem; display: flex; align-items: center; gap: 0.45rem; cursor: pointer; color: var(--text-muted);">
@@ -3468,6 +3508,11 @@ dialog.modal-dialog--answer-key {
     <main class="preview" id="preview" aria-label="Sheet preview canvas">
       <!-- Canvas Controls Bar -->
       <div class="canvas-bar app-chrome">
+        <button type="button" id="btn-expand-builder-sidebar" class="btn btn--secondary btn--sm" style="display: none; align-items: center; gap: 0.35rem; padding: 0.25rem 0.55rem; font-size: 0.75rem;" title="Expand Sheet Builder Controls Sidebar">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+          <span>Controls ◨</span>
+        </button>
+
         <div class="zoom-controls">
           <button type="button" id="btn-zoom-out" class="btn-icon" title="Zoom out">−</button>
           <span id="zoom-label" class="zoom-label">100%</span>
@@ -3947,12 +3992,19 @@ const PAPER_ALIASES = {
   halffolio: 'Half-Folio',
 };
 
+const DENSITY_PRESETS = Object.freeze({
+  compact: Object.freeze({ diameter: 3.8, pitchX: 5.0, pitchY: 4.8, groupEvery: 5, groupGap: 1.2, stroke: 0.22 }),
+  normal: Object.freeze({ diameter: 4.2, pitchX: 5.6, pitchY: 5.4, groupEvery: 5, groupGap: 1.6, stroke: 0.25 }),
+  relaxed: Object.freeze({ diameter: 4.6, pitchX: 6.2, pitchY: 6.0, groupEvery: 5, groupGap: 2.0, stroke: 0.28 }),
+});
+
 const DEFAULTS = Object.freeze({
   paper: 'A4',
-  margin: 12, // left/right content margin (mm)
-  gap: 4, // vertical/horizontal gap between flowed zones (mm)
+  margin: 10, // left/right content margin (mm)
+  gap: 3.5, // vertical/horizontal gap between flowed zones (mm)
+  density: 'normal',
   footer: 'Use a dark pencil or black pen. Fill each bubble completely. Do not fold or staple this sheet.',
-  fiducial: Object.freeze({ type: 'aruco', dictionary: ARUCO_DICTIONARY, size: 10, inset: 7, quietZone: 2, ids: [0, 1, 2, 3] }),
+  fiducial: Object.freeze({ type: 'aruco', dictionary: ARUCO_DICTIONARY, size: 7.5, inset: 5.5, quietZone: 2, ids: [0, 1, 2, 3] }),
   bubble: Object.freeze({ diameter: 4.2, pitchX: 5.6, pitchY: 5.4, groupEvery: 5, groupGap: 1.6, stroke: 0.25 }),
   typography: Object.freeze({ title: 4.2, label: 3.0, body: 2.8, bubble: 2.1, number: 2.6, small: 2.2 }),
 });
@@ -4050,7 +4102,14 @@ function makeGrid(x, y, columns, rows, pitchY) {
 
 function normalizeTemplate(input) {
   if (!isPlainObject(input)) throw new TemplateError('Template must be a JSON object');
-  const tpl = deepMerge(DEFAULTS, input);
+  const baseDefaults = { ...DEFAULTS };
+  if (input.density && DENSITY_PRESETS[input.density] && !input.bubble) {
+    baseDefaults.bubble = DENSITY_PRESETS[input.density];
+  }
+  const tpl = deepMerge(baseDefaults, input);
+  if (tpl.density && DENSITY_PRESETS[tpl.density] && (!input.bubble || typeof input.bubble !== 'object')) {
+    tpl.bubble = deepMerge(DENSITY_PRESETS[tpl.density], tpl.bubble || {});
+  }
   tpl.paper = PAPER_ALIASES[String(tpl.paper).toLowerCase()] ?? tpl.paper;
   if (!PAPER_SIZES[tpl.paper]) throw new TemplateError(`Unsupported paper "${input.paper}" (use A4 or Letter)`);
   if (!tpl.id || typeof tpl.id !== 'string') throw new TemplateError('Template requires a string "id"');
@@ -4628,10 +4687,10 @@ function buildLayout(input) {
   });
 
   const hasMidlineFiducials = Array.isArray(tpl.fiducial.ids) && tpl.fiducial.ids.length === 6;
-  const minLateralMargin = Math.max(21, inset + size + quietZone + 1);
+  const minLateralMargin = Math.max(20, inset + size + quietZone + 1.5);
   const effectiveMargin = hasMidlineFiducials ? Math.max(tpl.margin, minLateralMargin) : tpl.margin;
-  const contentTop = inset + size + 3;
-  const contentBottom = page.height - inset - size - 3;
+  const contentTop = inset + size + 2;
+  const contentBottom = page.height - inset - size - 2;
   const content = { x: effectiveMargin, y: r3(contentTop), w: r3(page.width - 2 * effectiveMargin), h: r3(contentBottom - contentTop) };
   const contentRight = content.x + content.w;
 
@@ -4674,10 +4733,11 @@ function buildLayout(input) {
       }
     }
 
+    const effectiveGap = parseGap(raw.gapBefore ?? raw.marginTop) ?? tpl.gap;
     let x, y, availW;
     if (isHalfLeft) {
       x = raw.x ?? content.x;
-      y = raw.y ?? (leftColBottom > content.y ? leftColBottom + tpl.gap : content.y);
+      y = raw.y ?? (leftColBottom > content.y ? leftColBottom + effectiveGap : content.y);
       rowTop = y;
       availW = halfW;
     } else if (isHalfRight) {
@@ -4685,16 +4745,16 @@ function buildLayout(input) {
       if (raw.y != null) {
         y = raw.y;
       } else if (rightColBottom + 0.1 < leftColBottom) {
-        y = rightColBottom > content.y ? (rightColBottom <= rowTop ? rowTop : rightColBottom + tpl.gap) : rowTop;
+        y = rightColBottom > content.y ? (rightColBottom <= rowTop ? rowTop : rightColBottom + effectiveGap) : rowTop;
       } else {
-        y = rightColBottom > content.y ? rightColBottom + tpl.gap : content.y;
+        y = rightColBottom > content.y ? rightColBottom + effectiveGap : content.y;
       }
       availW = halfW;
     } else {
       const inline = Boolean(!isFullWidthZone && raw.inline && prev);
       const rowStart = Math.max(leftColBottom, rightColBottom);
-      x = raw.x ?? (inline ? prev.bbox.x + prev.bbox.w + tpl.gap : content.x);
-      y = raw.y ?? (inline ? prev.bbox.y : (rowStart > content.y ? rowStart + tpl.gap : content.y));
+      x = raw.x ?? (inline ? prev.bbox.x + prev.bbox.w + effectiveGap : content.x);
+      y = raw.y ?? (inline ? prev.bbox.y : (rowStart > content.y ? rowStart + effectiveGap : content.y));
       rowTop = y;
       availW = isFullWidthZone ? content.w : (contentRight - x);
     }
@@ -4754,6 +4814,7 @@ function buildLayout(input) {
       groups: res.groups,
       rois: res.rois,
       ...res.extra,
+      ...(raw.gapBefore !== undefined ? { gapBefore: raw.gapBefore } : {}),
       ...(raw.showPoints !== undefined ? { showPoints: raw.showPoints } : {}),
     };
     zones.push(zone);
@@ -4780,6 +4841,8 @@ function buildLayout(input) {
     templateId: tpl.id,
     title: String(tpl.title ?? ''),
     units: 'mm',
+    gap: tpl.gap,
+    density: tpl.density || 'normal',
     page,
     content,
     fiducial: { type: 'aruco', dictionary: tpl.fiducial.dictionary, size, inset, quietZone },
@@ -5644,6 +5707,11 @@ function initElements() {
     paperSelect: $('#paper-select'),
     paperBtns: $$('.segmented-btn[data-paper]'),
     chkMidlineFiducials: $('#chk-midline-fiducials'),
+    btnToggleBuilderSidebar: $('#btn-toggle-builder-sidebar'),
+    btnExpandBuilderSidebar: $('#btn-expand-builder-sidebar'),
+    appLayout: $('.app-layout'),
+    examGap: $('#exam-gap'),
+    densitySelector: $('#density-selector'),
     samplePreset: $('#sample-preset'),
     btnNewSheet: $('#btn-new-sheet'),
     btnSaveBuild: $('#btn-save-build'),
@@ -7113,6 +7181,21 @@ function renderInspector() {
     `;
   }
 
+  // Global top spacing override for this block
+  formHtml += `
+    <div class="form-group" style="margin-top: 0.8rem; padding-top: 0.8rem; border-top: 1px dashed var(--border);">
+      <label class="form-label" for="insp-gap-before" style="display: flex; justify-content: space-between; align-items: center;">
+        <span>Top Spacing (mm)</span>
+        <span class="text-muted" style="font-weight: normal; font-size: 0.72rem;">Default: ${state.template?.gap ?? 3.5}mm</span>
+      </label>
+      <div class="stepper-control">
+        <button type="button" class="stepper-btn" id="insp-gap-before-minus" aria-label="Decrease spacing">−</button>
+        <input type="number" id="insp-gap-before" class="stepper-input" value="${zone.gapBefore ?? ''}" placeholder="${state.template?.gap ?? 3.5}" min="0" max="50" step="0.5">
+        <button type="button" class="stepper-btn" id="insp-gap-before-plus" aria-label="Increase spacing">+</button>
+      </div>
+    </div>
+  `;
+
   els.inspectorContent.innerHTML = formHtml;
   bindInspectorEvents(zone);
 }
@@ -7598,6 +7681,40 @@ function bindInspectorEvents(zone) {
       update();
     });
   }
+
+  // Zone top spacing (gapBefore) stepper
+  const gapInput = $('#insp-gap-before');
+  const gapMinus = $('#insp-gap-before-minus');
+  const gapPlus = $('#insp-gap-before-plus');
+  if (gapInput) {
+    const applyGap = (v) => {
+      if (v === '' || v == null) {
+        delete zone.gapBefore;
+      } else {
+        const n = parseFloat(v);
+        if (Number.isFinite(n) && n >= 0) {
+          zone.gapBefore = n;
+        } else {
+          delete zone.gapBefore;
+        }
+      }
+      update({ skipInspector: true });
+    };
+    gapInput.addEventListener('input', () => applyGap(gapInput.value));
+    gapInput.addEventListener('change', () => applyGap(gapInput.value));
+    gapMinus?.addEventListener('click', () => {
+      const cur = parseFloat(gapInput.value !== '' ? gapInput.value : (state.template?.gap ?? 3.5));
+      const next = Math.max(0, Math.round((cur - 0.5) * 2) / 2);
+      gapInput.value = next;
+      applyGap(next);
+    });
+    gapPlus?.addEventListener('click', () => {
+      const cur = parseFloat(gapInput.value !== '' ? gapInput.value : (state.template?.gap ?? 3.5));
+      const next = Math.round((cur + 0.5) * 2) / 2;
+      gapInput.value = next;
+      applyGap(next);
+    });
+  }
 }
 
 // ---- Outline List Rendering ----
@@ -7778,6 +7895,23 @@ function update(options = {}) {
     els.chkMidlineFiducials.checked = Boolean(state.template.fiducial?.ids?.length === 6);
   }
 
+  // Spacing stepper sync
+  if (els.examGap && document.activeElement !== els.examGap) {
+    els.examGap.value = state.template.gap ?? 3.5;
+  }
+
+  // Density selector sync
+  if (els.densitySelector) {
+    const curDensity = state.template.density || 'normal';
+    els.densitySelector.querySelectorAll('.btn-density-opt').forEach((b) => {
+      const active = b.dataset.density === curDensity;
+      b.classList.toggle('is-active', active);
+      b.style.background = active ? 'var(--accent)' : 'transparent';
+      b.style.color = active ? '#fff' : 'var(--text-muted)';
+      b.style.fontWeight = active ? '600' : 'normal';
+    });
+  }
+
   renderMeta(state.layout);
   renderPreview();
 
@@ -7821,23 +7955,20 @@ function closeModal(modalEl) {
 const BLOOM_LEVELS = ['Remember', 'Understand', 'Apply', 'Analyze', 'Evaluate', 'Create'];
 
 function normalizeBloom(val) {
-  if (!val || typeof val !== 'string') return 'Remember';
+  if (!val || typeof val !== 'string') return null;
   const clean = val.trim().toLowerCase();
+  if (clean === 'none' || clean === 'null' || clean === 'undefined' || clean === '' || clean === 'n/a') return null;
   if (clean.startsWith('rem') || clean.startsWith('rec') || clean === 'knowledge' || clean === '1') return 'Remember';
   if (clean.startsWith('und') || clean.startsWith('com') || clean === 'comprehension' || clean === '2') return 'Understand';
   if (clean.startsWith('app') || clean === 'application' || clean === '3') return 'Apply';
   if (clean.startsWith('ana') || clean === 'analysis' || clean === '4') return 'Analyze';
   if (clean.startsWith('eva') || clean === 'evaluation' || clean === '5') return 'Evaluate';
   if (clean.startsWith('cre') || clean.startsWith('syn') || clean === 'synthesis' || clean === 'creation' || clean === '6') return 'Create';
-  return 'Remember';
+  return null;
 }
 
 function defaultBloomFor(k) {
-  const num = parseInt(k, 10);
-  if (!isNaN(num) && num > 0) {
-    return BLOOM_LEVELS[(num - 1) % BLOOM_LEVELS.length];
-  }
-  return 'Remember';
+  return null;
 }
 
 // ---- Interactive Answer Key Editor UI ----
@@ -8110,6 +8241,7 @@ function renderAnswerKeyModalContent() {
             </div>
             <div style="display: flex; align-items: center; gap: 0.3rem; flex-shrink: 0;">
               <select class="key-bloom-select" data-key="${g.key}" title="Bloom's Cognitive Level">
+                <option value="" ${!currentBloom ? 'selected' : ''}>None</option>
                 ${BLOOM_LEVELS.map((lvl) => `<option value="${lvl}" ${currentBloom === lvl ? 'selected' : ''}>${lvl}</option>`).join('')}
               </select>
               <input type="number" class="key-pts-input" data-key="${g.key}" value="${item.points}" min="0.5" max="50" step="0.5" title="Points">
@@ -8139,6 +8271,7 @@ function renderAnswerKeyModalContent() {
             </div>
             <div style="display: flex; align-items: center; gap: 0.35rem; flex-shrink: 0;">
               <select class="key-bloom-select" data-key="${rKey}" title="Bloom's Cognitive Level">
+                <option value="" ${!currentBloom ? 'selected' : ''}>None</option>
                 ${BLOOM_LEVELS.map((lvl) => `<option value="${lvl}" ${currentBloom === lvl ? 'selected' : ''}>${lvl}</option>`).join('')}
               </select>
               <input type="number" class="key-pts-input" data-key="${rKey}" value="${item.points}" min="0.5" max="50" step="0.5" title="Points">
@@ -8182,6 +8315,7 @@ function renderAnswerKeyModalContent() {
             </div>
             <div style="display: flex; align-items: center; gap: 0.3rem; flex-shrink: 0;">
               <select class="key-bloom-select" data-key="${k}" title="Bloom's Cognitive Level">
+                <option value="" ${!currentBloom ? 'selected' : ''}>None</option>
                 ${BLOOM_LEVELS.map((lvl) => `<option value="${lvl}" ${currentBloom === lvl ? 'selected' : ''}>${lvl}</option>`).join('')}
               </select>
               <input type="number" class="key-pts-input" data-key="${k}" value="${item.points}" min="0.5" max="50" step="0.5" title="Points">
@@ -8206,6 +8340,7 @@ function renderAnswerKeyModalContent() {
             </div>
             <div style="display: flex; align-items: center; gap: 0.35rem; flex-shrink: 0;">
               <select class="key-bloom-select" data-key="${k}" title="Bloom's Cognitive Level">
+                <option value="" ${!currentBloom ? 'selected' : ''}>None</option>
                 ${BLOOM_LEVELS.map((lvl) => `<option value="${lvl}" ${currentBloom === lvl ? 'selected' : ''}>${lvl}</option>`).join('')}
               </select>
               <input type="number" class="key-pts-input" data-key="${k}" value="${item.points}" min="0.5" max="50" step="0.5" title="Points">
@@ -8238,7 +8373,7 @@ function renderAnswerKeyModalContent() {
     sel.addEventListener('change', () => {
       const k = sel.dataset.key;
       if (currentAnswerKey.items[k]) {
-        currentAnswerKey.items[k].bloom = sel.value;
+        currentAnswerKey.items[k].bloom = sel.value || null;
       }
     });
   });
@@ -9387,166 +9522,7 @@ function renderGeneratorParts() {
 }
 
 // ---- Live Exam Generator Preview ----
-function updateGeneratorLivePreview() {
-  if (!els.genWireframe) return;
-  const paper = els.genPaper?.value || 'A4';
-  const paperSpec = PAPER_SIZES[paper] || PAPER_SIZES['A4'];
-  const title = (els.genTitle?.value || '').trim() || 'MIDTERM EXAMINATION';
-  const sidMode = els.genSidMode?.value || 'fields';
-  const includeInstructions = els.genInstructions ? els.genInstructions.checked : true;
-
-  if (els.genPreviewPaperLabel) {
-    els.genPreviewPaperLabel.textContent = `${paper} · ${paperSpec.width} × ${paperSpec.height} mm`;
-  }
-
-  const toRoman = (n) => ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'][n - 1] || String(n);
-
-  let totalQuestions = 0;
-  let totalPoints = 0;
-  let estimatedHeight = 24 + 12; // margins & fiducials
-
-  let wfHtml = `
-    <div class="wf-fiducials" aria-hidden="true">
-      <span class="wf-fiducial wf-fiducial--tl"></span>
-      <span class="wf-fiducial wf-fiducial--tr"></span>
-      <span class="wf-fiducial wf-fiducial--bl"></span>
-      <span class="wf-fiducial wf-fiducial--br"></span>
-    </div>
-  `;
-
-  // 1. Header wireframe
-  wfHtml += `
-    <div class="wf-header-block">
-      <div class="wf-title-text">${safeEscapeHTML(title)}</div>
-      <div class="wf-details-row">
-        <span><strong>Name:</strong> ______________________</span>
-        <span><strong>ID no.</strong> [ 8 Digits ]</span>
-      </div>
-      <div class="wf-details-row">
-        <span><strong>Offer No.</strong> _______</span>
-        <span><strong>Sched</strong> _______</span>
-        <span><strong>Score:</strong> [____]</span>
-      </div>
-    </div>
-  `;
-  estimatedHeight += 24;
-
-  if (sidMode === 'grid') {
-    wfHtml += `
-      <div class="wf-section-block">
-        <div class="wf-sec-title"><span>ID no. (8 Digits)</span><span class="wf-sec-badge">OMR Shading Grid</span></div>
-        <div style="font-size: 0.65rem; color: #64748b; text-align: center;">[ 8 Columns × 10 Rows Bubble Matrix ]</div>
-      </div>
-    `;
-    estimatedHeight += 48;
-  }
-
-  // 2. Instructions wireframe
-  if (includeInstructions) {
-    wfHtml += `
-      <div style="font-size: 0.65rem; color: #475569; border: 1px dashed #cbd5e1; border-radius: 3px; padding: 0.25rem 0.4rem; background: #f8fafc;">
-        Instructions: Shade bubbles completely with dark pencil. Print write-in answers clearly.
-      </div>
-    `;
-    estimatedHeight += 10;
-  }
-
-  // 3. Sections wireframe
-  let curQ = 1;
-  generatorParts.forEach((part, idx) => {
-    const roman = toRoman(idx + 1);
-    const count = Math.max(1, part.count || 1);
-    const pts = Math.max(1, part.pts || 1);
-    totalQuestions += count;
-    totalPoints += count * pts;
-
-    const startQ = curQ;
-    const endQ = curQ + count - 1;
-    curQ += count;
-
-    let secTypeName = 'Multiple Choice';
-    let sampleBadges = '';
-
-    if (part.type === 'mcq') {
-      secTypeName = `Multiple Choice (${part.choices || 'ABCD'})`;
-      const numChoices = (part.choices || 'ABCD').length;
-      estimatedHeight += Math.ceil(count / 2) * 5.4 + 10;
-      sampleBadges = `
-        <div class="wf-bubbles-matrix">
-          <div class="wf-item-row">${startQ} ${Array(numChoices).fill('<span class="wf-dot"></span>').join('')}</div>
-          ${count > 1 ? `<div class="wf-item-row">${startQ + 1} ${Array(numChoices).fill('<span class="wf-dot"></span>').join('')}</div>` : ''}
-          ${count > 2 ? `<div class="wf-item-row">...</div><div class="wf-item-row">${endQ} ${Array(numChoices).fill('<span class="wf-dot"></span>').join('')}</div>` : ''}
-        </div>
-      `;
-    } else if (part.type === 'truefalse') {
-      secTypeName = 'True / False';
-      estimatedHeight += Math.ceil(count / 2) * 5.4 + 10;
-      sampleBadges = `
-        <div class="wf-bubbles-matrix">
-          <div class="wf-item-row">${startQ} <span class="wf-dot"></span> <span class="wf-dot"></span></div>
-          ${count > 1 ? `<div class="wf-item-row">${startQ + 1} <span class="wf-dot"></span> <span class="wf-dot"></span></div>` : ''}
-          ${count > 2 ? `<div class="wf-item-row">...</div><div class="wf-item-row">${endQ} <span class="wf-dot"></span> <span class="wf-dot"></span></div>` : ''}
-        </div>
-      `;
-    } else if (part.type === 'modified_tf') {
-      secTypeName = 'Modified True / False';
-      estimatedHeight += count * 7.5 + 10;
-      sampleBadges = `
-        <div class="wf-bubbles-matrix">
-          <div class="wf-item-row">${startQ} <span class="wf-dot"></span> <span class="wf-dot"></span> [ Correction Box ]</div>
-          ${count > 1 ? `<div class="wf-item-row">... ${count} items total</div>` : ''}
-        </div>
-      `;
-    } else if (part.type === 'text_short') {
-      secTypeName = 'Short Answer';
-      estimatedHeight += count * ((part.boxHeight || 12) + 4);
-      sampleBadges = `
-        <div class="wf-bubbles-matrix">
-          <div class="wf-item-row" style="width: 100%; display: flex; flex-direction: column; gap: 0.2rem;">
-            <span>${startQ}</span>
-            <div class="wf-box-writein" style="height: ${Math.min(28, (part.boxHeight || 12))}px;">Write-in answer / term</div>
-          </div>
-          ${count > 1 ? `<div class="wf-item-row" style="font-size: 0.65rem; color: #64748b; font-style: italic;">... +${count - 1} more items (${startQ + 1}–${endQ})</div>` : ''}
-        </div>
-      `;
-    } else if (part.type === 'text_essay') {
-      secTypeName = 'Essay / Discussion';
-      estimatedHeight += count * ((part.boxHeight || 36) + 4);
-      sampleBadges = `
-        <div class="wf-bubbles-matrix">
-          <div class="wf-item-row" style="width: 100%; display: flex; flex-direction: column; gap: 0.2rem;">
-            <span>${startQ}</span>
-            <div class="wf-box-writein" style="height: ${Math.min(50, (part.boxHeight || 36))}px;">Extended explanation / essay response</div>
-          </div>
-        </div>
-      `;
-    }
-
-    wfHtml += `
-      <div class="wf-section-block">
-        <div class="wf-sec-title">
-          <span>Part ${roman} — ${secTypeName} (${count} item${count > 1 ? 's' : ''})</span>
-          <span class="wf-sec-badge">${pts} pt${pts > 1 ? 's' : ''} each</span>
-        </div>
-        ${sampleBadges}
-      </div>
-    `;
-  });
-
-  const fillPct = Math.min(100, Math.round((estimatedHeight / paperSpec.height) * 100));
-
-  if (els.genStatQuestions) els.genStatQuestions.textContent = String(totalQuestions);
-  if (els.genStatPoints) els.genStatPoints.textContent = String(totalPoints);
-  if (els.genStatFill) {
-    els.genStatFill.textContent = `${fillPct}%`;
-    els.genStatFill.style.color = fillPct > 95 ? 'var(--danger)' : fillPct > 80 ? 'var(--warning)' : 'var(--text)';
-  }
-
-  els.genWireframe.innerHTML = wfHtml;
-}
-
-// ---- Exam Generator Logic ----
-function generateExamFromGeneratorModal() {
+function buildGeneratorTemplate() {
   const title = (els.genTitle?.value || '').trim() || 'General Examination';
   const paper = els.genPaper?.value || 'A4';
   const sidMode = els.genSidMode?.value || 'fields';
@@ -9554,7 +9530,7 @@ function generateExamFromGeneratorModal() {
 
   const paperSpec = PAPER_SIZES[paper] || PAPER_SIZES['A4'];
   const isMidline = Boolean(els.genMidlineFiducials?.checked);
-  const margin = isMidline ? 21 : 12;
+  const margin = isMidline ? 20 : 10;
   const availW = Math.round((paperSpec.width - 2 * margin) * 10) / 10;
 
   const zones = [];
@@ -9720,29 +9696,136 @@ function generateExamFromGeneratorModal() {
     }
   }
 
-  const generatedTemplate = {
+  return {
     id: `exam-${Date.now().toString(36).slice(-6)}`,
     title,
     paper,
     margin,
-    bubble: { diameter: 4.2, pitchX: 5.6, pitchY: 5.4 },
+    gap: 3.5,
     fiducial: {
       type: 'aruco',
       dictionary: 'DICT_4X4_50',
-      size: 10,
-      inset: 7,
-      quietZone: 3,
+      size: 7.5,
+      inset: 5.5,
+      quietZone: 2,
       ids: isMidline ? [0, 1, 4, 5, 2, 3] : [0, 1, 2, 3]
     },
     zones,
   };
+}
 
+function updateGeneratorLivePreview() {
+  if (!els.genWireframe) return;
+  const paper = els.genPaper?.value || 'A4';
+  const paperSpec = PAPER_SIZES[paper] || PAPER_SIZES['A4'];
+
+  if (els.genPreviewPaperLabel) {
+    els.genPreviewPaperLabel.textContent = `${paper} · ${paperSpec.width} × ${paperSpec.height} mm`;
+  }
+
+  let totalQuestions = 0;
+  let totalPoints = 0;
+  generatorParts.forEach((part) => {
+    const count = Math.max(1, part.count || 1);
+    const pts = Math.max(1, part.pts || 1);
+    totalQuestions += count;
+    totalPoints += count * pts;
+  });
+
+  if (els.genStatQuestions) els.genStatQuestions.textContent = String(totalQuestions);
+  if (els.genStatPoints) els.genStatPoints.textContent = String(totalPoints);
+
+  try {
+    const tpl = buildGeneratorTemplate();
+    const layout = buildLayout(tpl);
+    const maxH = layout.page.height;
+    const maxZoneBottom = layout.zones.reduce((max, z) => Math.max(max, z.bbox.y + z.bbox.h), 0);
+    const fillPct = Math.min(150, Math.round((maxZoneBottom / (maxH - 20)) * 100));
+
+    if (els.genStatFill) {
+      els.genStatFill.textContent = `${fillPct}%`;
+      els.genStatFill.style.color = fillPct > 100 ? 'var(--danger)' : fillPct > 85 ? 'var(--warning)' : 'var(--text)';
+    }
+
+    const svg = renderSVG(layout);
+    els.genWireframe.innerHTML = svg;
+    const svgEl = els.genWireframe.querySelector('svg');
+    if (svgEl) {
+      svgEl.style.width = '100%';
+      svgEl.style.height = 'auto';
+      svgEl.style.display = 'block';
+      svgEl.style.borderRadius = '3px';
+      svgEl.style.background = '#ffffff';
+      svgEl.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.15)';
+    }
+  } catch (err) {
+    els.genWireframe.innerHTML = `<div style="padding: 1.5rem; text-align: center; color: var(--text-muted); font-size: 0.8rem;">Preview unavailable: ${safeEscapeHTML(err.message)}</div>`;
+  }
+}
+
+// ---- Exam Generator Logic ----
+function generateExamFromGeneratorModal() {
+  const generatedTemplate = buildGeneratorTemplate();
   loadTemplate(generatedTemplate);
   closeModal(els.modalGenerator);
 }
 
 // ---- Event Listeners Setup ----
 function initEvents() {
+  // Sidebar collapse toggle
+  const toggleBuilderSidebar = (collapse) => {
+    const isCollapsed = collapse !== undefined ? collapse : !els.appLayout?.classList.contains('is-sidebar-collapsed');
+    els.appLayout?.classList.toggle('is-sidebar-collapsed', isCollapsed);
+    if (els.btnExpandBuilderSidebar) {
+      els.btnExpandBuilderSidebar.style.display = isCollapsed ? 'inline-flex' : 'none';
+    }
+    try {
+      localStorage.setItem('builder_sidebar_collapsed', isCollapsed ? '1' : '0');
+    } catch {}
+    fitPreview();
+  };
+
+  els.btnToggleBuilderSidebar?.addEventListener('click', () => toggleBuilderSidebar(true));
+  els.btnExpandBuilderSidebar?.addEventListener('click', () => toggleBuilderSidebar(false));
+
+  try {
+    if (localStorage.getItem('builder_sidebar_collapsed') === '1') {
+      toggleBuilderSidebar(true);
+    }
+  } catch {}
+
+  // Block spacing (#exam-gap) stepper
+  const applyExamGap = (val) => {
+    if (!state.template) return;
+    const n = parseFloat(val);
+    if (Number.isFinite(n) && n >= 0) {
+      state.template.gap = n;
+      update();
+    }
+  };
+  els.examGap?.addEventListener('change', () => applyExamGap(els.examGap.value));
+  els.examGap?.addEventListener('input', () => applyExamGap(els.examGap.value));
+
+  // Density selector (#density-selector)
+  els.densitySelector?.querySelectorAll('.btn-density-opt').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const density = btn.dataset.density;
+      if (!density || !DENSITY_PRESETS[density]) return;
+      els.densitySelector.querySelectorAll('.btn-density-opt').forEach((b) => {
+        const active = b === btn;
+        b.classList.toggle('is-active', active);
+        b.style.background = active ? 'var(--accent)' : 'transparent';
+        b.style.color = active ? '#fff' : 'var(--text-muted)';
+        b.style.fontWeight = active ? '600' : 'normal';
+      });
+      if (state.template) {
+        state.template.density = density;
+        state.template.bubble = { ...DENSITY_PRESETS[density] };
+        update();
+      }
+    });
+  });
+
   // Global title
   els.examTitle?.addEventListener('input', () => {
     state.template.title = els.examTitle.value;

@@ -2258,12 +2258,61 @@
       font-weight: 700;
     }
 
+    .roster-reasons-disclosure {
+      display: inline-block;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      max-width: 100%;
+    }
+    .roster-reasons-disclosure summary {
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.1rem 0.45rem;
+      border-radius: 9999px;
+      background: var(--panel-alt);
+      border: 1px solid var(--border);
+      font-weight: 600;
+      color: var(--text-muted);
+      list-style: none;
+      user-select: none;
+    }
+    .roster-reasons-disclosure summary::-webkit-details-marker {
+      display: none;
+    }
+    .roster-reasons-disclosure summary:hover,
+    .roster-reasons-disclosure summary:focus-visible {
+      border-color: var(--accent);
+      color: var(--text);
+      outline: none;
+    }
+    .roster-reasons-list {
+      margin: 0.35rem 0 0 0;
+      padding: 0.4rem 0.65rem 0.4rem 1.35rem;
+      background: var(--panel-alt);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xs, 4px);
+      font-size: 0.72rem;
+      line-height: 1.4;
+      color: var(--text);
+    }
+    .roster-name-caption {
+      font-size: 0.76rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
     @media (max-width: 768px) {
       .stepper-board {
         grid-template-columns: 1fr;
         gap: 0.5rem;
       }
       .stepper-arrow {
+        display: none;
+      }
+      #tab-summary th:nth-child(3),
+      #tab-summary td:nth-child(3) {
         display: none;
       }
     }
@@ -2696,7 +2745,7 @@
               </div>
               <span id="dist-label-threshold" style="font-size: 0.75rem; color: var(--text-muted); background: var(--panel-alt); padding: 0.15rem 0.5rem; border-radius: var(--radius-full); border: 1px solid var(--border); display: none;">Threshold: 60%</span>
             </div>
-            <div style="display: flex; gap: 1rem; font-size: 0.78rem;">
+            <div style="display: flex; gap: 0.85rem; font-size: 0.75rem; flex-wrap: wrap; align-items: center;">
               <span style="display: inline-flex; align-items: center; gap: 0.35rem;">
                 <span style="width: 10px; height: 10px; border-radius: 2px; background: var(--success); display: inline-block;"></span>
                 <span id="dist-label-pass" style="font-weight: 600; color: var(--text);">Pass: 0 (0.0%)</span>
@@ -2704,6 +2753,18 @@
               <span style="display: inline-flex; align-items: center; gap: 0.35rem;">
                 <span style="width: 10px; height: 10px; border-radius: 2px; background: var(--danger); display: inline-block;"></span>
                 <span id="dist-label-fail" style="font-weight: 600; color: var(--text);">Fail: 0 (0.0%)</span>
+              </span>
+              <span style="display: inline-flex; align-items: center; gap: 0.3rem; color: var(--text-muted);" title="Class Average (Mean μ)">
+                <span style="width: 12px; height: 2px; background: #0284c7; display: inline-block;"></span>
+                <span>Mean (μ)</span>
+              </span>
+              <span style="display: inline-flex; align-items: center; gap: 0.3rem; color: var(--text-muted);" title="Passing Score Cutoff">
+                <span style="width: 12px; height: 2px; background: #ef4444; display: inline-block;"></span>
+                <span>Cutoff</span>
+              </span>
+              <span style="display: inline-flex; align-items: center; gap: 0.3rem; color: var(--text-muted);" title="One Standard Deviation (±1σ) around Mean">
+                <span style="width: 12px; height: 0; border-top: 1.5px dashed #888; display: inline-block;"></span>
+                <span>±1σ Spread</span>
               </span>
             </div>
           </div>
@@ -2719,20 +2780,28 @@
           </div>
           <!-- Plain-language annotation text beneath the curve -->
           <div id="dist-bell-curve-narrative" style="margin-top: 0.75rem;"></div>
+          <!-- Collapsible statistical definitions and caveats -->
+          <details id="summary-stats-disclosure" style="margin-top: 0.6rem; font-size: 0.75rem; color: var(--text-muted); background: var(--panel-alt); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.45rem 0.75rem;">
+            <summary style="cursor: pointer; font-weight: 600; color: var(--text); user-select: none;">About these summary metrics &amp; statistical notes</summary>
+            <div style="margin-top: 0.45rem; line-height: 1.5; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.65rem;">
+              <div><strong>Reliability (KR-20 / α):</strong> Estimates internal consistency across items (0.00 to 1.00). Small cohorts (&lt;15 students) or exams with very few items can produce noisy reliability estimates.</div>
+              <div><strong>Score Std Dev (σ):</strong> Measures how spread out scores are around the class average. The overlaid Gaussian curve is a visual reference; small classes may not follow a smooth normal curve.</div>
+            </div>
+          </details>
         </div>
 
-        <!-- Review Callout Banner for Flagged Scans (P2 Review Queue) -->
-        <div id="summary-review-callout" style="display: none; background: var(--warning-light); border: 1px solid var(--warning); border-radius: var(--radius-md); padding: 0.75rem 1rem; margin-top: 1.25rem; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
+        <!-- Review Callout Banner for Flagged Scans (Subdued styling for routine review counts) -->
+        <div id="summary-review-callout" style="display: none; background: var(--panel-alt); border: 1px solid var(--border); border-left: 3px solid var(--warning); border-radius: var(--radius-md); padding: 0.65rem 1rem; margin-top: 1.25rem; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
           <div style="display: flex; align-items: center; gap: 0.65rem;">
-            <div style="width: 28px; height: 28px; border-radius: var(--radius-sm); background: var(--warning); color: #fff; display: grid; place-items: center; flex-shrink: 0;">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <div style="width: 26px; height: 26px; border-radius: var(--radius-sm); background: rgba(245, 158, 11, 0.14); color: var(--warning); display: grid; place-items: center; flex-shrink: 0;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
             </div>
             <div>
-              <div style="font-weight: 700; font-size: 0.88rem; color: var(--text);" id="summary-review-callout-title">0 students need review (e.g. blank responses or unverified IDs).</div>
-              <div style="font-size: 0.76rem; color: var(--text-muted);" id="summary-review-callout-sub">Some sheets have blank responses, multiple marks, or unverified IDs.</div>
+              <div style="font-weight: 700; font-size: 0.84rem; color: var(--text);" id="summary-review-callout-title">0 students need review (e.g. blank responses or unverified IDs).</div>
+              <div style="font-size: 0.74rem; color: var(--text-muted);" id="summary-review-callout-sub">Some sheets have blank responses, multiple marks, or unverified IDs.</div>
             </div>
           </div>
-          <button type="button" class="btn btn--secondary btn-xs" id="btn-open-review-queue" style="background: var(--panel); border-color: var(--warning); color: var(--warning); font-weight: 700;" onclick="openReviewQueue();">
+          <button type="button" class="btn btn--secondary btn-xs" id="btn-open-review-queue" style="font-weight: 600;" onclick="openReviewQueue();">
             <span>Open Review Queue →</span>
           </button>
         </div>
@@ -3388,9 +3457,12 @@
 
         <!-- Section: Stream / Scroll Down Later -->
         <div style="margin-top: 1.25rem; margin-bottom: 0.65rem; display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border); padding-top: 0.85rem;">
-          <span style="font-size: 0.82rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em;">Submissions Stream</span>
+          <div>
+            <span style="font-size: 0.82rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em;">All Submissions Overview</span>
+            <span style="font-size: 0.74rem; color: var(--text-muted); margin-left: 0.5rem;">Optional batch list view below the primary Flashcard Deck</span>
+          </div>
           <button type="button" id="btn-toggle-stream" class="btn btn--secondary btn-xs" onclick="toggleStreamVisibility();">
-            <span id="label-toggle-stream">Hide Stream</span>
+            <span id="label-toggle-stream">Hide Overview</span>
           </button>
         </div>
 
@@ -3468,17 +3540,17 @@
         <div>
           <h2 style="margin: 0; font-size: 1.05rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem;">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 3-9.5 9.5"/><path d="m15.5 7.5 3 3M18 5l2 2"/></svg>
-            <span>Answer Key Editor</span>
+            <span>Answer Key &amp; Bloom's Taxonomy Editor</span>
           </h2>
           <p style="margin: 0.2rem 0 0 0; font-size: 0.78rem; color: var(--text-muted);">
-            Click bubbles to set correct answers and point values for each question.
+            Click bubbles to set correct answers, point values, and optional Bloom's cognitive levels for each question.
           </p>
         </div>
         <button type="button" id="btn-close-key-editor" class="btn-step" style="width: 28px; height: 28px; border-radius: var(--radius-sm); font-size: 1rem;" aria-label="Close">✕</button>
       </div>
 
       <!-- Quick Action Toolbar Strip & Key Metrics -->
-      <div class="key-toolbar-strip">
+      <div class="key-toolbar-strip" style="flex-wrap: wrap; gap: 0.65rem;">
         <div class="key-metrics-pills">
           <div class="key-metric-pill">
             <span class="key-metric-label">Items</span>
@@ -3492,9 +3564,29 @@
             <span class="key-metric-label">Passing Score</span>
             <input type="number" id="key-passing-input" class="key-passing-input" value="0" min="0" title="Passing score required to pass">
           </div>
+          <div class="key-metric-pill" title="Number of questions with Bloom's Taxonomy cognitive levels assigned">
+            <span class="key-metric-label">Bloom's Tagged</span>
+            <strong id="key-bloom-status-badge" style="font-size: 0.76rem; color: var(--accent);">0 / 0</strong>
+          </div>
         </div>
 
-        <div class="key-actions-row">
+        <div class="key-actions-row" style="flex-wrap: wrap;">
+          <div style="display: inline-flex; align-items: center; gap: 0.3rem; background: var(--panel); padding: 0.15rem 0.45rem; border-radius: 6px; border: 1px solid var(--border);">
+            <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted);">Bulk Bloom's:</span>
+            <select id="key-bulk-bloom-scope" class="key-bloom-select" style="max-width: 135px;" title="Select question section or range">
+              <option value="all">All Questions</option>
+            </select>
+            <select id="key-bulk-bloom-level" class="key-bloom-select" style="max-width: 115px;" title="Select Bloom's level to assign">
+              <option value="">Clear (None)</option>
+              <option value="Remember">Remember</option>
+              <option value="Understand">Understand</option>
+              <option value="Apply">Apply</option>
+              <option value="Analyze">Analyze</option>
+              <option value="Evaluate">Evaluate</option>
+              <option value="Create">Create</option>
+            </select>
+            <button type="button" id="btn-key-apply-bulk-bloom" class="btn btn--secondary btn-xs" title="Apply selected Bloom level to range">Apply</button>
+          </div>
           <button type="button" id="btn-key-fill-a" class="btn btn--secondary btn-xs" title="Set all multiple-choice answers to A">All A</button>
           <button type="button" id="btn-key-fill-t" class="btn btn--secondary btn-xs" title="Set all True/False answers to True">All T</button>
           <button type="button" id="btn-key-random" class="btn btn--secondary btn-xs" title="Quickly generate a sample key for testing">Sample Key</button>
@@ -4264,8 +4356,18 @@
 
     function renderScansList() {
       const container = $('scans-list');
+      if (!container) {
+        if (typeof updateStepperUI === 'function') updateStepperUI();
+        return;
+      }
       if (state.scans.length === 0) {
         container.innerHTML = `<div style="color: var(--text-muted); font-size: 0.75rem; text-align: center; padding: 0.5rem;">No scans uploaded yet.</div>`;
+        if (typeof updateStepperUI === 'function') updateStepperUI();
+        return;
+      }
+      const allRestoredPlaceholders = state.scans.every(s => s && s.img && s.img._isBlankCanvas);
+      if (allRestoredPlaceholders) {
+        container.innerHTML = `<div style="color: var(--text-muted); font-size: 0.74rem; text-align: center; padding: 0.45rem;">Restored ${state.scans.length} graded record${state.scans.length === 1 ? '' : 's'} (drop original scans to re-link images).</div>`;
         if (typeof updateStepperUI === 'function') updateStepperUI();
         return;
       }
@@ -5320,16 +5422,32 @@
       // Curve stroke path
       const curvePath = 'M ' + pts.map(p => `${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' L ');
 
-      // Mean & Threshold X coords
+      // Mean & Threshold X coords with horizontal + vertical collision avoidance
       const meanX = xCoord(mean);
-      const closeLabels = Math.abs(meanX - cutoffX) < 70;
-      const meanLabelY = closeLabels ? padT - 18 : padT - 14;
-      const cutoffLabelY = closeLabels ? padT - 2 : padT - 14;
+      const pillHalfW = 36;
+      const minPillCenter = padL + pillHalfW;
+      const maxPillCenter = padL + plotW - pillHalfW;
+      let meanPillX = Math.max(minPillCenter, Math.min(maxPillCenter, meanX));
+      let cutoffPillX = Math.max(minPillCenter, Math.min(maxPillCenter, cutoffX));
+      const closeLabels = Math.abs(meanPillX - cutoffPillX) < 76;
+      if (closeLabels) {
+        const shift = Math.ceil((76 - Math.abs(meanPillX - cutoffPillX)) / 2);
+        if (meanX <= cutoffX) {
+          meanPillX = Math.max(minPillCenter, meanPillX - shift);
+          cutoffPillX = Math.min(maxPillCenter, cutoffPillX + shift);
+        } else {
+          cutoffPillX = Math.max(minPillCenter, cutoffPillX - shift);
+          meanPillX = Math.min(maxPillCenter, meanPillX + shift);
+        }
+      }
+      const stillCloseHoriz = Math.abs(meanPillX - cutoffPillX) < 72;
+      const meanLabelY = stillCloseHoriz ? padT - 18 : padT - 14;
+      const cutoffLabelY = stillCloseHoriz ? padT - 1 : padT - 14;
 
-      // Standard deviation +/- 1 sigma
+      // Standard deviation +/- 1 sigma placed below top pills to avoid vertical collision
       const sigLeftX = xCoord(Math.max(0, mean - stdDev));
       const sigRightX = xCoord(Math.min(100, mean + stdDev));
-      const sigY = padT + 12;
+      const sigY = stillCloseHoriz ? padT + 22 : padT + 14;
 
       // Grid / Ticks (0, 20, 40, 60, 80, 100)
       let ticksSvg = '';
@@ -5350,13 +5468,13 @@
           <line x1="${sigLeftX.toFixed(1)}" y1="${sigY}" x2="${sigRightX.toFixed(1)}" y2="${sigY}" stroke="#888" stroke-width="1.2" stroke-dasharray="2 2" />
           <line x1="${sigLeftX.toFixed(1)}" y1="${sigY - 4}" x2="${sigLeftX.toFixed(1)}" y2="${sigY + 4}" stroke="#888" stroke-width="1.2" />
           <line x1="${sigRightX.toFixed(1)}" y1="${sigY - 4}" x2="${sigRightX.toFixed(1)}" y2="${sigY + 4}" stroke="#888" stroke-width="1.2" />
-          <text x="${((sigLeftX + sigRightX) / 2).toFixed(1)}" y="${sigY - 3}" text-anchor="middle" font-size="9" font-weight="600" fill="#888">±1σ (${stdDev.toFixed(1)}%)</text>
+          <text x="${((sigLeftX + sigRightX) / 2).toFixed(1)}" y="${sigY - 4}" text-anchor="middle" font-size="9" font-weight="600" fill="#888">±1σ (${stdDev.toFixed(1)}%)</text>
           <line x1="${meanX.toFixed(1)}" y1="${padT}" x2="${meanX.toFixed(1)}" y2="${baseY}" stroke="#0284c7" stroke-width="2" stroke-dasharray="4 3" />
-          <rect x="${(meanX - 34).toFixed(1)}" y="${meanLabelY - 11}" width="68" height="15" rx="3" fill="#1e293b" stroke="#0284c7" stroke-width="1" />
-          <text x="${meanX.toFixed(1)}" y="${meanLabelY}" text-anchor="middle" font-size="9.5" font-weight="700" fill="#38bdf8">Mean: ${mean.toFixed(1)}%</text>
+          <rect x="${(meanPillX - pillHalfW).toFixed(1)}" y="${meanLabelY - 11}" width="${pillHalfW * 2}" height="15" rx="3" fill="#1e293b" stroke="#0284c7" stroke-width="1" />
+          <text x="${meanPillX.toFixed(1)}" y="${meanLabelY}" text-anchor="middle" font-size="9.5" font-weight="700" fill="#38bdf8">Mean: ${mean.toFixed(1)}%</text>
           <line x1="${cutoffX.toFixed(1)}" y1="${padT}" x2="${cutoffX.toFixed(1)}" y2="${baseY}" stroke="#ef4444" stroke-width="2" />
-          <rect x="${(cutoffX - 34).toFixed(1)}" y="${cutoffLabelY - 11}" width="68" height="15" rx="3" fill="#1e293b" stroke="#ef4444" stroke-width="1" />
-          <text x="${cutoffX.toFixed(1)}" y="${cutoffLabelY}" text-anchor="middle" font-size="9.5" font-weight="700" fill="#f87171">Cutoff: ${passThreshold}%</text>
+          <rect x="${(cutoffPillX - pillHalfW).toFixed(1)}" y="${cutoffLabelY - 11}" width="${pillHalfW * 2}" height="15" rx="3" fill="#1e293b" stroke="#ef4444" stroke-width="1" />
+          <text x="${cutoffPillX.toFixed(1)}" y="${cutoffLabelY}" text-anchor="middle" font-size="9.5" font-weight="700" fill="#f87171">Cutoff: ${passThreshold}%</text>
         </svg>
       `;
     }
@@ -5713,7 +5831,7 @@
           : ((it.choices && it.choices[0]) || (isTF ? 'T' : 'A'));
         const ans = keyItem?.answer || defaultAns;
         const pts = keyItem?.points != null ? Number(keyItem.points) : Number(it.points != null ? it.points : 1);
-        const bloom = keyItem?.bloom || defaultBloomFor(k);
+        const bloom = keyItem?.bloom || defaultBloomFor(k) || '';
         const formattedAns = String(ans).includes(',') || String(ans).includes('"')
           ? `"${String(ans).replace(/"/g, '""')}"`
           : String(ans);
@@ -5953,6 +6071,24 @@
       $('modal-key-editor').showModal();
     }
 
+    function updateCheckerBloomStatusBadge() {
+      const badgeEl = $('key-bloom-status-badge');
+      if (!badgeEl) return;
+      const allItems = Object.values(currentModalKey.items);
+      const total = allItems.length;
+      const assigned = allItems.filter(it => it.bloom && BLOOM_LEVELS.includes(it.bloom)).length;
+      const unassigned = total - assigned;
+      if (total === 0) {
+        badgeEl.textContent = '0 items';
+      } else if (unassigned === 0) {
+        badgeEl.textContent = `✓ All ${total} mapped`;
+        badgeEl.style.color = '#10b981';
+      } else {
+        badgeEl.textContent = `${assigned}/${total} mapped (${unassigned} unassigned)`;
+        badgeEl.style.color = 'var(--text)';
+      }
+    }
+
     function renderAnswerKeyModalContent() {
       const container = $('key-items-container');
       if (!container) return;
@@ -5966,6 +6102,7 @@
       if ($('key-metric-count')) $('key-metric-count').textContent = String(totalItems);
       if ($('key-metric-points')) $('key-metric-points').textContent = String(totalPoints);
       if ($('key-passing-input')) $('key-passing-input').value = currentModalKey.passScore;
+      updateCheckerBloomStatusBadge();
 
       if (totalItems === 0) {
         container.innerHTML = `
@@ -6034,6 +6171,28 @@
         sectionsMap.get(sec).items.push({ k, ...item });
       }
 
+      // Populate bulk Bloom scope dropdown
+      const bulkScopeEl = $('key-bulk-bloom-scope');
+      if (bulkScopeEl) {
+        const prevScope = bulkScopeEl.value || 'all';
+        let scopeOpts = `<option value="all">All Items (${totalItems})</option><option value="unassigned">Unassigned Items Only</option>`;
+        for (const [secTitle, secData] of sectionsMap.entries()) {
+          scopeOpts += `<option value="sec:${escapeHtml(secTitle)}">Section: ${escapeHtml(secTitle)} (${secData.items.length})</option>`;
+        }
+        const numericKeys = Object.keys(currentModalKey.items).map(k => Number(k)).filter(n => !isNaN(n));
+        if (numericKeys.length > 10) {
+          const maxNum = Math.max(...numericKeys);
+          for (let start = 1; start <= maxNum; start += 25) {
+            const end = Math.min(maxNum, start + 24);
+            scopeOpts += `<option value="range:${start}:${end}">Items ${start}–${end}</option>`;
+          }
+        }
+        bulkScopeEl.innerHTML = scopeOpts;
+        if (Array.from(bulkScopeEl.options || []).some(o => o.value === prevScope)) {
+          bulkScopeEl.value = prevScope;
+        }
+      }
+
       let html = discrepancyHtml;
       for (const [secTitle, secData] of sectionsMap.entries()) {
         const choiceItems = secData.items.filter(it => it.kind !== 'text');
@@ -6042,7 +6201,17 @@
 
         html += `
           <div class="key-section-card">
-            <h4 class="key-section-title">${escapeHtml(secTitle)}</h4>
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.65rem; padding-bottom: 0.4rem; border-bottom: 1px solid var(--border); flex-wrap: wrap;">
+              <h4 class="key-section-title" style="margin: 0; border-bottom: none; padding-bottom: 0;">${escapeHtml(secTitle)}</h4>
+              <div style="display: flex; align-items: center; gap: 0.35rem;">
+                <span style="font-size: 0.7rem; color: var(--text-muted); font-weight: 600;">Section Bloom:</span>
+                <select class="key-section-bloom-select" data-sec="${escapeHtml(secTitle)}" style="font-size: 0.72rem; padding: 0.15rem 0.35rem; border-radius: 4px; border: 1px solid var(--border); background: var(--panel); color: var(--text);">
+                  <option value="">Set section...</option>
+                  ${BLOOM_LEVELS.map(lvl => `<option value="${lvl}">${lvl}</option>`).join('')}
+                  <option value="__clear__">Clear section</option>
+                </select>
+              </div>
+            </div>
         `;
 
         if (choiceItems.length > 0) {
@@ -6051,7 +6220,7 @@
             const k = item.k;
             const currentAns = String(item.answer || '');
             const pts = item.points ?? 1;
-            const currentBloom = item.bloom || defaultBloomFor(k);
+            const currentBloom = item.bloom || defaultBloomFor(k) || '';
             const opts = item.options || ['A', 'B', 'C', 'D'];
 
             html += `
@@ -6065,7 +6234,8 @@
                   </div>
                 </div>
                 <div style="display: flex; align-items: center; gap: 0.3rem; flex-shrink: 0;">
-                  <select class="key-bloom-select" data-key="${escapeHtml(k)}" title="Bloom's Cognitive Level">
+                  <select class="key-bloom-select" data-key="${escapeHtml(k)}" title="Bloom's Cognitive Level (Optional)">
+                    <option value="" ${!currentBloom ? 'selected' : ''}>Bloom (Optional)</option>
                     ${BLOOM_LEVELS.map(lvl => `<option value="${lvl}" ${currentBloom === lvl ? 'selected' : ''}>${lvl}</option>`).join('')}
                   </select>
                   <input type="number" class="key-pts-input" data-key="${escapeHtml(k)}" value="${pts}" min="0.5" max="50" step="0.5" title="Points">
@@ -6082,7 +6252,7 @@
             const k = item.k;
             const currentAns = String(item.answer || '');
             const pts = item.points ?? 1;
-            const currentBloom = item.bloom || defaultBloomFor(k);
+            const currentBloom = item.bloom || defaultBloomFor(k) || '';
 
             html += `
               <div class="key-item-cell key-item-cell--text" data-key="${escapeHtml(k)}">
@@ -6091,7 +6261,8 @@
                   <input type="text" class="key-text-input" data-key="${escapeHtml(k)}" value="${escapeHtml(currentAns)}" placeholder="Accepted answer / keywords">
                 </div>
                 <div style="display: flex; align-items: center; gap: 0.35rem; flex-shrink: 0;">
-                  <select class="key-bloom-select" data-key="${escapeHtml(k)}" title="Bloom's Cognitive Level">
+                  <select class="key-bloom-select" data-key="${escapeHtml(k)}" title="Bloom's Cognitive Level (Optional)">
+                    <option value="" ${!currentBloom ? 'selected' : ''}>Bloom (Optional)</option>
                     ${BLOOM_LEVELS.map(lvl => `<option value="${lvl}" ${currentBloom === lvl ? 'selected' : ''}>${lvl}</option>`).join('')}
                   </select>
                   <input type="number" class="key-pts-input" data-key="${escapeHtml(k)}" value="${pts}" min="0.5" max="50" step="0.5" title="Points">
@@ -6128,8 +6299,25 @@
         sel.onchange = () => {
           const k = sel.dataset.key;
           if (currentModalKey.items[k]) {
-            currentModalKey.items[k].bloom = sel.value;
+            currentModalKey.items[k].bloom = sel.value || null;
+            updateCheckerBloomStatusBadge();
           }
+        };
+      });
+
+      // Event listener: Section-level Bloom selectors
+      container.querySelectorAll('.key-section-bloom-select').forEach(sel => {
+        sel.onchange = () => {
+          const sec = sel.dataset.sec;
+          const val = sel.value;
+          if (!val) return;
+          const newBloom = val === '__clear__' ? null : val;
+          for (const it of Object.values(currentModalKey.items)) {
+            if ((it.zoneLabel || 'Questions') === sec) {
+              it.bloom = newBloom;
+            }
+          }
+          renderAnswerKeyModalContent();
         };
       });
 
@@ -6189,6 +6377,33 @@
         renderAnswerKeyModalContent();
       });
     }
+
+    $('btn-key-apply-bulk-bloom')?.addEventListener('click', () => {
+      const scope = $('key-bulk-bloom-scope')?.value || 'all';
+      const rawLevel = $('key-bulk-bloom-level')?.value || '';
+      const newBloom = rawLevel ? normalizeBloom(rawLevel) : null;
+      for (const [k, it] of Object.entries(currentModalKey.items)) {
+        if (scope === 'all') {
+          it.bloom = newBloom;
+        } else if (scope === 'unassigned') {
+          if (!it.bloom) it.bloom = newBloom;
+        } else if (scope.startsWith('sec:')) {
+          const targetSec = scope.slice(4);
+          if ((it.zoneLabel || 'Questions') === targetSec) {
+            it.bloom = newBloom;
+          }
+        } else if (scope.startsWith('range:')) {
+          const parts = scope.split(':');
+          const rStart = Number(parts[1]);
+          const rEnd = Number(parts[2]);
+          const num = Number(k);
+          if (!isNaN(num) && num >= rStart && num <= rEnd) {
+            it.bloom = newBloom;
+          }
+        }
+      }
+      renderAnswerKeyModalContent();
+    });
 
     // Modal Action Toolbar Handlers
     $('btn-key-fill-a')?.addEventListener('click', () => {
@@ -6371,7 +6586,7 @@
         const it = currentModalKey.items[k];
         const ans = String(it.answer || '');
         const formattedAns = ans.includes(',') || ans.includes('"') ? `"${ans.replace(/"/g, '""')}"` : ans;
-        rows.push(`${k},${formattedAns},${it.points ?? 1},${it.bloom || defaultBloomFor(k)}`);
+        rows.push(`${k},${formattedAns},${it.points ?? 1},${it.bloom || defaultBloomFor(k) || ''}`);
       }
       const filename = `${(state.layout?.title || 'exam_key').toLowerCase().replace(/[^a-z0-9_-]+/g, '_')}.csv`;
       downloadFile(filename, rows.join('\n') + '\n', 'text/csv');
@@ -8736,9 +8951,13 @@
         const dupBadge = g.isDuplicate ? `<span class="badge-review" style="background:#fff7ed; color:#c2410c; border:1px solid #fed7aa; padding:1px 6px; border-radius:4px; font-size:0.7rem; font-weight:700; margin-left:6px;" title="Duplicate scan detected">DUPLICATE</span>` : '';
         const inReview = hasUnreviewedItems(g);
         const statusBadge = inReview ? `<span class="badge-in-review">IN REVIEW</span>` : `<span class="${(g.percentage || 0) >= passThreshold ? 'badge-pass' : 'badge-fail'}">${(g.percentage || 0) >= passThreshold ? 'PASS' : 'FAIL'}</span>`;
+        const hasRealName = g.studentName && !String(g.studentName).startsWith('Student STU-') && !String(g.studentName).startsWith('STU-');
+        const nameCellHtml = g.nameCropDataUrl
+          ? `<div style="display: inline-flex; flex-direction: column; gap: 2px; vertical-align: middle;"><img src="${g.nameCropDataUrl}" alt="Name" style="max-height: 48px; max-width: 240px; height: 44px; object-fit: contain; vertical-align: middle; border-radius: 4px; border: 1px solid var(--border); background: #fff;" />${hasRealName ? `<span class="roster-name-caption">${escapeHtml(g.studentName)}</span>` : ''}</div>`
+          : `<span>${escapeHtml(g.studentName)}</span>`;
         return `
         <tr onclick="inspectStudent(${idx}); switchTab('roster');" class="${state.selectedStudentIdx === idx ? 'is-selected' : ''}">
-          <td>${g.nameCropDataUrl ? `<img src="${g.nameCropDataUrl}" alt="Name" style="max-height: 48px; max-width: 240px; height: 44px; object-fit: contain; vertical-align: middle; border-radius: 4px; border: 1px solid var(--border); background: #fff;" />` : escapeHtml(g.studentName)}${dupBadge}</td>
+          <td>${nameCellHtml}${dupBadge}</td>
           <td>${(g.rawScore != null ? Number(g.rawScore) : 0).toFixed(1)} / ${(g.maxScore != null ? Number(g.maxScore) : 0).toFixed(1)}</td>
           <td>${(g.percentage != null ? Number(g.percentage) : 0).toFixed(1)}%</td>
           <td>${statusBadge}</td>
@@ -8935,22 +9154,34 @@
         const needsReview = g.reviewFlags && g.reviewFlags.needsReview;
         const manuallyReviewed = g.reviewFlags && g.reviewFlags.manuallyReviewed && !needsReview;
 
+        const reasonsList = (g.reviewFlags?.reasons || []).filter(Boolean);
+        const reasonsDisclosureHtml = reasonsList.length > 0
+          ? `<details class="roster-reasons-disclosure" onclick="event.stopPropagation()">
+               <summary class="roster-reasons-summary" title="Toggle review details">${reasonsList.length} reason${reasonsList.length === 1 ? '' : 's'}</summary>
+               <ul class="roster-reasons-list">
+                 ${reasonsList.map(r => `<li>${escapeHtml(r)}</li>`).join('')}
+               </ul>
+             </details>`
+          : '';
+
         let reviewBadgeHtml = '';
         if (g.isDuplicate) {
-          const reasonsTitle = escapeHtml((g.reviewFlags?.reasons || []).filter(r => r.includes('Duplicate') || r.includes('duplicate')).join('; ') || 'Duplicate scan detected');
+          const reasonsTitle = escapeHtml(reasonsList.filter(r => r.includes('Duplicate') || r.includes('duplicate')).join('; ') || 'Duplicate scan detected');
           reviewBadgeHtml = `
             <span class="badge-review" style="background:#fff7ed; color:#c2410c; border:1px solid #fed7aa;" title="${reasonsTitle}">
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
               <span>Duplicate</span>
             </span>
+            ${reasonsDisclosureHtml}
           `;
         } else if (needsReview) {
-          const reasonsTitle = escapeHtml((g.reviewFlags.reasons || []).join('; '));
+          const reasonsTitle = escapeHtml(reasonsList.join('; '));
           reviewBadgeHtml = `
             <span class="badge-review" title="${reasonsTitle}">
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
               <span>Needs Review</span>
             </span>
+            ${reasonsDisclosureHtml}
           `;
         } else if (manuallyReviewed) {
           reviewBadgeHtml = `
@@ -8960,12 +9191,16 @@
 
         const inReview = hasUnreviewedItems(g);
         const statusBadge = inReview ? `<span class="badge-in-review">IN REVIEW</span>` : `<span class="${(g.percentage || 0) >= passThreshold ? 'badge-pass' : 'badge-fail'}">${(g.percentage || 0) >= passThreshold ? 'PASS' : 'FAIL'}</span>`;
+        const hasRealName = g.studentName && !String(g.studentName).startsWith('Student STU-') && !String(g.studentName).startsWith('STU-');
+        const nameCellHtml = g.nameCropDataUrl
+          ? `<div style="display: inline-flex; flex-direction: column; gap: 2px; vertical-align: middle;"><img src="${g.nameCropDataUrl}" alt="Name" style="max-height: 48px; max-width: 240px; height: 44px; object-fit: contain; vertical-align: middle; border-radius: 4px; border: 1px solid var(--border); background: #fff;" />${hasRealName ? `<span class="roster-name-caption">${escapeHtml(g.studentName)}</span>` : ''}</div>`
+          : `<span>${escapeHtml(g.studentName)}</span>`;
 
         return `
           <tr onclick="inspectStudent(${origIdx})" data-idx="${origIdx}" data-orig-idx="${origIdx}" class="${isSelected ? 'is-selected' : ''}">
             <td>
               <div style="display: flex; align-items: center; gap: 0.45rem; flex-wrap: wrap;">
-                ${g.nameCropDataUrl ? `<img src="${g.nameCropDataUrl}" alt="Name" style="max-height: 48px; max-width: 240px; height: 44px; object-fit: contain; vertical-align: middle; border-radius: 4px; border: 1px solid var(--border); background: #fff;" />` : `<span>${escapeHtml(g.studentName)}</span>`}
+                ${nameCellHtml}
                 ${reviewBadgeHtml}
               </div>
             </td>
@@ -10228,7 +10463,7 @@
         container.style.display = horizontalDeckState.streamVisible ? 'flex' : 'none';
       }
       if (label) {
-        label.textContent = horizontalDeckState.streamVisible ? 'Hide Stream' : 'Show All Submissions';
+        label.textContent = horizontalDeckState.streamVisible ? 'Hide Overview' : 'Show All Submissions Overview';
       }
     }
     window.toggleStreamVisibility = toggleStreamVisibility;
@@ -10458,6 +10693,20 @@
 
       const itemMaxPts = Number(activeItem.points != null ? activeItem.points : (activeItem.maxPoints != null ? activeItem.maxPoints : 1.0));
       const defaultPartial = Math.round(itemMaxPts * 0.5 * 10) / 10;
+
+      const acceptAllBtn = $('btn-horizontal-accept-all');
+      if (acceptAllBtn) {
+        acceptAllBtn.disabled = pendingCount === 0;
+        acceptAllBtn.title = pendingCount > 0
+          ? `Award full credit (+${itemMaxPts.toFixed(1)} pts) to all ${pendingCount} unreviewed response(s) for ${activeItem.label}`
+          : `All responses for ${activeItem.label} have already been reviewed`;
+        const spanEl = acceptAllBtn.querySelector?.('span');
+        if (spanEl) {
+          spanEl.textContent = pendingCount > 0
+            ? `Accept ${pendingCount} Unreviewed (+${itemMaxPts.toFixed(1)} pts each)`
+            : `All Reviewed`;
+        }
+      }
 
       if (matchingIndices.length === 0) {
         if (stepperLabel) stepperLabel.textContent = `Card 0 of 0`;
@@ -11003,19 +11252,19 @@
         ctx.strokeRect(rx, ry, rw, rh);
         if (isDashed) ctx.setLineDash([]);
 
-        // Points badge in top-right of ROI
+        // Points badge in top-right of ROI (clamped to stay inside narrow ROI boxes)
         ctx.font = 'bold 11px sans-serif';
         const tw = ctx.measureText(ptsText).width;
-        const badgeW = tw + 10;
+        const badgeW = Math.max(24, Math.min(rw - 4, tw + 10));
         const badgeH = 18;
-        const badgeX = rx + rw - badgeW - 6;
+        const badgeX = Math.max(rx + 2, rx + rw - badgeW - 6);
         const badgeY = ry + 4;
         ctx.fillStyle = color;
         ctx.fillRect(badgeX, badgeY, badgeW, badgeH);
         ctx.fillStyle = '#ffffff';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText(ptsText, badgeX + badgeW / 2, badgeY + badgeH / 2);
+        ctx.fillText(ptsText, badgeX + badgeW / 2, badgeY + badgeH / 2, Math.max(20, badgeW - 6));
         ctx.textAlign = 'start';
         ctx.textBaseline = 'alphabetic';
       }
@@ -11054,8 +11303,10 @@
         const isPass = grade.percentage >= passThreshold;
         const statusColor = hasUnreviewed ? '#3b82f6' : (isPass ? '#10b981' : '#ef4444');
 
-        // Tint inside score box
-        ctx.fillStyle = hasUnreviewed ? 'rgba(239, 246, 255, 0.40)' : (isPass ? 'rgba(235, 248, 235, 0.40)' : 'rgba(254, 242, 242, 0.40)');
+        // Crisp high-contrast backing + tint inside score box so score text stays legible over printed lines
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.90)';
+        ctx.fillRect(rx, ry, rw, rh);
+        ctx.fillStyle = hasUnreviewed ? 'rgba(239, 246, 255, 0.55)' : (isPass ? 'rgba(235, 248, 235, 0.55)' : 'rgba(254, 242, 242, 0.55)');
         ctx.fillRect(rx, ry, rw, rh);
 
         // Clean border
@@ -11076,7 +11327,7 @@
         ctx.fillStyle = statusColor;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText(scoreText, rx + rw / 2, ry + rh / 2);
+        ctx.fillText(scoreText, rx + rw / 2, ry + rh / 2, Math.max(20, rw - 8));
         ctx.textAlign = 'start';
         ctx.textBaseline = 'alphabetic';
       } else {
@@ -11668,15 +11919,18 @@
         }
 
         const signalsHtml = generateItemSignals(item, keyItem, totalN);
-        const bloom = item.bloom || defaultBloomFor(k);
-        const bloomAbbr = bloom.slice(0, 3).toLowerCase();
+        const bloom = item.bloom || defaultBloomFor(k) || '';
+        const bloomAbbr = bloom ? bloom.slice(0, 3).toLowerCase() : 'none';
+        const bloomCellHtml = bloom
+          ? `<span class="badge-bloom badge-bloom--${bloomAbbr}">${escapeHtml(bloom)}</span>`
+          : `<span style="color: #94a3b8; font-size: 11px;">—</span>`;
 
         return `
           <tr id="row-item-${escapeHtml(k)}" data-item="${escapeHtml(k)}">
             <td><strong>#${escapeHtml(k)}</strong></td>
             <td><code>${escapeHtml(item.correctAnswer)}</code></td>
             <td>${item.points}</td>
-            <td><span class="badge-bloom badge-bloom--${bloomAbbr}">${escapeHtml(bloom)}</span></td>
+            <td>${bloomCellHtml}</td>
             <td>${(item.difficulty * 100).toFixed(1)}%</td>
             <td style="font-weight: 700; color: ${item.discrimination >= 0.3 ? '#10b981' : (item.discrimination < 0.20 ? '#ef4444' : 'inherit')};">${item.discrimination.toFixed(3)}</td>
             <td>${isItemTF ? (item.distractors.T || 0) : (item.distractors.A || 0)}</td>
@@ -11689,6 +11943,8 @@
           </tr>
         `;
       }).join('');
+
+      const showBloomSection = typeof hasBloomData === 'function' ? hasBloomData() : Object.values(psychometrics.bloomStats || {}).some(b => b.itemCount > 0);
 
       const html = `<!doctype html>
 <html lang="en">
@@ -11798,6 +12054,7 @@
     </table>
   </div>
 
+  ${showBloomSection ? `
   <!-- Bloom's Taxonomy Cognitive Distribution -->
   <div class="card">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
@@ -11823,6 +12080,7 @@
       ${bloomCardsHtml}
     </div>
   </div>
+  ` : ''}
 
   ${flaggedItems.length > 0 ? `
   <div class="alert-box">
@@ -12402,6 +12660,7 @@
       });
 
       state.scans = restoredGrades.map((g) => ({ name: g.examId, img: g.scanImg }));
+      renderScansList();
       state.results = {
         passThreshold: data.results.passThreshold != null ? data.results.passThreshold : (data.threshold != null && !Number.isNaN(parseFloat(data.threshold)) ? parseFloat(data.threshold) : 60),
         psychometrics: data.results.psychometrics || computePsychometrics(restoredGrades, state.key),
@@ -12705,7 +12964,20 @@
             saved = localSaved || idbSaved;
           }
 
-          if (saved && saved.results && saved.results.grades && saved.results.grades.length > 0) {
+          if (urlParams.get('from') === 'builder' && typeof localStorage !== 'undefined') {
+            try {
+              const builderRaw = localStorage.getItem('sheet-builder:template') || localStorage.getItem('instructor_sheet_builder_template');
+              if (builderRaw) {
+                const parsedTpl = JSON.parse(builderRaw);
+                if (parsedTpl && (parsedTpl.zones || parsedTpl.blocks)) {
+                  state.layout = parsedTpl;
+                  updateLayoutDisplay(parsedTpl.title || 'Sheet Builder Layout');
+                }
+              }
+            } catch (_) {}
+          }
+
+          if (saved && saved.results && saved.results.grades && saved.results.grades.length > 0 && urlParams.get('from') !== 'builder') {
             updateResumeStatusUI(true, saved);
             // Automatically restore session across page switches
             await restoreCheckerProgress(saved, { silent: true });
@@ -13135,13 +13407,14 @@
           badge3.textContent = '3';
         }
       }
+      const allRestored = hasScans && state.scans.every(s => s && s.img && s.img._isBlankCanvas);
       if (status3) {
         if (!hasKey) {
           status3.className = 'step-status-pill is-locked';
           status3.textContent = 'Locked';
         } else if (hasScans) {
           status3.className = 'step-status-pill is-complete';
-          status3.textContent = `${state.scans.length} Ready`;
+          status3.textContent = allRestored ? `${state.scans.length} Restored` : `${state.scans.length} Ready`;
         } else {
           status3.className = 'step-status-pill is-pending';
           status3.textContent = 'Pending';
@@ -13196,7 +13469,7 @@
         if (!hasKey) {
           emptyDesc3.textContent = 'Locked (awaiting master key)';
         } else if (hasScans) {
-          emptyDesc3.textContent = `${state.scans.length} scan(s) uploaded`;
+          emptyDesc3.textContent = allRestored ? `${state.scans.length} restored record(s)` : `${state.scans.length} scan(s) uploaded`;
         } else {
           emptyDesc3.textContent = 'Upload camera scans or PDF';
         }
@@ -13866,9 +14139,8 @@
       try {
         localStorage.setItem('checker_show_blooms', e.target.checked ? '1' : '0');
       } catch {}
-      if (state.results) {
-        renderPsychometrics();
-        renderItemAnalysis();
+      if (state.results && state.results.psychometrics && typeof renderItemAnalysisDashboard === 'function') {
+        renderItemAnalysisDashboard(state.results.psychometrics);
       }
     });
 

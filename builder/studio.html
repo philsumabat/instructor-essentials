@@ -130,6 +130,10 @@
   align-items: center;
   font-size: var(--omr-font-label);
   font-weight: 700;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  padding-right: 0.8mm;
 }
 
 .omr-write-box {
@@ -1457,10 +1461,20 @@ body {
   flex: 1;
   overflow: auto;
   position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  display: block;
   padding: 0 1rem 4.5rem 1rem;
+}
+
+.palette-group-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin: 0.45rem 0 0.15rem 0.15rem;
+}
+.palette-group-label:first-child {
+  margin-top: 0;
 }
 
 /* Canvas Bar */
@@ -1554,7 +1568,7 @@ body {
 
 /* Scaler Container */
 .preview__frame {
-  margin: auto;
+  margin: 0 auto;
   position: relative;
   transition: width 0.15s ease, height 0.15s ease;
 }
@@ -3282,6 +3296,10 @@ dialog.modal-dialog--answer-key {
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
             Download Printable HTML
           </button>
+          <button type="button" id="btn-open-key-editor">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 3-9.5 9.5"/><path d="m15.5 7.5 3 3M18 5l2 2"/></svg>
+            Edit Answer Key &amp; Bloom's Levels...
+          </button>
           <button type="button" id="dl-key-sheet-html">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
             Answer Key Sheet (HTML / Print)
@@ -3309,7 +3327,7 @@ dialog.modal-dialog--answer-key {
     <aside class="panel studio-sidebar app-chrome" id="builder-sidebar" aria-label="Sheet Builder Sidebar">
       <!-- Sidebar Header & Collapse Toggle -->
       <div class="sidebar-header" style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 0.4rem; border-bottom: 1px solid var(--border);">
-        <span style="font-weight: 700; font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Sheet Setup</span>
+        <span style="font-weight: 700; font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Exam-Wide Setup</span>
         <button type="button" id="btn-toggle-builder-sidebar" class="btn btn--secondary btn--sm" title="Collapse sidebar to expand answering canvas" style="display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.25rem 0.5rem; font-size: 0.72rem;">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
           <span>Collapse</span>
@@ -3366,7 +3384,7 @@ dialog.modal-dialog--answer-key {
         </button>
         <button type="button" class="studio-tab-btn" data-tab="inspector">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-          <span>Settings</span>
+          <span>Block Settings</span>
         </button>
         <button type="button" class="studio-tab-btn" data-tab="outline">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
@@ -3376,20 +3394,9 @@ dialog.modal-dialog--answer-key {
 
       <!-- Tab Content 1: Component Palette (Draggable Cards) -->
       <div class="studio-tab-panel is-active" id="panel-palette">
-        <p class="panel-hint">Drag any card onto the exam sheet, or click <strong>+ Add</strong> to place it at the end.</p>
+        <p class="panel-hint">Drag any block onto the sheet, or click <strong>+ Add</strong> to append it.</p>
         <div class="palette-grid">
-          <!-- Student Info Card (with integrated Student ID digit boxes) -->
-          <div class="palette-card" draggable="true" data-type="fields">
-            <div class="palette-card__icon" aria-hidden="true">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-            </div>
-            <div class="palette-card__body">
-              <h3 class="palette-card__title">Student Info &amp; ID</h3>
-              <p class="palette-card__desc">Name, ID no. digit boxes, Score box, Date &amp; Section</p>
-            </div>
-            <button type="button" class="btn-palette-add" title="Add Student Info to sheet">+ Add</button>
-          </div>
-
+          <div class="palette-group-label">Objective Bubble Sections</div>
           <!-- Multiple Choice Card -->
           <div class="palette-card" draggable="true" data-type="mcq">
             <div class="palette-card__icon" aria-hidden="true">
@@ -3426,6 +3433,7 @@ dialog.modal-dialog--answer-key {
             <button type="button" class="btn-palette-add" title="Add Modified True/False to sheet">+ Add</button>
           </div>
 
+          <div class="palette-group-label">Written Response Sections</div>
           <!-- Short Answer Card -->
           <div class="palette-card" draggable="true" data-type="text_short">
             <div class="palette-card__icon" aria-hidden="true">
@@ -3448,6 +3456,19 @@ dialog.modal-dialog--answer-key {
               <p class="palette-card__desc">Multi-line extended explanation / proof box</p>
             </div>
             <button type="button" class="btn-palette-add" title="Add Essay Answer to sheet">+ Add</button>
+          </div>
+
+          <div class="palette-group-label">Header &amp; Directions</div>
+          <!-- Student Info Card (with integrated Student ID digit boxes) -->
+          <div class="palette-card" draggable="true" data-type="fields">
+            <div class="palette-card__icon" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+            <div class="palette-card__body">
+              <h3 class="palette-card__title">Student Info &amp; ID</h3>
+              <p class="palette-card__desc">Name, ID no. digit boxes, Score box, Date &amp; Section</p>
+            </div>
+            <button type="button" class="btn-palette-add" title="Add Student Info to sheet">+ Add</button>
           </div>
 
           <!-- Instructions Card -->
@@ -3513,15 +3534,16 @@ dialog.modal-dialog--answer-key {
           <span>Controls ◨</span>
         </button>
 
-        <div class="zoom-controls">
-          <button type="button" id="btn-zoom-out" class="btn-icon" title="Zoom out">−</button>
+        <div class="zoom-controls" title="Screen preview zoom only — printed sheets always output at 100% physical millimeter scale">
+          <span style="font-size: 0.7rem; font-weight: 600; color: var(--text-muted); margin-right: 0.2rem;">Preview Zoom:</span>
+          <button type="button" id="btn-zoom-out" class="btn-icon" title="Zoom out preview">−</button>
           <span id="zoom-label" class="zoom-label">100%</span>
-          <button type="button" id="btn-zoom-in" class="btn-icon" title="Zoom in">+</button>
-          <button type="button" id="btn-zoom-fit" class="btn-chip" title="Fit to window">Fit</button>
-          <button type="button" id="btn-zoom-reset" class="btn-chip" title="Actual size">100%</button>
+          <button type="button" id="btn-zoom-in" class="btn-icon" title="Zoom in preview">+</button>
+          <button type="button" id="btn-zoom-fit" class="btn-chip" title="Fit preview to window">Fit</button>
+          <button type="button" id="btn-zoom-reset" class="btn-chip" title="100% screen preview">100%</button>
         </div>
 
-        <div class="paper-badge" id="paper-badge">Folio · 215.9 × 330.2 mm</div>
+        <div class="paper-badge" id="paper-badge" title="Physical paper size (prints at 100% actual scale)">Folio · 215.9 × 330.2 mm</div>
 
         <div class="render-mode-toggle" role="radiogroup" aria-label="Render Mode">
           <button type="button" class="render-mode-btn is-active" data-mode="dom" title="DOM CSS Grid (Printable)">DOM</button>
@@ -3559,6 +3581,7 @@ dialog.modal-dialog--answer-key {
           <span class="stat-fill-bar"><span id="stat-fill-bar-inner" class="stat-fill-bar__inner"></span></span>
           <strong id="stat-fill">0%</strong>
         </div>
+        <span id="overflow-action-hint" style="display: none; font-size: 0.72rem; font-weight: 600; color: var(--danger); margin-left: 0.4rem;"></span>
       </div>
     </main>
   </div>
@@ -3805,9 +3828,30 @@ dialog.modal-dialog--answer-key {
             <span class="key-metric-label">Passing Score</span>
             <input type="number" id="key-passing-input" class="key-passing-input" value="0" min="0" title="Passing score required to pass">
           </div>
+          <div class="key-metric-pill" title="Optional Bloom's Taxonomy cognitive level assignment status">
+            <span class="key-metric-label">Bloom's</span>
+            <strong id="key-bloom-status-badge" style="font-size: 0.76rem; color: var(--text-muted);">Optional</strong>
+          </div>
         </div>
 
-        <div class="key-actions-row">
+        <div class="key-actions-row" style="flex-wrap: wrap; gap: 0.35rem;">
+          <div style="display: inline-flex; align-items: center; gap: 0.25rem; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.15rem 0.35rem;" title="Bulk-assign a Bloom's cognitive level to a section, item range, or all unassigned questions">
+            <span style="font-size: 0.7rem; font-weight: 600; color: var(--text-muted);">Bulk Bloom:</span>
+            <select id="key-bulk-bloom-scope" style="font-size: 0.72rem; padding: 0.12rem 0.25rem; border: 1px solid var(--border); border-radius: 3px; background: var(--bg); color: var(--text);">
+              <option value="unassigned">Unassigned Items</option>
+              <option value="all">All Items</option>
+            </select>
+            <select id="key-bulk-bloom-level" style="font-size: 0.72rem; padding: 0.12rem 0.25rem; border: 1px solid var(--border); border-radius: 3px; background: var(--bg); color: var(--text);">
+              <option value="">Bloom (Optional)</option>
+              <option value="Remember">Remember</option>
+              <option value="Understand">Understand</option>
+              <option value="Apply">Apply</option>
+              <option value="Analyze">Analyze</option>
+              <option value="Evaluate">Evaluate</option>
+              <option value="Create">Create</option>
+            </select>
+            <button type="button" id="btn-key-apply-bulk-bloom" class="btn btn--secondary btn-xs" style="padding: 0.12rem 0.4rem;">Apply</button>
+          </div>
           <button type="button" id="btn-key-fill-a" class="btn btn--secondary btn-xs" title="Set all multiple-choice answers to A">All A</button>
           <button type="button" id="btn-key-fill-t" class="btn btn--secondary btn-xs" title="Set all True/False answers to True">All T</button>
           <button type="button" id="btn-key-random" class="btn btn--secondary btn-xs" title="Quickly generate a sample key for testing">Sample Key</button>
@@ -3877,7 +3921,7 @@ dialog.modal-dialog--answer-key {
 // ---- Standalone Sheet Builder Bundle ----
 
 // Inlined Sheet CSS for zero-network/zero-CORS standalone execution
-window.__SHEET_CSS__ = "/*\n * Printable OMR sheet styles. Every dimension is in physical units (mm) so the\n * printed output matches the layout engine's coordinates. Shared by the\n * builder app and the standalone HTML export.\n */\n.omr-sheet {\n  position: relative;\n  box-sizing: border-box;\n  overflow: hidden;\n  background: #fff;\n  color: #000;\n  font-family: \"Helvetica Neue\", Helvetica, Arial, sans-serif;\n  font-size: var(--omr-font-body);\n  line-height: 1.3;\n  -webkit-print-color-adjust: exact;\n  print-color-adjust: exact;\n}\n\n.omr-sheet *,\n.omr-sheet *::before,\n.omr-sheet *::after {\n  box-sizing: border-box;\n  margin: 0;\n}\n\n/* Everything is absolutely positioned in sheet coordinates (mm). */\n.omr-sheet > * {\n  position: absolute;\n}\n\n.omr-fiducial {\n  display: block;\n  overflow: visible;\n}\n\n.omr-title {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  text-align: center;\n  font-size: var(--omr-font-title);\n  font-weight: 700;\n  line-height: 1.15;\n  overflow: hidden;\n}\n\n.omr-footer {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  text-align: center;\n  font-size: var(--omr-font-small);\n  color: #444;\n  overflow: hidden;\n}\n\n.omr-zone {\n  border: 0.3mm solid #000;\n  border-radius: 1.2mm;\n  padding: 2.5mm;\n}\n\n.omr-zone__title {\n  font-size: var(--omr-font-label);\n  font-weight: 700;\n  line-height: 4mm;\n  height: 5mm;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n}\n\n/* Bubble matrices: explicit mm tracks from the layout engine. */\n.omr-grid {\n  display: grid;\n  grid-auto-rows: 0;\n  grid-auto-columns: 0;\n}\n\n.omr-bubble {\n  display: grid;\n  place-items: center;\n  align-self: start;\n  justify-self: center;\n  width: var(--omr-d);\n  height: var(--omr-d);\n  border: var(--omr-stroke) solid #000;\n  border-radius: 50%;\n  font-size: var(--omr-font-bubble);\n  line-height: 1;\n  color: #8a8a8a;\n}\n\n.omr-num,\n.omr-item-num {\n  font-size: var(--omr-font-number) !important;\n  font-weight: 700;\n  font-variant-numeric: tabular-nums;\n}\n\n.omr-num {\n  align-self: start;\n  height: var(--omr-pitch-y);\n  display: flex;\n  align-items: center;\n  justify-content: flex-end;\n  padding-right: 1.2mm;\n}\n\n.omr-digit-box {\n  justify-self: center;\n  width: calc(100% - 0.8mm);\n  height: 100%;\n  border: 0.25mm solid #000;\n}\n\n.omr-field-label {\n  display: flex;\n  align-items: center;\n  font-size: var(--omr-font-label);\n  font-weight: 700;\n}\n\n.omr-write-box {\n  border: 0.3mm solid #000;\n}\n\n.omr-partitioned-digits {\n  display: grid;\n  border: 0.3mm solid #000;\n  background: #fff;\n}\n\n.omr-partitioned-digits .omr-digit-box {\n  width: 100%;\n  height: 100%;\n  border: none;\n  border-right: 0.25mm solid #000;\n}\n\n.omr-partitioned-digits .omr-digit-box:last-child {\n  border-right: none;\n}\n\n.omr-correction-box {\n  border: 0.25mm solid #000;\n  font-size: 1.8mm;\n  color: #888;\n  font-style: italic;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n.omr-prompt {\n  font-size: var(--omr-font-label);\n  overflow: hidden;\n}\n\n.omr-points {\n  color: #555;\n  white-space: nowrap;\n}\n\n.omr-instructions {\n  padding: 1mm;\n  color: #222;\n  overflow: hidden;\n  white-space: pre-line;\n}\n\n.omr-correction-hint {\n  display: inline;\n}\n\n@media print {\n  .omr-sheet {\n    box-shadow: none !important;\n    break-after: page;\n    break-inside: avoid;\n  }\n  .omr-correction-box {\n    color: transparent !important;\n  }\n  .omr-correction-hint {\n    display: none !important;\n    visibility: hidden !important;\n  }\n}\n";
+window.__SHEET_CSS__ = "/*\n * Printable OMR sheet styles. Every dimension is in physical units (mm) so the\n * printed output matches the layout engine's coordinates. Shared by the\n * builder app and the standalone HTML export.\n */\n.omr-sheet {\n  position: relative;\n  box-sizing: border-box;\n  overflow: hidden;\n  background: #fff;\n  color: #000;\n  font-family: \"Helvetica Neue\", Helvetica, Arial, sans-serif;\n  font-size: var(--omr-font-body);\n  line-height: 1.3;\n  -webkit-print-color-adjust: exact;\n  print-color-adjust: exact;\n}\n\n.omr-sheet *,\n.omr-sheet *::before,\n.omr-sheet *::after {\n  box-sizing: border-box;\n  margin: 0;\n}\n\n/* Everything is absolutely positioned in sheet coordinates (mm). */\n.omr-sheet > * {\n  position: absolute;\n}\n\n.omr-fiducial {\n  display: block;\n  overflow: visible;\n}\n\n.omr-title {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  text-align: center;\n  font-size: var(--omr-font-title);\n  font-weight: 700;\n  line-height: 1.15;\n  overflow: hidden;\n}\n\n.omr-footer {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  text-align: center;\n  font-size: var(--omr-font-small);\n  color: #444;\n  overflow: hidden;\n}\n\n.omr-zone {\n  border: 0.3mm solid #000;\n  border-radius: 1.2mm;\n  padding: 2.5mm;\n}\n\n.omr-zone__title {\n  font-size: var(--omr-font-label);\n  font-weight: 700;\n  line-height: 4mm;\n  height: 5mm;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n}\n\n/* Bubble matrices: explicit mm tracks from the layout engine. */\n.omr-grid {\n  display: grid;\n  grid-auto-rows: 0;\n  grid-auto-columns: 0;\n}\n\n.omr-bubble {\n  display: grid;\n  place-items: center;\n  align-self: start;\n  justify-self: center;\n  width: var(--omr-d);\n  height: var(--omr-d);\n  border: var(--omr-stroke) solid #000;\n  border-radius: 50%;\n  font-size: var(--omr-font-bubble);\n  line-height: 1;\n  color: #8a8a8a;\n}\n\n.omr-num,\n.omr-item-num {\n  font-size: var(--omr-font-number) !important;\n  font-weight: 700;\n  font-variant-numeric: tabular-nums;\n}\n\n.omr-num {\n  align-self: start;\n  height: var(--omr-pitch-y);\n  display: flex;\n  align-items: center;\n  justify-content: flex-end;\n  padding-right: 1.2mm;\n}\n\n.omr-digit-box {\n  justify-self: center;\n  width: calc(100% - 0.8mm);\n  height: 100%;\n  border: 0.25mm solid #000;\n}\n\n.omr-field-label {\n  display: flex;\n  align-items: center;\n  font-size: var(--omr-font-label);\n  font-weight: 700;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  padding-right: 0.8mm;\n}\n\n.omr-write-box {\n  border: 0.3mm solid #000;\n}\n\n.omr-partitioned-digits {\n  display: grid;\n  border: 0.3mm solid #000;\n  background: #fff;\n}\n\n.omr-partitioned-digits .omr-digit-box {\n  width: 100%;\n  height: 100%;\n  border: none;\n  border-right: 0.25mm solid #000;\n}\n\n.omr-partitioned-digits .omr-digit-box:last-child {\n  border-right: none;\n}\n\n.omr-correction-box {\n  border: 0.25mm solid #000;\n  font-size: 1.8mm;\n  color: #888;\n  font-style: italic;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n.omr-prompt {\n  font-size: var(--omr-font-label);\n  overflow: hidden;\n}\n\n.omr-points {\n  color: #555;\n  white-space: nowrap;\n}\n\n.omr-instructions {\n  padding: 1mm;\n  color: #222;\n  overflow: hidden;\n  white-space: pre-line;\n}\n\n.omr-correction-hint {\n  display: inline;\n}\n\n@media print {\n  .omr-sheet {\n    box-shadow: none !important;\n    break-after: page;\n    break-inside: avoid;\n  }\n  .omr-correction-box {\n    color: transparent !important;\n  }\n  .omr-correction-hint {\n    display: none !important;\n    visibility: hidden !important;\n  }\n}\n";
 
 // 1. ArUco Fiducial Module
 const Aruco = (function() {
@@ -4212,12 +4256,15 @@ function layoutChoices(zone, ctx, x, y, availW) {
     const usable = (targetW ?? availW) - 2 * PAD;
     columns = Math.max(1, Math.min(count, Math.floor((usable + minBlockGap) / (blockW + minBlockGap))));
   }
-  const rowsPerCol = Math.ceil(count / columns);
   const naturalW = 2 * PAD + columns * blockW + (columns - 1) * minBlockGap;
   const w = targetW ?? naturalW;
   if (w + 0.01 < naturalW) ctx.warn(`Zone "${zone.id}": width ${w}mm is narrower than the ${r3(naturalW)}mm required for ${columns} column(s)`);
 
   const usable = w - 2 * PAD;
+  if (columns > 1 && usable < columns * blockW + (columns - 1) * 1.5) {
+    columns = Math.max(1, Math.min(count, Math.floor((usable + 1.5) / (blockW + 1.5))));
+  }
+  const rowsPerCol = Math.ceil(count / columns);
   let blockPitch = 0;
   let startColX = x + PAD;
 
@@ -4276,18 +4323,27 @@ function layoutModifiedTrueFalse(zone, ctx, x, y, availW) {
   const bubbleBlockW = numberW + choices.length * bubble.pitchX;
   const customBoxH = zone.boxHeight ?? zone.fieldHeight;
   const customBoxW = zone.boxWidth ?? zone.correctionWidth ?? zone.corrWidth;
-  const correctionW = customBoxW ?? 45;
-  const blockW = bubbleBlockW + correctionW + 2.5;
+  const requestedCorrW = customBoxW ?? 45;
   const titleH = zone.label ? TITLE_H : 0;
 
   let columns = zone.columns == null ? 1 : positiveInt(zone.columns, `Zone "${zone.id}" columns`);
   const targetW = zone.w ?? availW;
-  const rowsPerCol = Math.ceil(count / columns);
   const minBlockGap = 4;
-  const naturalW = 2 * PAD + columns * blockW + (columns - 1) * minBlockGap;
+  const defaultBlockW = bubbleBlockW + requestedCorrW + 2.5;
+  const naturalW = 2 * PAD + columns * defaultBlockW + (columns - 1) * minBlockGap;
   const w = targetW ?? naturalW;
 
   const usable = w - 2 * PAD;
+  const minColBlockW = bubbleBlockW + 12 + 2.5;
+  if (columns > 1 && usable < columns * minColBlockW + (columns - 1) * minBlockGap) {
+    columns = Math.max(1, Math.min(count, Math.floor((usable + minBlockGap) / (minColBlockW + minBlockGap))));
+  }
+  const rowsPerCol = Math.ceil(count / columns);
+  const colAvailW = columns > 1 ? (usable - (columns - 1) * minBlockGap) / columns : usable;
+  const maxCorrW = Math.max(10, r3(colAvailW - bubbleBlockW - 2.5));
+  const correctionW = r3(Math.min(requestedCorrW, maxCorrW));
+  const blockW = bubbleBlockW + correctionW + 2.5;
+
   let blockPitch = 0;
   let startColX = x + PAD;
 
@@ -4357,7 +4413,7 @@ function layoutModifiedTrueFalse(zone, ctx, x, y, availW) {
   ctx.nextQuestion = start + count;
   const h = 2 * PAD + titleH + sum(rowHeights);
   const pointsPerItem = Number(zone.pointsPerItem ?? zone.points ?? 1);
-  return { bbox: { x, y, w, h }, grids, groups, rois, extra: { start, count, columns, isModified: true, pointsPerItem, ...(zone.showPoints !== undefined ? { showPoints: zone.showPoints } : {}), ...(customRowGap != null ? { rowGap: customRowGap } : {}) } };
+  return { bbox: { x, y, w, h }, grids, groups, rois, extra: { start, count, columns, isModified: true, pointsPerItem, maxBoxW: Math.floor(maxCorrW), ...(zone.showPoints !== undefined ? { showPoints: zone.showPoints } : {}), ...(customRowGap != null ? { rowGap: customRowGap } : {}) } };
 }
 
 function layoutFields(zone, ctx, x, y, availW) {
@@ -4415,11 +4471,14 @@ function layoutFields(zone, ctx, x, y, availW) {
       if (!field.id) throw new TemplateError(`Zone "${zone.id}": every field needs an "id"`);
       // Last field in row absorbs sub-millimeter rounding so row is strictly full-width
       const isLastInRow = cIdx === group.length - 1;
-      const fieldTotalW = isLastInRow
-        ? Math.max(10, r3((x + PAD + innerW) - curX))
+      const rawFieldW = isLastInRow
+        ? r3((x + PAD + innerW) - curX)
         : (field.w ? r3(field.w * scale) : defaultW);
-      const labelW = field.labelWidth ?? Math.min(22, Math.max(10, (field.label ?? field.id).length * 2.8));
-      const boxW = Math.max(10, fieldTotalW - labelW);
+      const fieldTotalW = Math.max(12, rawFieldW);
+      const idealLabelW = field.labelWidth ?? Math.min(22, Math.max(10, (field.label ?? field.id).length * 2.8));
+      const maxLabelW = Math.max(6, r3(fieldTotalW - 10));
+      const labelW = r3(Math.min(idealLabelW, maxLabelW));
+      const boxW = Math.max(6, r3(fieldTotalW - labelW));
       const isSid = field.id === 'sid' || field.role === 'student_id' || (field.digits != null && field.digits > 0);
       const digits = isSid ? 8 : (field.digits ?? 0);
 
@@ -4705,7 +4764,42 @@ function buildLayout(input) {
   let rowTop = content.y;
   let prev = null;
 
-  for (const raw of tpl.zones) {
+  const inlineWidthOverrides = new Map();
+  for (let i = 0; i < tpl.zones.length; i += 1) {
+    const first = tpl.zones[i];
+    if (!first || !isPlainObject(first) || first.inline || first.type === 'fields' || first.type === 'student_id') continue;
+    if (isPlainObject(tpl.zones[i + 1]) && tpl.zones[i + 1].inline) {
+      const groupIndices = [i];
+      let j = i + 1;
+      while (j < tpl.zones.length && isPlainObject(tpl.zones[j]) && tpl.zones[j].inline && tpl.zones[j].type !== 'fields' && tpl.zones[j].type !== 'student_id') {
+        groupIndices.push(j);
+        j += 1;
+      }
+      const totalGaps = groupIndices.slice(1).reduce((acc, idx) => {
+        const g = parseGap(tpl.zones[idx].gapBefore ?? tpl.zones[idx].marginTop) ?? tpl.gap;
+        return acc + g;
+      }, 0);
+      const rawWidths = groupIndices.map((idx) => Number(tpl.zones[idx].w) || halfW);
+      const sumRawW = rawWidths.reduce((a, b) => a + b, 0);
+      const availRowW = Math.max(groupIndices.length * 16, content.w - totalGaps);
+      if (sumRawW + totalGaps > content.w + 0.01 && sumRawW > 0) {
+        let usedW = 0;
+        groupIndices.forEach((idx, k) => {
+          if (k === groupIndices.length - 1) {
+            inlineWidthOverrides.set(idx, r3(Math.max(16, availRowW - usedW)));
+          } else {
+            const wPart = r3(Math.max(16, (rawWidths[k] / sumRawW) * availRowW));
+            inlineWidthOverrides.set(idx, wPart);
+            usedW += wPart;
+          }
+        });
+      }
+      i = j - 1;
+    }
+  }
+
+  for (let zoneIdx = 0; zoneIdx < tpl.zones.length; zoneIdx += 1) {
+    const raw = tpl.zones[zoneIdx];
     if (!isPlainObject(raw)) throw new TemplateError('Every zone must be an object');
     const layoutFn = ZONE_LAYOUTS[raw.type];
     if (!layoutFn) throw new TemplateError(`Unknown zone type "${raw.type}" (expected one of ${ZONE_TYPES.join(', ')})`);
@@ -4759,8 +4853,10 @@ function buildLayout(input) {
       availW = isFullWidthZone ? content.w : (contentRight - x);
     }
 
-    let effectiveRaw = (isHalfLeft || isHalfRight) && raw.w == null ? { ...raw, w: halfW } : raw;
-    if (hasMidlineFiducials) {
+    let effectiveRaw = (isHalfLeft || isHalfRight)
+      ? { ...raw, w: raw.w != null ? Math.min(raw.w, halfW) : halfW }
+      : (inlineWidthOverrides.has(zoneIdx) ? { ...raw, w: inlineWidthOverrides.get(zoneIdx) } : raw);
+    if (hasMidlineFiducials || (effectiveRaw.w != null && effectiveRaw.w > Math.max(0, contentRight - x))) {
       if (x < content.x) x = content.x;
       const clampedX = effectiveRaw.x != null ? Math.max(effectiveRaw.x, content.x) : null;
       if (clampedX != null && clampedX > x) x = clampedX;
@@ -5339,7 +5435,10 @@ function zoneSVG(zone, layout, zoneIndex) {
   if (zone.type === 'fields') {
     zone.rows.forEach((row, i) => {
       const roi = zone.rois[i];
-      out.push(text(row.x, row.y + row.h / 2, row.label, { size: typography.label, weight: 700 }));
+      const maxLabelW = Math.max(4, (row.labelW ?? 14) - 0.8);
+      const labelLen = Math.max(1, String(row.label ?? '').length);
+      const labelSize = Math.min(typography.label, Math.max(1.6, maxLabelW / (labelLen * 0.55)));
+      out.push(text(row.x, row.y + row.h / 2, row.label, { size: labelSize, weight: 700 }));
       out.push(`<rect data-roi="${esc(roi.id)}" x="${f(roi.x + 0.15)}" y="${f(roi.y + 0.15)}" width="${f(roi.w - 0.3)}" height="${f(roi.h - 0.3)}" fill="none" stroke="#000" stroke-width="0.3"/>`);
       if (roi.digits > 0) {
         const cellW = (roi.w - 0.3) / roi.digits;
@@ -5951,7 +6050,7 @@ const DEFAULT_SHEET_CSS = `/* Printable OMR sheet styles */
 .omr-num, .omr-item-num { font-size: var(--omr-font-number) !important; font-weight: 700; font-variant-numeric: tabular-nums; }
 .omr-num { align-self: start; height: var(--omr-pitch-y); display: flex; align-items: center; justify-content: flex-end; padding-right: 1.2mm; }
 .omr-digit-box { justify-self: center; width: calc(100% - 0.8mm); height: 100%; border: 0.25mm solid #000; }
-.omr-field-label { display: flex; align-items: center; font-size: var(--omr-font-label); font-weight: 700; }
+.omr-field-label { display: flex; align-items: center; font-size: var(--omr-font-label); font-weight: 700; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; padding-right: 0.8mm; }
 .omr-write-box { border: 0.3mm solid #000; }
 .omr-partitioned-digits { display: grid; border: 0.3mm solid #000; background: #fff; }
 .omr-partitioned-digits .omr-digit-box { width: 100%; height: 100%; border: none; border-right: 0.25mm solid #000; }
@@ -7850,6 +7949,21 @@ function renderMeta(layout) {
   els.statFillBar.classList.toggle('is-warning', fillPct > 95 && fillPct <= 100);
   els.statFillBar.classList.toggle('is-danger', fillPct > 100);
 
+  const overflowHintEl = $('#overflow-action-hint');
+  if (overflowHintEl) {
+    if (fillPct > 100) {
+      overflowHintEl.textContent = '⚠️ Page overflow — try Compact density, more columns, or smaller block spacing';
+      overflowHintEl.style.display = 'inline';
+    } else if (fillPct > 94) {
+      overflowHintEl.textContent = 'Near page limit';
+      overflowHintEl.style.color = 'var(--warning)';
+      overflowHintEl.style.display = 'inline';
+    } else {
+      overflowHintEl.textContent = '';
+      overflowHintEl.style.display = 'none';
+    }
+  }
+
   els.paperBadge.textContent = `${layout.page.paper} · ${layout.page.width} × ${layout.page.height} mm`;
 
   // Warnings
@@ -8017,10 +8131,29 @@ function downloadCurrentAnswerKeyCSV() {
     const it = currentAnswerKey.items[k];
     const ans = String(it.answer || '');
     const formattedAns = ans.includes(',') || ans.includes('"') ? `"${ans.replace(/"/g, '""')}"` : ans;
-    rows.push(`${k},${formattedAns},${it.points ?? 1},${it.bloom || defaultBloomFor(k)}`);
+    rows.push(`${k},${formattedAns},${it.points ?? 1},${it.bloom || defaultBloomFor(k) || ''}`);
   }
   const baseId = state.layout?.templateId || 'exam';
   download(`${baseId}-answer-key.csv`, rows.join('\n') + '\n', 'text/csv');
+}
+
+function updateBloomStatusBadge() {
+  const badgeEl = $('#key-bloom-status-badge');
+  if (!badgeEl) return;
+  const items = Object.values(currentAnswerKey.items || {});
+  const total = items.length;
+  const assigned = items.filter((it) => Boolean(it && it.bloom)).length;
+  const unassigned = total - assigned;
+  if (total === 0 || assigned === 0) {
+    badgeEl.textContent = 'Optional (0 tagged)';
+    badgeEl.style.color = 'var(--text-muted)';
+  } else if (unassigned === 0) {
+    badgeEl.textContent = `All ${total} tagged ✓`;
+    badgeEl.style.color = 'var(--success)';
+  } else {
+    badgeEl.textContent = `${assigned}/${total} (${unassigned} unassigned)`;
+    badgeEl.style.color = 'var(--accent)';
+  }
 }
 
 function openAnswerKeyModal() {
@@ -8139,6 +8272,31 @@ function renderAnswerKeyModalContent() {
   if (els.keyPassingInput) {
     els.keyPassingInput.value = currentAnswerKey.passScore;
   }
+  updateBloomStatusBadge();
+
+  const bulkScopeSelect = $('#key-bulk-bloom-scope');
+  if (bulkScopeSelect) {
+    const prevScope = bulkScopeSelect.value || 'unassigned';
+    const scopeOpts = [
+      '<option value="unassigned">Unassigned Items</option>',
+      '<option value="all">All Items</option>',
+    ];
+    for (const zone of layout.zones) {
+      const zKeys = [
+        ...zone.groups.filter((g) => g.kind === 'mcq' || g.kind === 'tf').map((g) => String(g.key)),
+        ...(zone.rois || []).filter((r) => r.graded !== false && r.role !== 'name' && r.role !== 'student_id' && r.role !== 'score' && r.role !== 'signature').map((r) => String(r.key || r.id)),
+      ];
+      if (zKeys.length > 0) {
+        const defaultTitle = zone.type === 'text_essay' ? 'Essay' : (zone.type === 'text_short' || zone.type === 'text' ? 'Short Answer' : zone.type.toUpperCase());
+        const zTitle = zone.label || defaultTitle;
+        scopeOpts.push(`<option value="zone:${safeEscapeHTML(zone.id)}">${safeEscapeHTML(zTitle)} (${zKeys.length})</option>`);
+      }
+    }
+    bulkScopeSelect.innerHTML = scopeOpts.join('');
+    if ([...bulkScopeSelect.options].some((o) => o.value === prevScope)) {
+      bulkScopeSelect.value = prevScope;
+    }
+  }
 
   if (totalItems === 0) {
     els.keyItemsContainer.innerHTML = `
@@ -8211,10 +8369,24 @@ function renderAnswerKeyModalContent() {
     const defaultTitle = zone.type === 'text_essay' ? 'Essay / Discussion Questions' : (zone.type === 'text_short' || zone.type === 'text' ? 'Short Answer / Identification' : zone.type.toUpperCase());
     const zoneTitle = zone.label || defaultTitle;
     const zoneCols = Math.min(3, Math.max(1, zone.columns ? Math.min(3, zone.columns) : 2));
+    const sectionItemKeys = [
+      ...zoneGroups.map((g) => String(g.key)),
+      ...zoneRois.map((r) => String(r.key || r.id)),
+    ];
 
     html += `
-      <div class="key-section-card">
-        <h4 class="key-section-title">${safeEscapeHTML(zoneTitle)}</h4>
+      <div class="key-section-card" data-zone-id="${safeEscapeHTML(zone.id)}">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.45rem; flex-wrap: wrap;">
+          <h4 class="key-section-title" style="margin: 0;">${safeEscapeHTML(zoneTitle)}</h4>
+          <div style="display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.72rem; color: var(--text-muted);">
+            <span>Section Bloom's:</span>
+            <select class="key-section-bloom-select" data-keys="${safeEscapeHTML(sectionItemKeys.join(','))}" style="font-size: 0.72rem; padding: 0.1rem 0.3rem; border-radius: 3px; border: 1px solid var(--border); background: var(--bg); color: var(--text);" title="Assign Bloom's cognitive level to all items in this section">
+              <option value="">Set section level...</option>
+              <option value="__clear__">Clear section Bloom</option>
+              ${BLOOM_LEVELS.map((lvl) => `<option value="${lvl}">${lvl}</option>`).join('')}
+            </select>
+          </div>
+        </div>
     `;
 
     if (zoneGroups.length > 0) {
@@ -8241,7 +8413,7 @@ function renderAnswerKeyModalContent() {
             </div>
             <div style="display: flex; align-items: center; gap: 0.3rem; flex-shrink: 0;">
               <select class="key-bloom-select" data-key="${g.key}" title="Bloom's Cognitive Level">
-                <option value="" ${!currentBloom ? 'selected' : ''}>None</option>
+                <option value="" ${!currentBloom ? 'selected' : ''}>Bloom (Optional)</option>
                 ${BLOOM_LEVELS.map((lvl) => `<option value="${lvl}" ${currentBloom === lvl ? 'selected' : ''}>${lvl}</option>`).join('')}
               </select>
               <input type="number" class="key-pts-input" data-key="${g.key}" value="${item.points}" min="0.5" max="50" step="0.5" title="Points">
@@ -8271,7 +8443,7 @@ function renderAnswerKeyModalContent() {
             </div>
             <div style="display: flex; align-items: center; gap: 0.35rem; flex-shrink: 0;">
               <select class="key-bloom-select" data-key="${rKey}" title="Bloom's Cognitive Level">
-                <option value="" ${!currentBloom ? 'selected' : ''}>None</option>
+                <option value="" ${!currentBloom ? 'selected' : ''}>Bloom (Optional)</option>
                 ${BLOOM_LEVELS.map((lvl) => `<option value="${lvl}" ${currentBloom === lvl ? 'selected' : ''}>${lvl}</option>`).join('')}
               </select>
               <input type="number" class="key-pts-input" data-key="${rKey}" value="${item.points}" min="0.5" max="50" step="0.5" title="Points">
@@ -8315,7 +8487,7 @@ function renderAnswerKeyModalContent() {
             </div>
             <div style="display: flex; align-items: center; gap: 0.3rem; flex-shrink: 0;">
               <select class="key-bloom-select" data-key="${k}" title="Bloom's Cognitive Level">
-                <option value="" ${!currentBloom ? 'selected' : ''}>None</option>
+                <option value="" ${!currentBloom ? 'selected' : ''}>Bloom (Optional)</option>
                 ${BLOOM_LEVELS.map((lvl) => `<option value="${lvl}" ${currentBloom === lvl ? 'selected' : ''}>${lvl}</option>`).join('')}
               </select>
               <input type="number" class="key-pts-input" data-key="${k}" value="${item.points}" min="0.5" max="50" step="0.5" title="Points">
@@ -8340,7 +8512,7 @@ function renderAnswerKeyModalContent() {
             </div>
             <div style="display: flex; align-items: center; gap: 0.35rem; flex-shrink: 0;">
               <select class="key-bloom-select" data-key="${k}" title="Bloom's Cognitive Level">
-                <option value="" ${!currentBloom ? 'selected' : ''}>None</option>
+                <option value="" ${!currentBloom ? 'selected' : ''}>Bloom (Optional)</option>
                 ${BLOOM_LEVELS.map((lvl) => `<option value="${lvl}" ${currentBloom === lvl ? 'selected' : ''}>${lvl}</option>`).join('')}
               </select>
               <input type="number" class="key-pts-input" data-key="${k}" value="${item.points}" min="0.5" max="50" step="0.5" title="Points">
@@ -8374,7 +8546,24 @@ function renderAnswerKeyModalContent() {
       const k = sel.dataset.key;
       if (currentAnswerKey.items[k]) {
         currentAnswerKey.items[k].bloom = sel.value || null;
+        updateBloomStatusBadge();
       }
+    });
+  });
+
+  // Bind section-level Bloom selectors
+  els.keyItemsContainer.querySelectorAll('.key-section-bloom-select').forEach((sel) => {
+    sel.addEventListener('change', () => {
+      const rawVal = sel.value;
+      if (!rawVal) return;
+      const targetBloom = rawVal === '__clear__' ? null : normalizeBloom(rawVal);
+      const keys = (sel.dataset.keys || '').split(',').filter(Boolean);
+      for (const k of keys) {
+        if (currentAnswerKey.items[k]) {
+          currentAnswerKey.items[k].bloom = targetBloom;
+        }
+      }
+      renderAnswerKeyModalContent();
     });
   });
 
@@ -9850,6 +10039,7 @@ function initEvents() {
   els.genPaper?.addEventListener('change', updateGeneratorLivePreview);
   els.genSidMode?.addEventListener('change', updateGeneratorLivePreview);
   els.genInstructions?.addEventListener('change', updateGeneratorLivePreview);
+  els.genMidlineFiducials?.addEventListener('change', updateGeneratorLivePreview);
 
   els.btnCloseGenerator?.addEventListener('click', () => closeModal(els.modalGenerator));
   els.btnCancelGenerator?.addEventListener('click', () => closeModal(els.modalGenerator));
@@ -9866,16 +10056,22 @@ function initEvents() {
     if (state.template && state.template.paper !== newPaper) {
       const oldPaper = state.template.paper;
       const oldPaperW = PAPER_SIZES[oldPaper]?.width ?? 210;
-      const oldMargin = state.template.margin ?? 12;
-      const oldFullW = oldPaperW - 2 * oldMargin;
+      const hasMidline = Array.isArray(state.template.fiducial?.ids) && state.template.fiducial.ids.length === 6;
+      const effMargin = hasMidline ? Math.max(state.template.margin ?? 12, 20) : (state.template.margin ?? 12);
+      const gap = state.template.gap ?? 3.5;
+      const oldFullW = oldPaperW - 2 * effMargin;
+      const oldHalfW = Math.round(((oldFullW - gap) / 2) * 1000) / 1000;
 
       state.template.paper = newPaper;
       const newPaperW = PAPER_SIZES[newPaper]?.width ?? 210;
-      const newFullW = newPaperW - 2 * (state.template.margin ?? 12);
+      const newFullW = newPaperW - 2 * effMargin;
+      const newHalfW = Math.round(((newFullW - gap) / 2) * 1000) / 1000;
 
       for (const z of state.template.zones) {
-        if (z.w && Math.abs(z.w - oldFullW) < 0.5) {
+        if (z.w && (Math.abs(z.w - oldFullW) < 2.0 || z.w > newFullW)) {
           z.w = newFullW;
+        } else if (z.w && Math.abs(z.w - oldHalfW) < 2.0) {
+          z.w = newHalfW;
         }
       }
       update();
@@ -9887,27 +10083,38 @@ function initEvents() {
   els.chkMidlineFiducials?.addEventListener('change', () => {
     if (!state.template) return;
     if (!state.template.fiducial) {
-      state.template.fiducial = { type: 'aruco', dictionary: 'DICT_4X4_50', size: 10, inset: 7, quietZone: 3 };
+      state.template.fiducial = { type: 'aruco', dictionary: 'DICT_4X4_50', size: 7.5, inset: 5.5, quietZone: 2 };
     }
     const paperSpec = PAPER_SIZES[state.template.paper] || PAPER_SIZES['A4'];
+    const gap = state.template.gap ?? 3.5;
     if (els.chkMidlineFiducials.checked) {
       state.template.fiducial.ids = [0, 1, 4, 5, 2, 3];
-      const oldFullW = paperSpec.width - 2 * (state.template.margin || 12);
-      state.template.margin = 21;
-      const newFullW = paperSpec.width - 2 * 21;
+      const oldMargin = state.template.margin || 12;
+      const oldFullW = paperSpec.width - 2 * oldMargin;
+      const oldHalfW = Math.round(((oldFullW - gap) / 2) * 1000) / 1000;
+      state.template.margin = 20;
+      const newFullW = paperSpec.width - 40;
+      const newHalfW = Math.round(((newFullW - gap) / 2) * 1000) / 1000;
       for (const z of state.template.zones) {
-        if (z.w && (Math.abs(z.w - oldFullW) < 1.0 || z.w > newFullW)) {
+        if (z.w && (Math.abs(z.w - oldFullW) < 2.0 || z.w > newFullW)) {
           z.w = newFullW;
+        } else if (z.w && Math.abs(z.w - oldHalfW) < 2.0) {
+          z.w = newHalfW;
         }
       }
     } else {
       state.template.fiducial.ids = [0, 1, 2, 3];
-      const oldFullW = paperSpec.width - 2 * (state.template.margin || 21);
+      const oldMargin = Math.max(state.template.margin || 20, 20);
+      const oldFullW = paperSpec.width - 2 * oldMargin;
+      const oldHalfW = Math.round(((oldFullW - gap) / 2) * 1000) / 1000;
       state.template.margin = 12;
       const newFullW = paperSpec.width - 2 * 12;
+      const newHalfW = Math.round(((newFullW - gap) / 2) * 1000) / 1000;
       for (const z of state.template.zones) {
-        if (z.w && (Math.abs(z.w - oldFullW) < 1.0 || Math.abs(z.w - (paperSpec.width - 42)) < 1.0)) {
+        if (z.w && (Math.abs(z.w - oldFullW) < 2.5 || Math.abs(z.w - (paperSpec.width - 42)) < 2.5 || Math.abs(z.w - (paperSpec.width - 40)) < 2.5)) {
           z.w = newFullW;
+        } else if (z.w && (Math.abs(z.w - oldHalfW) < 2.5 || Math.abs(z.w - ((paperSpec.width - 42 - gap) / 2)) < 2.5 || Math.abs(z.w - ((paperSpec.width - 40 - gap) / 2)) < 2.5)) {
+          z.w = newHalfW;
         }
       }
     }
@@ -10156,9 +10363,38 @@ function initEvents() {
 
   // Answer Key modal opening & controls
   els.btnDlKey?.addEventListener('click', openAnswerKeyModal);
+  $('#btn-open-key-editor')?.addEventListener('click', openAnswerKeyModal);
   els.btnCloseAnswerKey?.addEventListener('click', () => closeModal(els.modalAnswerKey));
   els.modalAnswerKey?.addEventListener('click', (e) => {
     if (e.target === els.modalAnswerKey) closeModal(els.modalAnswerKey);
+  });
+
+  $('#btn-key-apply-bulk-bloom')?.addEventListener('click', () => {
+    const scope = $('#key-bulk-bloom-scope')?.value || 'unassigned';
+    const rawLevel = $('#key-bulk-bloom-level')?.value || '';
+    const targetBloom = rawLevel ? normalizeBloom(rawLevel) : null;
+    if (scope.startsWith('zone:')) {
+      const zoneId = scope.slice(5);
+      const zone = state.layout?.zones?.find((z) => z.id === zoneId);
+      if (zone) {
+        const zKeys = [
+          ...zone.groups.filter((g) => g.kind === 'mcq' || g.kind === 'tf').map((g) => String(g.key)),
+          ...(zone.rois || []).filter((r) => r.graded !== false && r.role !== 'name' && r.role !== 'student_id' && r.role !== 'score' && r.role !== 'signature').map((r) => String(r.key || r.id)),
+        ];
+        for (const k of zKeys) {
+          if (currentAnswerKey.items[k]) currentAnswerKey.items[k].bloom = targetBloom;
+        }
+      }
+    } else if (scope === 'all') {
+      for (const it of Object.values(currentAnswerKey.items)) {
+        it.bloom = targetBloom;
+      }
+    } else {
+      for (const it of Object.values(currentAnswerKey.items)) {
+        if (!it.bloom) it.bloom = targetBloom;
+      }
+    }
+    renderAnswerKeyModalContent();
   });
 
   els.btnKeyFillA?.addEventListener('click', () => {
@@ -10378,6 +10614,7 @@ function initEvents() {
 
     const keyRows = ['Item #,Answer,Points,Bloom'];
     const activeKeyItems = currentAnswerKey.items || {};
+    const keyKeys = Object.keys(activeKeyItems);
     let sortedKeyItems;
     if (keyKeys.length > 0) {
       sortedKeyItems = keyKeys.sort((a, b) => {
@@ -10427,7 +10664,7 @@ function initEvents() {
       const defaultPts = roi ? (roi.points != null ? roi.points : 1) : (grp?.points != null ? grp.points : 1);
       const ans = it ? String(it.answer ?? '') : defaultAns;
       const pts = it ? (it.points ?? 1) : defaultPts;
-      const bloom = it ? (it.bloom || defaultBloomFor(k)) : defaultBloomFor(k);
+      const bloom = (it ? (it.bloom || defaultBloomFor(k)) : defaultBloomFor(k)) || '';
       const formattedAns = ans.includes(',') || ans.includes('"') ? `"${ans.replace(/"/g, '""')}"` : ans;
       keyRows.push(`${k},${formattedAns},${pts},${bloom}`);
     }

@@ -263,12 +263,15 @@ function layoutChoices(zone, ctx, x, y, availW) {
     const usable = (targetW ?? availW) - 2 * PAD;
     columns = Math.max(1, Math.min(count, Math.floor((usable + minBlockGap) / (blockW + minBlockGap))));
   }
-  const rowsPerCol = Math.ceil(count / columns);
   const naturalW = 2 * PAD + columns * blockW + (columns - 1) * minBlockGap;
   const w = targetW ?? naturalW;
   if (w + 0.01 < naturalW) ctx.warn(`Zone "${zone.id}": width ${w}mm is narrower than the ${r3(naturalW)}mm required for ${columns} column(s)`);
 
   const usable = w - 2 * PAD;
+  if (columns > 1 && usable < columns * blockW + (columns - 1) * 1.5) {
+    columns = Math.max(1, Math.min(count, Math.floor((usable + 1.5) / (blockW + 1.5))));
+  }
+  const rowsPerCol = Math.ceil(count / columns);
   let blockPitch = 0;
   let startColX = x + PAD;
 
@@ -327,18 +330,27 @@ function layoutModifiedTrueFalse(zone, ctx, x, y, availW) {
   const bubbleBlockW = numberW + choices.length * bubble.pitchX;
   const customBoxH = zone.boxHeight ?? zone.fieldHeight;
   const customBoxW = zone.boxWidth ?? zone.correctionWidth ?? zone.corrWidth;
-  const correctionW = customBoxW ?? 45;
-  const blockW = bubbleBlockW + correctionW + 2.5;
+  const requestedCorrW = customBoxW ?? 45;
   const titleH = zone.label ? TITLE_H : 0;
 
   let columns = zone.columns == null ? 1 : positiveInt(zone.columns, `Zone "${zone.id}" columns`);
   const targetW = zone.w ?? availW;
-  const rowsPerCol = Math.ceil(count / columns);
   const minBlockGap = 4;
-  const naturalW = 2 * PAD + columns * blockW + (columns - 1) * minBlockGap;
+  const defaultBlockW = bubbleBlockW + requestedCorrW + 2.5;
+  const naturalW = 2 * PAD + columns * defaultBlockW + (columns - 1) * minBlockGap;
   const w = targetW ?? naturalW;
 
   const usable = w - 2 * PAD;
+  const minColBlockW = bubbleBlockW + 12 + 2.5;
+  if (columns > 1 && usable < columns * minColBlockW + (columns - 1) * minBlockGap) {
+    columns = Math.max(1, Math.min(count, Math.floor((usable + minBlockGap) / (minColBlockW + minBlockGap))));
+  }
+  const rowsPerCol = Math.ceil(count / columns);
+  const colAvailW = columns > 1 ? (usable - (columns - 1) * minBlockGap) / columns : usable;
+  const maxCorrW = Math.max(10, r3(colAvailW - bubbleBlockW - 2.5));
+  const correctionW = r3(Math.min(requestedCorrW, maxCorrW));
+  const blockW = bubbleBlockW + correctionW + 2.5;
+
   let blockPitch = 0;
   let startColX = x + PAD;
 
@@ -408,7 +420,7 @@ function layoutModifiedTrueFalse(zone, ctx, x, y, availW) {
   ctx.nextQuestion = start + count;
   const h = 2 * PAD + titleH + sum(rowHeights);
   const pointsPerItem = Number(zone.pointsPerItem ?? zone.points ?? 1);
-  return { bbox: { x, y, w, h }, grids, groups, rois, extra: { start, count, columns, isModified: true, pointsPerItem, ...(zone.showPoints !== undefined ? { showPoints: zone.showPoints } : {}), ...(customRowGap != null ? { rowGap: customRowGap } : {}) } };
+  return { bbox: { x, y, w, h }, grids, groups, rois, extra: { start, count, columns, isModified: true, pointsPerItem, maxBoxW: Math.floor(maxCorrW), ...(zone.showPoints !== undefined ? { showPoints: zone.showPoints } : {}), ...(customRowGap != null ? { rowGap: customRowGap } : {}) } };
 }
 
 function layoutFields(zone, ctx, x, y, availW) {
@@ -466,11 +478,14 @@ function layoutFields(zone, ctx, x, y, availW) {
       if (!field.id) throw new TemplateError(`Zone "${zone.id}": every field needs an "id"`);
       // Last field in row absorbs sub-millimeter rounding so row is strictly full-width
       const isLastInRow = cIdx === group.length - 1;
-      const fieldTotalW = isLastInRow
-        ? Math.max(10, r3((x + PAD + innerW) - curX))
+      const rawFieldW = isLastInRow
+        ? r3((x + PAD + innerW) - curX)
         : (field.w ? r3(field.w * scale) : defaultW);
-      const labelW = field.labelWidth ?? Math.min(22, Math.max(10, (field.label ?? field.id).length * 2.8));
-      const boxW = Math.max(10, fieldTotalW - labelW);
+      const fieldTotalW = Math.max(12, rawFieldW);
+      const idealLabelW = field.labelWidth ?? Math.min(22, Math.max(10, (field.label ?? field.id).length * 2.8));
+      const maxLabelW = Math.max(6, r3(fieldTotalW - 10));
+      const labelW = r3(Math.min(idealLabelW, maxLabelW));
+      const boxW = Math.max(6, r3(fieldTotalW - labelW));
       const isSid = field.id === 'sid' || field.role === 'student_id' || (field.digits != null && field.digits > 0);
       const digits = isSid ? 8 : (field.digits ?? 0);
 
@@ -756,7 +771,42 @@ export function buildLayout(input) {
   let rowTop = content.y;
   let prev = null;
 
-  for (const raw of tpl.zones) {
+  const inlineWidthOverrides = new Map();
+  for (let i = 0; i < tpl.zones.length; i += 1) {
+    const first = tpl.zones[i];
+    if (!first || !isPlainObject(first) || first.inline || first.type === 'fields' || first.type === 'student_id') continue;
+    if (isPlainObject(tpl.zones[i + 1]) && tpl.zones[i + 1].inline) {
+      const groupIndices = [i];
+      let j = i + 1;
+      while (j < tpl.zones.length && isPlainObject(tpl.zones[j]) && tpl.zones[j].inline && tpl.zones[j].type !== 'fields' && tpl.zones[j].type !== 'student_id') {
+        groupIndices.push(j);
+        j += 1;
+      }
+      const totalGaps = groupIndices.slice(1).reduce((acc, idx) => {
+        const g = parseGap(tpl.zones[idx].gapBefore ?? tpl.zones[idx].marginTop) ?? tpl.gap;
+        return acc + g;
+      }, 0);
+      const rawWidths = groupIndices.map((idx) => Number(tpl.zones[idx].w) || halfW);
+      const sumRawW = rawWidths.reduce((a, b) => a + b, 0);
+      const availRowW = Math.max(groupIndices.length * 16, content.w - totalGaps);
+      if (sumRawW + totalGaps > content.w + 0.01 && sumRawW > 0) {
+        let usedW = 0;
+        groupIndices.forEach((idx, k) => {
+          if (k === groupIndices.length - 1) {
+            inlineWidthOverrides.set(idx, r3(Math.max(16, availRowW - usedW)));
+          } else {
+            const wPart = r3(Math.max(16, (rawWidths[k] / sumRawW) * availRowW));
+            inlineWidthOverrides.set(idx, wPart);
+            usedW += wPart;
+          }
+        });
+      }
+      i = j - 1;
+    }
+  }
+
+  for (let zoneIdx = 0; zoneIdx < tpl.zones.length; zoneIdx += 1) {
+    const raw = tpl.zones[zoneIdx];
     if (!isPlainObject(raw)) throw new TemplateError('Every zone must be an object');
     const layoutFn = ZONE_LAYOUTS[raw.type];
     if (!layoutFn) throw new TemplateError(`Unknown zone type "${raw.type}" (expected one of ${ZONE_TYPES.join(', ')})`);
@@ -810,8 +860,10 @@ export function buildLayout(input) {
       availW = isFullWidthZone ? content.w : (contentRight - x);
     }
 
-    let effectiveRaw = (isHalfLeft || isHalfRight) && raw.w == null ? { ...raw, w: halfW } : raw;
-    if (hasMidlineFiducials) {
+    let effectiveRaw = (isHalfLeft || isHalfRight)
+      ? { ...raw, w: raw.w != null ? Math.min(raw.w, halfW) : halfW }
+      : (inlineWidthOverrides.has(zoneIdx) ? { ...raw, w: inlineWidthOverrides.get(zoneIdx) } : raw);
+    if (hasMidlineFiducials || (effectiveRaw.w != null && effectiveRaw.w > Math.max(0, contentRight - x))) {
       if (x < content.x) x = content.x;
       const clampedX = effectiveRaw.x != null ? Math.max(effectiveRaw.x, content.x) : null;
       if (clampedX != null && clampedX > x) x = clampedX;

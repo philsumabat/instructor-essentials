@@ -114,7 +114,10 @@ function zoneSVG(zone, layout, zoneIndex) {
   if (zone.type === 'fields') {
     zone.rows.forEach((row, i) => {
       const roi = zone.rois[i];
-      out.push(text(row.x, row.y + row.h / 2, row.label, { size: typography.label, weight: 700 }));
+      const maxLabelW = Math.max(4, (row.labelW ?? 14) - 0.8);
+      const labelLen = Math.max(1, String(row.label ?? '').length);
+      const labelSize = Math.min(typography.label, Math.max(1.6, maxLabelW / (labelLen * 0.55)));
+      out.push(text(row.x, row.y + row.h / 2, row.label, { size: labelSize, weight: 700 }));
       out.push(`<rect data-roi="${esc(roi.id)}" x="${f(roi.x + 0.15)}" y="${f(roi.y + 0.15)}" width="${f(roi.w - 0.3)}" height="${f(roi.h - 0.3)}" fill="none" stroke="#000" stroke-width="0.3"/>`);
       if (roi.digits > 0) {
         const cellW = (roi.w - 0.3) / roi.digits;

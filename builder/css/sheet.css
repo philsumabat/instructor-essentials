@@ -119,6 +119,10 @@
   align-items: center;
   font-size: var(--omr-font-label);
   font-weight: 700;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  padding-right: 0.8mm;
 }
 
 .omr-write-box {

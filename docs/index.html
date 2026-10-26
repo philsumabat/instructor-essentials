@@ -593,16 +593,71 @@
 
   <!-- Main Wrap -->
   <main class="main-wrap">
-    <!-- Hero Banner -->
-    <section class="hero-banner">
-      <h2 class="hero-title">Instructors' Toolkit</h2>
-      <p class="hero-desc">
-        Print custom exam sheets, grade camera scans, and track class performance.
-      </p>
+    <!-- Hero Banner & Concise Getting Started Flow -->
+    <section class="hero-banner" id="home-hero-banner" style="padding: 1.5rem 2rem;">
+      <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 1.5rem; flex-wrap: wrap;">
+        <div>
+          <h2 class="hero-title" style="font-size: 1.45rem; margin-bottom: 0.25rem;">Instructors' Toolkit</h2>
+          <p class="hero-desc" style="font-size: 0.88rem;">
+            Print custom exam sheets, grade camera scans, and track class performance.
+          </p>
+        </div>
+        <div id="getting-started-strip" style="display: flex; align-items: center; gap: 0.65rem; flex-wrap: wrap; font-size: 0.78rem; color: var(--text-muted); background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 0.55rem 0.85rem;">
+          <strong style="color: var(--text);">Getting Started:</strong>
+          <span><strong>1.</strong> Design sheet in Builder</span>
+          <span aria-hidden="true">&rarr;</span>
+          <span><strong>2.</strong> Print at 100% scale</span>
+          <span aria-hidden="true">&rarr;</span>
+          <span><strong>3.</strong> Grade scans in Checker</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Projects & Workspaces Hub (Prioritized at top for returning instructors) -->
+    <section id="recent-work-section">
+      <div class="section-header">
+        <h3 class="section-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          <span>Recent Projects &amp; Sessions</span>
+        </h3>
+        <span id="recent-work-summary" style="font-size: 0.78rem; color: var(--text-muted);"></span>
+      </div>
+
+      <div class="dashboard-grid">
+        <!-- Active Grading Session Box -->
+        <div class="dash-box" id="box-active-session">
+          <div class="dash-box__head">
+            <div class="dash-box__title">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              <span>Active Grading Session</span>
+            </div>
+            <span id="session-status-badge" class="badge" style="font-size: 0.7rem; padding: 0.12rem 0.5rem; background: var(--panel-alt); border: 1px solid var(--border); border-radius: var(--radius-full); font-weight: 600; color: var(--text-muted);">No session</span>
+          </div>
+
+          <div id="session-content-area">
+            <!-- Populated dynamically via JS -->
+          </div>
+        </div>
+
+        <!-- Saved Exam Builds Box -->
+        <div class="dash-box" id="box-saved-builds">
+          <div class="dash-box__head">
+            <div class="dash-box__title">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/></svg>
+              <span>Saved Sheet Builds</span>
+            </div>
+            <a href="builder.html" class="btn btn--secondary btn--xs">Open Builder</a>
+          </div>
+
+          <div class="build-list" id="saved-builds-container">
+            <!-- Populated dynamically via JS -->
+          </div>
+        </div>
+      </div>
     </section>
 
     <!-- Primary Tool Launchers -->
-    <section class="launchers-grid">
+    <section class="launchers-grid" aria-label="Workflow Launchers">
       <!-- Card 1: Sheet Builder -->
       <article class="tool-card">
         <div class="tool-card__header">
@@ -625,7 +680,7 @@
 
         <div class="tool-card__actions">
           <a href="builder.html" class="btn btn--primary" style="width: 100%; font-size: 0.9rem; padding: 0.6rem 1rem;">
-            <span>Launch Sheet Builder</span>
+            <span>Edit Sheet in Builder</span>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"/></svg>
           </a>
           <div class="tool-card__sub-actions">
@@ -659,12 +714,12 @@
 
         <div class="tool-card__actions">
           <a href="checker.html" class="btn btn--accent" style="width: 100%; font-size: 0.9rem; padding: 0.6rem 1rem;">
-            <span>Launch Checker Studio</span>
+            <span>Open Checker Studio</span>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"/></svg>
           </a>
           <div class="tool-card__sub-actions">
             <a href="checker.html?action=new" class="btn btn--secondary btn--sm" style="width: 100%; justify-content: center;" title="Grade New Class (New Exam Session)">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/></svg>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
               <span>Grade New Class</span> <!-- New Exam Session -->
             </a>
           </div>
@@ -672,50 +727,13 @@
       </article>
     </section>
 
-    <!-- Projects & Workspaces Hub -->
-    <section>
-      <div class="section-header">
-        <h3 class="section-title">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-          <span>Recent Projects &amp; Sessions</span>
-        </h3>
-        <button type="button" id="btn-clear-all-workspaces" class="btn btn--secondary btn--xs is-danger" title="Clear all local grading sessions and draft sheets for a completely fresh start">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/></svg>
-          <span>Clear All Workspaces</span>
-        </button>
-      </div>
-
-      <div class="dashboard-grid">
-        <!-- Active Grading Session Box -->
-        <div class="dash-box" id="box-active-session">
-          <div class="dash-box__head">
-            <div class="dash-box__title">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-              <span>Active Grading Session</span>
-            </div>
-            <span id="session-status-badge" class="badge" style="font-size: 0.7rem; padding: 0.1rem 0.45rem; background: var(--panel-alt); border: 1px solid var(--border); border-radius: var(--radius-full); font-weight: 600; color: var(--text-muted);">Cached</span>
-          </div>
-
-          <div id="session-content-area">
-            <!-- Populated dynamically via JS -->
-          </div>
-        </div>
-
-        <!-- Saved Exam Builds Box -->
-        <div class="dash-box" id="box-saved-builds">
-          <div class="dash-box__head">
-            <div class="dash-box__title">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/></svg>
-              <span>Saved Sheet Builds</span>
-            </div>
-            <a href="builder.html" class="btn btn--secondary btn--xs">Design New</a>
-          </div>
-
-          <div class="build-list" id="saved-builds-container">
-            <!-- Populated dynamically via JS -->
-          </div>
-        </div>
-      </div>
+    <!-- Separated Destructive Workspace Maintenance Footer -->
+    <section style="border-top: 1px solid var(--border); padding-top: 1.15rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; font-size: 0.76rem; color: var(--text-muted);">
+      <span>Local browser storage keeps your active sheet draft and grading session available offline between visits.</span>
+      <button type="button" id="btn-clear-all-workspaces" class="btn btn--secondary btn--xs is-danger" title="Clear active local grading session and unsaved sheet draft">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/></svg>
+        <span>Clear All Workspaces</span>
+      </button>
     </section>
   </main>
 
@@ -727,9 +745,14 @@
     const PROGRESS_STORAGE_KEY = 'instructor_checker_progress_v1';
     const BUILDS_STORAGE_KEY = 'sheet-builder:saved_builds';
     const LEGACY_BUILDS_KEY = 'grader:saved_builds';
+    const ACTIVE_TEMPLATE_KEY = 'sheet-builder:template';
     const DEFAULT_GOOGLE_CLIENT_ID = '998750275888-cbvmqvjbfopbsv0oe5pu238grrpv7chm.apps.googleusercontent.com';
 
     function $(id) { return document.getElementById(id); }
+
+    function escapeHtml(s) {
+      return String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
 
     function showToast(msg) {
       let toast = $('app-toast');
@@ -880,56 +903,86 @@
       showToast('Signed out of Google account.');
     }
 
+    function getStoredSession() {
+      try {
+        const raw = localStorage.getItem(PROGRESS_STORAGE_KEY);
+        if (raw) return JSON.parse(raw);
+      } catch {}
+      return null;
+    }
+
     // ---- Render Active Session & Builds ----
     function renderActiveSession() {
       const container = $('session-content-area');
       const badge = $('session-status-badge');
       if (!container) return;
 
-      let session = null;
-      try {
-        const raw = localStorage.getItem(PROGRESS_STORAGE_KEY);
-        if (raw) session = JSON.parse(raw);
-      } catch {}
+      const session = getStoredSession();
+      const grades = session?.results?.grades || [];
+      const hasLayoutOrKey = Boolean(session && (session.layout || session.key));
 
-      if (!session || !session.results || !session.results.grades || session.results.grades.length === 0) {
+      if (!session || (grades.length === 0 && !hasLayoutOrKey)) {
         if (badge) {
-          badge.textContent = 'Empty';
+          badge.textContent = 'No session';
           badge.style.color = 'var(--text-muted)';
+          badge.style.background = 'var(--panel-alt)';
+          badge.style.borderColor = 'var(--border)';
         }
         container.innerHTML = `
-          <div class="empty-placeholder">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="margin: 0 auto 0.4rem; color: var(--text-muted); display: block;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-            No active grading session stored.<br>
-            <span style="font-size: 0.76rem; color: var(--text-muted);">Launch Checker Studio to grade student scans.</span>
+          <div class="empty-placeholder" style="padding: 1.5rem 1rem;">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="margin: 0 auto 0.35rem; color: var(--text-muted); display: block;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <strong>No active grading session</strong><br>
+            <span style="font-size: 0.76rem; color: var(--text-muted);">Start grading from a saved sheet build on the right or open Checker Studio.</span>
           </div>
         `;
         return;
       }
 
-      if (badge) {
-        badge.textContent = 'Active';
-        badge.style.color = '#34d399';
-        badge.style.borderColor = 'rgba(16, 185, 129, 0.4)';
-        badge.style.background = 'rgba(16, 185, 129, 0.1)';
-      }
-
-      const grades = session.results.grades;
       const count = grades.length;
+      const reviewCount = grades.filter((g) => g && g.needs_review).length;
       const examTitle = session.examTitle || session.key?.title || session.layout?.title || 'Graded Exam';
       const dateStr = session.savedAt ? new Date(session.savedAt).toLocaleString() : 'Recently';
+
+      let stateLabel = 'In progress';
+      let stateColor = 'var(--accent)';
+      let stateBg = 'var(--accent-light)';
+      let stateBorder = 'var(--border-focus)';
+
+      if (count > 0 && reviewCount > 0) {
+        stateLabel = 'Needs review';
+        stateColor = 'var(--warning)';
+        stateBg = 'var(--warning-light)';
+        stateBorder = 'rgba(245, 158, 11, 0.4)';
+      } else if (count > 0) {
+        stateLabel = 'Completed';
+        stateColor = 'var(--success)';
+        stateBg = 'var(--success-light)';
+        stateBorder = 'rgba(16, 185, 129, 0.4)';
+      }
+
+      if (badge) {
+        badge.textContent = stateLabel;
+        badge.style.color = stateColor;
+        badge.style.borderColor = stateBorder;
+        badge.style.background = stateBg;
+      }
+
+      const statusSub = count > 0
+        ? `<strong>${count}</strong> sheet${count === 1 ? '' : 's'} graded${reviewCount > 0 ? ` • <strong style="color: var(--warning);">${reviewCount} need${reviewCount === 1 ? 's' : ''} review</strong>` : ' • All reviewed'} • ${escapeHtml(dateStr)}`
+        : `Layout &amp; key loaded • Ready for student scans • ${escapeHtml(dateStr)}`;
 
       container.innerHTML = `
         <div style="display: flex; flex-direction: column; gap: 0.75rem;">
           <div>
-            <h4 style="font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 0.2rem;">${examTitle}</h4>
+            <h4 style="font-size: 0.98rem; font-weight: 700; color: var(--text); margin-bottom: 0.2rem;">${escapeHtml(examTitle)}</h4>
             <div style="font-size: 0.78rem; color: var(--text-muted);">
-              <strong>${count}</strong> student sheet${count === 1 ? '' : 's'} graded • Saved: ${dateStr}
+              ${statusSub}
             </div>
           </div>
-          <div style="display: flex; gap: 0.5rem; align-items: center; margin-top: 0.25rem;">
-            <a href="checker.html" class="btn btn--primary btn--sm" style="flex: 1; text-align: center;">Resume Session</a>
-            <button type="button" id="btn-clear-session-home" class="btn btn--secondary btn--sm is-danger" title="Purge this session from storage">Clear Session</button>
+          <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; margin-top: 0.2rem;">
+            <a href="checker.html" class="btn btn--primary btn--sm" style="flex: 1; text-align: center;">Resume grading</a>
+            <a href="builder.html" class="btn btn--secondary btn--sm" title="Edit the exam sheet layout in Sheet Builder">Edit sheet</a>
+            <button type="button" id="btn-clear-session-home" class="btn btn--secondary btn--xs is-danger" title="Remove this grading session from local storage">Clear</button>
           </div>
         </div>
       `;
@@ -939,7 +992,8 @@
           localStorage.removeItem(PROGRESS_STORAGE_KEY);
         } catch {}
         renderActiveSession();
-        showToast('✓ Grading session purged from workspace.');
+        renderSavedBuilds();
+        showToast('✓ Grading session cleared.');
       });
     }
 
@@ -952,39 +1006,122 @@
         const raw = localStorage.getItem(BUILDS_STORAGE_KEY) || localStorage.getItem(LEGACY_BUILDS_KEY);
         if (raw) builds = JSON.parse(raw);
       } catch {}
+      if (!Array.isArray(builds)) builds = [];
 
-      if (!Array.isArray(builds) || builds.length === 0) {
+      // Also check if there is an active unsaved draft in Sheet Builder
+      let activeDraft = null;
+      try {
+        const rawDraft = localStorage.getItem(ACTIVE_TEMPLATE_KEY);
+        if (rawDraft) {
+          const parsedDraft = JSON.parse(rawDraft);
+          if (parsedDraft && Array.isArray(parsedDraft.zones) && parsedDraft.zones.length > 0) {
+            const alreadyInBuilds = builds.some((b) => (b.id && b.id === parsedDraft.id) || (b.title && b.title === parsedDraft.title));
+            if (!alreadyInBuilds) {
+              activeDraft = {
+                id: parsedDraft.id || 'draft',
+                title: parsedDraft.title || 'Current Sheet Draft',
+                paper: parsedDraft.paper || 'Folio',
+                template: parsedDraft,
+                isDraft: true,
+              };
+            }
+          }
+        }
+      } catch {}
+
+      const allItems = activeDraft ? [activeDraft, ...builds] : builds;
+      const session = getStoredSession();
+      const sessionTitle = (session?.examTitle || session?.layout?.title || '').trim().toLowerCase();
+      const sessionTemplateId = session?.layout?.templateId || '';
+
+      const gettingStartedEl = $('getting-started-strip');
+      if (gettingStartedEl) {
+        const hasAnyWork = allItems.length > 0 || Boolean(session?.results?.grades?.length);
+        gettingStartedEl.style.display = hasAnyWork ? 'none' : 'flex';
+      }
+
+      if (allItems.length === 0) {
         container.innerHTML = `
-          <div class="empty-placeholder">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="margin: 0 auto 0.4rem; color: var(--text-muted); display: block;"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/></svg>
-            No custom sheet builds saved in browser library yet.<br>
-            <span style="font-size: 0.76rem; color: var(--text-muted);">Create sheets in Sheet Builder and click "Save Build".</span>
+          <div class="empty-placeholder" style="padding: 1.5rem 1rem;">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="margin: 0 auto 0.35rem; color: var(--text-muted); display: block;"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/></svg>
+            <strong>No saved sheet builds yet</strong><br>
+            <span style="font-size: 0.76rem; color: var(--text-muted);">Create a sheet in Sheet Builder and click "Save Build" to reuse it across classes.</span>
           </div>
         `;
         return;
       }
 
-      container.innerHTML = builds.map((b) => {
-        const title = b.title || 'Untitled Exam Sheet';
-        const paper = b.paper || 'Folio';
-        const dateStr = b.updatedAt || b.savedAt ? new Date(b.updatedAt || b.savedAt).toLocaleDateString() : '';
+      container.innerHTML = allItems.map((b, idx) => {
+        const tpl = b.template || b;
+        const title = b.title || tpl.title || 'Untitled Exam Sheet';
+        const paper = b.paper || tpl.paper || 'Folio';
+        const dateStr = b.updatedAt || b.savedAt ? new Date(b.updatedAt || b.savedAt).toLocaleDateString() : (b.isDraft ? 'Active draft' : 'Saved');
+        const hasKey = Boolean(tpl.answerKey && tpl.answerKey.items && Object.keys(tpl.answerKey.items).length > 0);
+        const matchesSession = Boolean(
+          session?.results?.grades?.length &&
+          ((sessionTemplateId && (b.id === sessionTemplateId || tpl.id === sessionTemplateId)) ||
+           (sessionTitle && title.trim().toLowerCase() === sessionTitle))
+        );
+
+        let badgeText = b.isDraft ? 'Draft' : (hasKey ? 'Ready to grade' : 'Draft');
+        let badgeStyle = b.isDraft || !hasKey
+          ? 'background: var(--panel); color: var(--text-muted); border: 1px solid var(--border);'
+          : 'background: var(--accent-light); color: var(--accent); border: 1px solid var(--border-focus);';
+
+        if (matchesSession) {
+          const revCount = (session.results.grades || []).filter((g) => g && g.needs_review).length;
+          badgeText = revCount > 0 ? 'Needs review' : 'Completed';
+          badgeStyle = revCount > 0
+            ? 'background: var(--warning-light); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.4);'
+            : 'background: var(--success-light); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.4);';
+        }
+
         return `
-          <div class="build-item">
+          <div class="build-item" data-build-idx="${idx}">
             <div class="build-item__info">
-              <div class="build-item__title">${title}</div>
-              <div class="build-item__meta">${paper} • ${dateStr || 'Saved'}</div>
+              <div style="display: flex; align-items: center; gap: 0.45rem; flex-wrap: wrap;">
+                <span class="build-item__title">${escapeHtml(title)}</span>
+                <span style="font-size: 0.66rem; font-weight: 700; padding: 0.08rem 0.42rem; border-radius: 999px; ${badgeStyle}">${badgeText}</span>
+              </div>
+              <div class="build-item__meta">${escapeHtml(paper)} • ${escapeHtml(dateStr)}${hasKey ? ' • Key attached' : ''}</div>
             </div>
-            <div style="display: flex; gap: 0.35rem;">
-              <a href="builder.html" class="btn btn--secondary btn--xs" title="Open and edit build in Sheet Builder">Edit</a>
+            <div style="display: flex; gap: 0.35rem; flex-shrink: 0; flex-wrap: wrap;">
+              <a href="builder.html" class="btn btn--secondary btn--xs btn-home-edit-sheet" data-build-idx="${idx}" title="Open and edit this sheet in Sheet Builder">Edit sheet</a>
+              <a href="checker.html" class="btn btn--secondary btn--xs btn-home-grade-sheet" data-build-idx="${idx}" style="color: var(--accent); border-color: var(--border-focus);" title="Open Checker Studio with this sheet">Start grading from this sheet</a>
             </div>
           </div>
         `;
       }).join('');
+
+      container.querySelectorAll('.btn-home-edit-sheet').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const idx = parseInt(btn.dataset.buildIdx, 10);
+          const chosen = allItems[idx];
+          if (chosen) {
+            try {
+              localStorage.setItem(ACTIVE_TEMPLATE_KEY, JSON.stringify(chosen.template || chosen));
+            } catch {}
+          }
+        });
+      });
+
+      container.querySelectorAll('.btn-home-grade-sheet').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const idx = parseInt(btn.dataset.buildIdx, 10);
+          const chosen = allItems[idx];
+          if (chosen) {
+            try {
+              localStorage.setItem(ACTIVE_TEMPLATE_KEY, JSON.stringify(chosen.template || chosen));
+            } catch {}
+          }
+        });
+      });
     }
 
     function clearAllWorkspaces() {
       try {
         localStorage.removeItem(PROGRESS_STORAGE_KEY);
+        localStorage.removeItem(ACTIVE_TEMPLATE_KEY);
         localStorage.removeItem('instructor_sheet_builder_template');
         localStorage.removeItem('grader_sheet_builder_template');
       } catch {}
@@ -1022,8 +1159,9 @@
       }
       if (e.key === PROGRESS_STORAGE_KEY) {
         renderActiveSession();
+        renderSavedBuilds();
       }
-      if (e.key === BUILDS_STORAGE_KEY || e.key === LEGACY_BUILDS_KEY) {
+      if (e.key === BUILDS_STORAGE_KEY || e.key === LEGACY_BUILDS_KEY || e.key === ACTIVE_TEMPLATE_KEY) {
         renderSavedBuilds();
       }
     });

@@ -139,6 +139,10 @@
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
             Download Printable HTML
           </button>
+          <button type="button" id="btn-open-key-editor">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 3-9.5 9.5"/><path d="m15.5 7.5 3 3M18 5l2 2"/></svg>
+            Edit Answer Key &amp; Bloom's Levels...
+          </button>
           <button type="button" id="dl-key-sheet-html">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
             Answer Key Sheet (HTML / Print)
@@ -166,7 +170,7 @@
     <aside class="panel studio-sidebar app-chrome" id="builder-sidebar" aria-label="Sheet Builder Sidebar">
       <!-- Sidebar Header & Collapse Toggle -->
       <div class="sidebar-header" style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 0.4rem; border-bottom: 1px solid var(--border);">
-        <span style="font-weight: 700; font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Sheet Setup</span>
+        <span style="font-weight: 700; font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Exam-Wide Setup</span>
         <button type="button" id="btn-toggle-builder-sidebar" class="btn btn--secondary btn--sm" title="Collapse sidebar to expand answering canvas" style="display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.25rem 0.5rem; font-size: 0.72rem;">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
           <span>Collapse</span>
@@ -223,7 +227,7 @@
         </button>
         <button type="button" class="studio-tab-btn" data-tab="inspector">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-          <span>Settings</span>
+          <span>Block Settings</span>
         </button>
         <button type="button" class="studio-tab-btn" data-tab="outline">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
@@ -233,20 +237,9 @@
 
       <!-- Tab Content 1: Component Palette (Draggable Cards) -->
       <div class="studio-tab-panel is-active" id="panel-palette">
-        <p class="panel-hint">Drag any card onto the exam sheet, or click <strong>+ Add</strong> to place it at the end.</p>
+        <p class="panel-hint">Drag any block onto the sheet, or click <strong>+ Add</strong> to append it.</p>
         <div class="palette-grid">
-          <!-- Student Info Card (with integrated Student ID digit boxes) -->
-          <div class="palette-card" draggable="true" data-type="fields">
-            <div class="palette-card__icon" aria-hidden="true">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-            </div>
-            <div class="palette-card__body">
-              <h3 class="palette-card__title">Student Info &amp; ID</h3>
-              <p class="palette-card__desc">Name, ID no. digit boxes, Score box, Date &amp; Section</p>
-            </div>
-            <button type="button" class="btn-palette-add" title="Add Student Info to sheet">+ Add</button>
-          </div>
-
+          <div class="palette-group-label">Objective Bubble Sections</div>
           <!-- Multiple Choice Card -->
           <div class="palette-card" draggable="true" data-type="mcq">
             <div class="palette-card__icon" aria-hidden="true">
@@ -283,6 +276,7 @@
             <button type="button" class="btn-palette-add" title="Add Modified True/False to sheet">+ Add</button>
           </div>
 
+          <div class="palette-group-label">Written Response Sections</div>
           <!-- Short Answer Card -->
           <div class="palette-card" draggable="true" data-type="text_short">
             <div class="palette-card__icon" aria-hidden="true">
@@ -305,6 +299,19 @@
               <p class="palette-card__desc">Multi-line extended explanation / proof box</p>
             </div>
             <button type="button" class="btn-palette-add" title="Add Essay Answer to sheet">+ Add</button>
+          </div>
+
+          <div class="palette-group-label">Header &amp; Directions</div>
+          <!-- Student Info Card (with integrated Student ID digit boxes) -->
+          <div class="palette-card" draggable="true" data-type="fields">
+            <div class="palette-card__icon" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+            <div class="palette-card__body">
+              <h3 class="palette-card__title">Student Info &amp; ID</h3>
+              <p class="palette-card__desc">Name, ID no. digit boxes, Score box, Date &amp; Section</p>
+            </div>
+            <button type="button" class="btn-palette-add" title="Add Student Info to sheet">+ Add</button>
           </div>
 
           <!-- Instructions Card -->
@@ -370,15 +377,16 @@
           <span>Controls ◨</span>
         </button>
 
-        <div class="zoom-controls">
-          <button type="button" id="btn-zoom-out" class="btn-icon" title="Zoom out">−</button>
+        <div class="zoom-controls" title="Screen preview zoom only — printed sheets always output at 100% physical millimeter scale">
+          <span style="font-size: 0.7rem; font-weight: 600; color: var(--text-muted); margin-right: 0.2rem;">Preview Zoom:</span>
+          <button type="button" id="btn-zoom-out" class="btn-icon" title="Zoom out preview">−</button>
           <span id="zoom-label" class="zoom-label">100%</span>
-          <button type="button" id="btn-zoom-in" class="btn-icon" title="Zoom in">+</button>
-          <button type="button" id="btn-zoom-fit" class="btn-chip" title="Fit to window">Fit</button>
-          <button type="button" id="btn-zoom-reset" class="btn-chip" title="Actual size">100%</button>
+          <button type="button" id="btn-zoom-in" class="btn-icon" title="Zoom in preview">+</button>
+          <button type="button" id="btn-zoom-fit" class="btn-chip" title="Fit preview to window">Fit</button>
+          <button type="button" id="btn-zoom-reset" class="btn-chip" title="100% screen preview">100%</button>
         </div>
 
-        <div class="paper-badge" id="paper-badge">Folio · 215.9 × 330.2 mm</div>
+        <div class="paper-badge" id="paper-badge" title="Physical paper size (prints at 100% actual scale)">Folio · 215.9 × 330.2 mm</div>
 
         <div class="render-mode-toggle" role="radiogroup" aria-label="Render Mode">
           <button type="button" class="render-mode-btn is-active" data-mode="dom" title="DOM CSS Grid (Printable)">DOM</button>
@@ -416,6 +424,7 @@
           <span class="stat-fill-bar"><span id="stat-fill-bar-inner" class="stat-fill-bar__inner"></span></span>
           <strong id="stat-fill">0%</strong>
         </div>
+        <span id="overflow-action-hint" style="display: none; font-size: 0.72rem; font-weight: 600; color: var(--danger); margin-left: 0.4rem;"></span>
       </div>
     </main>
   </div>
@@ -662,9 +671,30 @@
             <span class="key-metric-label">Passing Score</span>
             <input type="number" id="key-passing-input" class="key-passing-input" value="0" min="0" title="Passing score required to pass">
           </div>
+          <div class="key-metric-pill" title="Optional Bloom's Taxonomy cognitive level assignment status">
+            <span class="key-metric-label">Bloom's</span>
+            <strong id="key-bloom-status-badge" style="font-size: 0.76rem; color: var(--text-muted);">Optional</strong>
+          </div>
         </div>
 
-        <div class="key-actions-row">
+        <div class="key-actions-row" style="flex-wrap: wrap; gap: 0.35rem;">
+          <div style="display: inline-flex; align-items: center; gap: 0.25rem; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.15rem 0.35rem;" title="Bulk-assign a Bloom's cognitive level to a section, item range, or all unassigned questions">
+            <span style="font-size: 0.7rem; font-weight: 600; color: var(--text-muted);">Bulk Bloom:</span>
+            <select id="key-bulk-bloom-scope" style="font-size: 0.72rem; padding: 0.12rem 0.25rem; border: 1px solid var(--border); border-radius: 3px; background: var(--bg); color: var(--text);">
+              <option value="unassigned">Unassigned Items</option>
+              <option value="all">All Items</option>
+            </select>
+            <select id="key-bulk-bloom-level" style="font-size: 0.72rem; padding: 0.12rem 0.25rem; border: 1px solid var(--border); border-radius: 3px; background: var(--bg); color: var(--text);">
+              <option value="">Bloom (Optional)</option>
+              <option value="Remember">Remember</option>
+              <option value="Understand">Understand</option>
+              <option value="Apply">Apply</option>
+              <option value="Analyze">Analyze</option>
+              <option value="Evaluate">Evaluate</option>
+              <option value="Create">Create</option>
+            </select>
+            <button type="button" id="btn-key-apply-bulk-bloom" class="btn btn--secondary btn-xs" style="padding: 0.12rem 0.4rem;">Apply</button>
+          </div>
           <button type="button" id="btn-key-fill-a" class="btn btn--secondary btn-xs" title="Set all multiple-choice answers to A">All A</button>
           <button type="button" id="btn-key-fill-t" class="btn btn--secondary btn-xs" title="Set all True/False answers to True">All T</button>
           <button type="button" id="btn-key-random" class="btn btn--secondary btn-xs" title="Quickly generate a sample key for testing">Sample Key</button>

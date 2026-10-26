@@ -303,7 +303,7 @@ const DEFAULT_SHEET_CSS = `/* Printable OMR sheet styles */
 .omr-num, .omr-item-num { font-size: var(--omr-font-number) !important; font-weight: 700; font-variant-numeric: tabular-nums; }
 .omr-num { align-self: start; height: var(--omr-pitch-y); display: flex; align-items: center; justify-content: flex-end; padding-right: 1.2mm; }
 .omr-digit-box { justify-self: center; width: calc(100% - 0.8mm); height: 100%; border: 0.25mm solid #000; }
-.omr-field-label { display: flex; align-items: center; font-size: var(--omr-font-label); font-weight: 700; }
+.omr-field-label { display: flex; align-items: center; font-size: var(--omr-font-label); font-weight: 700; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; padding-right: 0.8mm; }
 .omr-write-box { border: 0.3mm solid #000; }
 .omr-partitioned-digits { display: grid; border: 0.3mm solid #000; background: #fff; }
 .omr-partitioned-digits .omr-digit-box { width: 100%; height: 100%; border: none; border-right: 0.25mm solid #000; }
@@ -2202,6 +2202,21 @@ function renderMeta(layout) {
   els.statFillBar.classList.toggle('is-warning', fillPct > 95 && fillPct <= 100);
   els.statFillBar.classList.toggle('is-danger', fillPct > 100);
 
+  const overflowHintEl = $('#overflow-action-hint');
+  if (overflowHintEl) {
+    if (fillPct > 100) {
+      overflowHintEl.textContent = '⚠️ Page overflow — try Compact density, more columns, or smaller block spacing';
+      overflowHintEl.style.display = 'inline';
+    } else if (fillPct > 94) {
+      overflowHintEl.textContent = 'Near page limit';
+      overflowHintEl.style.color = 'var(--warning)';
+      overflowHintEl.style.display = 'inline';
+    } else {
+      overflowHintEl.textContent = '';
+      overflowHintEl.style.display = 'none';
+    }
+  }
+
   els.paperBadge.textContent = `${layout.page.paper} · ${layout.page.width} × ${layout.page.height} mm`;
 
   // Warnings
@@ -2369,10 +2384,29 @@ function downloadCurrentAnswerKeyCSV() {
     const it = currentAnswerKey.items[k];
     const ans = String(it.answer || '');
     const formattedAns = ans.includes(',') || ans.includes('"') ? `"${ans.replace(/"/g, '""')}"` : ans;
-    rows.push(`${k},${formattedAns},${it.points ?? 1},${it.bloom || defaultBloomFor(k)}`);
+    rows.push(`${k},${formattedAns},${it.points ?? 1},${it.bloom || defaultBloomFor(k) || ''}`);
   }
   const baseId = state.layout?.templateId || 'exam';
   download(`${baseId}-answer-key.csv`, rows.join('\n') + '\n', 'text/csv');
+}
+
+function updateBloomStatusBadge() {
+  const badgeEl = $('#key-bloom-status-badge');
+  if (!badgeEl) return;
+  const items = Object.values(currentAnswerKey.items || {});
+  const total = items.length;
+  const assigned = items.filter((it) => Boolean(it && it.bloom)).length;
+  const unassigned = total - assigned;
+  if (total === 0 || assigned === 0) {
+    badgeEl.textContent = 'Optional (0 tagged)';
+    badgeEl.style.color = 'var(--text-muted)';
+  } else if (unassigned === 0) {
+    badgeEl.textContent = `All ${total} tagged ✓`;
+    badgeEl.style.color = 'var(--success)';
+  } else {
+    badgeEl.textContent = `${assigned}/${total} (${unassigned} unassigned)`;
+    badgeEl.style.color = 'var(--accent)';
+  }
 }
 
 function openAnswerKeyModal() {
@@ -2491,6 +2525,31 @@ function renderAnswerKeyModalContent() {
   if (els.keyPassingInput) {
     els.keyPassingInput.value = currentAnswerKey.passScore;
   }
+  updateBloomStatusBadge();
+
+  const bulkScopeSelect = $('#key-bulk-bloom-scope');
+  if (bulkScopeSelect) {
+    const prevScope = bulkScopeSelect.value || 'unassigned';
+    const scopeOpts = [
+      '<option value="unassigned">Unassigned Items</option>',
+      '<option value="all">All Items</option>',
+    ];
+    for (const zone of layout.zones) {
+      const zKeys = [
+        ...zone.groups.filter((g) => g.kind === 'mcq' || g.kind === 'tf').map((g) => String(g.key)),
+        ...(zone.rois || []).filter((r) => r.graded !== false && r.role !== 'name' && r.role !== 'student_id' && r.role !== 'score' && r.role !== 'signature').map((r) => String(r.key || r.id)),
+      ];
+      if (zKeys.length > 0) {
+        const defaultTitle = zone.type === 'text_essay' ? 'Essay' : (zone.type === 'text_short' || zone.type === 'text' ? 'Short Answer' : zone.type.toUpperCase());
+        const zTitle = zone.label || defaultTitle;
+        scopeOpts.push(`<option value="zone:${safeEscapeHTML(zone.id)}">${safeEscapeHTML(zTitle)} (${zKeys.length})</option>`);
+      }
+    }
+    bulkScopeSelect.innerHTML = scopeOpts.join('');
+    if ([...bulkScopeSelect.options].some((o) => o.value === prevScope)) {
+      bulkScopeSelect.value = prevScope;
+    }
+  }
 
   if (totalItems === 0) {
     els.keyItemsContainer.innerHTML = `
@@ -2563,10 +2622,24 @@ function renderAnswerKeyModalContent() {
     const defaultTitle = zone.type === 'text_essay' ? 'Essay / Discussion Questions' : (zone.type === 'text_short' || zone.type === 'text' ? 'Short Answer / Identification' : zone.type.toUpperCase());
     const zoneTitle = zone.label || defaultTitle;
     const zoneCols = Math.min(3, Math.max(1, zone.columns ? Math.min(3, zone.columns) : 2));
+    const sectionItemKeys = [
+      ...zoneGroups.map((g) => String(g.key)),
+      ...zoneRois.map((r) => String(r.key || r.id)),
+    ];
 
     html += `
-      <div class="key-section-card">
-        <h4 class="key-section-title">${safeEscapeHTML(zoneTitle)}</h4>
+      <div class="key-section-card" data-zone-id="${safeEscapeHTML(zone.id)}">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.45rem; flex-wrap: wrap;">
+          <h4 class="key-section-title" style="margin: 0;">${safeEscapeHTML(zoneTitle)}</h4>
+          <div style="display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.72rem; color: var(--text-muted);">
+            <span>Section Bloom's:</span>
+            <select class="key-section-bloom-select" data-keys="${safeEscapeHTML(sectionItemKeys.join(','))}" style="font-size: 0.72rem; padding: 0.1rem 0.3rem; border-radius: 3px; border: 1px solid var(--border); background: var(--bg); color: var(--text);" title="Assign Bloom's cognitive level to all items in this section">
+              <option value="">Set section level...</option>
+              <option value="__clear__">Clear section Bloom</option>
+              ${BLOOM_LEVELS.map((lvl) => `<option value="${lvl}">${lvl}</option>`).join('')}
+            </select>
+          </div>
+        </div>
     `;
 
     if (zoneGroups.length > 0) {
@@ -2593,7 +2666,7 @@ function renderAnswerKeyModalContent() {
             </div>
             <div style="display: flex; align-items: center; gap: 0.3rem; flex-shrink: 0;">
               <select class="key-bloom-select" data-key="${g.key}" title="Bloom's Cognitive Level">
-                <option value="" ${!currentBloom ? 'selected' : ''}>None</option>
+                <option value="" ${!currentBloom ? 'selected' : ''}>Bloom (Optional)</option>
                 ${BLOOM_LEVELS.map((lvl) => `<option value="${lvl}" ${currentBloom === lvl ? 'selected' : ''}>${lvl}</option>`).join('')}
               </select>
               <input type="number" class="key-pts-input" data-key="${g.key}" value="${item.points}" min="0.5" max="50" step="0.5" title="Points">
@@ -2623,7 +2696,7 @@ function renderAnswerKeyModalContent() {
             </div>
             <div style="display: flex; align-items: center; gap: 0.35rem; flex-shrink: 0;">
               <select class="key-bloom-select" data-key="${rKey}" title="Bloom's Cognitive Level">
-                <option value="" ${!currentBloom ? 'selected' : ''}>None</option>
+                <option value="" ${!currentBloom ? 'selected' : ''}>Bloom (Optional)</option>
                 ${BLOOM_LEVELS.map((lvl) => `<option value="${lvl}" ${currentBloom === lvl ? 'selected' : ''}>${lvl}</option>`).join('')}
               </select>
               <input type="number" class="key-pts-input" data-key="${rKey}" value="${item.points}" min="0.5" max="50" step="0.5" title="Points">
@@ -2667,7 +2740,7 @@ function renderAnswerKeyModalContent() {
             </div>
             <div style="display: flex; align-items: center; gap: 0.3rem; flex-shrink: 0;">
               <select class="key-bloom-select" data-key="${k}" title="Bloom's Cognitive Level">
-                <option value="" ${!currentBloom ? 'selected' : ''}>None</option>
+                <option value="" ${!currentBloom ? 'selected' : ''}>Bloom (Optional)</option>
                 ${BLOOM_LEVELS.map((lvl) => `<option value="${lvl}" ${currentBloom === lvl ? 'selected' : ''}>${lvl}</option>`).join('')}
               </select>
               <input type="number" class="key-pts-input" data-key="${k}" value="${item.points}" min="0.5" max="50" step="0.5" title="Points">
@@ -2692,7 +2765,7 @@ function renderAnswerKeyModalContent() {
             </div>
             <div style="display: flex; align-items: center; gap: 0.35rem; flex-shrink: 0;">
               <select class="key-bloom-select" data-key="${k}" title="Bloom's Cognitive Level">
-                <option value="" ${!currentBloom ? 'selected' : ''}>None</option>
+                <option value="" ${!currentBloom ? 'selected' : ''}>Bloom (Optional)</option>
                 ${BLOOM_LEVELS.map((lvl) => `<option value="${lvl}" ${currentBloom === lvl ? 'selected' : ''}>${lvl}</option>`).join('')}
               </select>
               <input type="number" class="key-pts-input" data-key="${k}" value="${item.points}" min="0.5" max="50" step="0.5" title="Points">
@@ -2726,7 +2799,24 @@ function renderAnswerKeyModalContent() {
       const k = sel.dataset.key;
       if (currentAnswerKey.items[k]) {
         currentAnswerKey.items[k].bloom = sel.value || null;
+        updateBloomStatusBadge();
       }
+    });
+  });
+
+  // Bind section-level Bloom selectors
+  els.keyItemsContainer.querySelectorAll('.key-section-bloom-select').forEach((sel) => {
+    sel.addEventListener('change', () => {
+      const rawVal = sel.value;
+      if (!rawVal) return;
+      const targetBloom = rawVal === '__clear__' ? null : normalizeBloom(rawVal);
+      const keys = (sel.dataset.keys || '').split(',').filter(Boolean);
+      for (const k of keys) {
+        if (currentAnswerKey.items[k]) {
+          currentAnswerKey.items[k].bloom = targetBloom;
+        }
+      }
+      renderAnswerKeyModalContent();
     });
   });
 
@@ -4202,6 +4292,7 @@ function initEvents() {
   els.genPaper?.addEventListener('change', updateGeneratorLivePreview);
   els.genSidMode?.addEventListener('change', updateGeneratorLivePreview);
   els.genInstructions?.addEventListener('change', updateGeneratorLivePreview);
+  els.genMidlineFiducials?.addEventListener('change', updateGeneratorLivePreview);
 
   els.btnCloseGenerator?.addEventListener('click', () => closeModal(els.modalGenerator));
   els.btnCancelGenerator?.addEventListener('click', () => closeModal(els.modalGenerator));
@@ -4218,16 +4309,22 @@ function initEvents() {
     if (state.template && state.template.paper !== newPaper) {
       const oldPaper = state.template.paper;
       const oldPaperW = PAPER_SIZES[oldPaper]?.width ?? 210;
-      const oldMargin = state.template.margin ?? 12;
-      const oldFullW = oldPaperW - 2 * oldMargin;
+      const hasMidline = Array.isArray(state.template.fiducial?.ids) && state.template.fiducial.ids.length === 6;
+      const effMargin = hasMidline ? Math.max(state.template.margin ?? 12, 20) : (state.template.margin ?? 12);
+      const gap = state.template.gap ?? 3.5;
+      const oldFullW = oldPaperW - 2 * effMargin;
+      const oldHalfW = Math.round(((oldFullW - gap) / 2) * 1000) / 1000;
 
       state.template.paper = newPaper;
       const newPaperW = PAPER_SIZES[newPaper]?.width ?? 210;
-      const newFullW = newPaperW - 2 * (state.template.margin ?? 12);
+      const newFullW = newPaperW - 2 * effMargin;
+      const newHalfW = Math.round(((newFullW - gap) / 2) * 1000) / 1000;
 
       for (const z of state.template.zones) {
-        if (z.w && Math.abs(z.w - oldFullW) < 0.5) {
+        if (z.w && (Math.abs(z.w - oldFullW) < 2.0 || z.w > newFullW)) {
           z.w = newFullW;
+        } else if (z.w && Math.abs(z.w - oldHalfW) < 2.0) {
+          z.w = newHalfW;
         }
       }
       update();
@@ -4239,27 +4336,38 @@ function initEvents() {
   els.chkMidlineFiducials?.addEventListener('change', () => {
     if (!state.template) return;
     if (!state.template.fiducial) {
-      state.template.fiducial = { type: 'aruco', dictionary: 'DICT_4X4_50', size: 10, inset: 7, quietZone: 3 };
+      state.template.fiducial = { type: 'aruco', dictionary: 'DICT_4X4_50', size: 7.5, inset: 5.5, quietZone: 2 };
     }
     const paperSpec = PAPER_SIZES[state.template.paper] || PAPER_SIZES['A4'];
+    const gap = state.template.gap ?? 3.5;
     if (els.chkMidlineFiducials.checked) {
       state.template.fiducial.ids = [0, 1, 4, 5, 2, 3];
-      const oldFullW = paperSpec.width - 2 * (state.template.margin || 12);
-      state.template.margin = 21;
-      const newFullW = paperSpec.width - 2 * 21;
+      const oldMargin = state.template.margin || 12;
+      const oldFullW = paperSpec.width - 2 * oldMargin;
+      const oldHalfW = Math.round(((oldFullW - gap) / 2) * 1000) / 1000;
+      state.template.margin = 20;
+      const newFullW = paperSpec.width - 40;
+      const newHalfW = Math.round(((newFullW - gap) / 2) * 1000) / 1000;
       for (const z of state.template.zones) {
-        if (z.w && (Math.abs(z.w - oldFullW) < 1.0 || z.w > newFullW)) {
+        if (z.w && (Math.abs(z.w - oldFullW) < 2.0 || z.w > newFullW)) {
           z.w = newFullW;
+        } else if (z.w && Math.abs(z.w - oldHalfW) < 2.0) {
+          z.w = newHalfW;
         }
       }
     } else {
       state.template.fiducial.ids = [0, 1, 2, 3];
-      const oldFullW = paperSpec.width - 2 * (state.template.margin || 21);
+      const oldMargin = Math.max(state.template.margin || 20, 20);
+      const oldFullW = paperSpec.width - 2 * oldMargin;
+      const oldHalfW = Math.round(((oldFullW - gap) / 2) * 1000) / 1000;
       state.template.margin = 12;
       const newFullW = paperSpec.width - 2 * 12;
+      const newHalfW = Math.round(((newFullW - gap) / 2) * 1000) / 1000;
       for (const z of state.template.zones) {
-        if (z.w && (Math.abs(z.w - oldFullW) < 1.0 || Math.abs(z.w - (paperSpec.width - 42)) < 1.0)) {
+        if (z.w && (Math.abs(z.w - oldFullW) < 2.5 || Math.abs(z.w - (paperSpec.width - 42)) < 2.5 || Math.abs(z.w - (paperSpec.width - 40)) < 2.5)) {
           z.w = newFullW;
+        } else if (z.w && (Math.abs(z.w - oldHalfW) < 2.5 || Math.abs(z.w - ((paperSpec.width - 42 - gap) / 2)) < 2.5 || Math.abs(z.w - ((paperSpec.width - 40 - gap) / 2)) < 2.5)) {
+          z.w = newHalfW;
         }
       }
     }
@@ -4508,9 +4616,38 @@ function initEvents() {
 
   // Answer Key modal opening & controls
   els.btnDlKey?.addEventListener('click', openAnswerKeyModal);
+  $('#btn-open-key-editor')?.addEventListener('click', openAnswerKeyModal);
   els.btnCloseAnswerKey?.addEventListener('click', () => closeModal(els.modalAnswerKey));
   els.modalAnswerKey?.addEventListener('click', (e) => {
     if (e.target === els.modalAnswerKey) closeModal(els.modalAnswerKey);
+  });
+
+  $('#btn-key-apply-bulk-bloom')?.addEventListener('click', () => {
+    const scope = $('#key-bulk-bloom-scope')?.value || 'unassigned';
+    const rawLevel = $('#key-bulk-bloom-level')?.value || '';
+    const targetBloom = rawLevel ? normalizeBloom(rawLevel) : null;
+    if (scope.startsWith('zone:')) {
+      const zoneId = scope.slice(5);
+      const zone = state.layout?.zones?.find((z) => z.id === zoneId);
+      if (zone) {
+        const zKeys = [
+          ...zone.groups.filter((g) => g.kind === 'mcq' || g.kind === 'tf').map((g) => String(g.key)),
+          ...(zone.rois || []).filter((r) => r.graded !== false && r.role !== 'name' && r.role !== 'student_id' && r.role !== 'score' && r.role !== 'signature').map((r) => String(r.key || r.id)),
+        ];
+        for (const k of zKeys) {
+          if (currentAnswerKey.items[k]) currentAnswerKey.items[k].bloom = targetBloom;
+        }
+      }
+    } else if (scope === 'all') {
+      for (const it of Object.values(currentAnswerKey.items)) {
+        it.bloom = targetBloom;
+      }
+    } else {
+      for (const it of Object.values(currentAnswerKey.items)) {
+        if (!it.bloom) it.bloom = targetBloom;
+      }
+    }
+    renderAnswerKeyModalContent();
   });
 
   els.btnKeyFillA?.addEventListener('click', () => {
@@ -4730,6 +4867,7 @@ function initEvents() {
 
     const keyRows = ['Item #,Answer,Points,Bloom'];
     const activeKeyItems = currentAnswerKey.items || {};
+    const keyKeys = Object.keys(activeKeyItems);
     let sortedKeyItems;
     if (keyKeys.length > 0) {
       sortedKeyItems = keyKeys.sort((a, b) => {
@@ -4779,7 +4917,7 @@ function initEvents() {
       const defaultPts = roi ? (roi.points != null ? roi.points : 1) : (grp?.points != null ? grp.points : 1);
       const ans = it ? String(it.answer ?? '') : defaultAns;
       const pts = it ? (it.points ?? 1) : defaultPts;
-      const bloom = it ? (it.bloom || defaultBloomFor(k)) : defaultBloomFor(k);
+      const bloom = (it ? (it.bloom || defaultBloomFor(k)) : defaultBloomFor(k)) || '';
       const formattedAns = ans.includes(',') || ans.includes('"') ? `"${ans.replace(/"/g, '""')}"` : ans;
       keyRows.push(`${k},${formattedAns},${pts},${bloom}`);
     }

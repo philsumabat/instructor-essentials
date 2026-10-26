@@ -8166,12 +8166,19 @@
         calculatedMaxScore += pts;
 
         const studentChoices = itemAnswers[itemNumStr] || itemAnswers[parseInt(itemNumStr)] || [];
-        const isCorrect = (studentChoices.length === 1 && studentChoices[0] === keyItem.answer);
+        const rawExpected = keyItem.answer != null ? keyItem.answer : (keyItem.correct != null ? keyItem.correct : '');
+        const expectedChoices = (Array.isArray(rawExpected) ? rawExpected : String(rawExpected || '').split(/[,\s/]+/))
+          .map(s => String(s).trim().toUpperCase())
+          .filter(Boolean);
+        const normStudentChoices = studentChoices.map(s => String(s).trim().toUpperCase());
+        const isCorrect = (expectedChoices.length > 0 &&
+          normStudentChoices.length === expectedChoices.length &&
+          normStudentChoices.every(c => expectedChoices.includes(c)));
 
         if (isCorrect) rawScore += pts;
 
         gradedItems[itemNumStr] = {
-          expected: keyItem.answer,
+          expected: keyItem.answer != null ? keyItem.answer : keyItem.correct,
           actual: studentChoices.join(", ") || "BLANK",
           isCorrect,
           pointsAwarded: isCorrect ? pts : 0,
@@ -8263,10 +8270,15 @@
             continue;
           }
         }
+        const keyItem = key?.items?.[itemNumStr];
+        const rawExp = keyItem?.answer != null ? keyItem.answer : keyItem?.correct;
+        const expList = (Array.isArray(rawExp) ? rawExp : String(rawExp || '').split(/[,\s/]+/)).filter(Boolean);
+        const isMultiKey = expList.length > 1;
+
         if (itemResult.actual === "BLANK" || !itemResult.actual) {
           blankCount++;
           blankQuestions.push(itemNumStr);
-        } else if (itemResult.actual.includes(",")) {
+        } else if (!isMultiKey && itemResult.actual.includes(",")) {
           multiMarkCount++;
           multiMarkQuestions.push(itemNumStr);
         }
@@ -8277,7 +8289,8 @@
       let matchScore = 0;
       let matchField = '';
       const hasRoster = Array.isArray(state.roster) && state.roster.length > 0;
-      const isUnmatchedId = Boolean(hasRoster && !rosterEntry);
+      const hasDetectedId = Boolean((bubbleSid && bubbleSid.length >= 6) || matchedId);
+      const isUnmatchedId = Boolean(hasRoster && !rosterEntry && hasDetectedId);
 
       const reviewReasons = [];
       if (blankCount > 0) reviewReasons.push(`${blankCount} blank response${blankCount > 1 ? 's' : ''}`);
@@ -8341,6 +8354,9 @@
         gradedItems,
         bubbleDiagnostics,
         H_canToSrc,
+        H_bottom: H_bottom || null,
+        midYCan: midYCan || null,
+        deltaSag: effSag || 0,
         rotationDeg: 0,
         targetW,
         targetH,
@@ -10026,10 +10042,9 @@
       // Student Selector in Viewer
       const sel = $('viewer-student-select');
       if (sel) {
-        sel.innerHTML = grades.map((g, idx) => {
-          const nameDisplay = escapeHtml((g.studentName && !g.studentName.startsWith('Student STU-')) ? g.studentName : (g.studentId && !String(g.studentId).startsWith('STU-') ? g.studentId : `Student ${idx + 1}`));
-          return `<option value="${idx}">${nameDisplay} — ${(g.rawScore != null ? Number(g.rawScore) : 0).toFixed(1)} pts (${(g.percentage != null ? Number(g.percentage) : 0).toFixed(1)}%)</option>`;
-        }).join('');
+        if (typeof updateViewerStudentSelect === 'function') {
+          updateViewerStudentSelect();
+        }
         sel.onchange = (e) => {
           state.selectedStudentIdx = parseInt(e.target.value);
           renderViewerSheet();
@@ -10090,9 +10105,12 @@
       // Update Review Queue Stepper (shows position in current view)
       updateStepperControls(grade);
 
+      const isRedacted = typeof isRedactNamesActive === 'function' ? isRedactNamesActive() : false;
       if ($('roster-student-badge')) $('roster-student-badge').style.display = 'inline-flex';
       if ($('roster-badge-name')) {
-        if (grade.nameCropDataUrl) {
+        if (isRedacted) {
+          $('roster-badge-name').textContent = '[NAME REDACTED]';
+        } else if (grade.nameCropDataUrl) {
           $('roster-badge-name').innerHTML = `<img src="${grade.nameCropDataUrl}" alt="Name" style="max-height: 40px; max-width: 240px; height: 36px; object-fit: contain; vertical-align: middle; border-radius: var(--radius-sm, 6px); border: 1px solid var(--border); background: #fff; box-shadow: var(--shadow-xs);" />`;
         } else {
           const nameDisplay = (grade.studentName && !grade.studentName.startsWith('Student STU-')) ? grade.studentName : (grade.studentId && !String(grade.studentId).startsWith('STU-') ? grade.studentId : 'Student');
@@ -10963,12 +10981,30 @@
     }
     window.inspectStudent = inspectStudent;
 
-    
+    function updateViewerStudentSelect() {
+      const sel = $('viewer-student-select');
+      if (!sel || !state.results?.grades) return;
+      const isRedacted = typeof isRedactNamesActive === 'function' ? isRedactNamesActive() : false;
+      sel.innerHTML = state.results.grades.map((g, idx) => {
+        let nameDisplay;
+        if (isRedacted) {
+          nameDisplay = `Student ${idx + 1}`;
+        } else {
+          nameDisplay = escapeHtml((g.studentName && !g.studentName.startsWith('Student STU-')) ? g.studentName : (g.studentId && !String(g.studentId).startsWith('STU-') ? g.studentId : `Student ${idx + 1}`));
+        }
+        return `<option value="${idx}">${nameDisplay} — ${(g.rawScore != null ? Number(g.rawScore) : 0).toFixed(1)} pts (${(g.percentage != null ? Number(g.percentage) : 0).toFixed(1)}%)</option>`;
+      }).join('');
+      if (state.selectedStudentIdx != null) {
+        sel.value = state.selectedStudentIdx;
+      }
+    }
+    window.updateViewerStudentSelect = updateViewerStudentSelect;
+
     function isRedactNamesActive() {
-      return !!(
-        $('chk-redact-names')?.checked ||
-        $('chk-redact-names-sidebar')?.checked ||
-        $('chk-redact-names-modal')?.checked
+      return Boolean(
+        $('chk-redact-names')?.checked === true ||
+        $('chk-redact-names-sidebar')?.checked === true ||
+        $('chk-redact-names-modal')?.checked === true
       );
     }
     window.isRedactNamesActive = isRedactNamesActive;
@@ -10977,6 +11013,9 @@
       if ($('chk-redact-names')) $('chk-redact-names').checked = val;
       if ($('chk-redact-names-sidebar')) $('chk-redact-names-sidebar').checked = val;
       if ($('chk-redact-names-modal')) $('chk-redact-names-modal').checked = val;
+      if (typeof updateViewerStudentSelect === 'function') {
+        updateViewerStudentSelect();
+      }
       if (state.selectedStudentIdx != null && state.results?.grades?.[state.selectedStudentIdx]) {
         inspectStudent(state.selectedStudentIdx);
       }
@@ -11137,17 +11176,20 @@
       }
 
       if (activeScanImg && typeof activeScanImg.getContext !== 'function' && !(typeof HTMLCanvasElement !== 'undefined' && activeScanImg instanceof HTMLCanvasElement) && activeScanImg.complete === false) {
-        const onImgLoad = () => {
-          drawGradeOnCanvas(grade, canvas, options);
-        };
-        if (typeof activeScanImg.addEventListener === 'function') {
-          activeScanImg.addEventListener('load', onImgLoad, { once: true });
-        } else {
-          activeScanImg.onload = onImgLoad;
-        }
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        return;
+        return new Promise((resolve) => {
+          const onImgLoad = () => {
+            resolve(drawGradeOnCanvas(grade, canvas, options));
+          };
+          if (typeof activeScanImg.addEventListener === 'function') {
+            activeScanImg.addEventListener('load', onImgLoad, { once: true });
+            activeScanImg.addEventListener('error', () => resolve(), { once: true });
+          } else {
+            activeScanImg.onload = onImgLoad;
+            activeScanImg.onerror = () => resolve();
+          }
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+        });
       }
 
       // Always paint clean neutral paper background first
@@ -11156,7 +11198,7 @@
 
       // If no authentic scan image exists or it is a placeholder canvas, return early without drawing floating markup
       if (!activeScanImg || isBlankCanvas(activeScanImg)) {
-        return;
+        return Promise.resolve();
       }
 
       // Draw rectified/warped scan image (undoing 90/180/270 deg scan rotation when present)
@@ -11228,7 +11270,7 @@
 
       // Draw Written Answer Boxes with crisp scored borders and points badges
       const pxPerMm = 4.0;
-      const activeLayout = options?.layout || state.layout;
+      const activeLayout = options?.layout || (typeof state !== 'undefined' ? state?.layout : null);
       const allLayoutRois = getLayoutROIs(activeLayout);
       for (const [key, item] of Object.entries(grade.gradedItems || {})) {
         if (item.kind !== 'text' && !item.roi) continue;
@@ -11311,7 +11353,7 @@
       }
 
       // Render score in designated Score field box if present (matches omr/annotator.py standard)
-      const passThreshold = (options && options.passThreshold != null) ? options.passThreshold : ((state.results && state.results.passThreshold != null) ? state.results.passThreshold : 60);
+      const passThreshold = (options && options.passThreshold != null) ? options.passThreshold : ((typeof state !== 'undefined' && state?.results?.passThreshold != null) ? state.results.passThreshold : 60);
       const scoreRoi = allLayoutRois.find(r => r.role === 'score' || r.id === 'score' || r.key === 'score' || (r.label || '').toLowerCase().includes('score'));
       if (scoreRoi) {
         const rx = Math.round(scoreRoi.x * pxPerMm);
@@ -11376,6 +11418,7 @@
           ctx.fillText(`Score: ${rawScoreVal.toFixed(1)} / ${maxScoreVal.toFixed(1)} (${pctVal.toFixed(1)}%)`, 32, 64);
         }
       }
+      return Promise.resolve();
     }
 
     // Render Canvas with Overlay in Viewer
@@ -11386,9 +11429,12 @@
       }
       const grade = state.results.grades[state.selectedStudentIdx];
       const canvas = $('viewer-canvas');
-      drawGradeOnCanvas(grade, canvas);
+      const isRedacted = typeof isRedactNamesActive === 'function' ? isRedactNamesActive() : false;
+      drawGradeOnCanvas(grade, canvas, { redactName: isRedacted });
       if ($('viewer-student-info')) {
-        if (grade.nameCropDataUrl) {
+        if (isRedacted) {
+          $('viewer-student-info').textContent = '[NAME REDACTED]';
+        } else if (grade.nameCropDataUrl) {
           $('viewer-student-info').innerHTML = `<img src="${grade.nameCropDataUrl}" alt="Name" style="max-height: 40px; max-width: 220px; height: 36px; object-fit: contain; vertical-align: middle; border-radius: var(--radius-sm, 6px); border: 1px solid var(--border); background: #fff; box-shadow: var(--shadow-xs);" />`;
         } else {
           const nameDisplay = (grade.studentName && !grade.studentName.startsWith('Student STU-')) ? grade.studentName : (grade.studentId && !String(grade.studentId).startsWith('STU-') ? grade.studentId : 'Student');
@@ -11514,33 +11560,42 @@
         if (!grade.gradedItems) grade.gradedItems = {};
         const keyItem = state.key?.items?.[itemKey] || {};
         const maxPts = Number(grade.gradedItems[itemKey]?.maxPoints != null ? grade.gradedItems[itemKey].maxPoints : (keyItem.points != null ? keyItem.points : 1.0));
-        const expected = grade.gradedItems[itemKey]?.expected || keyItem.answer || '';
+        const expected = grade.gradedItems[itemKey]?.expected != null ? grade.gradedItems[itemKey].expected : (keyItem.answer != null ? keyItem.answer : (keyItem.correct || ''));
+        const expectedChoices = (Array.isArray(expected) ? expected : String(expected || '').split(/[,\s/]+/))
+          .map(s => String(s).trim().toUpperCase())
+          .filter(Boolean);
 
         // Find all marked choices for this item
         const itemBubbles = (grade.bubbleDiagnostics || []).filter(b => b.item === itemKey);
         const markedBubbles = itemBubbles.filter(b => b.isMarked);
         const markedChoices = markedBubbles.map(b => b.choice);
+        const normMarked = markedChoices.map(c => String(c).trim().toUpperCase());
 
         let actual = 'BLANK';
         let isCorrect = false;
         let pointsAwarded = 0;
         let status = 'blank';
 
-        if (markedChoices.length === 1) {
-          actual = markedChoices[0];
-          isCorrect = (actual === expected);
-          pointsAwarded = isCorrect ? maxPts : 0;
-          status = isCorrect ? 'correct' : 'incorrect';
-        } else if (markedChoices.length > 1) {
-          actual = markedChoices.join(',');
-          isCorrect = false;
-          pointsAwarded = 0;
-          status = 'multi';
-        } else {
+        if (markedChoices.length === 0) {
           actual = 'BLANK';
           isCorrect = false;
           pointsAwarded = 0;
           status = 'blank';
+        } else if (expectedChoices.length > 0 && normMarked.length === expectedChoices.length && normMarked.every(c => expectedChoices.includes(c))) {
+          actual = markedChoices.join(', ');
+          isCorrect = true;
+          pointsAwarded = maxPts;
+          status = 'correct';
+        } else if (expectedChoices.length <= 1 && markedChoices.length > 1) {
+          actual = markedChoices.join(', ');
+          isCorrect = false;
+          pointsAwarded = 0;
+          status = 'multi';
+        } else {
+          actual = markedChoices.join(', ');
+          isCorrect = false;
+          pointsAwarded = 0;
+          status = 'incorrect';
         }
 
         grade.gradedItems[itemKey] = {
@@ -11580,8 +11635,13 @@
               continue;
             }
           }
+          const itemKeyRef = state.key?.items?.[itemNumStr];
+          const rawExp = itemKeyRef?.answer != null ? itemKeyRef.answer : itemKeyRef?.correct;
+          const expList = (Array.isArray(rawExp) ? rawExp : String(rawExp || '').split(/[,\s/]+/)).filter(Boolean);
+          const isMultiKey = expList.length > 1;
+
           if (!it.actual || it.actual === 'BLANK') blankCount++;
-          else if (it.actual.includes(',')) multiMarkCount++;
+          else if (!isMultiKey && it.actual.includes(',')) multiMarkCount++;
         }
         if (!grade.reviewFlags) grade.reviewFlags = {};
         grade.reviewFlags.blankCount = blankCount;
@@ -11796,7 +11856,7 @@
         for (let i = 0; i < total; i++) {
           btn.innerHTML = `<span>⏳ Rendering (${i + 1}/${total})...</span>`;
           const grade = state.results.grades[i];
-          drawGradeOnCanvas(grade, offscreenCanvas, { redactName: isRedacted });
+          await drawGradeOnCanvas(grade, offscreenCanvas, { redactName: isRedacted });
 
           const blob = await new Promise((resolve) => {
             offscreenCanvas.toBlob(resolve, 'image/jpeg', 0.95);
@@ -12664,9 +12724,10 @@
 
         const rawReasons = g.reviewFlags?.reasons || [];
         const cleanReasons = rawReasons.filter(r => !r.includes('No Student ID'));
+        const isManuallyReviewed = Boolean(g.reviewFlags?.manuallyReviewed);
         const reviewFlags = {
           ...(g.reviewFlags || {}),
-          needsReview: cleanReasons.length > 0,
+          needsReview: isManuallyReviewed ? false : cleanReasons.length > 0,
           reasons: cleanReasons,
         };
 
@@ -12682,6 +12743,9 @@
           gradedItems: g.gradedItems || {},
           bubbleDiagnostics: g.bubbleDiagnostics || [],
           H_canToSrc: g.H_canToSrc,
+          H_bottom: g.H_bottom || null,
+          midYCan: g.midYCan || null,
+          deltaSag: g.deltaSag || 0,
           targetW: g.targetW || 840,
           targetH: g.targetH || 1188,
           scanImg,
@@ -14543,7 +14607,18 @@
             offscreen.height = rawImg.height;
             const offCtx = offscreen.getContext('2d', { willReadFrequently: true });
             offCtx.drawImage(rawImg, 0, 0);
-            const rect = warpScanToCanonical(offCtx, rawImg.width, rawImg.height, H_canToSrc, targetW, targetH);
+            const rect = warpScanToCanonical(
+              offCtx,
+              rawImg.width,
+              rawImg.height,
+              H_canToSrc,
+              targetW,
+              targetH,
+              null,
+              targetGrade.H_bottom || null,
+              targetGrade.midYCan || null,
+              targetGrade.deltaSag || 0
+            );
             return rect || rawImg;
           } catch (_) {
             return rawImg;

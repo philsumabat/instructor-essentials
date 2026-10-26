@@ -448,3 +448,199 @@ test('6. Session Restore: sanitizes legacy "No Student ID" review reasons', asyn
   assert.equal(restored[1].reviewFlags.needsReview, true, 'Grade 2 needsReview remains true for blanks');
   assert.deepEqual(restored[1].reviewFlags.reasons, ['2 blank responses'], 'Grade 2 reasons must only contain blanks');
 });
+
+test('7. No Student ID or Roster Mismatch when no ID is detected, even with a loaded roster', () => {
+  const { ctx } = loadCheckerSandbox();
+
+  // Loaded roster
+  ctx.state.roster = [
+    { id: '2026-0001', name: 'Alice Green', classOffer: 'BIO-101' },
+    { id: '2026-0002', name: 'Bob White', classOffer: 'BIO-101' }
+  ];
+
+  const mockScanImg = createMockEl('canvas');
+  mockScanImg.width = 840;
+  mockScanImg.height = 1188;
+
+  const mockLayout = {
+    page: { width: 210, height: 297 },
+    markers: {
+      '0': { center: [10, 10] },
+      '1': { center: [200, 10] },
+      '2': { center: [200, 287] },
+      '3': { center: [10, 287] }
+    },
+    bubbles: [
+      { item: '1', choice: 'A', center: [25, 35], radius: 2.5 }
+    ],
+    rois: []
+  };
+
+  const mockKey = {
+    items: {
+      '1': { answer: 'A', points: 1.0 }
+    },
+    total_points: 1.0
+  };
+
+  ctx.detectCornerMarkers = () => [
+    { x: 10, y: 10 },
+    { x: 830, y: 10 },
+    { x: 830, y: 1178 },
+    { x: 10, y: 1178 }
+  ];
+
+  // Case A: Scan without detected student ID (no bubbled SID, no numeric ID in filename)
+  const resultNoId = ctx.processExamScan({ name: 'scan_page_01.jpg', img: mockScanImg }, mockLayout, mockKey);
+  const reasonsNoId = (resultNoId.reviewFlags && resultNoId.reviewFlags.reasons) || [];
+  assert.equal(
+    resultNoId.reviewFlags.isUnmatchedId,
+    false,
+    'Sheet without detected student ID must NOT have isUnmatchedId set to true'
+  );
+  assert.ok(
+    !reasonsNoId.some(r => r.includes('Unmatched Student ID') || r.includes('No Student ID')),
+    'Sheet without detected student ID must NOT have Unmatched Student ID review reason'
+  );
+
+  // Case B: Scan WITH authentic detected ID in filename (e.g. 20269999) not in roster
+  const resultWithId = ctx.processExamScan({ name: 'sheet_20269999.jpg', img: mockScanImg }, mockLayout, mockKey);
+  const reasonsWithId = (resultWithId.reviewFlags && resultWithId.reviewFlags.reasons) || [];
+  assert.equal(
+    resultWithId.reviewFlags.isUnmatchedId,
+    true,
+    'Sheet with detected authentic ID not in roster must have isUnmatchedId set to true'
+  );
+  assert.ok(
+    reasonsWithId.some(r => r.includes('Unmatched Student ID')),
+    'Sheet with detected authentic ID not in roster must flag Unmatched Student ID'
+  );
+});
+
+test('8. Session Restore: preserves instructor manual review verification', async () => {
+  const { ctx } = loadCheckerSandbox();
+
+  const sessionWithManualReview = {
+    layout: { page: { width: 210, height: 297 }, rois: [] },
+    key: { items: {}, total_points: 0 },
+    results: {
+      passThreshold: 60,
+      grades: [
+        {
+          examId: 'scan_verified.jpg',
+          studentId: 'STU-001',
+          studentName: 'Student STU-001',
+          rawScore: 20,
+          maxScore: 50,
+          percentage: 40,
+          reviewFlags: {
+            needsReview: false,
+            manuallyReviewed: true,
+            reasons: ['1 blank response']
+          }
+        }
+      ]
+    }
+  };
+
+  await ctx.restoreCheckerProgress(sessionWithManualReview);
+
+  const restored = ctx.state.results.grades;
+  assert.equal(restored.length, 1);
+  assert.equal(restored[0].reviewFlags.needsReview, false, 'needsReview must stay false when manuallyReviewed is true');
+  assert.equal(restored[0].reviewFlags.manuallyReviewed, true, 'manuallyReviewed must be preserved');
+  assert.deepEqual(restored[0].reviewFlags.reasons, ['1 blank response'], 'Authentic blank reasons preserved');
+});
+
+test('9. Interactive Bubble Correction: multi-answer key support and case insensitivity', () => {
+  const { ctx } = loadCheckerSandbox();
+
+  const grade = {
+    examId: 'scan_multikey_interactive.jpg',
+    targetW: 840,
+    targetH: 1188,
+    rawScore: 0,
+    maxScore: 10,
+    percentage: 0,
+    bubbleDiagnostics: [
+      { item: 'q1', choice: 'a', isMarked: false, canX: 100, canY: 100, rad: 8, markType: null },
+      { item: 'q1', choice: 'C', isMarked: false, canX: 140, canY: 100, rad: 8, markType: null }
+    ],
+    gradedItems: {
+      q1: { expected: ['A', 'C'], actual: 'BLANK', isCorrect: false, pointsAwarded: 0, maxPoints: 5.0 }
+    },
+    reviewFlags: { needsReview: true, reasons: ['1 blank response'], blankCount: 1, multiMarkCount: 0 }
+  };
+
+  ctx.state.results = { grades: [grade], passThreshold: 60 };
+  ctx.state.key = {
+    total_points: 10,
+    items: {
+      q1: { answer: ['A', 'C'], points: 5.0 }
+    }
+  };
+
+  // 1. Mark 'a' (first choice)
+  ctx.correctBubbleMark(grade, grade.bubbleDiagnostics[0]);
+  assert.equal(grade.bubbleDiagnostics[0].isMarked, true);
+  assert.equal(grade.gradedItems.q1.isCorrect, false, 'Only 1 of 2 expected choices marked so far');
+  assert.equal(grade.gradedItems.q1.status, 'incorrect');
+
+  // 2. Mark 'C' (second choice)
+  ctx.correctBubbleMark(grade, grade.bubbleDiagnostics[1]);
+  assert.equal(grade.bubbleDiagnostics[1].isMarked, true);
+  assert.equal(grade.gradedItems.q1.isCorrect, true, 'Both expected choices marked -> full credit');
+  assert.equal(grade.gradedItems.q1.status, 'correct');
+  assert.equal(grade.gradedItems.q1.pointsAwarded, 5.0);
+  assert.equal(grade.rawScore, 5.0);
+  assert.equal(grade.reviewFlags.multiMarkCount, 0, 'Multi-answer question must NOT increment multiMarkCount');
+});
+
+test('10. Anonymous Review: Redact Names hides student identity in modal DOM header, roster badge, and dropdown', () => {
+  const { ctx } = loadCheckerSandbox();
+
+  const grade = {
+    examId: 'scan_anon.jpg',
+    studentId: '2026-1234',
+    studentName: 'Eleanor Vance',
+    nameCropDataUrl: 'data:image/jpeg;base64,realNameCrop',
+    rawScore: 45,
+    maxScore: 50,
+    percentage: 90,
+    reviewFlags: { needsReview: false }
+  };
+
+  ctx.state.results = {
+    grades: [grade],
+    passThreshold: 60
+  };
+  ctx.state.selectedStudentIdx = 0;
+
+  // With redaction disabled
+  const chkModal = ctx.document.getElementById('chk-redact-names-modal');
+  chkModal.checked = false;
+
+  ctx.renderRosterPreview(0);
+  const badgeEl = ctx.document.getElementById('roster-badge-name');
+  assert.ok(badgeEl.innerHTML.includes('realNameCrop'), 'Real name crop shown when redaction disabled');
+
+  ctx.renderViewerSheet();
+  const infoEl = ctx.document.getElementById('viewer-student-info');
+  assert.ok(infoEl.innerHTML.includes('realNameCrop'), 'Real name crop shown in viewer info when redaction disabled');
+
+  // Enable name redaction
+  chkModal.checked = true;
+
+  ctx.renderRosterPreview(0);
+  assert.equal(badgeEl.textContent, '[NAME REDACTED]', 'roster-badge-name displays [NAME REDACTED]');
+
+  ctx.renderViewerSheet();
+  assert.equal(infoEl.textContent, '[NAME REDACTED]', 'viewer-student-info displays [NAME REDACTED]');
+
+  // Dropdown options
+  ctx.updateViewerStudentSelect();
+  const selEl = ctx.document.getElementById('viewer-student-select');
+  assert.ok(!selEl.innerHTML.includes('Eleanor Vance'), 'Real student name must not appear in dropdown options');
+  assert.ok(selEl.innerHTML.includes('Student 1'), 'Dropdown options must display anonymized "Student 1"');
+});
+

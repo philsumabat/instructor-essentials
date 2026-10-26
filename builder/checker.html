@@ -2304,6 +2304,21 @@
       white-space: nowrap;
     }
     @media (max-width: 768px) {
+      .app-header {
+        padding: 0 0.5rem;
+      }
+      .app-brand__title-wrap, .app-brand__title {
+        display: none;
+      }
+      .workflow-nav__item span {
+        display: none;
+      }
+      .workflow-nav__item {
+        padding: 4px 6px;
+      }
+      #btn-checker-google-signin span, #btn-header-google-signin span {
+        display: none;
+      }
       .stepper-board {
         grid-template-columns: 1fr;
         gap: 0.5rem;
@@ -3573,10 +3588,10 @@
         <div class="key-actions-row" style="flex-wrap: wrap;">
           <div style="display: inline-flex; align-items: center; gap: 0.3rem; background: var(--panel); padding: 0.15rem 0.45rem; border-radius: 6px; border: 1px solid var(--border);">
             <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted);">Bulk Bloom's:</span>
-            <select id="key-bulk-bloom-scope" class="key-bloom-select" style="max-width: 135px;" title="Select question section or range">
+            <select id="key-bulk-bloom-scope" class="key-bloom-select" style="max-width: 135px;" title="Select question section or range" aria-label="Select question section or range">
               <option value="all">All Questions</option>
             </select>
-            <select id="key-bulk-bloom-level" class="key-bloom-select" style="max-width: 115px;" title="Select Bloom's level to assign">
+            <select id="key-bulk-bloom-level" class="key-bloom-select" style="max-width: 115px;" title="Select Bloom's level to assign" aria-label="Select Bloom's level to assign">
               <option value="">Clear (None)</option>
               <option value="Remember">Remember</option>
               <option value="Understand">Understand</option>
@@ -6234,11 +6249,11 @@
                   </div>
                 </div>
                 <div style="display: flex; align-items: center; gap: 0.3rem; flex-shrink: 0;">
-                  <select class="key-bloom-select" data-key="${escapeHtml(k)}" title="Bloom's Cognitive Level (Optional)">
+                  <select class="key-bloom-select" data-key="${escapeHtml(k)}" title="Bloom's Cognitive Level (Optional)" aria-label="Bloom's Cognitive Level for Item ${escapeHtml(k)}">
                     <option value="" ${!currentBloom ? 'selected' : ''}>Bloom (Optional)</option>
                     ${BLOOM_LEVELS.map(lvl => `<option value="${lvl}" ${currentBloom === lvl ? 'selected' : ''}>${lvl}</option>`).join('')}
                   </select>
-                  <input type="number" class="key-pts-input" data-key="${escapeHtml(k)}" value="${pts}" min="0.5" max="50" step="0.5" title="Points">
+                  <input type="number" class="key-pts-input" data-key="${escapeHtml(k)}" value="${pts}" min="0.5" max="50" step="0.5" title="Points" aria-label="Points for Item ${escapeHtml(k)}">
                 </div>
               </div>
             `;
@@ -6258,14 +6273,14 @@
               <div class="key-item-cell key-item-cell--text" data-key="${escapeHtml(k)}">
                 <div style="display: flex; align-items: center; gap: 0.5rem; flex: 1; min-width: 0;">
                   <span class="key-item-num" style="min-width: 28px; font-weight: 700;">${escapeHtml(item.label || k)}:</span>
-                  <input type="text" class="key-text-input" data-key="${escapeHtml(k)}" value="${escapeHtml(currentAns)}" placeholder="Accepted answer / keywords">
+                  <input type="text" class="key-text-input" data-key="${escapeHtml(k)}" value="${escapeHtml(currentAns)}" placeholder="Accepted answer / keywords" aria-label="Accepted answer for Item ${escapeHtml(k)}">
                 </div>
                 <div style="display: flex; align-items: center; gap: 0.35rem; flex-shrink: 0;">
-                  <select class="key-bloom-select" data-key="${escapeHtml(k)}" title="Bloom's Cognitive Level (Optional)">
+                  <select class="key-bloom-select" data-key="${escapeHtml(k)}" title="Bloom's Cognitive Level (Optional)" aria-label="Bloom's Cognitive Level for Item ${escapeHtml(k)}">
                     <option value="" ${!currentBloom ? 'selected' : ''}>Bloom (Optional)</option>
                     ${BLOOM_LEVELS.map(lvl => `<option value="${lvl}" ${currentBloom === lvl ? 'selected' : ''}>${lvl}</option>`).join('')}
                   </select>
-                  <input type="number" class="key-pts-input" data-key="${escapeHtml(k)}" value="${pts}" min="0.5" max="50" step="0.5" title="Points">
+                  <input type="number" class="key-pts-input" data-key="${escapeHtml(k)}" value="${pts}" min="0.5" max="50" step="0.5" title="Points" aria-label="Points for Item ${escapeHtml(k)}">
                 </div>
               </div>
             `;
@@ -10677,7 +10692,7 @@
           return `<span class="badge" style="background: #fffbeb; color: #92400e; border: 1px solid #f59e0b; font-weight: 700; display: inline-flex; align-items: center; gap: 0.25rem;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 0 20Z" fill="currentColor"/></svg> Partial (+${(ptsAwarded || 0).toFixed(1)} pts)</span>`;
         }
         if (status === 'unsure') {
-          return `<span class="badge" style="background: #fefce8; color: #854d0e; border: 1px solid #eab308; font-weight: 700; display: inline-flex; align-items: center; gap: 0.25rem;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Unsure (Revisit Later)</span>`;
+          return `<span class="badge" style="background: #fefce8; color: #854d0e; border: 1px solid #eab308; font-weight: 700; display: inline-flex; align-items: center; gap: 0.25rem;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Unsure (Revisit Later)</span>`;
         }
         if (status === 'rejected') {
           return `<span class="badge" style="background: #fef2f2; color: #991b1b; border: 1px solid #ef4444; font-weight: 700; display: inline-flex; align-items: center; gap: 0.25rem;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Rejected (0 pts)</span>`;
@@ -10760,7 +10775,7 @@
                   <kbd style="font-size: 0.65rem; background: rgba(0,0,0,0.2); padding: 1px 4px; border-radius: 3px;">A</kbd>
                 </button>
                 <button type="button" class="btn btn-horizontal-unsure" title="Flag as unsure to revisit later [Shortcut: U]" onclick="flashcardGradeAction(${activeSubIdx}, '${activeItem.key}', 'unsure');">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
                   <span>Unsure</span>
                   <kbd style="font-size: 0.65rem; background: rgba(0,0,0,0.15); padding: 1px 4px; border-radius: 3px;">U</kbd>
                 </button>
@@ -10863,7 +10878,7 @@
                 <span>Accept (${itemMaxPts.toFixed(1)} pts)</span>
               </button>
               <button type="button" class="btn btn-horizontal-unsure btn-sm" onclick="gradeHorizontalItem(${sIdx}, '${activeItem.key}', 'unsure');" style="font-weight: 700; padding: 0.45rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem;">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
                 <span>Unsure</span>
               </button>
               <button type="button" class="btn btn-horizontal-partial btn-sm" onclick="gradeHorizontalItem(${sIdx}, '${activeItem.key}', 'partial');" style="font-weight: 700; padding: 0.45rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem;">

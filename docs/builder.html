@@ -719,6 +719,47 @@ body {
   .app-layout { grid-template-columns: 340px 1fr; }
 }
 
+@media (max-width: 768px) {
+  .app-header {
+    padding: 0 0.5rem;
+    gap: 0.35rem;
+    overflow-x: auto;
+  }
+  .app-brand__title, .brand-title {
+    display: none;
+  }
+  .workflow-nav__item span {
+    display: none;
+  }
+  .workflow-nav__item {
+    padding: 4px 6px;
+  }
+  .stat-pills {
+    display: none;
+  }
+  #btn-new-sheet span, #btn-generator span, #btn-save-build span, #btn-library span, #btn-header-google-signin span {
+    display: none;
+  }
+  .app-layout {
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    overflow-y: auto;
+  }
+  .studio-sidebar {
+    height: auto;
+    max-height: 420px;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+  .app-layout.is-sidebar-collapsed .studio-sidebar {
+    display: none;
+  }
+  .preview {
+    min-height: 520px;
+  }
+}
+
 /* ==========================================================================
    Sidebar: Studio Controls
    ========================================================================== */
@@ -3837,11 +3878,11 @@ dialog.modal-dialog--answer-key {
         <div class="key-actions-row" style="flex-wrap: wrap; gap: 0.35rem;">
           <div style="display: inline-flex; align-items: center; gap: 0.25rem; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.15rem 0.35rem;" title="Bulk-assign a Bloom's cognitive level to a section, item range, or all unassigned questions">
             <span style="font-size: 0.7rem; font-weight: 600; color: var(--text-muted);">Bulk Bloom:</span>
-            <select id="key-bulk-bloom-scope" style="font-size: 0.72rem; padding: 0.12rem 0.25rem; border: 1px solid var(--border); border-radius: 3px; background: var(--bg); color: var(--text);">
+            <select id="key-bulk-bloom-scope" style="font-size: 0.72rem; padding: 0.12rem 0.25rem; border: 1px solid var(--border); border-radius: 3px; background: var(--bg); color: var(--text);" aria-label="Select scope for bulk Bloom assignment">
               <option value="unassigned">Unassigned Items</option>
               <option value="all">All Items</option>
             </select>
-            <select id="key-bulk-bloom-level" style="font-size: 0.72rem; padding: 0.12rem 0.25rem; border: 1px solid var(--border); border-radius: 3px; background: var(--bg); color: var(--text);">
+            <select id="key-bulk-bloom-level" style="font-size: 0.72rem; padding: 0.12rem 0.25rem; border: 1px solid var(--border); border-radius: 3px; background: var(--bg); color: var(--text);" aria-label="Select Bloom level to apply">
               <option value="">Bloom (Optional)</option>
               <option value="Remember">Remember</option>
               <option value="Understand">Understand</option>
@@ -8412,11 +8453,11 @@ function renderAnswerKeyModalContent() {
               </div>
             </div>
             <div style="display: flex; align-items: center; gap: 0.3rem; flex-shrink: 0;">
-              <select class="key-bloom-select" data-key="${g.key}" title="Bloom's Cognitive Level">
+              <select class="key-bloom-select" data-key="${g.key}" title="Bloom's Cognitive Level" aria-label="Bloom's Cognitive Level for Item ${g.key}">
                 <option value="" ${!currentBloom ? 'selected' : ''}>Bloom (Optional)</option>
                 ${BLOOM_LEVELS.map((lvl) => `<option value="${lvl}" ${currentBloom === lvl ? 'selected' : ''}>${lvl}</option>`).join('')}
               </select>
-              <input type="number" class="key-pts-input" data-key="${g.key}" value="${item.points}" min="0.5" max="50" step="0.5" title="Points">
+              <input type="number" class="key-pts-input" data-key="${g.key}" value="${item.points}" min="0.5" max="50" step="0.5" title="Points" aria-label="Points for Item ${g.key}">
             </div>
           </div>
         `;
@@ -8439,14 +8480,14 @@ function renderAnswerKeyModalContent() {
           <div class="key-item-cell key-item-cell--text" data-key="${rKey}">
             <div style="display: flex; align-items: center; gap: 0.5rem; flex: 1; min-width: 0;">
               <span class="key-item-num" style="min-width: 28px; font-weight: 700;">${safeEscapeHTML(item.label || rKey)}:</span>
-              <input type="text" class="key-text-input" data-key="${rKey}" value="${safeEscapeHTML(ansVal)}" placeholder="Accepted answer / keywords">
+              <input type="text" class="key-text-input" data-key="${rKey}" value="${safeEscapeHTML(ansVal)}" placeholder="Accepted answer / keywords" aria-label="Accepted answer for Item ${safeEscapeHTML(item.label || rKey)}">
             </div>
             <div style="display: flex; align-items: center; gap: 0.35rem; flex-shrink: 0;">
-              <select class="key-bloom-select" data-key="${rKey}" title="Bloom's Cognitive Level">
+              <select class="key-bloom-select" data-key="${rKey}" title="Bloom's Cognitive Level" aria-label="Bloom's Cognitive Level for Item ${rKey}">
                 <option value="" ${!currentBloom ? 'selected' : ''}>Bloom (Optional)</option>
                 ${BLOOM_LEVELS.map((lvl) => `<option value="${lvl}" ${currentBloom === lvl ? 'selected' : ''}>${lvl}</option>`).join('')}
               </select>
-              <input type="number" class="key-pts-input" data-key="${rKey}" value="${item.points}" min="0.5" max="50" step="0.5" title="Points">
+              <input type="number" class="key-pts-input" data-key="${rKey}" value="${item.points}" min="0.5" max="50" step="0.5" title="Points" aria-label="Points for Item ${rKey}">
             </div>
           </div>
         `;
@@ -8486,11 +8527,11 @@ function renderAnswerKeyModalContent() {
               </div>
             </div>
             <div style="display: flex; align-items: center; gap: 0.3rem; flex-shrink: 0;">
-              <select class="key-bloom-select" data-key="${k}" title="Bloom's Cognitive Level">
+              <select class="key-bloom-select" data-key="${k}" title="Bloom's Cognitive Level" aria-label="Bloom's Cognitive Level for Item ${k}">
                 <option value="" ${!currentBloom ? 'selected' : ''}>Bloom (Optional)</option>
                 ${BLOOM_LEVELS.map((lvl) => `<option value="${lvl}" ${currentBloom === lvl ? 'selected' : ''}>${lvl}</option>`).join('')}
               </select>
-              <input type="number" class="key-pts-input" data-key="${k}" value="${item.points}" min="0.5" max="50" step="0.5" title="Points">
+              <input type="number" class="key-pts-input" data-key="${k}" value="${item.points}" min="0.5" max="50" step="0.5" title="Points" aria-label="Points for Item ${k}">
             </div>
           </div>
         `;
@@ -8508,14 +8549,14 @@ function renderAnswerKeyModalContent() {
           <div class="key-item-cell key-item-cell--text" data-key="${k}">
             <div style="display: flex; align-items: center; gap: 0.5rem; flex: 1; min-width: 0;">
               <span class="key-item-num" style="min-width: 28px; font-weight: 700;">${safeEscapeHTML(item.label || k)}:</span>
-              <input type="text" class="key-text-input" data-key="${k}" value="${safeEscapeHTML(ansVal)}" placeholder="Accepted answer / keywords">
+              <input type="text" class="key-text-input" data-key="${k}" value="${safeEscapeHTML(ansVal)}" placeholder="Accepted answer / keywords" aria-label="Accepted answer for Item ${safeEscapeHTML(item.label || k)}">
             </div>
             <div style="display: flex; align-items: center; gap: 0.35rem; flex-shrink: 0;">
-              <select class="key-bloom-select" data-key="${k}" title="Bloom's Cognitive Level">
+              <select class="key-bloom-select" data-key="${k}" title="Bloom's Cognitive Level" aria-label="Bloom's Cognitive Level for Item ${k}">
                 <option value="" ${!currentBloom ? 'selected' : ''}>Bloom (Optional)</option>
                 ${BLOOM_LEVELS.map((lvl) => `<option value="${lvl}" ${currentBloom === lvl ? 'selected' : ''}>${lvl}</option>`).join('')}
               </select>
-              <input type="number" class="key-pts-input" data-key="${k}" value="${item.points}" min="0.5" max="50" step="0.5" title="Points">
+              <input type="number" class="key-pts-input" data-key="${k}" value="${item.points}" min="0.5" max="50" step="0.5" title="Points" aria-label="Points for Item ${k}">
             </div>
           </div>
         `;

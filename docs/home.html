@@ -141,6 +141,27 @@
       border: none;
     }
 
+    @media (max-width: 680px) {
+      .app-header {
+        padding: 0 0.65rem;
+      }
+      .app-brand__title-wrap, .app-brand__title {
+        display: none;
+      }
+      .workflow-nav {
+        margin-left: 0.25rem;
+      }
+      .workflow-nav__item span {
+        display: none;
+      }
+      .workflow-nav__item {
+        padding: 4px 6px;
+      }
+      #btn-google-login span, #btn-header-google-signin span, #btn-checker-google-signin span {
+        display: none;
+      }
+    }
+
     /* Buttons */
     .btn {
       display: inline-flex;
@@ -475,6 +496,24 @@
       border: 1px solid var(--border);
       border-radius: var(--radius-sm);
       transition: border-color 140ms var(--ease);
+    }
+
+    @media (max-width: 640px) {
+      .build-item {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.6rem;
+      }
+      .build-item__actions {
+        display: flex;
+        gap: 0.4rem;
+        width: 100%;
+      }
+      .build-item__actions .btn {
+        flex: 1;
+        justify-content: center;
+        text-align: center;
+      }
     }
 
     .build-item:hover {
@@ -1079,13 +1118,13 @@
         return `
           <div class="build-item" data-build-idx="${idx}">
             <div class="build-item__info">
-              <div style="display: flex; align-items: center; gap: 0.45rem; flex-wrap: wrap;">
-                <span class="build-item__title">${escapeHtml(title)}</span>
-                <span style="font-size: 0.66rem; font-weight: 700; padding: 0.08rem 0.42rem; border-radius: 999px; ${badgeStyle}">${badgeText}</span>
+              <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.45rem;">
+                <span class="build-item__title" style="flex: 1; min-width: 0;">${escapeHtml(title)}</span>
+                <span style="font-size: 0.66rem; font-weight: 700; padding: 0.08rem 0.42rem; border-radius: 999px; flex-shrink: 0; ${badgeStyle}">${badgeText}</span>
               </div>
               <div class="build-item__meta">${escapeHtml(paper)} • ${escapeHtml(dateStr)}${hasKey ? ' • Key attached' : ''}</div>
             </div>
-            <div style="display: flex; gap: 0.35rem; flex-shrink: 0; flex-wrap: wrap;">
+            <div class="build-item__actions" style="display: flex; gap: 0.35rem; flex-shrink: 0; flex-wrap: wrap;">
               <a href="builder.html" class="btn btn--secondary btn--xs btn-home-edit-sheet" data-build-idx="${idx}" title="Open and edit this sheet in Sheet Builder">Edit sheet</a>
               <a href="checker.html" class="btn btn--secondary btn--xs btn-home-grade-sheet" data-build-idx="${idx}" style="color: var(--accent); border-color: var(--border-focus);" title="Open Checker Studio with this sheet">Start grading from this sheet</a>
             </div>

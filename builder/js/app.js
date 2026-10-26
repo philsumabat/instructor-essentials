@@ -2665,11 +2665,11 @@ function renderAnswerKeyModalContent() {
               </div>
             </div>
             <div style="display: flex; align-items: center; gap: 0.3rem; flex-shrink: 0;">
-              <select class="key-bloom-select" data-key="${g.key}" title="Bloom's Cognitive Level">
+              <select class="key-bloom-select" data-key="${g.key}" title="Bloom's Cognitive Level" aria-label="Bloom's Cognitive Level for Item ${g.key}">
                 <option value="" ${!currentBloom ? 'selected' : ''}>Bloom (Optional)</option>
                 ${BLOOM_LEVELS.map((lvl) => `<option value="${lvl}" ${currentBloom === lvl ? 'selected' : ''}>${lvl}</option>`).join('')}
               </select>
-              <input type="number" class="key-pts-input" data-key="${g.key}" value="${item.points}" min="0.5" max="50" step="0.5" title="Points">
+              <input type="number" class="key-pts-input" data-key="${g.key}" value="${item.points}" min="0.5" max="50" step="0.5" title="Points" aria-label="Points for Item ${g.key}">
             </div>
           </div>
         `;
@@ -2692,14 +2692,14 @@ function renderAnswerKeyModalContent() {
           <div class="key-item-cell key-item-cell--text" data-key="${rKey}">
             <div style="display: flex; align-items: center; gap: 0.5rem; flex: 1; min-width: 0;">
               <span class="key-item-num" style="min-width: 28px; font-weight: 700;">${safeEscapeHTML(item.label || rKey)}:</span>
-              <input type="text" class="key-text-input" data-key="${rKey}" value="${safeEscapeHTML(ansVal)}" placeholder="Accepted answer / keywords">
+              <input type="text" class="key-text-input" data-key="${rKey}" value="${safeEscapeHTML(ansVal)}" placeholder="Accepted answer / keywords" aria-label="Accepted answer for Item ${safeEscapeHTML(item.label || rKey)}">
             </div>
             <div style="display: flex; align-items: center; gap: 0.35rem; flex-shrink: 0;">
-              <select class="key-bloom-select" data-key="${rKey}" title="Bloom's Cognitive Level">
+              <select class="key-bloom-select" data-key="${rKey}" title="Bloom's Cognitive Level" aria-label="Bloom's Cognitive Level for Item ${rKey}">
                 <option value="" ${!currentBloom ? 'selected' : ''}>Bloom (Optional)</option>
                 ${BLOOM_LEVELS.map((lvl) => `<option value="${lvl}" ${currentBloom === lvl ? 'selected' : ''}>${lvl}</option>`).join('')}
               </select>
-              <input type="number" class="key-pts-input" data-key="${rKey}" value="${item.points}" min="0.5" max="50" step="0.5" title="Points">
+              <input type="number" class="key-pts-input" data-key="${rKey}" value="${item.points}" min="0.5" max="50" step="0.5" title="Points" aria-label="Points for Item ${rKey}">
             </div>
           </div>
         `;
@@ -2739,11 +2739,11 @@ function renderAnswerKeyModalContent() {
               </div>
             </div>
             <div style="display: flex; align-items: center; gap: 0.3rem; flex-shrink: 0;">
-              <select class="key-bloom-select" data-key="${k}" title="Bloom's Cognitive Level">
+              <select class="key-bloom-select" data-key="${k}" title="Bloom's Cognitive Level" aria-label="Bloom's Cognitive Level for Item ${k}">
                 <option value="" ${!currentBloom ? 'selected' : ''}>Bloom (Optional)</option>
                 ${BLOOM_LEVELS.map((lvl) => `<option value="${lvl}" ${currentBloom === lvl ? 'selected' : ''}>${lvl}</option>`).join('')}
               </select>
-              <input type="number" class="key-pts-input" data-key="${k}" value="${item.points}" min="0.5" max="50" step="0.5" title="Points">
+              <input type="number" class="key-pts-input" data-key="${k}" value="${item.points}" min="0.5" max="50" step="0.5" title="Points" aria-label="Points for Item ${k}">
             </div>
           </div>
         `;
@@ -2761,14 +2761,14 @@ function renderAnswerKeyModalContent() {
           <div class="key-item-cell key-item-cell--text" data-key="${k}">
             <div style="display: flex; align-items: center; gap: 0.5rem; flex: 1; min-width: 0;">
               <span class="key-item-num" style="min-width: 28px; font-weight: 700;">${safeEscapeHTML(item.label || k)}:</span>
-              <input type="text" class="key-text-input" data-key="${k}" value="${safeEscapeHTML(ansVal)}" placeholder="Accepted answer / keywords">
+              <input type="text" class="key-text-input" data-key="${k}" value="${safeEscapeHTML(ansVal)}" placeholder="Accepted answer / keywords" aria-label="Accepted answer for Item ${safeEscapeHTML(item.label || k)}">
             </div>
             <div style="display: flex; align-items: center; gap: 0.35rem; flex-shrink: 0;">
-              <select class="key-bloom-select" data-key="${k}" title="Bloom's Cognitive Level">
+              <select class="key-bloom-select" data-key="${k}" title="Bloom's Cognitive Level" aria-label="Bloom's Cognitive Level for Item ${k}">
                 <option value="" ${!currentBloom ? 'selected' : ''}>Bloom (Optional)</option>
                 ${BLOOM_LEVELS.map((lvl) => `<option value="${lvl}" ${currentBloom === lvl ? 'selected' : ''}>${lvl}</option>`).join('')}
               </select>
-              <input type="number" class="key-pts-input" data-key="${k}" value="${item.points}" min="0.5" max="50" step="0.5" title="Points">
+              <input type="number" class="key-pts-input" data-key="${k}" value="${item.points}" min="0.5" max="50" step="0.5" title="Points" aria-label="Points for Item ${k}">
             </div>
           </div>
         `;

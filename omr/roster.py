@@ -40,6 +40,7 @@ def normalize_student_id(raw: str | None) -> str:
     """Normalizes student identifiers (e.g., '26-1-0142' -> '26100142', '26-1-706' -> '26100706').
 
     Standardizes hyphenated student numbers (<year>-<sem/campus>-<num>) into 8-digit strings,
+    supporting both 2-digit ('26-1-0142') and 4-digit ('2026-1-0142') year prefixes,
     preserving standard IDs when not matching the hyphenated pattern.
     """
     if not raw:
@@ -48,8 +49,8 @@ def normalize_student_id(raw: str | None) -> str:
     if s == "PENDING" or s.startswith("["):
         return s
 
-    # Pattern: 2-digit year, 1-digit term/campus, 1-5 digit sequence number with hyphens/dashes/dots
-    m = re.match(r"^(\d{2})[\s\-–—.]+(\d)[\s\-–—.]+(\d{1,5})$", s)
+    # Pattern: 2 or 4-digit year, 1-digit term/campus, 1-5 digit sequence number with hyphens/dashes/dots
+    m = re.match(r"^(?:20)?(\d{2})[\s\-–—.]+(\d)[\s\-–—.]+(\d{1,5})$", s)
     if m:
         year, term, seq = m.groups()
         return f"{year}{term}{int(seq):05d}"
@@ -59,18 +60,27 @@ def normalize_student_id(raw: str | None) -> str:
         cleaned = re.sub(r"[\s\-–—.]+", "", s)
         if re.fullmatch(r"\d{8}", cleaned):
             return cleaned
+        if re.fullmatch(r"20\d{8}", cleaned):
+            return cleaned[2:]
+
+    # 10-digit format starting with 20 (e.g., 2026100142)
+    if re.fullmatch(r"20\d{8}", s):
+        return s[2:]
 
     return s
 
 
 def normalize_offer_number(raw: str | None) -> str:
-    """Normalizes class offer numbers (e.g., 'E-326' -> 'E326', 'e-065' -> 'E065')."""
+    """Normalizes class offer numbers (e.g., 'E-326' -> 'E326', 'Offer No. E-065' -> 'E065')."""
     if not raw:
         return ""
     s = str(raw).strip().upper()
     if s == "PENDING" or s.startswith("["):
         return s
+    # Strip common label prefixes
+    s = re.sub(r"^(?:OFFER(?:\s*NO\.?)?|SECTION|SEC)[\s#:.-]*", "", s)
     return re.sub(r"[\s\-–—.]+", "", s)
+
 
 
 @dataclass(frozen=True)

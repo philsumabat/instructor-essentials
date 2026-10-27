@@ -467,8 +467,10 @@ class BubbleScanner:
 def detect_underline_stroke(crop: np.ndarray, min_ratio: float = 0.20) -> bool:
     """Detects whether a handwritten answer crop contains a horizontal underline stroke.
 
-    Excludes the bounding box border by insetting from all sides, and inspects the
-    lower handwriting baseline zone for a continuous horizontal stroke.
+    Excludes the bounding box border by insetting from all sides, and combines:
+    1. External contour analysis (detects wide, thin strokes in the lower baseline zone).
+    2. Multi-scale morphological line analysis (detects short, medium, and long horizontal strokes).
+    Robust against tilted handwriting, broken strokes, and descenders.
     """
     if crop is None or crop.size == 0:
         return False
@@ -476,9 +478,9 @@ def detect_underline_stroke(crop: np.ndarray, min_ratio: float = 0.20) -> bool:
     if h < 15 or w < 30:
         return False
 
-    inset_x = max(2, int(round(w * 0.08)))
-    inset_y_top = max(2, int(round(h * 0.15)))
-    inset_y_bot = max(2, int(round(h * 0.08)))
+    inset_x = max(2, int(round(w * 0.04)))
+    inset_y_top = max(2, int(round(h * 0.12)))
+    inset_y_bot = max(2, int(round(h * 0.06)))
 
     inner = crop[inset_y_top:h - inset_y_bot, inset_x:w - inset_x]
     if inner.size == 0:
@@ -488,13 +490,49 @@ def detect_underline_stroke(crop: np.ndarray, min_ratio: float = 0.20) -> bool:
     _, thresh = cv2.threshold(gray, 200, 255, cv2.THRESH_BINARY_INV)
 
     ih, iw = thresh.shape[:2]
-    # Underlines are located in the lower region below or along the baseline of words
-    baseline_zone = thresh[int(ih * 0.50):, :]
-    if baseline_zone.size == 0:
-        return False
 
-    line_w = max(16, int(iw * min_ratio))
-    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (line_w, 1))
-    opened = cv2.morphologyEx(baseline_zone, cv2.MORPH_OPEN, kernel)
+    # Method 1: Contour analysis
+    contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    if contours:
+        boxes = []
+        for cnt in contours:
+            x, y, bw, bh = cv2.boundingRect(cnt)
+            if bw >= 4 and bh >= 1:
+                boxes.append((x, y, bw, bh))
 
-    return bool(cv2.countNonZero(opened) >= int(line_w * 0.75))
+        if boxes:
+            min_x = min(b[0] for b in boxes)
+            max_x = max(b[0] + b[2] for b in boxes)
+            ink_w = max_x - min_x
+            max_y = max(b[1] + b[3] for b in boxes)
+
+            for x, y, bw, bh in boxes:
+                aspect = bw / max(1, bh)
+                span_ratio = bw / max(1, ink_w)
+                is_low = (y + bh) >= (max_y - 8)
+                is_lower_half = (y >= int(ih * 0.35))
+                # Distinct underline contour: wide, relatively thin, in bottom zone of writing
+                if (
+                    aspect >= 3.0
+                    and bw >= 25
+                    and bh <= 16
+                    and is_low
+                    and is_lower_half
+                    and (span_ratio >= 0.28 or bw >= 50)
+                ):
+                    return True
+
+    # Method 2: Multi-scale morphological horizontal line detector in baseline zone
+    baseline_zone = thresh[int(ih * 0.40):, :]
+    if baseline_zone.size > 0:
+        target_w = max(16, int(iw * min_ratio))
+        # Check multiple scale kernels (short: 28px, medium: 45px, target_w)
+        for kw in sorted({28, 45, min(target_w, iw - 2)}):
+            if kw < iw:
+                kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (kw, 2))
+                opened = cv2.morphologyEx(baseline_zone, cv2.MORPH_OPEN, kernel)
+                if cv2.countNonZero(opened) >= int(kw * 0.75):
+                    return True
+
+    return False
+

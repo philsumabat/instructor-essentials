@@ -233,6 +233,34 @@ class ExamAnnotator:
             if item_grade.is_correct:
                 return
 
+        resp = (item_grade.student_response or "").strip()
+        if resp in {"[PENDING_INSPECTION]", "[INSPECT]"}:
+            # Neutral indicator for items awaiting handwriting inspection
+            cv2.rectangle(canvas, (x, y), (x + w, y + h), COLOR_MISSED, 2)
+            badge_txt = "Pending"
+            font = cv2.FONT_HERSHEY_SIMPLEX
+            (bw, bh), _ = cv2.getTextSize(badge_txt, font, 0.45, 1)
+            badge_x = x + w - bw - 10
+            badge_y = y + bh + 8
+            cv2.rectangle(
+                canvas,
+                (badge_x - 4, badge_y - bh - 4),
+                (badge_x + bw + 4, badge_y + 4),
+                COLOR_MISSED,
+                -1,
+            )
+            cv2.putText(
+                canvas,
+                badge_txt,
+                (badge_x, badge_y),
+                font,
+                0.45,
+                COLOR_WHITE,
+                1,
+                cv2.LINE_AA,
+            )
+            return
+
         color = COLOR_CORRECT if item_grade.is_correct else COLOR_INCORRECT
         cv2.rectangle(canvas, (x, y), (x + w, y + h), color, 2)
 
@@ -363,10 +391,13 @@ class ExamAnnotator:
 
         # 2. Incorrect answer (with points possible and expected key present)
         if not item_grade.is_correct and item_grade.max_points > 0:
-            canonical = self._get_canonical_answer(item_grade)
-            if canonical:
-                self.draw_correction_badge(canvas, x, y, w, h, f"Key: {canonical}", badge_type="incorrect")
+            resp = (item_grade.student_response or "").strip()
+            if resp not in {"[PENDING_INSPECTION]", "[INSPECT]"}:
+                canonical = self._get_canonical_answer(item_grade)
+                if canonical:
+                    self.draw_correction_badge(canvas, x, y, w, h, f"Key: {canonical}", badge_type="incorrect")
             return
+
 
         # 3. Accepted variant / alternate synonym / minor spelling variation
         if item_grade.is_correct and item_grade.max_points > 0:

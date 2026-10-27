@@ -362,8 +362,10 @@ class GradingEngine:
         is_blank: bool = False,
         is_multi: bool = False,
         review_reason: str = "",
+        crop: np.ndarray | None = None,
+        enforce_underline: bool = False,
     ) -> ItemGrade:
-        """Grades a single item based on response and rubric."""
+        """Grades a single item based on response, rubric, and optional handwriting crop."""
         if key_spec.points == 0.0 and not key_spec.correct_answer:
             return ItemGrade(
                 key=key_spec.key,
@@ -469,13 +471,28 @@ class GradingEngine:
 
             base_match = any(is_match_text(norm_resp, c) for c in candidates)
             valid_cap = bool(cleaned_resp and cleaned_resp[0].isupper())
-            if base_match and not valid_cap:
+
+            has_underline = None
+            if crop is not None:
+                from omr.vision import detect_underline_stroke
+                has_underline = detect_underline_stroke(crop)
+
+            if not base_match:
+                is_correct = False
+            elif not valid_cap:
                 is_correct = False
                 item_details = "Scientific name requires a capital first letter (ICN formatting error)"
                 f_badge = "incorrect"
                 f_text = f"Capitalize: {candidates[0]}"
+            elif enforce_underline and has_underline is False:
+                is_correct = False
+                item_details = "Scientific name must be underlined when handwritten (ICN formatting error)"
+                f_badge = "incorrect"
+                f_text = f"Underline: {candidates[0]}"
             else:
-                is_correct = base_match and valid_cap
+                is_correct = True
+                if has_underline is False:
+                    item_details = "Note: Underline stroke was not detected"
         elif key_spec.rubric == "case_insensitive" or key_spec.kind == "text":
             norm_resp = cleaned_resp.upper()
             def is_match_text(resp: str, target: str) -> bool:

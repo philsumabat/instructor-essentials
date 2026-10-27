@@ -30,7 +30,7 @@ import numpy as np
 
 try:
     from omr.layout import Layout
-    from omr.grading import AnswerKey, ExamGrade, ItemGrade, check_scientific_name
+    from omr.grading import AnswerKey, ExamGrade, ItemGrade, GradingEngine, check_scientific_name
     from omr.annotator import (
         ExamAnnotator,
         COLOR_WHITE,
@@ -60,6 +60,10 @@ def parse_args():
                         help="Directory to save output files and scans")
     parser.add_argument("--roster", "-r", type=Path, default=None,
                         help="Optional student roster CSV (with Student ID and Full Name)")
+    parser.add_argument("--inspected-csv", type=Path, default=None,
+                        help="Optional CSV of human/AI verified handwriting answers to produce final grades")
+    parser.add_argument("--enforce-underline", action="store_true", default=False,
+                        help="Enforce handwriting underline requirement for scientific_name items")
     parser.add_argument("--dpi", type=float, default=300.0, 
                         help="PDF rendering DPI (default: 300.0)")
     parser.add_argument("--px-per-mm", type=float, default=10.0, 
@@ -69,6 +73,35 @@ def parse_args():
     parser.add_argument("--pages", nargs="*", type=int, default=None,
                         help="Optional list of 1-based page numbers to process (e.g. 10 28)")
     return parser.parse_args()
+
+
+def load_inspected_answers(csv_path: Path | None) -> dict[str, dict[str, str]]:
+    """Loads verified student responses from an inspected CSV or previous Graded_Roster.csv."""
+    if not csv_path or not csv_path.is_file():
+        return {}
+    data: dict[str, dict[str, str]] = {}
+    with open(csv_path, mode="r", encoding="utf-8-sig") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            pname = row.get("Exam Page") or row.get("Exam ID") or row.get("Page") or ""
+            pname = pname.strip()
+            if pname:
+                data[pname] = row
+                stem = Path(pname).stem
+                data[stem] = row
+    return data
+
+
+def clean_inspected_response(resp: str) -> str:
+    """Strips trailing score marks (e.g. 'CONDENSER (+)' -> 'CONDENSER', 'Volvox (+1)' -> 'Volvox')."""
+    import re
+    s = (resp or "").strip()
+    if s in {"[INSPECT]", "[PENDING_INSPECTION]", "(Blank 0)", "(True — No Correction Required)"}:
+        return ""
+    # Strip trailing (+1), (+), (-), (-0), etc.
+    s = re.sub(r"\s*\([+\-]?\d*(?:\.\d+)?\)\s*$", "", s).strip()
+    return s
+
 
 
 def load_key(key_path: Path) -> AnswerKey:
@@ -318,6 +351,10 @@ def main():
     warper = SheetWarper(layout, px_per_mm=args.px_per_mm)
     scanner = BubbleScanner(layout, px_per_mm=args.px_per_mm)
     annotator = ExamAnnotator(layout, px_per_mm=args.px_per_mm)
+    grader_engine = GradingEngine(answer_key, layout=layout)
+    inspected_data = load_inspected_answers(args.inspected_csv)
+    if inspected_data:
+        print(f"Loaded inspected handwriting answers for {len(inspected_data)} pages.")
     
     out_dir = args.output_dir
     strips_dir = out_dir / 'compact_strips'
@@ -373,6 +410,9 @@ def main():
         total_score = 0.0
         max_possible = 0.0
         
+        # Inspected data lookup
+        p_inspected = inspected_data.get(pname) or inspected_data.get(Path(pname).stem) or {}
+
         # Roster resolution
         matched_student = None
         if roster and decoded_sid:
@@ -380,9 +420,9 @@ def main():
             if rm.matched:
                 matched_student = rm.student
         
-        row_sid = decoded_sid if decoded_sid else 'PENDING'
-        row_name = matched_student.full_name if matched_student else 'PENDING'
-        row_offer = normalize_offer_number(matched_student.class_offer) if (matched_student and matched_student.class_offer) else 'PENDING'
+        row_sid = decoded_sid if decoded_sid else (p_inspected.get('Student ID') or 'PENDING')
+        row_name = matched_student.full_name if matched_student else (p_inspected.get('Full Name') or 'PENDING')
+        row_offer = normalize_offer_number(matched_student.class_offer) if (matched_student and matched_student.class_offer) else normalize_offer_number(p_inspected.get('Offer No.') or p_inspected.get('Class / Offer No.')) or 'PENDING'
 
         row = {
             'Exam Page': pname,
@@ -435,16 +475,9 @@ def main():
                         )
                         row[f'Q{k}'] = "(True — No Correction Required)"
                         continue
-                    elif is_true_statement and is_blank:
-                        items[k] = ItemGrade(
-                            key=k, kind='text', student_response='',
-                            correct_answer='', is_correct=True,
-                            points_awarded=0.0, max_points=0.0,
-                            is_blank=True, is_multi=False,
-                            details="True — No Correction Required",
-                        )
-                        row[f'Q{k}'] = "(True — No Correction Required)"
-                        continue
+
+                inspected_raw = p_inspected.get(f'Q{k}') or p_inspected.get(k) or ''
+                inspected_val = clean_inspected_response(inspected_raw)
 
                 if is_blank:
                     # Automatically zero points for blanks
@@ -458,6 +491,27 @@ def main():
                         feedback_text=f"Key: {canonical}" if canonical else "",
                     )
                     row[f'Q{k}'] = "(Blank 0)"
+                elif inspected_val:
+                    # Verified answer available
+                    roi = next((r for r in layout.graded_rois if r.key == k), None)
+                    crop_k = None
+                    if roi:
+                        rx = int(round(roi.x * args.px_per_mm))
+                        ry = int(round(roi.y * args.px_per_mm))
+                        rw = int(round(roi.w * args.px_per_mm))
+                        rh = int(round(roi.h * args.px_per_mm))
+                        crop_k = warped_bgr[ry:ry+rh, rx:rx+rw]
+
+                    item_grade = grader_engine.evaluate_item(
+                        kspec,
+                        inspected_val,
+                        crop=crop_k,
+                        enforce_underline=args.enforce_underline,
+                    )
+                    items[k] = item_grade
+                    total_score += item_grade.points_awarded
+                    mark = '+' if item_grade.is_correct else '-'
+                    row[f'Q{k}'] = f"{inspected_val} ({mark}{item_grade.points_awarded:.0f})"
                 else:
                     # Non-blank item marked for vision inspection
                     items[k] = ItemGrade(

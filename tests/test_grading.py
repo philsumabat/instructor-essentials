@@ -130,6 +130,8 @@ def test_answer_key_from_dict_points_and_kind():
 
 
 def test_scientific_name_rubric_and_conventions():
+    import numpy as np
+    import cv2
     from omr.grading import AnswerKey, GradingEngine, check_scientific_name
 
     csv_text = """Item #,Answer,Points,Kind,Rubric
@@ -161,6 +163,20 @@ def test_scientific_name_rubric_and_conventions():
     assert chk_fail_cap["valid_capitalization"] is False
     assert any("capital" in s.lower() for s in chk_fail_cap["issues"])
 
+    # 4. Underline enforcement via evaluate_item with crop
+    crop_no_ul = np.full((90, 540, 3), 255, dtype=np.uint8)
+    cv2.putText(crop_no_ul, "Volvox", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 0), 2)
+    g3 = grader.evaluate_item(key.items["50"], "Volvox", crop=crop_no_ul, enforce_underline=True)
+    assert g3.is_correct is False
+    assert "underline" in g3.details.lower()
+    assert g3.feedback_badge == "incorrect"
+
+    crop_with_ul = crop_no_ul.copy()
+    cv2.line(crop_with_ul, (45, 68), (140, 68), (0, 0, 0), 2)
+    g4 = grader.evaluate_item(key.items["50"], "Volvox", crop=crop_with_ul, enforce_underline=True)
+    assert g4.is_correct is True
+    assert g4.points_awarded == 1.0
+
 
 def test_detect_underline_stroke():
     import numpy as np
@@ -168,15 +184,26 @@ def test_detect_underline_stroke():
     from omr.vision import detect_underline_stroke
 
     # Blank image with outer box border
-    crop_blank = np.full((90, 400, 3), 255, dtype=np.uint8)
-    cv2.rectangle(crop_blank, (0, 0), (399, 89), (0, 0, 0), 2)
+    crop_blank = np.full((90, 540, 3), 255, dtype=np.uint8)
+    cv2.rectangle(crop_blank, (0, 0), (539, 89), (0, 0, 0), 2)
     assert detect_underline_stroke(crop_blank) is False
 
     # Image with handwriting AND horizontal underline stroke
     crop_underlined = crop_blank.copy()
-    cv2.putText(crop_underlined, "Volvox", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 0), 2)
-    cv2.line(crop_underlined, (45, 68), (170, 68), (0, 0, 0), 2)
+    cv2.putText(crop_underlined, "Volvox", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 2)
+    cv2.line(crop_underlined, (45, 68), (120, 68), (0, 0, 0), 2)
     assert detect_underline_stroke(crop_underlined) is True
+
+    # Image with natural handwriting tilt (slanted underline)
+    crop_tilted = crop_blank.copy()
+    cv2.putText(crop_tilted, "Volvox", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 0), 2)
+    cv2.line(crop_tilted, (45, 64), (165, 74), (0, 0, 0), 2)
+    assert detect_underline_stroke(crop_tilted) is True
+
+    # Image with descenders but NO underline (e.g. Polypodium)
+    crop_descenders = crop_blank.copy()
+    cv2.putText(crop_descenders, "Polypodium", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 0), 2)
+    assert detect_underline_stroke(crop_descenders) is False
 
 
 def test_annotator_correction_badges():
@@ -204,4 +231,18 @@ def test_annotator_correction_badges():
     )
     badge_crop2 = canvas[310:335, 105:250]
     assert not np.all(badge_crop2 == 255)
+
+    # 3. Test pending inspection item does NOT trigger incorrect failure badge
+    canvas_pending = np.full((1200, 800, 3), 255, dtype=np.uint8)
+    pending_item = ItemGrade(
+        key="50", kind="text", student_response="[PENDING_INSPECTION]",
+        correct_answer="Volvox", is_correct=False, points_awarded=0.0,
+        max_points=1.0, is_blank=False, is_multi=False
+    )
+    annotator._draw_roi_feedback(canvas_pending, pending_item)
+    # Bottom correction area should NOT have a red correction badge
+    # roi for 50 is not in exam-50, but let's test directly on _draw_roi_correction
+    annotator._draw_roi_correction(canvas_pending, 100, 400, 300, 90, pending_item)
+    assert np.all(canvas_pending[460:485, 105:250] == 255)
+
 

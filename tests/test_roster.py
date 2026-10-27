@@ -62,6 +62,9 @@ def test_roster_normalization(tmp_path):
     assert normalize_student_id("26–1–0142") == "26100142"
     assert normalize_student_id("26.1.0142") == "26100142"
     assert normalize_student_id("26100142") == "26100142"
+    assert normalize_student_id("2026-1-0142") == "26100142"
+    assert normalize_student_id("2026-1-706") == "26100706"
+    assert normalize_student_id("2026100142") == "26100142"
 
     # Offer number normalization
     assert normalize_offer_number("E-326") == "E326"
@@ -69,10 +72,12 @@ def test_roster_normalization(tmp_path):
     assert normalize_offer_number("E-065") == "E065"
     assert normalize_offer_number(" E 326 ") == "E326"
     assert normalize_offer_number("E326") == "E326"
+    assert normalize_offer_number("Offer No. E-326") == "E326"
+    assert normalize_offer_number("Section: E-065") == "E065"
 
     # Integration: Roster with 8-digit ID matches hyphenated input scan
     csv_path = tmp_path / "roster_vsu.csv"
-    csv_path.write_text("Student ID,Full Name,Class\n26100142,Juan Dela Cruz,E-326\n26100706,Maria Clara,E-065\n", encoding="utf-8")
+    csv_path.write_text("Student ID,Full Name,Class\n26100142,Juan Dela Cruz,Offer No. E-326\n26100706,Maria Clara,Section E-065\n", encoding="utf-8")
     roster = Roster.load(csv_path)
 
     # Scanned as hyphenated "26-1-0142"
@@ -81,8 +86,9 @@ def test_roster_normalization(tmp_path):
     assert match1.student.full_name == "Juan Dela Cruz"
     assert match1.student.class_offer == "E326"
 
-    # Scanned as hyphenated "26-1-706"
-    match2 = roster.match("26-1-706")
+    # Scanned as 4-digit year hyphenated "2026-1-706"
+    match2 = roster.match("2026-1-706")
     assert match2.status == "exact"
     assert match2.student.full_name == "Maria Clara"
     assert match2.student.class_offer == "E065"
+

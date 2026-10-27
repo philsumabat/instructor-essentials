@@ -38,9 +38,10 @@ COLOR_BADGE_VARIANT_TEXT = (15, 80, 20)       # High-contrast Dark Forest Green 
 class ExamAnnotator:
     """Superimposes visual grading feedback onto rectified scan images."""
 
-    def __init__(self, layout: Layout, px_per_mm: float):
+    def __init__(self, layout: Layout, px_per_mm: float, pass_mark: float = 60.0):
         self.layout = layout
         self.px_per_mm = px_per_mm
+        self.pass_mark = pass_mark
 
     def _draw_banner(self, canvas: np.ndarray, grade: ExamGrade):
         """Renders an executive score banner at the top of the sheet."""
@@ -65,7 +66,7 @@ class ExamAnnotator:
         if grade.is_duplicate:
             status_color = (0, 140, 255)  # Orange
         else:
-            status_color = COLOR_CORRECT if grade.percentage >= 60.0 else COLOR_INCORRECT
+            status_color = COLOR_CORRECT if grade.percentage >= self.pass_mark else COLOR_INCORRECT
         cv2.rectangle(canvas, (banner_x1, banner_y1), (banner_x2, banner_y2), status_color, 2)
 
         # Content text
@@ -97,11 +98,14 @@ class ExamAnnotator:
             cv2.LINE_AA,
         )
 
-        # Right-aligned Pass/Fail/Duplicate stamp
+        # Right-aligned Pass/Fail/Duplicate stamp.
+        # "NEEDS REVIEW" is deliberately avoided here: on a graded scan it reads
+        # as "this paper is not finished" when it actually means "below the
+        # pass mark". "BELOW PASS MARK" states the academic outcome plainly.
         if grade.is_duplicate:
             stamp = "DUPLICATE SCAN"
         else:
-            stamp = "PASS" if grade.percentage >= 60.0 else "NEEDS REVIEW"
+            stamp = "PASS" if grade.percentage >= self.pass_mark else "BELOW PASS MARK"
         (sw, _), _ = cv2.getTextSize(stamp, font, 0.8, 2)
         cv2.putText(
             canvas,
@@ -121,11 +125,11 @@ class ExamAnnotator:
         rw = int(round(roi.w * self.px_per_mm))
         rh = int(round(roi.h * self.px_per_mm))
 
-        status_color = COLOR_CORRECT if grade.percentage >= 60.0 else COLOR_INCORRECT
+        status_color = COLOR_CORRECT if grade.percentage >= self.pass_mark else COLOR_INCORRECT
 
         # Tint inside score box
         sub = canvas[ry : ry + rh, rx : rx + rw]
-        card = np.full_like(sub, (235, 248, 235) if grade.percentage >= 60.0 else (235, 235, 252))
+        card = np.full_like(sub, (235, 248, 235) if grade.percentage >= self.pass_mark else (235, 235, 252))
         cv2.addWeighted(card, 0.40, sub, 0.60, 0, sub)
         canvas[ry : ry + rh, rx : rx + rw] = sub
 

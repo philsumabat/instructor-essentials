@@ -36,6 +36,43 @@ def _norm_header(h: str) -> str:
     return re.sub(r"[^a-z0-9]", "", (h or "").lower())
 
 
+def normalize_student_id(raw: str | None) -> str:
+    """Normalizes student identifiers (e.g., '26-1-0142' -> '26100142', '26-1-706' -> '26100706').
+
+    Standardizes hyphenated student numbers (<year>-<sem/campus>-<num>) into 8-digit strings,
+    preserving standard IDs when not matching the hyphenated pattern.
+    """
+    if not raw:
+        return ""
+    s = str(raw).strip()
+    if s == "PENDING" or s.startswith("["):
+        return s
+
+    # Pattern: 2-digit year, 1-digit term/campus, 1-5 digit sequence number with hyphens/dashes/dots
+    m = re.match(r"^(\d{2})[\s\-–—.]+(\d)[\s\-–—.]+(\d{1,5})$", s)
+    if m:
+        year, term, seq = m.groups()
+        return f"{year}{term}{int(seq):05d}"
+
+    # Stripped punctuation if contains hyphens/dots
+    if re.search(r"[\-–—.]", s):
+        cleaned = re.sub(r"[\s\-–—.]+", "", s)
+        if re.fullmatch(r"\d{8}", cleaned):
+            return cleaned
+
+    return s
+
+
+def normalize_offer_number(raw: str | None) -> str:
+    """Normalizes class offer numbers (e.g., 'E-326' -> 'E326', 'e-065' -> 'E065')."""
+    if not raw:
+        return ""
+    s = str(raw).strip().upper()
+    if s == "PENDING" or s.startswith("["):
+        return s
+    return re.sub(r"[\s\-–—.]+", "", s)
+
+
 @dataclass(frozen=True)
 class Student:
     student_id: str
@@ -47,7 +84,7 @@ class Student:
         for k in ("class", "offerno", "offer_no", "offer", "section", "course", "subject"):
             for ek, ev in self.extra.items():
                 if _norm_header(ek) == k and ev:
-                    return str(ev).strip()
+                    return normalize_offer_number(str(ev).strip())
         return ""
 
 
@@ -149,7 +186,8 @@ class Roster:
         students: list[Student] = []
         problems: list[str] = []
         for line_no, row in enumerate(rows, start=2):
-            sid = (row.get(id_col) or "").strip()
+            raw_sid = (row.get(id_col) or "").strip()
+            sid = normalize_student_id(raw_sid)
             if name_col:
                 name = (row.get(name_col) or "").strip()
             else:
@@ -178,21 +216,24 @@ class Roster:
     # ---- matching --------------------------------------------------------------
     def match(self, decoded_id: str) -> RosterMatch:
         decoded = decoded_id or ""
-        if not decoded or set(decoded) <= {BLANK}:
+        norm_decoded = normalize_student_id(decoded)
+        if not norm_decoded or set(norm_decoded) <= {BLANK}:
             return RosterMatch("unmatched", decoded, note="no student ID bubbles were filled")
 
-        # 1. Exact match (full decoded)
-        if decoded.isdigit() and decoded in self._by_id:
-            return RosterMatch("exact", decoded, self._by_id[decoded], note="")
+        # 1. Exact match (full decoded or normalized)
+        for cand in (norm_decoded, decoded):
+            if cand.isdigit() and cand in self._by_id:
+                return RosterMatch("exact", decoded, self._by_id[cand], note="" if cand == decoded else "matched via normalized student ID")
 
         # 2. Leading zero normalisation
-        if decoded.isdigit():
-            hits = self._by_stripped.get(decoded.lstrip("0") or "0", [])
-            if len(hits) == 1:
-                return RosterMatch("normalized", decoded, hits[0], note="matched after removing leading zeros")
+        for cand in (norm_decoded, decoded):
+            if cand.isdigit():
+                hits = self._by_stripped.get(cand.lstrip("0") or "0", [])
+                if len(hits) == 1:
+                    return RosterMatch("normalized", decoded, hits[0], note="matched after removing leading zeros")
 
         # 3. Tolerating unused leading/trailing columns for short IDs
-        for cand in (decoded.lstrip(BLANK), decoded.rstrip(BLANK)):
+        for cand in (decoded.lstrip(BLANK), decoded.rstrip(BLANK), norm_decoded.lstrip(BLANK), norm_decoded.rstrip(BLANK)):
             if cand and cand.isdigit() and cand in self._by_id:
                 return RosterMatch("exact", decoded, self._by_id[cand], note="unused ID columns ignored")
 

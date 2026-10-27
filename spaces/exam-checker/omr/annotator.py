@@ -13,6 +13,7 @@ import numpy as np
 
 from omr.grading import ExamGrade, ItemGrade
 from omr.layout import Layout, TextROI
+from omr.roster import normalize_student_id
 from omr.vision import GroupResult, WarpResult
 
 # BGR Color Palette
@@ -23,6 +24,15 @@ COLOR_BANNER_BG = (245, 247, 250)  # Off-white / light slate
 COLOR_BANNER_BORDER = (50, 50, 50) # Dark gray
 COLOR_TEXT = (20, 20, 20)          # Near-black
 COLOR_WHITE = (255, 255, 255)
+
+# Translucent correction badge styling
+COLOR_BADGE_INCORRECT_BG = (38, 38, 220)      # Crimson Red BGR
+COLOR_BADGE_INCORRECT_BORDER = (20, 20, 180)  # Dark Crimson border
+COLOR_BADGE_INCORRECT_TEXT = (15, 15, 150)    # High-contrast Dark Crimson text
+
+COLOR_BADGE_VARIANT_BG = (129, 185, 16)       # Emerald Green BGR
+COLOR_BADGE_VARIANT_BORDER = (35, 140, 40)    # Forest Green border
+COLOR_BADGE_VARIANT_TEXT = (15, 80, 20)       # High-contrast Dark Forest Green text
 
 
 class ExamAnnotator:
@@ -61,7 +71,8 @@ class ExamAnnotator:
         # Content text
         font = cv2.FONT_HERSHEY_SIMPLEX
         dup_tag = " [DUPLICATE]" if grade.is_duplicate else ""
-        student_label = f"Student: {grade.student_name} (ID: {grade.student_id}){dup_tag}"
+        norm_sid = normalize_student_id(grade.student_id)
+        student_label = f"Student: {grade.student_name} (ID: {norm_sid}){dup_tag}"
         score_label = f"Score: {grade.score:.1f} / {grade.max_score:.1f}  ({grade.percentage:.1f}%)"
 
         cv2.putText(
@@ -206,7 +217,7 @@ class ExamAnnotator:
                 )
 
     def _draw_roi_feedback(self, canvas: np.ndarray, item_grade: ItemGrade):
-        """Draws outline and points badge on handwritten answer boxes."""
+        """Draws outline, points badge, and visual correction overlays on handwritten answer boxes."""
         # Find corresponding ROI from layout
         roi = next((r for r in self.layout.graded_rois if r.key == item_grade.key), None)
         if not roi:
@@ -216,6 +227,11 @@ class ExamAnnotator:
         y = int(round(roi.y * self.px_per_mm))
         w = int(round(roi.w * self.px_per_mm))
         h = int(round(roi.h * self.px_per_mm))
+
+        # True statement in Modified T/F where no correction was required: keep canvas clean
+        if item_grade.max_points == 0.0 and not item_grade.correct_answer:
+            if item_grade.is_correct:
+                return
 
         color = COLOR_CORRECT if item_grade.is_correct else COLOR_INCORRECT
         cv2.rectangle(canvas, (x, y), (x + w, y + h), color, 2)
@@ -244,6 +260,127 @@ class ExamAnnotator:
             1,
             cv2.LINE_AA,
         )
+
+        # Translucent visual correction overlay
+        self._draw_roi_correction(canvas, x, y, w, h, item_grade)
+
+    def _get_canonical_answer(self, item_grade: ItemGrade) -> str:
+        corr = item_grade.correct_answer
+        if isinstance(corr, list):
+            return str(corr[0]).strip() if corr else ""
+        elif corr is not None:
+            return str(corr).split("|")[0].strip()
+        return ""
+
+    def draw_correction_badge(
+        self,
+        canvas: np.ndarray,
+        x: int,
+        y: int,
+        w: int,
+        h: int,
+        text: str,
+        badge_type: str = "incorrect",
+        alpha: float = 0.35,
+        position: str = "bottom",
+    ):
+        """
+        Renders an alpha-blended correction overlay badge.
+        Positioned along the bottom or top edge of the box to avoid occluding student handwriting.
+        - 'incorrect': Translucent crimson red with high-contrast text.
+        - 'accepted_variant': Translucent emerald green with high-contrast text.
+        """
+        if not text:
+            return
+
+        h_c, w_c = canvas.shape[:2]
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        font_scale = 0.42
+        thickness = 1
+        (tw, th), baseline = cv2.getTextSize(text, font, font_scale, thickness)
+
+        badge_h = max(20, th + 8)
+        if position == "top":
+            by1 = y + 2
+            by2 = y + 2 + badge_h
+        else:  # "bottom"
+            by1 = y + h - badge_h - 2
+            by2 = y + h - 2
+
+        bx1 = x + 3
+        badge_w = min(w - 6, tw + 12)
+        bx2 = bx1 + badge_w
+
+        # Clamp coordinates to canvas bounds
+        bx1 = max(0, min(bx1, w_c - 1))
+        bx2 = max(0, min(bx2, w_c))
+        by1 = max(0, min(by1, h_c - 1))
+        by2 = max(0, min(by2, h_c))
+        if bx2 <= bx1 or by2 <= by1:
+            return
+
+        # Colors in BGR
+        if badge_type in {"accepted_variant", "variant", "mastery"}:
+            bg_color = COLOR_BADGE_VARIANT_BG
+            border_color = COLOR_BADGE_VARIANT_BORDER
+            text_color = COLOR_BADGE_VARIANT_TEXT
+        else:
+            bg_color = COLOR_BADGE_INCORRECT_BG
+            border_color = COLOR_BADGE_INCORRECT_BORDER
+            text_color = COLOR_BADGE_INCORRECT_TEXT
+
+        # Alpha-blend background
+        sub = canvas[by1:by2, bx1:bx2]
+        overlay = np.full_like(sub, bg_color)
+        cv2.addWeighted(overlay, alpha, sub, 1.0 - alpha, 0, sub)
+        canvas[by1:by2, bx1:bx2] = sub
+
+        # Draw crisp border
+        cv2.rectangle(canvas, (bx1, by1), (bx2, by2), border_color, 1, cv2.LINE_AA)
+
+        # Ensure text fits badge width, adjusting font scale if necessary
+        avail_w = bx2 - bx1 - 8
+        if tw > avail_w and avail_w > 10:
+            scale_factor = avail_w / tw
+            font_scale = max(0.28, font_scale * scale_factor)
+            (tw, th), baseline = cv2.getTextSize(text, font, font_scale, thickness)
+
+        tx = bx1 + 4
+        ty = by1 + int((badge_h + th) / 2)
+        cv2.putText(canvas, text, (tx, ty), font, font_scale, text_color, thickness, cv2.LINE_AA)
+
+    def _draw_roi_correction(self, canvas: np.ndarray, x: int, y: int, w: int, h: int, item_grade: ItemGrade):
+        """Determines and draws correction badge for an ROI item based on grading results."""
+        # 1. Explicit badge specified on item_grade
+        if getattr(item_grade, "feedback_badge", ""):
+            b_type = item_grade.feedback_badge
+            b_text = getattr(item_grade, "feedback_text", "")
+            if not b_text:
+                canonical = self._get_canonical_answer(item_grade)
+                b_text = f"Key: {canonical}" if b_type == "incorrect" else f"Accepted: {canonical}"
+            self.draw_correction_badge(canvas, x, y, w, h, b_text, badge_type=b_type)
+            return
+
+        # 2. Incorrect answer (with points possible and expected key present)
+        if not item_grade.is_correct and item_grade.max_points > 0:
+            canonical = self._get_canonical_answer(item_grade)
+            if canonical:
+                self.draw_correction_badge(canvas, x, y, w, h, f"Key: {canonical}", badge_type="incorrect")
+            return
+
+        # 3. Accepted variant / alternate synonym / minor spelling variation
+        if item_grade.is_correct and item_grade.max_points > 0:
+            canonical = self._get_canonical_answer(item_grade)
+            resp = item_grade.student_response.strip()
+            if canonical and resp and resp not in {"[PENDING_INSPECTION]", "[INSPECT]"}:
+                if resp.upper() != canonical.upper():
+                    font = cv2.FONT_HERSHEY_SIMPLEX
+                    cand_txt = f"{resp} -> {canonical}"
+                    (cw, _), _ = cv2.getTextSize(cand_txt, font, 0.42, 1)
+                    badge_text = cand_txt if cw + 12 <= (w - 6) else f"Accepted: {canonical}"
+                    self.draw_correction_badge(
+                        canvas, x, y, w, h, badge_text, badge_type="accepted_variant"
+                    )
 
     def annotate(self, warped_bgr: np.ndarray, grade: ExamGrade, redact_names: bool = False) -> np.ndarray:
         """Produces a derivative visual feedback image."""

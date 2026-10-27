@@ -462,3 +462,39 @@ class BubbleScanner:
 
         decoded_sid = "".join(sid_chars)
         return results, decoded_sid
+
+
+def detect_underline_stroke(crop: np.ndarray, min_ratio: float = 0.20) -> bool:
+    """Detects whether a handwritten answer crop contains a horizontal underline stroke.
+
+    Excludes the bounding box border by insetting from all sides, and inspects the
+    lower handwriting baseline zone for a continuous horizontal stroke.
+    """
+    if crop is None or crop.size == 0:
+        return False
+    h, w = crop.shape[:2]
+    if h < 15 or w < 30:
+        return False
+
+    inset_x = max(2, int(round(w * 0.08)))
+    inset_y_top = max(2, int(round(h * 0.15)))
+    inset_y_bot = max(2, int(round(h * 0.08)))
+
+    inner = crop[inset_y_top:h - inset_y_bot, inset_x:w - inset_x]
+    if inner.size == 0:
+        return False
+
+    gray = cv2.cvtColor(inner, cv2.COLOR_BGR2GRAY) if inner.ndim == 3 else inner
+    _, thresh = cv2.threshold(gray, 200, 255, cv2.THRESH_BINARY_INV)
+
+    ih, iw = thresh.shape[:2]
+    # Underlines are located in the lower region below or along the baseline of words
+    baseline_zone = thresh[int(ih * 0.50):, :]
+    if baseline_zone.size == 0:
+        return False
+
+    line_w = max(16, int(iw * min_ratio))
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (line_w, 1))
+    opened = cv2.morphologyEx(baseline_zone, cv2.MORPH_OPEN, kernel)
+
+    return bool(cv2.countNonZero(opened) >= int(line_w * 0.75))

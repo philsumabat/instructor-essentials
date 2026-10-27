@@ -48,6 +48,8 @@ class ItemGrade:
     is_blank: bool
     is_multi: bool
     details: str = ""
+    feedback_badge: str = ""  # "incorrect", "accepted_variant", or ""
+    feedback_text: str = ""
 
 
 @dataclass
@@ -99,6 +101,8 @@ class ExamGrade:
                     "points": v.points_awarded,
                     "max_points": v.max_points,
                     "details": v.details,
+                    "feedback_badge": v.feedback_badge,
+                    "feedback_text": v.feedback_text,
                 }
                 for k, v in self.items.items()
             },
@@ -443,9 +447,35 @@ class GradingEngine:
         elif correct_ans is not None and str(correct_ans).strip() != "":
             candidates = [str(correct_ans).strip()]
 
+        f_badge = ""
+        f_text = ""
+        item_details = review_reason or ""
+
         if not candidates:
             # Blank expected answer (e.g. 0-point correction ROI for a True statement)
             is_correct = True if key_spec.points == 0.0 else (cleaned_resp == "")
+        elif key_spec.rubric == "scientific_name":
+            norm_resp = cleaned_resp.upper()
+            def is_match_text(resp: str, target: str) -> bool:
+                r = resp.strip()
+                t = target.upper().strip()
+                if not r or not t:
+                    return r == t
+                if r == t:
+                    return True
+                if len(t) >= 5 and difflib.SequenceMatcher(None, r, t).ratio() >= 0.85:
+                    return True
+                return False
+
+            base_match = any(is_match_text(norm_resp, c) for c in candidates)
+            valid_cap = bool(cleaned_resp and cleaned_resp[0].isupper())
+            if base_match and not valid_cap:
+                is_correct = False
+                item_details = "Scientific name requires a capital first letter (ICN formatting error)"
+                f_badge = "incorrect"
+                f_text = f"Capitalize: {candidates[0]}"
+            else:
+                is_correct = base_match and valid_cap
         elif key_spec.rubric == "case_insensitive" or key_spec.kind == "text":
             norm_resp = cleaned_resp.upper()
             def is_match_text(resp: str, target: str) -> bool:
@@ -471,6 +501,20 @@ class GradingEngine:
         else:  # exact
             is_correct = any(cleaned_resp == c for c in candidates)
 
+        # Automatic feedback badges
+        if not is_correct and key_spec.points > 0:
+            canonical = candidates[0] if candidates else ""
+            if not f_badge:
+                f_badge = "incorrect"
+                f_text = f"Key: {canonical}" if canonical else ""
+        elif is_correct and candidates:
+            canonical = candidates[0]
+            if cleaned_resp.upper() != canonical.upper():
+                if not f_badge:
+                    f_badge = "accepted_variant"
+                    cand_txt = f"{cleaned_resp} -> {canonical}"
+                    f_text = cand_txt if len(cand_txt) <= 24 else f"Accepted: {canonical}"
+
         points = key_spec.points if is_correct else 0.0
         return ItemGrade(
             key=key_spec.key,
@@ -482,7 +526,11 @@ class GradingEngine:
             max_points=key_spec.points,
             is_blank=False,
             is_multi=False,
+            details=item_details,
+            feedback_badge=f_badge,
+            feedback_text=f_text,
         )
+
 
     def grade(
         self,
@@ -539,3 +587,56 @@ class GradingEngine:
             ocr_results=ocr_results,
             review_notes=review_notes,
         )
+
+
+def check_scientific_name(
+    response: str,
+    expected: str | list[str],
+    crop: np.ndarray | None = None,
+    enforce_underline: bool = False,
+) -> dict[str, Any]:
+    """Validates student response against botanical scientific name (ICN) conventions:
+    - Capital initial letter for genus / scientific name.
+    - Underline stroke in handwriting crop (underlining represents italics).
+    """
+    resp = (response or "").strip()
+    issues: list[str] = []
+
+    # 1. Capitalization check
+    valid_cap = bool(resp and resp[0].isupper())
+    if not valid_cap and resp:
+        issues.append("Scientific name must begin with a capital letter (ICN formatting error).")
+
+    # 2. Underline detection on crop (if provided)
+    has_underline = None
+    if crop is not None:
+        from omr.vision import detect_underline_stroke
+        has_underline = detect_underline_stroke(crop)
+        if not has_underline and enforce_underline:
+            issues.append("Scientific name must be underlined when handwritten.")
+
+    # 3. Base name match
+    candidates: list[str] = []
+    if isinstance(expected, list):
+        for e in expected:
+            candidates.extend([s.strip() for s in str(e).split("|") if s.strip()])
+    else:
+        candidates = [s.strip() for s in str(expected).split("|") if s.strip()]
+
+    matched = any(
+        resp.upper() == c.upper()
+        or (len(c) >= 5 and difflib.SequenceMatcher(None, resp.upper(), c.upper()).ratio() >= 0.85)
+        for c in candidates
+    )
+
+    is_valid = matched and valid_cap
+    if enforce_underline and has_underline is False:
+        is_valid = False
+
+    return {
+        "is_valid": is_valid,
+        "matched_term": matched,
+        "valid_capitalization": valid_cap,
+        "has_underline": has_underline,
+        "issues": issues,
+    }

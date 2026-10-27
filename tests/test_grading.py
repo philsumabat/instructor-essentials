@@ -128,3 +128,80 @@ def test_answer_key_from_dict_points_and_kind():
     assert key.items["69_corr"].points == 0.0
     assert key.items["69_corr"].kind == "text"
 
+
+def test_scientific_name_rubric_and_conventions():
+    from omr.grading import AnswerKey, GradingEngine, check_scientific_name
+
+    csv_text = """Item #,Answer,Points,Kind,Rubric
+50,Volvox,1.0,text,scientific_name
+"""
+    key = AnswerKey.from_csv_text(csv_text, title="Botany Key")
+    grader = GradingEngine(key)
+
+    # 1. Correct genus with capital letter
+    g1 = grader.evaluate_item(key.items["50"], "Volvox")
+    assert g1.is_correct is True
+    assert g1.points_awarded == 1.0
+
+    # 2. Lowercase genus fails capitalization under ICN conventions
+    g2 = grader.evaluate_item(key.items["50"], "volvox")
+    assert g2.is_correct is False
+    assert g2.points_awarded == 0.0
+    assert "capital" in g2.details.lower()
+    assert g2.feedback_badge == "incorrect"
+    assert "Volvox" in g2.feedback_text
+
+    # 3. Direct check_scientific_name function
+    chk_pass = check_scientific_name("Volvox", "Volvox")
+    assert chk_pass["is_valid"] is True
+    assert chk_pass["valid_capitalization"] is True
+
+    chk_fail_cap = check_scientific_name("volvox", "Volvox")
+    assert chk_fail_cap["is_valid"] is False
+    assert chk_fail_cap["valid_capitalization"] is False
+    assert any("capital" in s.lower() for s in chk_fail_cap["issues"])
+
+
+def test_detect_underline_stroke():
+    import numpy as np
+    import cv2
+    from omr.vision import detect_underline_stroke
+
+    # Blank image with outer box border
+    crop_blank = np.full((90, 400, 3), 255, dtype=np.uint8)
+    cv2.rectangle(crop_blank, (0, 0), (399, 89), (0, 0, 0), 2)
+    assert detect_underline_stroke(crop_blank) is False
+
+    # Image with handwriting AND horizontal underline stroke
+    crop_underlined = crop_blank.copy()
+    cv2.putText(crop_underlined, "Volvox", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 0), 2)
+    cv2.line(crop_underlined, (45, 68), (170, 68), (0, 0, 0), 2)
+    assert detect_underline_stroke(crop_underlined) is True
+
+
+def test_annotator_correction_badges():
+    import numpy as np
+    from omr.annotator import ExamAnnotator
+    from omr.grading import ItemGrade
+    from omr.layout import Layout
+
+    layout = Layout.load("dist/exam-50/layout.json")
+    annotator = ExamAnnotator(layout, px_per_mm=10.0)
+
+    canvas = np.full((1200, 800, 3), 255, dtype=np.uint8)
+
+    # 1. Test incorrect badge rendering
+    annotator.draw_correction_badge(
+        canvas, x=100, y=100, w=300, h=90, text="Key: CONDENSER", badge_type="incorrect"
+    )
+    # The badge area should be altered from pure white (255, 255, 255)
+    badge_crop = canvas[160:185, 105:250]
+    assert not np.all(badge_crop == 255)
+
+    # 2. Test accepted variant badge rendering
+    annotator.draw_correction_badge(
+        canvas, x=100, y=250, w=300, h=90, text="Accepted: STEREOMICROSCOPE", badge_type="accepted_variant"
+    )
+    badge_crop2 = canvas[310:335, 105:250]
+    assert not np.all(badge_crop2 == 255)
+

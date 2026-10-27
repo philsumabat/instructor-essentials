@@ -9,6 +9,7 @@ import { buildLayout, layoutStats, TemplateError, allGroups, PAPER_SIZES, DENSIT
 import { renderSheetDOM, renderStandaloneHTML, pageRule, escapeHTML } from './render-dom.js';
 import { renderSVG } from './render-svg.js';
 import { SAMPLE_TEMPLATES } from './templates.js';
+import { generateRandomSheetId } from './barcode.js';
 
 const safeEscapeHTML = typeof escapeHTML === 'function'
   ? escapeHTML
@@ -91,6 +92,12 @@ function initElements() {
     overlay: $('#overlay'),
     btnDlKey: $('#btn-dl-key'),
     btnPrint: $('#btn-print'),
+    modalPrint: $('#modal-print'),
+    btnClosePrint: $('#btn-close-print'),
+    btnCancelPrint: $('#btn-cancel-print'),
+    btnConfirmPrint: $('#btn-confirm-print'),
+    inputPrintCopies: $('#input-print-copies'),
+    labelConfirmPrint: $('#label-confirm-print'),
     btnExportToggle: $('#btn-export-toggle'),
     exportMenu: $('#export-dropdown-content'),
     buttons: {
@@ -293,6 +300,7 @@ const DEFAULT_SHEET_CSS = `/* Printable OMR sheet styles */
 .omr-sheet *, .omr-sheet *::before, .omr-sheet *::after { box-sizing: border-box; margin: 0; }
 .omr-sheet > * { position: absolute; }
 .omr-fiducial { display: block; overflow: visible; }
+.omr-barcode { display: block; overflow: visible; }
 .omr-title { display: flex; align-items: center; justify-content: center; text-align: center; font-size: var(--omr-font-title); font-weight: 700; line-height: 1.15; overflow: hidden; }
 .omr-footer { display: flex; align-items: center; justify-content: center; text-align: center; font-size: var(--omr-font-small); color: #444; overflow: hidden; }
 .omr-zone { border: 0.3mm solid #000; border-radius: 1.2mm; padding: 2.5mm; }
@@ -4826,8 +4834,77 @@ function initEvents() {
     }
   });
 
-  // Print button
-  els.btnPrint?.addEventListener('click', () => window.print());
+  // Print button & Class Set modal
+  els.btnPrint?.addEventListener('click', () => {
+    if (els.modalPrint) {
+      if (els.inputPrintCopies) els.inputPrintCopies.value = '30';
+      if (els.labelConfirmPrint) els.labelConfirmPrint.textContent = 'Print 30 Sheets';
+      els.modalPrint.showModal();
+    } else {
+      window.print();
+    }
+  });
+
+  $$('.btn-print-preset').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const copies = Number(btn.dataset.copies || 1);
+      if (els.inputPrintCopies) els.inputPrintCopies.value = String(copies);
+      if (els.labelConfirmPrint) {
+        els.labelConfirmPrint.textContent = copies === 1 ? 'Print 1 Sheet' : `Print ${copies} Sheets`;
+      }
+    });
+  });
+
+  els.inputPrintCopies?.addEventListener('input', () => {
+    const val = Math.max(1, Math.min(500, Number(els.inputPrintCopies.value) || 1));
+    if (els.labelConfirmPrint) {
+      els.labelConfirmPrint.textContent = val === 1 ? 'Print 1 Sheet' : `Print ${val} Sheets`;
+    }
+  });
+
+  els.btnClosePrint?.addEventListener('click', () => els.modalPrint?.close());
+  els.btnCancelPrint?.addEventListener('click', () => els.modalPrint?.close());
+
+  els.btnConfirmPrint?.addEventListener('click', () => {
+    const copies = Math.max(1, Math.min(500, Number(els.inputPrintCopies?.value) || 1));
+    els.modalPrint?.close();
+
+    if (copies <= 1) {
+      if (state.template) {
+        state.layout = buildLayout(state.template, { sheetId: generateRandomSheetId() });
+        renderPreview();
+      }
+      setTimeout(() => window.print(), 100);
+      return;
+    }
+
+    // Multi-page batch printing: generate N unique pages into preview scaler
+    const scaler = els.frame?.querySelector('.preview__scaler');
+    if (!scaler || !state.template) {
+      window.print();
+      return;
+    }
+
+    const originalChildren = Array.from(scaler.children);
+    scaler.replaceChildren();
+
+    for (let c = 0; c < copies; c++) {
+      const sheetId = generateRandomSheetId();
+      const pageLayout = buildLayout(state.template, { sheetId });
+      const sheetEl = renderSheetDOM(pageLayout);
+      scaler.appendChild(sheetEl);
+    }
+
+    setTimeout(() => {
+      const onAfterPrint = () => {
+        window.removeEventListener('afterprint', onAfterPrint);
+        scaler.replaceChildren(...originalChildren);
+        renderPreview();
+      };
+      window.addEventListener('afterprint', onAfterPrint);
+      window.print();
+    }, 150);
+  });
 
   // Export dropdown
   els.btnExportToggle?.addEventListener('click', (e) => {

@@ -97,6 +97,25 @@ class OMRPipeline:
             if sid_item and sid_item.text:
                 decoded_sid = sid_item.text.strip()
 
+        # 3.5 Sheet Barcode Decoding
+        sheet_barcode = ""
+        bc_roi = getattr(self.layout, "barcode_roi", None)
+        if bc_roi is not None:
+            try:
+                from omr.barcode import decode_barcode_image
+
+                px_x = int(round(bc_roi.x * self.px_per_mm))
+                px_y = int(round(bc_roi.y * self.px_per_mm))
+                px_w = int(round(bc_roi.w * self.px_per_mm))
+                px_h = int(round(bc_roi.h * self.px_per_mm))
+
+                crop = warp_res.warped_bgr[px_y : px_y + px_h, px_x : px_x + px_w]
+                decoded_bc = decode_barcode_image(crop)
+                if decoded_bc:
+                    sheet_barcode = decoded_bc
+            except Exception:
+                pass
+
         # 4. Roster matching
         if self.roster is not None:
             roster_match = self.roster.match(decoded_sid)
@@ -112,6 +131,7 @@ class OMRPipeline:
             ocr_results=ocr_results,
             decoded_sid=decoded_sid,
             roster_match=roster_match,
+            sheet_barcode=sheet_barcode,
         )
         if getattr(warp_res, "review_notes", None):
             grade.review_notes = list(warp_res.review_notes) + grade.review_notes
@@ -237,11 +257,32 @@ class OMRPipeline:
         )
 
     def detect_duplicates(self, grades: list[ExamGrade]) -> list[dict[str, Any]]:
-        """Identifies duplicate scans in a batch based on student ID collisions and bubble answer matches."""
+        """Identifies duplicate scans in a batch based on sheet barcode, student ID collisions, and bubble answer matches."""
         duplicates: list[dict[str, Any]] = []
         n = len(grades)
 
-        # 1. Student ID collisions (for non-empty, non-anonymous IDs)
+        # 1. Sheet Barcode Collisions (100% definitive physical double-scans)
+        by_barcode: dict[str, list[int]] = {}
+        for idx, g in enumerate(grades):
+            bc = g.sheet_barcode.strip() if g.sheet_barcode else ""
+            if bc and len(bc) >= 4:
+                by_barcode.setdefault(bc, []).append(idx)
+
+        for bc, indices in by_barcode.items():
+            if len(indices) > 1:
+                dup_exams = [grades[i].exam_id for i in indices]
+                duplicates.append({
+                    "type": "sheet_barcode_collision",
+                    "sheet_barcode": bc,
+                    "exam_ids": dup_exams,
+                    "message": f"Sheet Barcode {bc} was scanned multiple times: {', '.join(dup_exams)}",
+                })
+                for i in indices:
+                    grades[i].is_duplicate = True
+                    other_sheets = [e for e in dup_exams if e != grades[i].exam_id]
+                    grades[i].duplicate_note = f"Duplicate physical scan: Sheet {bc} also on {', '.join(other_sheets)}"
+
+        # 2. Student ID collisions (for non-empty, non-anonymous IDs)
         by_sid: dict[str, list[int]] = {}
         for idx, g in enumerate(grades):
             sid = g.student_id.strip() if g.student_id else ""
@@ -252,19 +293,24 @@ class OMRPipeline:
             if len(indices) > 1:
                 dup_exams = [grades[i].exam_id for i in indices]
                 name = grades[indices[0]].student_name
-                duplicates.append({
-                    "type": "student_id_collision",
-                    "student_id": sid,
-                    "student_name": name,
-                    "exam_ids": dup_exams,
-                    "message": f"Student ID {sid} ({name}) appears on multiple sheets: {', '.join(dup_exams)}",
-                })
-                for i in indices:
-                    grades[i].is_duplicate = True
-                    other_sheets = [e for e in dup_exams if e != grades[i].exam_id]
-                    grades[i].duplicate_note = f"Duplicate scan: Student ID {sid} also on {', '.join(other_sheets)}"
+                already_bc = any(
+                    d.get("type") == "sheet_barcode_collision" and all(grades[i].exam_id in d.get("exam_ids", []) for i in indices)
+                    for d in duplicates
+                )
+                if not already_bc:
+                    duplicates.append({
+                        "type": "student_id_collision",
+                        "student_id": sid,
+                        "student_name": name,
+                        "exam_ids": dup_exams,
+                        "message": f"Student ID {sid} ({name}) appears on multiple sheets: {', '.join(dup_exams)}",
+                    })
+                    for i in indices:
+                        grades[i].is_duplicate = True
+                        other_sheets = [e for e in dup_exams if e != grades[i].exam_id]
+                        grades[i].duplicate_note = f"Duplicate scan: Student ID {sid} also on {', '.join(other_sheets)}"
 
-        # 2. Bubble response vector collisions (>= 96% identical answers across MCQs)
+        # 3. Bubble response vector collisions (>= 96% identical answers across MCQs)
         for i in range(n):
             for j in range(i + 1, n):
                 g1, g2 = grades[i], grades[j]
@@ -281,20 +327,34 @@ class OMRPipeline:
                     ratio = matches / len(common_keys)
                     if ratio >= 0.96:
                         already = any(
-                            d["type"] == "student_id_collision" and g1.exam_id in d["exam_ids"] and g2.exam_id in d["exam_ids"]
+                            (d["type"] == "student_id_collision" or d.get("type") == "sheet_barcode_collision")
+                            and g1.exam_id in d["exam_ids"]
+                            and g2.exam_id in d["exam_ids"]
                             for d in duplicates
                         )
                         if not already:
                             pct_str = f"{round(ratio * 100, 1)}%"
-                            duplicates.append({
-                                "type": "identical_responses",
-                                "exam_ids": [g1.exam_id, g2.exam_id],
-                                "match_ratio": round(ratio * 100, 1),
-                                "message": f"{g1.exam_id} and {g2.exam_id} share {pct_str} identical bubble answers (likely double-scan)",
-                            })
-                            g1.is_duplicate = True
-                            g2.is_duplicate = True
-                            g1.duplicate_note = f"Likely duplicate scan: {pct_str} identical answers to {g2.exam_id}"
-                            g2.duplicate_note = f"Likely duplicate scan: {pct_str} identical answers to {g1.exam_id}"
+                            has_both = bool(g1.sheet_barcode and g2.sheet_barcode)
+                            diff_barcodes = has_both and (g1.sheet_barcode != g2.sheet_barcode)
+
+                            if diff_barcodes:
+                                # Separate physical sheets: potential collusion, NOT double-scan
+                                g1.review_notes.append(
+                                    f"Distinct physical sheets ({g1.sheet_barcode} & {g2.sheet_barcode}) with {pct_str} identical answers"
+                                )
+                                g2.review_notes.append(
+                                    f"Distinct physical sheets ({g2.sheet_barcode} & {g1.sheet_barcode}) with {pct_str} identical answers"
+                                )
+                            else:
+                                duplicates.append({
+                                    "type": "identical_responses",
+                                    "exam_ids": [g1.exam_id, g2.exam_id],
+                                    "match_ratio": round(ratio * 100, 1),
+                                    "message": f"{g1.exam_id} and {g2.exam_id} share {pct_str} identical bubble answers (likely double-scan)",
+                                })
+                                g1.is_duplicate = True
+                                g2.is_duplicate = True
+                                g1.duplicate_note = f"Likely duplicate scan: {pct_str} identical answers to {g2.exam_id}"
+                                g2.duplicate_note = f"Likely duplicate scan: {pct_str} identical answers to {g1.exam_id}"
 
         return duplicates

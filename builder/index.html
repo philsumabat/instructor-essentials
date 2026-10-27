@@ -728,6 +728,47 @@
     </div>
   </dialog>
 
+  <!-- Print Sheets Modal Dialog -->
+  <dialog class="modal-dialog app-chrome" id="modal-print" style="max-width: 480px; width: 95vw;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title">Print Exam Sheets</h2>
+        <button type="button" class="btn-close-modal" id="btn-close-print" aria-label="Close">✕</button>
+      </div>
+      <div class="modal-body" style="padding: 1rem 1.25rem;">
+        <p class="modal-desc" style="margin-bottom: 1rem;">Print millimeter-accurate physical exam sheets with randomized Code 39 barcodes in the footer for automated duplicate detection.</p>
+        
+        <div class="form-group" style="margin-bottom: 1.25rem;">
+          <label for="input-print-copies" style="display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 0.4rem;">Number of Exam Sheets:</label>
+          <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+            <input type="number" id="input-print-copies" min="1" max="500" value="30" class="input" style="width: 80px; text-align: center; font-weight: 700; height: 34px;">
+            <div style="display: flex; gap: 0.35rem; align-items: center;">
+              <button type="button" class="btn btn--secondary btn--sm btn-print-preset" data-copies="1">1 (Single)</button>
+              <button type="button" class="btn btn--secondary btn--sm btn-print-preset" data-copies="25">25</button>
+              <button type="button" class="btn btn--secondary btn--sm btn-print-preset" data-copies="30">30</button>
+              <button type="button" class="btn btn--secondary btn--sm btn-print-preset" data-copies="40">40</button>
+              <button type="button" class="btn btn--secondary btn--sm btn-print-preset" data-copies="50">50</button>
+            </div>
+          </div>
+        </div>
+
+        <div style="background: var(--bg-alt, #f8fafc); border: 1px solid var(--border, #e2e8f0); border-radius: var(--radius-md, 6px); padding: 0.75rem 0.85rem; font-size: 0.8rem; color: var(--text-muted, #475569);">
+          <div style="display: flex; align-items: center; gap: 0.4rem; font-weight: 600; color: var(--text, #0f172a); margin-bottom: 0.25rem;">
+            <span style="color: #0284c7;">✓</span> Serialized Barcodes
+          </div>
+          Each page receives a unique random sheet ID in the bottom-right footer (e.g. <code>SHT-8F42-9B</code>). If an ADF scanner double-feeds a sheet, Checker Studio will flag it immediately.
+        </div>
+      </div>
+      <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 0.5rem;">
+        <button type="button" id="btn-cancel-print" class="btn btn--secondary">Cancel</button>
+        <button type="button" id="btn-confirm-print" class="btn btn--primary" style="display: inline-flex; align-items: center; gap: 0.4rem;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
+          <span id="label-confirm-print">Print 30 Sheets</span>
+        </button>
+      </div>
+    </div>
+  </dialog>
+
   <!-- Institutional Authentication Gate Overlay -->
   <div id="auth-gate-overlay" class="auth-gate-overlay" style="display: none;">
     <div class="auth-gate-card">

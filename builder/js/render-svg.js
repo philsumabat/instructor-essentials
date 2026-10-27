@@ -7,6 +7,7 @@
  */
 import { markerPath } from './aruco.js';
 import { escapeHTML as esc } from './render-dom.js';
+import { generateBarcodeSVG } from './barcode.js';
 
 const f = (v) => +Number(v).toFixed(3);
 
@@ -171,6 +172,12 @@ export function renderSVG(layout) {
   }
   parts.push(text(header.title.x, fiducial.inset + fiducial.size / 2, layout.title, { size: typography.title, anchor: 'middle', weight: 700 }));
   parts.push(text(header.footer.x, header.footer.y, header.footer.text, { size: typography.small, anchor: 'middle', fill: '#444' }));
+  if (layout.barcode && layout.barcode.enabled) {
+    const b = layout.barcode;
+    parts.push(`<g transform="translate(${b.x} ${b.y})">`);
+    parts.push(generateBarcodeSVG(b.id || b.value, { widthMm: b.w, heightMm: b.h, fontSizeMm: 1.5 }));
+    parts.push('</g>');
+  }
   layout.zones.forEach((zone, zoneIndex) => parts.push(zoneSVG(zone, layout, zoneIndex)));
   parts.push('</svg>');
   return parts.join('\n');

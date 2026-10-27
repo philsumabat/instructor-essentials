@@ -614,6 +614,15 @@ The user requested removing the desktop application layer (`apps/desktop/` with 
      - **Pending Inspection Protection**: Verified that uninspected items (`[PENDING_INSPECTION]`) display neutral amber borders and never trigger premature red error overlays or point penalties.
      - Positioned along the bottom edge to avoid collision with top-right points stamps and rendered with 35% alpha-blended backgrounds so underlying student handwriting remains fully visible.
    - **End-to-End Handwriting Evaluation Pipeline**: Connected `GradingEngine.evaluate_item(..., crop=..., enforce_underline=...)` and `--inspected-csv` support into `scripts/extract_and_tile.py` to ingest verified human/AI handwriting transcriptions, evaluate botanical rules, check underlines on image crops, and generate final annotated scans.
+10. **Decision 44: Serialized Sheet Barcodes for Robust Duplicate Scan Detection**:
+   - **Footer Barcode Geometry & Coordinate Contract**: Embedded serialized Code 39 barcodes by default in the bottom-right footer alongside instructions text between the center text and the Bottom-Right ArUco fiducial ($w = 34\text{ mm}$, $h = 6.5\text{ mm}$). Registered in `layout.rois` with `role: "sheet_id"` so both web and Python checkers locate the exact millimeter bounding box automatically after ArUco perspective rectification without displacing any question bubbles.
+   - **Zero-Dependency Code 39 Generation & Sub-Millisecond Decoding**: Implemented pure-JS and pure-Python Code 39 modules (`builder/js/barcode.js`, `omr/barcode.py`) providing SVG/DOM rendering with human-readable alphanumeric text underneath, plus multi-slice 1D scanline raster decoders that binarize and decode unskewed crops in $< 1\text{ ms}$ on any device without external libraries.
+   - **Multi-Page "Print Class Set" Workflow**: Replaced single-sheet print triggers with a dedicated modal dialog in Sheet Builder (`#modal-print`). Supports instant copy count presets (1, 25, 30, 40, 50) and dynamically renders $N$ unique `.omr-sheet` containers in the print DOM—each stamped with its own cryptographically random sheet serial (e.g. `SHT-8F42-9B`) and formatted with CSS `@media print { break-after: page; }`—producing serialized class sets in a single print job.
+   - **Three-Tier Duplicate Detection Engine**: Upgraded duplicate scan detection in `builder/checker.html` and `omr/pipeline.py`:
+     - *Definitive Double-Scan*: Matching sheet barcodes identify identical physical papers scanned twice through ADF feeders with 100% certainty.
+     - *Disambiguated Collusion*: High answer vector similarity ($\ge 96\%$) across sheets with differing barcodes is flagged as separate physical papers sharing answers rather than falsely tagged as double-scans.
+     - *Legacy Compatibility*: Submissions lacking barcodes fall back gracefully to Student ID and answer vector heuristics.
+   - **Visual Verification & Deliverables**: Displayed Sheet Barcode pills on Sheet Inspector headers and results tables in Checker Studio, and stamped sheet serials onto annotated derivative JPEGs in `omr/annotator.py`.
 
 ---
 

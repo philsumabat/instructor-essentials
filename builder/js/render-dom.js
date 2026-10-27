@@ -9,6 +9,7 @@
  * the exact centres the CV pipeline samples.
  */
 import { markerPath } from './aruco.js';
+import { encodeCode39 } from './barcode.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const mm = (v) => `${+Number(v).toFixed(3)}mm`;
@@ -66,6 +67,57 @@ function fiducialNode(f) {
       style: box(f.x, f.y, f.size, f.size),
     },
     h('path', { d: markerPath(f.id, f.size), fill: '#000' }),
+  );
+}
+
+function barcodeNode(b) {
+  const { runs, totalUnits, text } = encodeCode39(b.id || b.value || 'SHT-0000');
+  const quietMarginUnits = 4;
+  const fullUnits = totalUnits + 2 * quietMarginUnits;
+  const barH = Math.max(2.5, b.h - 2.0);
+
+  let currentUnit = quietMarginUnits;
+  const rectNodes = [];
+  rectNodes.push(h('rect', { x: '0', y: '0', width: String(b.w), height: String(b.h), fill: '#fff' }));
+
+  for (const run of runs) {
+    if (run.isBlack) {
+      const x = (currentUnit / fullUnits) * b.w;
+      const w = (run.width / fullUnits) * b.w;
+      rectNodes.push(h('rect', {
+        x: x.toFixed(3),
+        y: '0',
+        width: w.toFixed(3),
+        height: barH.toFixed(3),
+        fill: '#000',
+        'shape-rendering': 'crispEdges',
+      }));
+    }
+    currentUnit += run.width;
+  }
+
+  const textNode = h('text', {
+    x: (b.w / 2).toFixed(3),
+    y: (b.h - 0.2).toFixed(3),
+    'font-family': "'Courier New', Courier, monospace",
+    'font-size': '1.5mm',
+    'font-weight': '700',
+    'text-anchor': 'middle',
+    fill: '#000',
+    'letter-spacing': '0.15mm',
+  }, text);
+
+  return h(
+    'svg',
+    {
+      class: 'omr-barcode',
+      'data-sheet-id': text,
+      viewBox: `0 0 ${b.w} ${b.h}`,
+      style: box(b.x, b.y, b.w, b.h),
+      'aria-label': `Sheet Serial Barcode: ${text}`,
+    },
+    ...rectNodes,
+    textNode,
   );
 }
 
@@ -271,6 +323,7 @@ export function buildSheetTree(layout) {
     layout.fiducials.map(fiducialNode),
     h('div', { class: 'omr-title', style: titleBox }, layout.title),
     h('div', { class: 'omr-footer', style: footerBox }, header.footer.text),
+    ...(layout.barcode && layout.barcode.enabled ? [barcodeNode(layout.barcode)] : []),
     layout.zones.map((z, i) => zoneNode(z, layout, i)),
   );
 }

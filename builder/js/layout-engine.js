@@ -11,6 +11,7 @@
  * browser), print output and CV sampling coordinates cannot drift apart.
  */
 import { ARUCO_DICTIONARY, SUPPORTED_MARKER_IDS } from './aruco.js';
+import { generateRandomSheetId } from './barcode.js';
 
 export const LAYOUT_SCHEMA = 'omr-layout/1';
 export const GENERATOR = 'omr-sheet-builder/1.0.0';
@@ -56,6 +57,7 @@ export const DEFAULTS = Object.freeze({
   density: 'normal',
   footer: 'Use a dark pencil or black pen. Fill each bubble completely. Do not fold or staple this sheet.',
   fiducial: Object.freeze({ type: 'aruco', dictionary: ARUCO_DICTIONARY, size: 7.5, inset: 5.5, quietZone: 2, ids: [0, 1, 2, 3] }),
+  barcode: Object.freeze({ enabled: true, format: 'code39', w: 34, h: 6.5 }),
   bubble: Object.freeze({ diameter: 4.2, pitchX: 5.6, pitchY: 5.4, groupEvery: 5, groupGap: 1.6, stroke: 0.25 }),
   typography: Object.freeze({ title: 4.2, label: 3.0, body: 2.8, bubble: 2.1, number: 2.6, small: 2.2 }),
 });
@@ -716,7 +718,7 @@ function intersects(a, b, tolerance = 0.01) {
  * @param {object} input template payload
  * @returns {object} resolved layout (see LAYOUT_SCHEMA)
  */
-export function buildLayout(input) {
+export function buildLayout(input, options = {}) {
   const tpl = normalizeTemplate(input);
   const page = { paper: tpl.paper, ...PAPER_SIZES[tpl.paper] };
   const { size, inset, quietZone } = tpl.fiducial;
@@ -938,6 +940,52 @@ export function buildLayout(input) {
   if (!hasSid) warnings.push('No student_id zone: scans cannot be matched to the roster');
 
   const titleMaxW = page.width - 2 * (inset + size + 4);
+
+  const barcodeEnabled = tpl.barcode !== false && (tpl.barcode?.enabled !== false);
+  let barcode = null;
+  const layoutRois = Array.isArray(tpl.rois) ? [...tpl.rois] : [];
+
+  const barcodeW = tpl.barcode?.w ?? 34;
+  const barcodeH = tpl.barcode?.h ?? 6.5;
+  const barcodeX = tpl.barcode?.x ?? r3(page.width - inset - size - barcodeW - 2);
+  const barcodeY = tpl.barcode?.y ?? r3(page.height - inset - size + (size - barcodeH) / 2);
+
+  if (barcodeEnabled) {
+    const sheetId = options?.sheetId || tpl.barcode?.id || tpl.barcode?.value || tpl.sheetId || generateRandomSheetId();
+    barcode = {
+      enabled: true,
+      id: sheetId,
+      format: tpl.barcode?.format || 'code39',
+      x: barcodeX,
+      y: barcodeY,
+      w: barcodeW,
+      h: barcodeH,
+    };
+    layoutRois.push({
+      id: 'sheet_id',
+      key: 'sheet_id',
+      role: 'sheet_id',
+      label: 'Sheet Barcode',
+      x: barcodeX,
+      y: barcodeY,
+      w: barcodeW,
+      h: barcodeH,
+      graded: false,
+    });
+  }
+
+  const footerLeft = inset + size + 2;
+  const footerRight = barcodeEnabled ? (barcodeX - 2) : (page.width - inset - size - 2);
+  const footerCenterX = r3((footerLeft + footerRight) / 2);
+  const footerMaxW = r3(footerRight - footerLeft);
+
+  const footer = {
+    text: `${tpl.footer} · ${tpl.id}`,
+    x: footerCenterX,
+    y: r3(page.height - inset - size / 2),
+    maxWidth: footerMaxW,
+  };
+
   return {
     schema: LAYOUT_SCHEMA,
     generator: GENERATOR,
@@ -950,11 +998,13 @@ export function buildLayout(input) {
     content,
     fiducial: { type: 'aruco', dictionary: tpl.fiducial.dictionary, size, inset, quietZone },
     fiducials,
+    barcode,
+    rois: layoutRois,
     bubble: { ...tpl.bubble },
     typography: { ...tpl.typography },
     header: {
       title: { x: r3(page.width / 2), y: r3(inset + size / 2), maxWidth: r3(titleMaxW) },
-      footer: { text: `${tpl.footer} · ${tpl.id}`, x: r3(page.width / 2), y: r3(page.height - inset - size / 2), maxWidth: r3(titleMaxW) },
+      footer,
     },
     zones,
     warnings,

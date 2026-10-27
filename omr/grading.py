@@ -63,6 +63,7 @@ class ExamGrade:
     score: float = 0.0
     max_score: float = 0.0
     percentage: float = 0.0
+    sheet_barcode: str = ""
     bubble_results: dict[str, GroupResult] = field(default_factory=dict, repr=False)
     ocr_results: dict[str, OCRResult] = field(default_factory=dict, repr=False)
     is_duplicate: bool = False
@@ -84,6 +85,7 @@ class ExamGrade:
     def to_dict(self) -> dict[str, Any]:
         return {
             "exam_id": self.exam_id,
+            "sheet_barcode": self.sheet_barcode,
             "student_id": self.student_id,
             "student_name": self.student_name,
             "roster_match": self.roster_match.to_dict(),
@@ -556,6 +558,7 @@ class GradingEngine:
         ocr_results: dict[str, OCRResult],
         decoded_sid: str,
         roster_match: RosterMatch,
+        sheet_barcode: str = "",
     ) -> ExamGrade:
         """Grades an exam and computes totals."""
         item_grades: dict[str, ItemGrade] = {}
@@ -594,6 +597,7 @@ class GradingEngine:
 
         return ExamGrade(
             exam_id=exam_id,
+            sheet_barcode=sheet_barcode,
             decoded_sid=decoded_sid,
             roster_match=roster_match,
             items=item_grades,

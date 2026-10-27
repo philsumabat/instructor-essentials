@@ -111,7 +111,60 @@ class Layout:
 
     @property
     def rois(self) -> list[TextROI]:
-        return [r for z in self.zones for r in z.rois]
+        zone_rois = [r for z in self.zones for r in z.rois]
+        if isinstance(self.raw, dict) and "rois" in self.raw and isinstance(self.raw["rois"], list):
+            existing_ids = {r.id for r in zone_rois}
+            for r in self.raw["rois"]:
+                if r.get("id") not in existing_ids:
+                    zone_rois.append(
+                        TextROI(
+                            id=r["id"],
+                            key=str(r.get("key", r["id"])),
+                            label=r.get("label", r.get("key", r["id"])),
+                            zone_id="root",
+                            x=float(r["x"]),
+                            y=float(r["y"]),
+                            w=float(r["w"]),
+                            h=float(r["h"]),
+                            charset=r.get("charset", "any"),
+                            multiline=bool(r.get("multiline", False)),
+                            ocr=bool(r.get("ocr", True)),
+                            graded=bool(r.get("graded", False)),
+                            points=float(r.get("points", 0) or 0),
+                            role=r.get("role"),
+                            digits=int(r.get("digits", 0) or 0),
+                        )
+                    )
+        if isinstance(self.raw, dict) and "barcode" in self.raw and self.raw["barcode"].get("enabled", True):
+            b = self.raw["barcode"]
+            if not any(r.role in {"sheet_id", "barcode"} for r in zone_rois):
+                zone_rois.append(
+                    TextROI(
+                        id="sheet_id",
+                        key="sheet_id",
+                        label="Sheet Barcode",
+                        zone_id="root",
+                        x=float(b.get("x", 0)),
+                        y=float(b.get("y", 0)),
+                        w=float(b.get("w", 34)),
+                        h=float(b.get("h", 6.5)),
+                        role="sheet_id",
+                        graded=False,
+                    )
+                )
+        return zone_rois
+
+    @property
+    def barcode_roi(self) -> TextROI | None:
+        """Returns sheet barcode ROI if present."""
+        for r in self.rois:
+            if (
+                r.role in {"sheet_id", "barcode"}
+                or r.key in {"sheet_id", "barcode"}
+                or getattr(r, "id", None) in {"sheet_id", "barcode"}
+            ):
+                return r
+        return None
 
     @property
     def graded_rois(self) -> list[TextROI]:

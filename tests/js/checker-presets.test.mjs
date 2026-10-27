@@ -108,8 +108,8 @@ test('parseLayout handles both modern Sheet Builder layout.json and legacy forma
   const parsed50 = parseLayout(exam50Raw);
   assert.equal(parsed50.page.paper, 'A4');
   assert.equal(Object.keys(parsed50.markers).length, 4);
-  assert.deepEqual(parsed50.markers['0'].center, [12, 12]);
-  assert.deepEqual(parsed50.markers['1'].center, [198, 12]);
+  assert.deepEqual(parsed50.markers['0'].center, [9.25, 9.25]);
+  assert.deepEqual(parsed50.markers['1'].center, [200.75, 9.25]);
   assert.equal(parsed50.bubbles.length, 270); // 250 MCQ + 20 TF
 
   // 2. Legacy format with markers and bubbles

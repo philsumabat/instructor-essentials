@@ -33,6 +33,11 @@
   overflow: visible;
 }
 
+.omr-barcode {
+  display: block;
+  overflow: visible;
+}
+
 .omr-title {
   display: flex;
   align-items: center;

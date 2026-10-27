@@ -72,7 +72,8 @@ class ExamAnnotator:
         font = cv2.FONT_HERSHEY_SIMPLEX
         dup_tag = " [DUPLICATE]" if grade.is_duplicate else ""
         norm_sid = normalize_student_id(grade.student_id)
-        student_label = f"Student: {grade.student_name} (ID: {norm_sid}){dup_tag}"
+        bc_tag = f" [Sheet: {grade.sheet_barcode}]" if grade.sheet_barcode else ""
+        student_label = f"Student: {grade.student_name} (ID: {norm_sid}){bc_tag}{dup_tag}"
         score_label = f"Score: {grade.score:.1f} / {grade.max_score:.1f}  ({grade.percentage:.1f}%)"
 
         cv2.putText(

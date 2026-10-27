@@ -528,11 +528,11 @@ def main():
         roster_rows.append(row)
         
         # 5. Generate Annotated Scans
-        stud = matched_student or Student(student_id=decoded_sid, full_name='Student')
-        roster_match = RosterMatch(status='exact' if (matched_student or decoded_sid) else 'unmatched', 
-                                   decoded_id=decoded_sid, student=stud)
+        stud = matched_student or Student(student_id=row_sid, full_name=row_name if row_name != 'PENDING' else 'Student')
+        roster_match = RosterMatch(status='exact' if (matched_student or (row_sid and row_sid != 'PENDING')) else 'unmatched', 
+                                   decoded_id=row_sid, student=stud)
         exam_grade = ExamGrade(
-            exam_id=pname, decoded_sid=decoded_sid, roster_match=roster_match,
+            exam_id=pname, decoded_sid=row_sid, roster_match=roster_match,
             items=items, score=total_score, max_score=max_possible,
             percentage=row['Percentage'], bubble_results=bubble_results
         )

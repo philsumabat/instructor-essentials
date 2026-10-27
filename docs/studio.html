@@ -44,6 +44,11 @@
   overflow: visible;
 }
 
+.omr-barcode {
+  display: block;
+  overflow: visible;
+}
+
 .omr-title {
   display: flex;
   align-items: center;
@@ -3926,6 +3931,47 @@ dialog.modal-dialog--answer-key {
     </div>
   </dialog>
 
+  <!-- Print Sheets Modal Dialog -->
+  <dialog class="modal-dialog app-chrome" id="modal-print" style="max-width: 480px; width: 95vw;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title">Print Exam Sheets</h2>
+        <button type="button" class="btn-close-modal" id="btn-close-print" aria-label="Close">✕</button>
+      </div>
+      <div class="modal-body" style="padding: 1rem 1.25rem;">
+        <p class="modal-desc" style="margin-bottom: 1rem;">Print millimeter-accurate physical exam sheets with randomized Code 39 barcodes in the footer for automated duplicate detection.</p>
+        
+        <div class="form-group" style="margin-bottom: 1.25rem;">
+          <label for="input-print-copies" style="display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 0.4rem;">Number of Exam Sheets:</label>
+          <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+            <input type="number" id="input-print-copies" min="1" max="500" value="30" class="input" style="width: 80px; text-align: center; font-weight: 700; height: 34px;">
+            <div style="display: flex; gap: 0.35rem; align-items: center;">
+              <button type="button" class="btn btn--secondary btn--sm btn-print-preset" data-copies="1">1 (Single)</button>
+              <button type="button" class="btn btn--secondary btn--sm btn-print-preset" data-copies="25">25</button>
+              <button type="button" class="btn btn--secondary btn--sm btn-print-preset" data-copies="30">30</button>
+              <button type="button" class="btn btn--secondary btn--sm btn-print-preset" data-copies="40">40</button>
+              <button type="button" class="btn btn--secondary btn--sm btn-print-preset" data-copies="50">50</button>
+            </div>
+          </div>
+        </div>
+
+        <div style="background: var(--bg-alt, #f8fafc); border: 1px solid var(--border, #e2e8f0); border-radius: var(--radius-md, 6px); padding: 0.75rem 0.85rem; font-size: 0.8rem; color: var(--text-muted, #475569);">
+          <div style="display: flex; align-items: center; gap: 0.4rem; font-weight: 600; color: var(--text, #0f172a); margin-bottom: 0.25rem;">
+            <span style="color: #0284c7;">✓</span> Serialized Barcodes
+          </div>
+          Each page receives a unique random sheet ID in the bottom-right footer (e.g. <code>SHT-8F42-9B</code>). If an ADF scanner double-feeds a sheet, Checker Studio will flag it immediately.
+        </div>
+      </div>
+      <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 0.5rem;">
+        <button type="button" id="btn-cancel-print" class="btn btn--secondary">Cancel</button>
+        <button type="button" id="btn-confirm-print" class="btn btn--primary" style="display: inline-flex; align-items: center; gap: 0.4rem;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
+          <span id="label-confirm-print">Print 30 Sheets</span>
+        </button>
+      </div>
+    </div>
+  </dialog>
+
   <!-- Institutional Authentication Gate Overlay -->
   <div id="auth-gate-overlay" class="auth-gate-overlay" style="display: none;">
     <div class="auth-gate-card">
@@ -3962,7 +4008,7 @@ dialog.modal-dialog--answer-key {
 // ---- Standalone Sheet Builder Bundle ----
 
 // Inlined Sheet CSS for zero-network/zero-CORS standalone execution
-window.__SHEET_CSS__ = "/*\n * Printable OMR sheet styles. Every dimension is in physical units (mm) so the\n * printed output matches the layout engine's coordinates. Shared by the\n * builder app and the standalone HTML export.\n */\n.omr-sheet {\n  position: relative;\n  box-sizing: border-box;\n  overflow: hidden;\n  background: #fff;\n  color: #000;\n  font-family: \"Helvetica Neue\", Helvetica, Arial, sans-serif;\n  font-size: var(--omr-font-body);\n  line-height: 1.3;\n  -webkit-print-color-adjust: exact;\n  print-color-adjust: exact;\n}\n\n.omr-sheet *,\n.omr-sheet *::before,\n.omr-sheet *::after {\n  box-sizing: border-box;\n  margin: 0;\n}\n\n/* Everything is absolutely positioned in sheet coordinates (mm). */\n.omr-sheet > * {\n  position: absolute;\n}\n\n.omr-fiducial {\n  display: block;\n  overflow: visible;\n}\n\n.omr-title {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  text-align: center;\n  font-size: var(--omr-font-title);\n  font-weight: 700;\n  line-height: 1.15;\n  overflow: hidden;\n}\n\n.omr-footer {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  text-align: center;\n  font-size: var(--omr-font-small);\n  color: #444;\n  overflow: hidden;\n}\n\n.omr-zone {\n  border: 0.3mm solid #000;\n  border-radius: 1.2mm;\n  padding: 2.5mm;\n}\n\n.omr-zone__title {\n  font-size: var(--omr-font-label);\n  font-weight: 700;\n  line-height: 4mm;\n  height: 5mm;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n}\n\n/* Bubble matrices: explicit mm tracks from the layout engine. */\n.omr-grid {\n  display: grid;\n  grid-auto-rows: 0;\n  grid-auto-columns: 0;\n}\n\n.omr-bubble {\n  display: grid;\n  place-items: center;\n  align-self: start;\n  justify-self: center;\n  width: var(--omr-d);\n  height: var(--omr-d);\n  border: var(--omr-stroke) solid #000;\n  border-radius: 50%;\n  font-size: var(--omr-font-bubble);\n  line-height: 1;\n  color: #8a8a8a;\n}\n\n.omr-num,\n.omr-item-num {\n  font-size: var(--omr-font-number) !important;\n  font-weight: 700;\n  font-variant-numeric: tabular-nums;\n}\n\n.omr-num {\n  align-self: start;\n  height: var(--omr-pitch-y);\n  display: flex;\n  align-items: center;\n  justify-content: flex-end;\n  padding-right: 1.2mm;\n}\n\n.omr-digit-box {\n  justify-self: center;\n  width: calc(100% - 0.8mm);\n  height: 100%;\n  border: 0.25mm solid #000;\n}\n\n.omr-field-label {\n  display: flex;\n  align-items: center;\n  font-size: var(--omr-font-label);\n  font-weight: 700;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  padding-right: 0.8mm;\n}\n\n.omr-write-box {\n  border: 0.3mm solid #000;\n}\n\n.omr-partitioned-digits {\n  display: grid;\n  border: 0.3mm solid #000;\n  background: #fff;\n}\n\n.omr-partitioned-digits .omr-digit-box {\n  width: 100%;\n  height: 100%;\n  border: none;\n  border-right: 0.25mm solid #000;\n}\n\n.omr-partitioned-digits .omr-digit-box:last-child {\n  border-right: none;\n}\n\n.omr-correction-box {\n  border: 0.25mm solid #000;\n  font-size: 1.8mm;\n  color: #888;\n  font-style: italic;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n.omr-prompt {\n  font-size: var(--omr-font-label);\n  overflow: hidden;\n}\n\n.omr-points {\n  color: #555;\n  white-space: nowrap;\n}\n\n.omr-instructions {\n  padding: 1mm;\n  color: #222;\n  overflow: hidden;\n  white-space: pre-line;\n}\n\n.omr-correction-hint {\n  display: inline;\n}\n\n@media print {\n  .omr-sheet {\n    box-shadow: none !important;\n    break-after: page;\n    break-inside: avoid;\n  }\n  .omr-correction-box {\n    color: transparent !important;\n  }\n  .omr-correction-hint {\n    display: none !important;\n    visibility: hidden !important;\n  }\n}\n";
+window.__SHEET_CSS__ = "/*\n * Printable OMR sheet styles. Every dimension is in physical units (mm) so the\n * printed output matches the layout engine's coordinates. Shared by the\n * builder app and the standalone HTML export.\n */\n.omr-sheet {\n  position: relative;\n  box-sizing: border-box;\n  overflow: hidden;\n  background: #fff;\n  color: #000;\n  font-family: \"Helvetica Neue\", Helvetica, Arial, sans-serif;\n  font-size: var(--omr-font-body);\n  line-height: 1.3;\n  -webkit-print-color-adjust: exact;\n  print-color-adjust: exact;\n}\n\n.omr-sheet *,\n.omr-sheet *::before,\n.omr-sheet *::after {\n  box-sizing: border-box;\n  margin: 0;\n}\n\n/* Everything is absolutely positioned in sheet coordinates (mm). */\n.omr-sheet > * {\n  position: absolute;\n}\n\n.omr-fiducial {\n  display: block;\n  overflow: visible;\n}\n\n.omr-barcode {\n  display: block;\n  overflow: visible;\n}\n\n.omr-title {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  text-align: center;\n  font-size: var(--omr-font-title);\n  font-weight: 700;\n  line-height: 1.15;\n  overflow: hidden;\n}\n\n.omr-footer {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  text-align: center;\n  font-size: var(--omr-font-small);\n  color: #444;\n  overflow: hidden;\n}\n\n.omr-zone {\n  border: 0.3mm solid #000;\n  border-radius: 1.2mm;\n  padding: 2.5mm;\n}\n\n.omr-zone__title {\n  font-size: var(--omr-font-label);\n  font-weight: 700;\n  line-height: 4mm;\n  height: 5mm;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n}\n\n/* Bubble matrices: explicit mm tracks from the layout engine. */\n.omr-grid {\n  display: grid;\n  grid-auto-rows: 0;\n  grid-auto-columns: 0;\n}\n\n.omr-bubble {\n  display: grid;\n  place-items: center;\n  align-self: start;\n  justify-self: center;\n  width: var(--omr-d);\n  height: var(--omr-d);\n  border: var(--omr-stroke) solid #000;\n  border-radius: 50%;\n  font-size: var(--omr-font-bubble);\n  line-height: 1;\n  color: #8a8a8a;\n}\n\n.omr-num,\n.omr-item-num {\n  font-size: var(--omr-font-number) !important;\n  font-weight: 700;\n  font-variant-numeric: tabular-nums;\n}\n\n.omr-num {\n  align-self: start;\n  height: var(--omr-pitch-y);\n  display: flex;\n  align-items: center;\n  justify-content: flex-end;\n  padding-right: 1.2mm;\n}\n\n.omr-digit-box {\n  justify-self: center;\n  width: calc(100% - 0.8mm);\n  height: 100%;\n  border: 0.25mm solid #000;\n}\n\n.omr-field-label {\n  display: flex;\n  align-items: center;\n  font-size: var(--omr-font-label);\n  font-weight: 700;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  padding-right: 0.8mm;\n}\n\n.omr-write-box {\n  border: 0.3mm solid #000;\n}\n\n.omr-partitioned-digits {\n  display: grid;\n  border: 0.3mm solid #000;\n  background: #fff;\n}\n\n.omr-partitioned-digits .omr-digit-box {\n  width: 100%;\n  height: 100%;\n  border: none;\n  border-right: 0.25mm solid #000;\n}\n\n.omr-partitioned-digits .omr-digit-box:last-child {\n  border-right: none;\n}\n\n.omr-correction-box {\n  border: 0.25mm solid #000;\n  font-size: 1.8mm;\n  color: #888;\n  font-style: italic;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n\n.omr-prompt {\n  font-size: var(--omr-font-label);\n  overflow: hidden;\n}\n\n.omr-points {\n  color: #555;\n  white-space: nowrap;\n}\n\n.omr-instructions {\n  padding: 1mm;\n  color: #222;\n  overflow: hidden;\n  white-space: pre-line;\n}\n\n.omr-correction-hint {\n  display: inline;\n}\n\n@media print {\n  .omr-sheet {\n    box-shadow: none !important;\n    break-after: page;\n    break-inside: avoid;\n  }\n  .omr-correction-box {\n    color: transparent !important;\n  }\n  .omr-correction-hint {\n    display: none !important;\n    visibility: hidden !important;\n  }\n}\n";
 
 // 1. ArUco Fiducial Module
 const Aruco = (function() {
@@ -4031,9 +4077,276 @@ function markerPath(id, size) {
   };
 })();
 
+// 1.5 Barcode Module
+const Barcode = (function() {
+/**
+ * Zero-dependency Code 39 barcode generator and scanline raster decoder.
+ * Used for serialized physical sheet identification and robust duplicate scan detection.
+ */
+
+const CODE39_PATTERNS = Object.freeze({
+  '0': '000110100', '1': '100100001', '2': '001100001', '3': '101100000',
+  '4': '000110001', '5': '100110000', '6': '001110000', '7': '000100101',
+  '8': '100100100', '9': '001100100', 'A': '100001001', 'B': '001001001',
+  'C': '101001000', 'D': '000011001', 'E': '100011000', 'F': '001011000',
+  'G': '000001101', 'H': '100001100', 'I': '001001100', 'J': '000011100',
+  'K': '100000011', 'L': '001000011', 'M': '101000010', 'N': '000010011',
+  'O': '100010010', 'P': '001010010', 'Q': '000000111', 'R': '100000110',
+  'S': '001000110', 'T': '000010110', 'U': '110000001', 'V': '011000001',
+  'W': '111000000', 'X': '010010001', 'Y': '110010000', 'Z': '011010000',
+  '-': '010000101', '.': '110000100', ' ': '011000100', '*': '010010100',
+  '$': '010101000', '/': '010100010', '+': '010001010', '%': '000101010',
+});
+
+const REV_CODE39 = Object.freeze(
+  Object.fromEntries(Object.entries(CODE39_PATTERNS).map(([k, v]) => [v, k]))
+);
+
+/**
+ * Generates a unique, cryptographically random sheet serial code.
+ * Example format: "SHT-7A2F-9B"
+ */
+function generateRandomSheetId(prefix = 'SHT') {
+  const chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ'; // Exclude 0/O and 1/I to prevent visual ambiguity
+  const rnd = new Uint8Array(6);
+  if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+    crypto.getRandomValues(rnd);
+  } else {
+    for (let i = 0; i < 6; i++) rnd[i] = Math.floor(Math.random() * 256);
+  }
+  let s1 = '', s2 = '';
+  for (let i = 0; i < 3; i++) s1 += chars[rnd[i] % chars.length];
+  for (let i = 3; i < 6; i++) s2 += chars[rnd[i] % chars.length];
+  return `${prefix}-${s1}-${s2}`;
+}
+
+/**
+ * Encodes text into Code 39 bar/space run units.
+ * Returns array of elements: { isBlack: boolean, width: number }
+ */
+function encodeCode39(text, { wideRatio = 2.5 } = {}) {
+  const clean = String(text || '').toUpperCase().replace(/[^0-9A-Z\-.$/+% ]/g, '');
+  const framed = `*${clean}*`;
+  const runs = [];
+  let totalUnits = 0;
+
+  for (let i = 0; i < framed.length; i++) {
+    const ch = framed[i];
+    const pat = CODE39_PATTERNS[ch];
+    if (!pat) continue;
+    for (let j = 0; j < pat.length; j++) {
+      const isBlack = (j % 2 === 0);
+      const width = pat[j] === '1' ? wideRatio : 1.0;
+      runs.push({ isBlack, width });
+      totalUnits += width;
+    }
+    if (i < framed.length - 1) {
+      runs.push({ isBlack: false, width: 1.0 }); // Inter-character gap
+      totalUnits += 1.0;
+    }
+  }
+
+  return { runs, totalUnits, text: clean };
+}
+
+/**
+ * Generates an SVG string representation of a Code 39 barcode with human-readable text label.
+ */
+function generateBarcodeSVG(text, { widthMm = 34, heightMm = 6.5, fontSizeMm = 1.6 } = {}) {
+  const { runs, totalUnits, text: clean } = encodeCode39(text);
+  if (runs.length === 0 || totalUnits === 0) return '';
+
+  const quietMarginUnits = 4;
+  const fullUnits = totalUnits + 2 * quietMarginUnits;
+  const barHeightMm = Math.max(2.5, heightMm - fontSizeMm - 0.8);
+
+  const rects = [];
+  let currentUnit = quietMarginUnits;
+
+  for (const run of runs) {
+    if (run.isBlack) {
+      const x = (currentUnit / fullUnits) * widthMm;
+      const w = (run.width / fullUnits) * widthMm;
+      rects.push(`<rect x="${x.toFixed(3)}" y="0" width="${w.toFixed(3)}" height="${barHeightMm.toFixed(3)}" fill="#000" shape-rendering="crispEdges"/>`);
+    }
+    currentUnit += run.width;
+  }
+
+  const textY = heightMm - 0.2;
+  const textSvg = `<text x="${(widthMm / 2).toFixed(3)}" y="${textY.toFixed(3)}" font-family="'Courier New', Courier, monospace" font-size="${fontSizeMm.toFixed(3)}mm" font-weight="700" text-anchor="middle" fill="#000" letter-spacing="0.2mm">${clean}</text>`;
+
+  return `<svg class="omr-barcode" data-sheet-id="${clean}" viewBox="0 0 ${widthMm} ${heightMm}" width="${widthMm}mm" height="${heightMm}mm" xmlns="http://www.w3.org/2000/svg">
+  <rect x="0" y="0" width="${widthMm}" height="${heightMm}" fill="#fff"/>
+  ${rects.join('\n  ')}
+  ${textSvg}
+</svg>`;
+}
+
+/**
+ * Decodes a binary scanline array (1 for black, 0 for white).
+ * Returns the decoded string or null if not valid Code 39.
+ */
+function decodeCode39Scanline(binaryLine) {
+  if (!Array.isArray(binaryLine) && !ArrayBuffer.isView(binaryLine)) return null;
+  const len = binaryLine.length;
+  if (len < 30) return null;
+
+  // Run-length encode the binary scanline
+  const runs = [];
+  let curr = binaryLine[0] ? 1 : 0;
+  let count = 1;
+  for (let i = 1; i < len; i++) {
+    const val = binaryLine[i] ? 1 : 0;
+    if (val === curr) {
+      count++;
+    } else {
+      runs.push([curr, count]);
+      curr = val;
+      count = 1;
+    }
+  }
+  runs.push([curr, count]);
+
+  // Strip leading and trailing white space (quiet zones)
+  while (runs.length > 0 && runs[0][0] === 0) runs.shift();
+  while (runs.length > 0 && runs[runs.length - 1][0] === 0) runs.pop();
+
+  if (runs.length < 9) return null;
+
+  // Search for the start delimiter '*' (9 elements: b, w, b, w, b, w, b, w, b)
+  for (let startIdx = 0; startIdx <= runs.length - 9; startIdx++) {
+    if (runs[startIdx][0] !== 1) continue; // Must begin with a black bar
+    const window = runs.slice(startIdx, startIdx + 9);
+    let alternating = true;
+    for (let k = 0; k < 9; k++) {
+      if (window[k][0] !== (k % 2 === 0 ? 1 : 0)) {
+        alternating = false;
+        break;
+      }
+    }
+    if (!alternating) continue;
+
+    const lengths = window.map((r) => r[1]);
+    const sortedLens = [...lengths].sort((a, b) => a - b);
+    const nEst = sortedLens.slice(0, 6).reduce((a, b) => a + b, 0) / 6.0;
+    const wEst = sortedLens.slice(6).reduce((a, b) => a + b, 0) / 3.0;
+
+    if (wEst < 1.35 * nEst || nEst < 0.5) continue;
+    const thresh = (nEst + wEst) / 2.0;
+
+    const startPat = lengths.map((l) => (l >= thresh ? '1' : '0')).join('');
+    if (startPat !== CODE39_PATTERNS['*']) continue;
+
+    // Start pattern matched! Proceed to decode following characters
+    const decoded = [];
+    let idx = startIdx + 9;
+    let matchedStop = false;
+
+    while (idx < runs.length) {
+      // Skip 1 inter-character gap (white space)
+      if (idx < runs.length && runs[idx][0] === 0) idx++;
+      if (idx + 9 > runs.length) break;
+
+      const charWindow = runs.slice(idx, idx + 9);
+      let charAlt = true;
+      for (let k = 0; k < 9; k++) {
+        if (charWindow[k][0] !== (k % 2 === 0 ? 1 : 0)) {
+          charAlt = false;
+          break;
+        }
+      }
+      if (!charAlt) break;
+
+      const charLengths = charWindow.map((r) => r[1]);
+      const charPat = charLengths.map((l) => (l >= thresh ? '1' : '0')).join('');
+      const charVal = REV_CODE39[charPat];
+      if (!charVal) break;
+
+      if (charVal === '*') {
+        matchedStop = true;
+        break;
+      }
+
+      decoded.push(charVal);
+      idx += 9;
+    }
+
+    if (matchedStop && decoded.length > 0) {
+      return decoded.join('');
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Decodes Code 39 barcode from a 2D pixel image / canvas.
+ * Samples multiple horizontal scanlines to tolerate minor ink flecks or paper texture.
+ */
+function decodeCode39FromImageData(imageData, { startYFraction = 0.25, endYFraction = 0.75, numScanlines = 5 } = {}) {
+  if (!imageData || !imageData.data || imageData.width < 20 || imageData.height < 5) return null;
+  const { data, width, height } = imageData;
+
+  const yStep = (endYFraction - startYFraction) / Math.max(1, numScanlines - 1);
+  const candidates = {};
+
+  for (let s = 0; s < numScanlines; s++) {
+    const yFrac = numScanlines === 1 ? 0.5 : (startYFraction + s * yStep);
+    const y = Math.min(height - 1, Math.max(0, Math.floor(height * yFrac)));
+    const rowOffset = y * width * 4;
+
+    // Compute row luminance
+    const lum = new Float32Array(width);
+    let minL = 255, maxL = 0;
+    for (let x = 0; x < width; x++) {
+      const idx = rowOffset + x * 4;
+      const l = 0.299 * data[idx] + 0.587 * data[idx + 1] + 0.114 * data[idx + 2];
+      lum[x] = l;
+      if (l < minL) minL = l;
+      if (l > maxL) maxL = l;
+    }
+
+    // Require sufficient contrast
+    if (maxL - minL < 30) continue;
+    const threshold = (minL + maxL) * 0.5;
+
+    // Binarize
+    const binary = new Uint8Array(width);
+    for (let x = 0; x < width; x++) {
+      binary[x] = lum[x] < threshold ? 1 : 0; // 1 = black, 0 = white
+    }
+
+    const decoded = decodeCode39Scanline(binary);
+    if (decoded) {
+      candidates[decoded] = (candidates[decoded] || 0) + 1;
+    }
+  }
+
+  let best = null, bestCount = 0;
+  for (const [code, count] of Object.entries(candidates)) {
+    if (count > bestCount) {
+      best = code;
+      bestCount = count;
+    }
+  }
+
+  return best;
+}
+
+  return {
+    CODE39_PATTERNS,
+    generateRandomSheetId,
+    encodeCode39,
+    generateBarcodeSVG,
+    decodeCode39Scanline,
+    decodeCode39FromImageData,
+  };
+})();
+
 // 2. Layout Engine Module
-const LayoutEngine = (function(Aruco) {
+const LayoutEngine = (function(Aruco, Barcode) {
   const { ARUCO_DICTIONARY, SUPPORTED_MARKER_IDS } = Aruco;
+  const { generateRandomSheetId } = Barcode;
 /**
  * OMR layout engine (isomorphic ES module: runs in the browser and in Node).
  *
@@ -4090,6 +4403,7 @@ const DEFAULTS = Object.freeze({
   density: 'normal',
   footer: 'Use a dark pencil or black pen. Fill each bubble completely. Do not fold or staple this sheet.',
   fiducial: Object.freeze({ type: 'aruco', dictionary: ARUCO_DICTIONARY, size: 7.5, inset: 5.5, quietZone: 2, ids: [0, 1, 2, 3] }),
+  barcode: Object.freeze({ enabled: true, format: 'code39', w: 34, h: 6.5 }),
   bubble: Object.freeze({ diameter: 4.2, pitchX: 5.6, pitchY: 5.4, groupEvery: 5, groupGap: 1.6, stroke: 0.25 }),
   typography: Object.freeze({ title: 4.2, label: 3.0, body: 2.8, bubble: 2.1, number: 2.6, small: 2.2 }),
 });
@@ -4750,7 +5064,7 @@ function intersects(a, b, tolerance = 0.01) {
  * @param {object} input template payload
  * @returns {object} resolved layout (see LAYOUT_SCHEMA)
  */
-function buildLayout(input) {
+function buildLayout(input, options = {}) {
   const tpl = normalizeTemplate(input);
   const page = { paper: tpl.paper, ...PAPER_SIZES[tpl.paper] };
   const { size, inset, quietZone } = tpl.fiducial;
@@ -4972,6 +5286,52 @@ function buildLayout(input) {
   if (!hasSid) warnings.push('No student_id zone: scans cannot be matched to the roster');
 
   const titleMaxW = page.width - 2 * (inset + size + 4);
+
+  const barcodeEnabled = tpl.barcode !== false && (tpl.barcode?.enabled !== false);
+  let barcode = null;
+  const layoutRois = Array.isArray(tpl.rois) ? [...tpl.rois] : [];
+
+  const barcodeW = tpl.barcode?.w ?? 34;
+  const barcodeH = tpl.barcode?.h ?? 6.5;
+  const barcodeX = tpl.barcode?.x ?? r3(page.width - inset - size - barcodeW - 2);
+  const barcodeY = tpl.barcode?.y ?? r3(page.height - inset - size + (size - barcodeH) / 2);
+
+  if (barcodeEnabled) {
+    const sheetId = options?.sheetId || tpl.barcode?.id || tpl.barcode?.value || tpl.sheetId || generateRandomSheetId();
+    barcode = {
+      enabled: true,
+      id: sheetId,
+      format: tpl.barcode?.format || 'code39',
+      x: barcodeX,
+      y: barcodeY,
+      w: barcodeW,
+      h: barcodeH,
+    };
+    layoutRois.push({
+      id: 'sheet_id',
+      key: 'sheet_id',
+      role: 'sheet_id',
+      label: 'Sheet Barcode',
+      x: barcodeX,
+      y: barcodeY,
+      w: barcodeW,
+      h: barcodeH,
+      graded: false,
+    });
+  }
+
+  const footerLeft = inset + size + 2;
+  const footerRight = barcodeEnabled ? (barcodeX - 2) : (page.width - inset - size - 2);
+  const footerCenterX = r3((footerLeft + footerRight) / 2);
+  const footerMaxW = r3(footerRight - footerLeft);
+
+  const footer = {
+    text: `${tpl.footer} · ${tpl.id}`,
+    x: footerCenterX,
+    y: r3(page.height - inset - size / 2),
+    maxWidth: footerMaxW,
+  };
+
   return {
     schema: LAYOUT_SCHEMA,
     generator: GENERATOR,
@@ -4984,11 +5344,13 @@ function buildLayout(input) {
     content,
     fiducial: { type: 'aruco', dictionary: tpl.fiducial.dictionary, size, inset, quietZone },
     fiducials,
+    barcode,
+    rois: layoutRois,
     bubble: { ...tpl.bubble },
     typography: { ...tpl.typography },
     header: {
       title: { x: r3(page.width / 2), y: r3(inset + size / 2), maxWidth: r3(titleMaxW) },
-      footer: { text: `${tpl.footer} · ${tpl.id}`, x: r3(page.width / 2), y: r3(page.height - inset - size / 2), maxWidth: r3(titleMaxW) },
+      footer,
     },
     zones,
     warnings,
@@ -5036,11 +5398,12 @@ function layoutStats(layout) {
     allGroups,
     layoutStats,
   };
-})(Aruco);
+})(Aruco, Barcode);
 
 // 3. DOM & Virtual-Node Renderer Module
-const RenderDOM = (function(Aruco) {
+const RenderDOM = (function(Aruco, Barcode) {
   const { markerPath } = Aruco;
+  const { encodeCode39 } = Barcode;
 /**
  * DOM renderer for resolved OMR layouts.
  *
@@ -5107,6 +5470,57 @@ function fiducialNode(f) {
       style: box(f.x, f.y, f.size, f.size),
     },
     h('path', { d: markerPath(f.id, f.size), fill: '#000' }),
+  );
+}
+
+function barcodeNode(b) {
+  const { runs, totalUnits, text } = encodeCode39(b.id || b.value || 'SHT-0000');
+  const quietMarginUnits = 4;
+  const fullUnits = totalUnits + 2 * quietMarginUnits;
+  const barH = Math.max(2.5, b.h - 2.0);
+
+  let currentUnit = quietMarginUnits;
+  const rectNodes = [];
+  rectNodes.push(h('rect', { x: '0', y: '0', width: String(b.w), height: String(b.h), fill: '#fff' }));
+
+  for (const run of runs) {
+    if (run.isBlack) {
+      const x = (currentUnit / fullUnits) * b.w;
+      const w = (run.width / fullUnits) * b.w;
+      rectNodes.push(h('rect', {
+        x: x.toFixed(3),
+        y: '0',
+        width: w.toFixed(3),
+        height: barH.toFixed(3),
+        fill: '#000',
+        'shape-rendering': 'crispEdges',
+      }));
+    }
+    currentUnit += run.width;
+  }
+
+  const textNode = h('text', {
+    x: (b.w / 2).toFixed(3),
+    y: (b.h - 0.2).toFixed(3),
+    'font-family': "'Courier New', Courier, monospace",
+    'font-size': '1.5mm',
+    'font-weight': '700',
+    'text-anchor': 'middle',
+    fill: '#000',
+    'letter-spacing': '0.15mm',
+  }, text);
+
+  return h(
+    'svg',
+    {
+      class: 'omr-barcode',
+      'data-sheet-id': text,
+      viewBox: `0 0 ${b.w} ${b.h}`,
+      style: box(b.x, b.y, b.w, b.h),
+      'aria-label': `Sheet Serial Barcode: ${text}`,
+    },
+    ...rectNodes,
+    textNode,
   );
 }
 
@@ -5312,6 +5726,7 @@ function buildSheetTree(layout) {
     layout.fiducials.map(fiducialNode),
     h('div', { class: 'omr-title', style: titleBox }, layout.title),
     h('div', { class: 'omr-footer', style: footerBox }, header.footer.text),
+    ...(layout.barcode && layout.barcode.enabled ? [barcodeNode(layout.barcode)] : []),
     layout.zones.map((z, i) => zoneNode(z, layout, i)),
   );
 }
@@ -5357,12 +5772,13 @@ ${toHTML(buildSheetTree(layout))}
     renderSheetDOM,
     renderStandaloneHTML,
   };
-})(Aruco);
+})(Aruco, Barcode);
 
 // 4. SVG Renderer Module
-const RenderSVG = (function(Aruco, RenderDOM) {
+const RenderSVG = (function(Aruco, RenderDOM, Barcode) {
   const { markerPath } = Aruco;
   const { escapeHTML: esc } = RenderDOM;
+  const { generateBarcodeSVG } = Barcode;
 /**
  * SVG renderer for resolved OMR layouts (isomorphic, string output).
  *
@@ -5533,6 +5949,12 @@ function renderSVG(layout) {
   }
   parts.push(text(header.title.x, fiducial.inset + fiducial.size / 2, layout.title, { size: typography.title, anchor: 'middle', weight: 700 }));
   parts.push(text(header.footer.x, header.footer.y, header.footer.text, { size: typography.small, anchor: 'middle', fill: '#444' }));
+  if (layout.barcode && layout.barcode.enabled) {
+    const b = layout.barcode;
+    parts.push(`<g transform="translate(${b.x} ${b.y})">`);
+    parts.push(generateBarcodeSVG(b.id || b.value, { widthMm: b.w, heightMm: b.h, fontSizeMm: 1.5 }));
+    parts.push('</g>');
+  }
   layout.zones.forEach((zone, zoneIndex) => parts.push(zoneSVG(zone, layout, zoneIndex)));
   parts.push('</svg>');
   return parts.join('\n');
@@ -5541,7 +5963,7 @@ function renderSVG(layout) {
   return {
     renderSVG,
   };
-})(Aruco, RenderDOM);
+})(Aruco, RenderDOM, Barcode);
 
 // 5. Embedded Sample Templates Module
 const Templates = (function() {
@@ -5780,17 +6202,19 @@ const SAMPLE_TEMPLATES = {
 
 // Global references for debugging/inspection in browser console
 window.Aruco = Aruco;
+window.Barcode = Barcode;
 window.LayoutEngine = LayoutEngine;
 window.RenderDOM = RenderDOM;
 window.RenderSVG = RenderSVG;
 window.Templates = Templates;
 
 // 6. Sheet Builder Controller Application (IIFE Isolated)
-(function(LayoutEngine, RenderDOM, RenderSVG, Templates) {
+(function(LayoutEngine, RenderDOM, RenderSVG, Templates, Barcode) {
   const { buildLayout, layoutStats, TemplateError, allGroups, PAPER_SIZES } = LayoutEngine;
   const { renderSheetDOM, renderStandaloneHTML, pageRule, escapeHTML } = RenderDOM;
   const { renderSVG } = RenderSVG;
   const { SAMPLE_TEMPLATES } = Templates;
+  const { generateRandomSheetId } = Barcode;
 /**
  * Sheet Builder Controller.
  *
@@ -5879,6 +6303,12 @@ function initElements() {
     overlay: $('#overlay'),
     btnDlKey: $('#btn-dl-key'),
     btnPrint: $('#btn-print'),
+    modalPrint: $('#modal-print'),
+    btnClosePrint: $('#btn-close-print'),
+    btnCancelPrint: $('#btn-cancel-print'),
+    btnConfirmPrint: $('#btn-confirm-print'),
+    inputPrintCopies: $('#input-print-copies'),
+    labelConfirmPrint: $('#label-confirm-print'),
     btnExportToggle: $('#btn-export-toggle'),
     exportMenu: $('#export-dropdown-content'),
     buttons: {
@@ -6081,6 +6511,7 @@ const DEFAULT_SHEET_CSS = `/* Printable OMR sheet styles */
 .omr-sheet *, .omr-sheet *::before, .omr-sheet *::after { box-sizing: border-box; margin: 0; }
 .omr-sheet > * { position: absolute; }
 .omr-fiducial { display: block; overflow: visible; }
+.omr-barcode { display: block; overflow: visible; }
 .omr-title { display: flex; align-items: center; justify-content: center; text-align: center; font-size: var(--omr-font-title); font-weight: 700; line-height: 1.15; overflow: hidden; }
 .omr-footer { display: flex; align-items: center; justify-content: center; text-align: center; font-size: var(--omr-font-small); color: #444; overflow: hidden; }
 .omr-zone { border: 0.3mm solid #000; border-radius: 1.2mm; padding: 2.5mm; }
@@ -10614,8 +11045,77 @@ function initEvents() {
     }
   });
 
-  // Print button
-  els.btnPrint?.addEventListener('click', () => window.print());
+  // Print button & Class Set modal
+  els.btnPrint?.addEventListener('click', () => {
+    if (els.modalPrint) {
+      if (els.inputPrintCopies) els.inputPrintCopies.value = '30';
+      if (els.labelConfirmPrint) els.labelConfirmPrint.textContent = 'Print 30 Sheets';
+      els.modalPrint.showModal();
+    } else {
+      window.print();
+    }
+  });
+
+  $$('.btn-print-preset').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const copies = Number(btn.dataset.copies || 1);
+      if (els.inputPrintCopies) els.inputPrintCopies.value = String(copies);
+      if (els.labelConfirmPrint) {
+        els.labelConfirmPrint.textContent = copies === 1 ? 'Print 1 Sheet' : `Print ${copies} Sheets`;
+      }
+    });
+  });
+
+  els.inputPrintCopies?.addEventListener('input', () => {
+    const val = Math.max(1, Math.min(500, Number(els.inputPrintCopies.value) || 1));
+    if (els.labelConfirmPrint) {
+      els.labelConfirmPrint.textContent = val === 1 ? 'Print 1 Sheet' : `Print ${val} Sheets`;
+    }
+  });
+
+  els.btnClosePrint?.addEventListener('click', () => els.modalPrint?.close());
+  els.btnCancelPrint?.addEventListener('click', () => els.modalPrint?.close());
+
+  els.btnConfirmPrint?.addEventListener('click', () => {
+    const copies = Math.max(1, Math.min(500, Number(els.inputPrintCopies?.value) || 1));
+    els.modalPrint?.close();
+
+    if (copies <= 1) {
+      if (state.template) {
+        state.layout = buildLayout(state.template, { sheetId: generateRandomSheetId() });
+        renderPreview();
+      }
+      setTimeout(() => window.print(), 100);
+      return;
+    }
+
+    // Multi-page batch printing: generate N unique pages into preview scaler
+    const scaler = els.frame?.querySelector('.preview__scaler');
+    if (!scaler || !state.template) {
+      window.print();
+      return;
+    }
+
+    const originalChildren = Array.from(scaler.children);
+    scaler.replaceChildren();
+
+    for (let c = 0; c < copies; c++) {
+      const sheetId = generateRandomSheetId();
+      const pageLayout = buildLayout(state.template, { sheetId });
+      const sheetEl = renderSheetDOM(pageLayout);
+      scaler.appendChild(sheetEl);
+    }
+
+    setTimeout(() => {
+      const onAfterPrint = () => {
+        window.removeEventListener('afterprint', onAfterPrint);
+        scaler.replaceChildren(...originalChildren);
+        renderPreview();
+      };
+      window.addEventListener('afterprint', onAfterPrint);
+      window.print();
+    }, 150);
+  });
 
   // Export dropdown
   els.btnExportToggle?.addEventListener('click', (e) => {
@@ -10905,7 +11405,7 @@ async function init() {
 onReady(init);
 
 
-})(LayoutEngine, RenderDOM, RenderSVG, Templates);
+})(LayoutEngine, RenderDOM, RenderSVG, Templates, Barcode);
 
 </script>
 </body>

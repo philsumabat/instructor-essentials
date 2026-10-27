@@ -42,9 +42,10 @@ test('standalone studio.html is 100% self-contained with valid IIFE closures and
 
   // 6. Verify IIFE closures wrap the modules
   assert.match(scriptContent, /const\s+Aruco\s*=\s*\(function\(\)/);
-  assert.match(scriptContent, /const\s+LayoutEngine\s*=\s*\(function\(Aruco\)/);
-  assert.match(scriptContent, /const\s+RenderDOM\s*=\s*\(function\(Aruco\)/);
-  assert.match(scriptContent, /const\s+RenderSVG\s*=\s*\(function\(Aruco,\s*RenderDOM\)/);
+  assert.match(scriptContent, /const\s+Barcode\s*=\s*\(function\(\)/);
+  assert.match(scriptContent, /const\s+LayoutEngine\s*=\s*\(function\(Aruco/);
+  assert.match(scriptContent, /const\s+RenderDOM\s*=\s*\(function\(Aruco/);
+  assert.match(scriptContent, /const\s+RenderSVG\s*=\s*\(function\(Aruco,\s*RenderDOM/);
   assert.match(scriptContent, /const\s+Templates\s*=\s*\(function\(\)/);
 });
 

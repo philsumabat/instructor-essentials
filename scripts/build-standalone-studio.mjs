@@ -23,6 +23,7 @@ async function main() {
     sheetCss,
     appCss,
     arucoJs,
+    barcodeJs,
     layoutJs,
     renderDomJs,
     renderSvgJs,
@@ -33,6 +34,7 @@ async function main() {
     readFile(join(builderDir, 'css', 'sheet.css'), 'utf8'),
     readFile(join(builderDir, 'css', 'app.css'), 'utf8'),
     readFile(join(builderDir, 'js', 'aruco.js'), 'utf8'),
+    readFile(join(builderDir, 'js', 'barcode.js'), 'utf8'),
     readFile(join(builderDir, 'js', 'layout-engine.js'), 'utf8'),
     readFile(join(builderDir, 'js', 'render-dom.js'), 'utf8'),
     readFile(join(builderDir, 'js', 'render-svg.js'), 'utf8'),
@@ -42,6 +44,7 @@ async function main() {
 
   // Strip export/import statements for each module to prepare clean closure scopes
   const cleanAruco = stripExports(arucoJs);
+  const cleanBarcode = stripExports(stripImports(barcodeJs));
   const cleanLayout = stripExports(stripImports(layoutJs));
   const cleanRenderDom = stripExports(stripImports(renderDomJs));
   const cleanRenderSvg = stripExports(stripImports(renderSvgJs));
@@ -68,9 +71,23 @@ ${cleanAruco}
   };
 })();
 
+// 1.5 Barcode Module
+const Barcode = (function() {
+${cleanBarcode}
+  return {
+    CODE39_PATTERNS,
+    generateRandomSheetId,
+    encodeCode39,
+    generateBarcodeSVG,
+    decodeCode39Scanline,
+    decodeCode39FromImageData,
+  };
+})();
+
 // 2. Layout Engine Module
-const LayoutEngine = (function(Aruco) {
+const LayoutEngine = (function(Aruco, Barcode) {
   const { ARUCO_DICTIONARY, SUPPORTED_MARKER_IDS } = Aruco;
+  const { generateRandomSheetId } = Barcode;
 ${cleanLayout}
   return {
     LAYOUT_SCHEMA,
@@ -85,11 +102,12 @@ ${cleanLayout}
     allGroups,
     layoutStats,
   };
-})(Aruco);
+})(Aruco, Barcode);
 
 // 3. DOM & Virtual-Node Renderer Module
-const RenderDOM = (function(Aruco) {
+const RenderDOM = (function(Aruco, Barcode) {
   const { markerPath } = Aruco;
+  const { encodeCode39 } = Barcode;
 ${cleanRenderDom}
   return {
     h,
@@ -101,17 +119,18 @@ ${cleanRenderDom}
     renderSheetDOM,
     renderStandaloneHTML,
   };
-})(Aruco);
+})(Aruco, Barcode);
 
 // 4. SVG Renderer Module
-const RenderSVG = (function(Aruco, RenderDOM) {
+const RenderSVG = (function(Aruco, RenderDOM, Barcode) {
   const { markerPath } = Aruco;
   const { escapeHTML: esc } = RenderDOM;
+  const { generateBarcodeSVG } = Barcode;
 ${cleanRenderSvg}
   return {
     renderSVG,
   };
-})(Aruco, RenderDOM);
+})(Aruco, RenderDOM, Barcode);
 
 // 5. Embedded Sample Templates Module
 const Templates = (function() {
@@ -123,19 +142,21 @@ ${cleanTemplates}
 
 // Global references for debugging/inspection in browser console
 window.Aruco = Aruco;
+window.Barcode = Barcode;
 window.LayoutEngine = LayoutEngine;
 window.RenderDOM = RenderDOM;
 window.RenderSVG = RenderSVG;
 window.Templates = Templates;
 
 // 6. Sheet Builder Controller Application (IIFE Isolated)
-(function(LayoutEngine, RenderDOM, RenderSVG, Templates) {
+(function(LayoutEngine, RenderDOM, RenderSVG, Templates, Barcode) {
   const { buildLayout, layoutStats, TemplateError, allGroups, PAPER_SIZES } = LayoutEngine;
   const { renderSheetDOM, renderStandaloneHTML, pageRule, escapeHTML } = RenderDOM;
   const { renderSVG } = RenderSVG;
   const { SAMPLE_TEMPLATES } = Templates;
+  const { generateRandomSheetId } = Barcode;
 ${cleanApp}
-})(LayoutEngine, RenderDOM, RenderSVG, Templates);
+})(LayoutEngine, RenderDOM, RenderSVG, Templates, Barcode);
 `;
 
   // Verify syntax validity of bundled JS via Node VM parser

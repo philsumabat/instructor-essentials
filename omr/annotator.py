@@ -335,9 +335,9 @@ class ExamAnnotator:
             by1 = y + h - badge_h - 2
             by2 = y + h - 2
 
-        bx1 = x + 3
         badge_w = min(w - 6, tw + 12)
-        bx2 = bx1 + badge_w
+        bx2 = x + w - 3
+        bx1 = bx2 - badge_w
 
         # Clamp coordinates to canvas bounds
         bx1 = max(0, min(bx1, w_c - 1))
@@ -385,7 +385,7 @@ class ExamAnnotator:
             b_text = getattr(item_grade, "feedback_text", "")
             if not b_text:
                 canonical = self._get_canonical_answer(item_grade)
-                b_text = f"Key: {canonical}" if b_type == "incorrect" else f"Accepted: {canonical}"
+                b_text = canonical
             self.draw_correction_badge(canvas, x, y, w, h, b_text, badge_type=b_type)
             return
 
@@ -395,7 +395,7 @@ class ExamAnnotator:
             if resp not in {"[PENDING_INSPECTION]", "[INSPECT]"}:
                 canonical = self._get_canonical_answer(item_grade)
                 if canonical:
-                    self.draw_correction_badge(canvas, x, y, w, h, f"Key: {canonical}", badge_type="incorrect")
+                    self.draw_correction_badge(canvas, x, y, w, h, canonical, badge_type="incorrect")
             return
 
 
@@ -408,7 +408,7 @@ class ExamAnnotator:
                     font = cv2.FONT_HERSHEY_SIMPLEX
                     cand_txt = f"{resp} -> {canonical}"
                     (cw, _), _ = cv2.getTextSize(cand_txt, font, 0.42, 1)
-                    badge_text = cand_txt if cw + 12 <= (w - 6) else f"Accepted: {canonical}"
+                    badge_text = cand_txt if cw + 12 <= (w - 6) else canonical
                     self.draw_correction_badge(
                         canvas, x, y, w, h, badge_text, badge_type="accepted_variant"
                     )

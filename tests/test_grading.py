@@ -217,19 +217,19 @@ def test_annotator_correction_badges():
 
     canvas = np.full((1200, 800, 3), 255, dtype=np.uint8)
 
-    # 1. Test incorrect badge rendering
+    # 1. Test incorrect badge rendering on bottom-right
     annotator.draw_correction_badge(
-        canvas, x=100, y=100, w=300, h=90, text="Key: CONDENSER", badge_type="incorrect"
+        canvas, x=100, y=100, w=300, h=90, text="CONDENSER", badge_type="incorrect"
     )
-    # The badge area should be altered from pure white (255, 255, 255)
-    badge_crop = canvas[160:185, 105:250]
+    # The badge area on the bottom-right should be altered from pure white (255, 255, 255)
+    badge_crop = canvas[160:185, 250:395]
     assert not np.all(badge_crop == 255)
 
-    # 2. Test accepted variant badge rendering
+    # 2. Test accepted variant badge rendering on bottom-right
     annotator.draw_correction_badge(
-        canvas, x=100, y=250, w=300, h=90, text="Accepted: STEREOMICROSCOPE", badge_type="accepted_variant"
+        canvas, x=100, y=250, w=300, h=90, text="STEREOMICROSCOPE", badge_type="accepted_variant"
     )
-    badge_crop2 = canvas[310:335, 105:250]
+    badge_crop2 = canvas[310:335, 250:395]
     assert not np.all(badge_crop2 == 255)
 
     # 3. Test pending inspection item does NOT trigger incorrect failure badge

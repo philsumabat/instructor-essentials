@@ -523,14 +523,14 @@ class GradingEngine:
             canonical = candidates[0] if candidates else ""
             if not f_badge:
                 f_badge = "incorrect"
-                f_text = f"Key: {canonical}" if canonical else ""
+                f_text = canonical if canonical else ""
         elif is_correct and candidates:
             canonical = candidates[0]
             if cleaned_resp.upper() != canonical.upper():
                 if not f_badge:
                     f_badge = "accepted_variant"
                     cand_txt = f"{cleaned_resp} -> {canonical}"
-                    f_text = cand_txt if len(cand_txt) <= 24 else f"Accepted: {canonical}"
+                    f_text = cand_txt if len(cand_txt) <= 24 else canonical
 
         points = key_spec.points if is_correct else 0.0
         return ItemGrade(

@@ -166,6 +166,9 @@ class ExamAnnotator:
         group_res: GroupResult,
     ):
         """Draws green/red rings, review warnings, and correction markers on multiple choice bubbles."""
+        if item_grade.max_points == 0.0:
+            return
+
         corr_ans = (
             item_grade.correct_answer
             if isinstance(item_grade.correct_answer, list)
@@ -228,15 +231,14 @@ class ExamAnnotator:
         if not roi:
             return
 
+        # Omitted / dropped item or True statement without correction: keep canvas clean
+        if item_grade.max_points == 0.0:
+            return
+
         x = int(round(roi.x * self.px_per_mm))
         y = int(round(roi.y * self.px_per_mm))
         w = int(round(roi.w * self.px_per_mm))
         h = int(round(roi.h * self.px_per_mm))
-
-        # True statement in Modified T/F where no correction was required: keep canvas clean
-        if item_grade.max_points == 0.0 and not item_grade.correct_answer:
-            if item_grade.is_correct:
-                return
 
         resp = (item_grade.student_response or "").strip()
         if resp in {"[PENDING_INSPECTION]", "[INSPECT]"}:

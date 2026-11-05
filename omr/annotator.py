@@ -227,7 +227,7 @@ class ExamAnnotator:
     def _draw_roi_feedback(self, canvas: np.ndarray, item_grade: ItemGrade):
         """Draws outline, points badge, and visual correction overlays on handwritten answer boxes."""
         # Find corresponding ROI from layout
-        roi = next((r for r in self.layout.graded_rois if r.key == item_grade.key), None)
+        roi = next((r for r in self.layout.graded_rois if r.key == item_grade.key or r.id == item_grade.key), None)
         if not roi:
             return
 

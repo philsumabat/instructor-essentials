@@ -138,8 +138,8 @@ class ExamAnnotator:
 
         font = cv2.FONT_HERSHEY_SIMPLEX
         score_text = f"{grade.score:g}/{grade.max_score:g}"
-        scale = 0.65
-        thick = 2
+        scale = 1.15
+        thick = 3
         (tw, th), _ = cv2.getTextSize(score_text, font, scale, thick)
         if tw > rw - 8:
             scale = scale * (rw - 8) / tw
@@ -271,7 +271,36 @@ class ExamAnnotator:
         color = COLOR_CORRECT if item_grade.is_correct else COLOR_INCORRECT
         cv2.rectangle(canvas, (x, y), (x + w, y + h), color, 2)
 
-        # Points stamp in top-right of ROI
+        # For large essay / short answer boxes (h > 15 mm):
+        # Draw a large prominent score number in the upper right, and omit correction overlays/comments.
+        if roi.h > 15.0:
+            badge_txt = f"{item_grade.points_awarded:g}/{item_grade.max_points:g}"
+            font = cv2.FONT_HERSHEY_SIMPLEX
+            scale = 1.1
+            thick = 3
+            (bw, bh), _ = cv2.getTextSize(badge_txt, font, scale, thick)
+            badge_x = x + w - bw - 15
+            badge_y = y + bh + 15
+            cv2.rectangle(
+                canvas,
+                (badge_x - 8, badge_y - bh - 8),
+                (badge_x + bw + 8, badge_y + 8),
+                color,
+                -1,
+            )
+            cv2.putText(
+                canvas,
+                badge_txt,
+                (badge_x, badge_y),
+                font,
+                scale,
+                COLOR_WHITE,
+                thick,
+                cv2.LINE_AA,
+            )
+            return
+
+        # Points stamp in top-right of standard ROI
         badge_txt = f"{item_grade.points_awarded:g}/{item_grade.max_points:g} pts"
         font = cv2.FONT_HERSHEY_SIMPLEX
         (bw, bh), _ = cv2.getTextSize(badge_txt, font, 0.45, 1)

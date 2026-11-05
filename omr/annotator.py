@@ -189,7 +189,7 @@ class ExamAnnotator:
             )
 
             if is_bonus:
-                if was_selected or (item_grade.is_blank and is_opt_correct):
+                if was_selected or (not item_grade.student_response and is_opt_correct) or (item_grade.is_blank and is_opt_correct):
                     # Bonus item: Vivid golden yellow halo ring
                     cv2.circle(canvas, (cx, cy), r, COLOR_BONUS, 3, cv2.LINE_AA)
             elif item_grade.is_correct:

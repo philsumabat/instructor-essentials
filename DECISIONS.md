@@ -624,6 +624,12 @@ The user requested removing the desktop application layer (`apps/desktop/` with 
      - *Legacy Compatibility*: Submissions lacking barcodes fall back gracefully to Student ID and answer vector heuristics.
    - **Visual Verification & Deliverables**: Displayed Sheet Barcode pills on Sheet Inspector headers and results tables in Checker Studio, and stamped sheet serials onto annotated derivative JPEGs in `omr/annotator.py`.
 
+### 4. Zero-OCR Policy for Handwritten Student Information Headers
+
+- **Problem**: When exam sheets do not have shaded OMR bubble matrices for Student ID (e.g., templates with 8 blank handwritten boxes) and when an official class roster is not supplied in advance, automated machine OCR (like Tesseract) attempting to transcribe handwritten names and numbers frequently hallucinates, corrupts Philippine surnames/middle initials, or swaps identities across rows.
+- **Decision**: Machine OCR is strictly prohibited for extracting handwritten student headers (Name, Student ID, Offer No.). Instead, the token-optimized pipeline crops the header cards directly onto the contact strip (`_name.png`, `_sid.png`, `_offer.png`), where Vision AI subagents read and transcribe the handwriting directly with contextual vision intelligence, or match against official rosters with human verification.
+- **Impact on Scans**: Annotated scan images (`pXXX_annotated.png`) annotate directly on the student's original physical test paper with their own handwriting intact. The zero-OCR policy ensures that exported CSV gradebooks reflect verified identities without corrupting student records.
+
 ---
 
 ## 10. Verification & Test Commands

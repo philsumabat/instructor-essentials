@@ -20,6 +20,8 @@ from omr.vision import GroupResult, WarpResult
 COLOR_CORRECT = (46, 125, 50)      # Forest Green
 COLOR_INCORRECT = (30, 30, 210)    # Crimson Red
 COLOR_MISSED = (0, 165, 255)       # Amber / Orange
+COLOR_BONUS = (0, 195, 245)        # Rich golden yellow ring BGR
+COLOR_BONUS_TEXT = (0, 160, 230)   # High-contrast golden yellow text BGR
 COLOR_BANNER_BG = (245, 247, 250)  # Off-white / light slate
 COLOR_BANNER_BORDER = (50, 50, 50) # Dark gray
 COLOR_TEXT = (20, 20, 20)          # Near-black
@@ -175,6 +177,8 @@ class ExamAnnotator:
             else [str(item_grade.correct_answer)]
         )
 
+        is_bonus = getattr(item_grade, "feedback_badge", "") == "bonus"
+
         for meas in group_res.measurements:
             cx, cy = meas.detected_cx_px, meas.detected_cy_px
             r = meas.detected_radius_px + 2
@@ -184,9 +188,13 @@ class ExamAnnotator:
                 meas.is_filled and not item_grade.is_multi and not item_grade.is_blank
             )
 
-            if item_grade.is_correct:
-                if was_selected or (item_grade.feedback_badge == "bonus" and (was_selected or (item_grade.is_blank and is_opt_correct))):
-                    # Student got it right or bonus credited: Green halo ring
+            if is_bonus:
+                if was_selected or (item_grade.is_blank and is_opt_correct):
+                    # Bonus item: Vivid golden yellow halo ring
+                    cv2.circle(canvas, (cx, cy), r, COLOR_BONUS, 3, cv2.LINE_AA)
+            elif item_grade.is_correct:
+                if was_selected:
+                    # Student got it right: Green halo ring
                     cv2.circle(canvas, (cx, cy), r, COLOR_CORRECT, 3, cv2.LINE_AA)
             else:
                 if was_selected:
@@ -206,18 +214,20 @@ class ExamAnnotator:
                     # Mini green arrow / dot indicator
                     cv2.circle(canvas, (cx, cy), max(2, int(r * 0.3)), COLOR_CORRECT, -1, cv2.LINE_AA)
 
-        if item_grade.feedback_badge == "bonus" and group_res.measurements:
+        if is_bonus and group_res.measurements:
             first_m = group_res.measurements[0]
-            qx = first_m.detected_cx_px - int(round(6 * self.px_per_mm))
-            qy = first_m.detected_cy_px
+            (tw, th), baseline = cv2.getTextSize("+1", cv2.FONT_HERSHEY_SIMPLEX, 0.70, 2)
+            qx = first_m.detected_cx_px - int(round(7.2 * self.px_per_mm))
+            tx = qx - tw - 6
+            ty = first_m.detected_cy_px + int(th / 2)
             cv2.putText(
                 canvas,
                 "+1",
-                (qx - 28, qy + 4),
+                (tx, ty),
                 cv2.FONT_HERSHEY_SIMPLEX,
-                0.40,
-                COLOR_CORRECT,
-                1,
+                0.70,
+                COLOR_BONUS_TEXT,
+                2,
                 cv2.LINE_AA,
             )
         elif item_grade.is_blank:

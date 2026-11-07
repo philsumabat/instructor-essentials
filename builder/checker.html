@@ -6,6 +6,121 @@
   <title>Instructors' Toolkit — Checker Studio</title>
   <meta name="description" content="Instructors' Toolkit — In-Browser OMR Exam Grading & Psychometrics">
   <meta name="application-name" content="Instructors' Toolkit">
+  <script id="doop-sandboxed-polyfill">
+    /* In-memory Storage & Dialog Polyfill for Sandboxed / Opaque Cross-Origin Iframes (Doop Canvas) */
+    (function() {
+      function makeMemoryStorage() {
+        var store = {};
+        return {
+          getItem: function(k) { return Object.prototype.hasOwnProperty.call(store, k) ? store[k] : null; },
+          setItem: function(k, v) { store[k] = String(v); },
+          removeItem: function(k) { delete store[k]; },
+          clear: function() { store = {}; },
+          key: function(i) { return Object.keys(store)[i] || null; },
+          get length() { return Object.keys(store).length; }
+        };
+      }
+      var localOk = false;
+      try {
+        var k = '__tk_test__';
+        window.localStorage.setItem(k, k);
+        window.localStorage.removeItem(k);
+        localOk = true;
+      } catch (_) {}
+
+      if (!localOk) {
+        var memLocal = makeMemoryStorage();
+        try {
+          Object.defineProperty(window, 'localStorage', {
+            get: function() { return memLocal; },
+            set: function() {},
+            configurable: true,
+            enumerable: true
+          });
+        } catch (_) {
+          try {
+            Object.defineProperty(Object.getPrototypeOf(window) || Window.prototype, 'localStorage', {
+              get: function() { return memLocal; },
+              set: function() {},
+              configurable: true,
+              enumerable: true
+            });
+          } catch (__) {}
+        }
+      }
+
+      var sessionOk = false;
+      try {
+        var s = '__tk_session_test__';
+        window.sessionStorage.setItem(s, s);
+        window.sessionStorage.removeItem(s);
+        sessionOk = true;
+      } catch (_) {}
+
+      if (!sessionOk) {
+        var memSession = makeMemoryStorage();
+        try {
+          Object.defineProperty(window, 'sessionStorage', {
+            get: function() { return memSession; },
+            set: function() {},
+            configurable: true,
+            enumerable: true
+          });
+        } catch (_) {
+          try {
+            Object.defineProperty(Object.getPrototypeOf(window) || Window.prototype, 'sessionStorage', {
+              get: function() { return memSession; },
+              set: function() {},
+              configurable: true,
+              enumerable: true
+            });
+          } catch (__) {}
+        }
+      }
+
+      if (typeof HTMLDialogElement !== 'undefined') {
+        var origShow = HTMLDialogElement.prototype.showModal;
+        HTMLDialogElement.prototype.showModal = function() {
+          try {
+            if (origShow) return origShow.call(this);
+          } catch (_) {}
+          this.setAttribute('open', '');
+          this.style.display = 'block';
+        };
+        var origClose = HTMLDialogElement.prototype.close;
+        HTMLDialogElement.prototype.close = function(retVal) {
+          try {
+            if (origClose) return origClose.call(this, retVal);
+          } catch (_) {}
+          this.removeAttribute('open');
+          this.style.display = 'none';
+          try { this.dispatchEvent(new Event('close')); } catch (_) {}
+        };
+      }
+
+      try {
+        var origAlert = window.alert;
+        window.alert = function(msg) {
+          try {
+            if (origAlert) return origAlert.call(window, msg);
+          } catch (_) {
+            console.warn('[Sandboxed Alert]:', msg);
+          }
+        };
+      } catch (_) {}
+      try {
+        var origConfirm = window.confirm;
+        window.confirm = function(msg) {
+          try {
+            if (origConfirm) return origConfirm.call(window, msg);
+          } catch (_) {
+            console.warn('[Sandboxed Confirm]:', msg);
+            return true;
+          }
+        };
+      } catch (_) {}
+    })();
+  </script>
   <style>
     :root {
       color-scheme: light dark;
@@ -2337,7 +2452,7 @@
   <!-- Header Bar -->
   <header class="app-header">
     <div class="app-brand">
-      <a href="home.html" class="app-brand__main" aria-label="Instructors' Toolkit Home">
+      <a href="home.html" data-doop-on="click" data-doop-action="navigate:--puIq0I-u" class="app-brand__main" aria-label="Instructors' Toolkit Home">
         <div class="app-brand__logo" aria-hidden="true">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
@@ -2350,11 +2465,11 @@
         </div>
       </a>
       <nav class="workflow-nav" aria-label="Workflow switcher">
-        <a href="home.html" class="workflow-nav__item" id="nav-btn-home">
+        <a href="home.html" data-doop-on="click" data-doop-action="navigate:--puIq0I-u" class="workflow-nav__item" id="nav-btn-home">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
           <span>Home</span>
         </a>
-        <a href="builder.html" class="workflow-nav__item" id="nav-btn-builder">
+        <a href="builder.html" data-doop-on="click" data-doop-action="navigate:Z3_qOG7CeI" class="workflow-nav__item" id="nav-btn-builder">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
           <span>Sheet Builder</span>
         </a>
@@ -3820,7 +3935,7 @@
         <button type="button" id="btn-gate-local-bypass" class="btn btn--secondary btn--sm" style="display: none;">
           Running from file:// — Continue in Local Offline Mode
         </button>
-        <a href="home.html" class="auth-gate-home-link">&larr; Return to Home Portal</a>
+        <a href="home.html" data-doop-on="click" data-doop-action="navigate:--puIq0I-u" class="auth-gate-home-link">&larr; Return to Home Portal</a>
       </div>
     </div>
   </div>
@@ -5677,7 +5792,7 @@
 
         barsSvg += `
           <g class="chart-bar-group" data-item="${k}" data-type="diff" data-key="${item.correctAnswer}" data-diff="${(p * 100).toFixed(1)}" data-disc="${item.discrimination.toFixed(3)}"${bloomAttr} tabindex="0">
-            <title>Item #${k} (Key: ${item.correctAnswer})${bloomTitle}&#10;Difficulty: ${(p * 100).toFixed(1)}%&#10;Discrimination: ${item.discrimination.toFixed(3)}</title>
+            <title>Item #${k} (${item.correctAnswer})${bloomTitle}&#10;Difficulty: ${(p * 100).toFixed(1)}%&#10;Discrimination: ${item.discrimination.toFixed(3)}</title>
             <rect x="${bx.toFixed(1)}" y="${by.toFixed(1)}" width="${barW}" height="${Math.max(2, bh).toFixed(1)}" fill="${fill}" rx="2" />
             <text x="${(bx + barW / 2).toFixed(1)}" y="${baseY + 14}" text-anchor="middle" font-size="9" fill="#888">${k}</text>
             ${n <= 25 || idx % 5 === 0 ? `<text x="${(bx + barW / 2).toFixed(1)}" y="${Math.max(padT + 11, by - 3).toFixed(1)}" text-anchor="middle" font-size="8" fill="#aaa" font-weight="600">${Math.round(p * 100)}%</text>` : ''}
@@ -5758,7 +5873,7 @@
 
         barsSvg += `
           <g class="chart-bar-group" data-item="${k}" data-type="disc" data-key="${item.correctAnswer}" data-diff="${(item.difficulty * 100).toFixed(1)}" data-disc="${r.toFixed(3)}"${bloomAttr} tabindex="0">
-            <title>Item #${k} (Key: ${item.correctAnswer})${bloomTitle}&#10;Discrimination: ${r.toFixed(3)}&#10;Difficulty: ${(item.difficulty * 100).toFixed(1)}%</title>
+            <title>Item #${k} (${item.correctAnswer})${bloomTitle}&#10;Discrimination: ${r.toFixed(3)}&#10;Difficulty: ${(item.difficulty * 100).toFixed(1)}%</title>
             <rect x="${bx.toFixed(1)}" y="${by.toFixed(1)}" width="${barW}" height="${Math.max(2, bh).toFixed(1)}" fill="${fill}" rx="2" />
             <text x="${(bx + barW / 2).toFixed(1)}" y="${padT + plotH + 14}" text-anchor="middle" font-size="9" fill="#888">${k}</text>
             ${n <= 25 || idx % 5 === 0 ? `<text x="${(bx + barW / 2).toFixed(1)}" y="${labelY.toFixed(1)}" text-anchor="middle" font-size="8" fill="#aaa" font-weight="600">${r.toFixed(2)}</text>` : ''}
@@ -9764,7 +9879,7 @@
           reviewList.innerHTML = flaggedItems.map(f => `
             <div style="background: var(--panel); border: 1px solid var(--border); padding: 0.6rem 0.85rem; border-radius: var(--radius-sm); display: flex; align-items: flex-start; justify-content: space-between; gap: 0.75rem;">
               <div>
-                <span style="font-weight: 700; color: var(--warning); margin-right: 0.5rem;">Question #${escapeHtml(f.key)} (Key: ${escapeHtml(f.item.correctAnswer)})</span>
+                <span style="font-weight: 700; color: var(--warning); margin-right: 0.5rem;">Question #${escapeHtml(f.key)} (${escapeHtml(f.item.correctAnswer)})</span>
                 <span style="color: var(--text-muted); font-size: 0.75rem; margin-right: 0.5rem;">[P = ${(f.item.difficulty * 100).toFixed(1)}%, r = ${f.item.discrimination.toFixed(2)}]</span>
                 <div style="margin-top: 0.25rem; color: var(--text); font-size: 0.78rem; line-height: 1.4;">${(f.reasons || []).map(r => escapeHtml(r)).join(' • ')}</div>
               </div>
@@ -9907,7 +10022,7 @@
             const diff = group.dataset.diff;
             const disc = group.dataset.disc;
             const bloom = group.dataset.bloom;
-            text = `<strong>Item #${item}</strong> (Key: <code>${key}</code>)<br>Bloom: <strong>${bloom}</strong><br>Difficulty: <strong>${diff}%</strong><br>Discrimination: <strong>${disc}</strong><br><span style="font-size: 0.7rem; color: #94a3b8;">Click to highlight in table</span>`;
+            text = `<strong>Item #${item}</strong> (<code>${key}</code>)<br>Bloom: <strong>${bloom}</strong><br>Difficulty: <strong>${diff}%</strong><br>Discrimination: <strong>${disc}</strong><br><span style="font-size: 0.7rem; color: #94a3b8;">Click to highlight in table</span>`;
           }
           tooltip.innerHTML = text;
           tooltip.style.display = 'block';
@@ -11446,13 +11561,41 @@
       drawUprightScanImage(ctx, activeScanImg, canvas.width, canvas.height, grade.rotationDeg);
 
       // Semi-transparent overlay layer for markup
+      const bonusItemsDrawn = new Set();
       for (const b of (grade.bubbleDiagnostics || [])) {
         const itemInfo = grade.gradedItems ? grade.gradedItems[b.item] : null;
         if (!itemInfo) continue; // Skip non-question bubbles like student ID columns
+        const isBonus = Boolean(itemInfo.feedbackBadge === 'bonus' || itemInfo.feedback_badge === 'bonus' || itemInfo.isBonus || itemInfo.bonus === true);
         const expectedChoices = (Array.isArray(itemInfo.expected) ? itemInfo.expected : String(itemInfo.expected || '').split(/[,\s/]+/))
           .map(s => String(s).trim().toUpperCase())
           .filter(Boolean);
         const isKeyTarget = expectedChoices.includes(String(b.choice || '').trim().toUpperCase());
+
+        if (isBonus) {
+          const wasSelected = b.isMarked;
+          const isBlank = !itemInfo.studentResponse || itemInfo.is_blank || itemInfo.isBlank;
+          if (wasSelected || (isBlank && isKeyTarget) || isKeyTarget) {
+            // Bonus item: Vivid golden yellow halo ring (matches omr/annotator.py COLOR_BONUS)
+            ctx.beginPath();
+            ctx.arc(b.canX, b.canY, b.rad + 2, 0, Math.PI * 2);
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = "#eab308";
+            ctx.fillStyle = "rgba(234, 179, 8, 0.28)";
+            ctx.fill();
+            ctx.stroke();
+          }
+          if (!bonusItemsDrawn.has(b.item)) {
+            bonusItemsDrawn.add(b.item);
+            ctx.save();
+            ctx.font = 'bold 15px sans-serif';
+            ctx.fillStyle = '#b45309';
+            ctx.textAlign = 'right';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('+1', b.canX - b.rad - 14, b.canY);
+            ctx.restore();
+          }
+          continue;
+        }
 
         if (b.isMarked && isKeyTarget) {
           // Correct answer marked: Green circle with solid ring
@@ -11555,7 +11698,31 @@
         ctx.strokeRect(rx, ry, rw, rh);
         if (isDashed) ctx.setLineDash([]);
 
-        // Points badge in top-right of ROI (clamped to stay inside narrow ROI boxes)
+        // For large essay / short answer boxes (h > 15 mm or rh > 60 px):
+        // Draw a large prominent score number in the upper right, and omit correction overlays/comments.
+        const roiMmH = roi.h != null ? roi.h : (roi.height || (rh / pxPerMm));
+        if (roiMmH > 15.0 || rh > 60) {
+          const badgeTxt = (status === 'unreviewed')
+            ? `—/${Number(item.maxPoints != null ? item.maxPoints : 1)}`
+            : `${Number(item.pointsAwarded || 0)}/${Number(item.maxPoints != null ? item.maxPoints : 1)}`;
+          ctx.save();
+          ctx.font = 'bold 22px sans-serif';
+          const tw = ctx.measureText(badgeTxt).width;
+          const bw = Math.max(36, tw + 20);
+          const bh = 34;
+          const bx = Math.max(rx + 4, rx + rw - bw - 14);
+          const by = ry + 8;
+          ctx.fillStyle = color;
+          ctx.fillRect(bx, by, bw, bh);
+          ctx.fillStyle = '#ffffff';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(badgeTxt, bx + bw / 2, by + bh / 2);
+          ctx.restore();
+          continue;
+        }
+
+        // Points badge in top-right of standard ROI (clamped to stay inside narrow ROI boxes)
         ctx.font = 'bold 11px sans-serif';
         const tw = ctx.measureText(ptsText).width;
         const badgeW = Math.max(24, Math.min(rw - 4, tw + 10));
@@ -11570,6 +11737,31 @@
         ctx.fillText(ptsText, badgeX + badgeW / 2, badgeY + badgeH / 2, Math.max(20, badgeW - 6));
         ctx.textAlign = 'start';
         ctx.textBaseline = 'alphabetic';
+
+        // Draw translucent correction overlay badge along bottom right without "Key:" prefix
+        if (!item.isCorrect && (item.expected || item.correctAnswer)) {
+          const corrVal = item.expected || item.correctAnswer;
+          const canonical = (Array.isArray(corrVal) ? corrVal[0] : String(corrVal)).split('|')[0].trim();
+          if (canonical && rw > 60 && rh > 24) {
+            ctx.save();
+            ctx.font = 'bold 11px sans-serif';
+            const ctw = ctx.measureText(canonical).width;
+            const cbw = Math.min(rw - 8, ctw + 12);
+            const cbh = 18;
+            const cbx = Math.max(rx + 4, rx + rw - cbw - 4);
+            const cby = ry + rh - cbh - 4;
+            ctx.fillStyle = 'rgba(239, 68, 68, 0.25)';
+            ctx.fillRect(cbx, cby, cbw, cbh);
+            ctx.strokeStyle = '#ef4444';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(cbx, cby, cbw, cbh);
+            ctx.fillStyle = '#b91c1c';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(canonical, cbx + cbw / 2, cby + cbh / 2, Math.max(10, cbw - 4));
+            ctx.restore();
+          }
+        }
       }
 
       // Optional Name Redaction: Blackout student name field
@@ -11626,7 +11818,9 @@
         const maxFmt = (maxScoreVal % 1 === 0) ? maxScoreVal.toFixed(0) : maxScoreVal.toFixed(1);
         const scoreText = `${rawFmt}/${maxFmt}`;
 
-        ctx.font = 'bold 16px sans-serif';
+        // Enlarge score stamp scaling to fill ROI prominently (matches omr/annotator.py scale 1.15)
+        const stampFontSize = Math.min(32, Math.max(18, Math.round(rh * 0.58)));
+        ctx.font = `bold ${stampFontSize}px sans-serif`;
         ctx.fillStyle = statusColor;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
@@ -12534,7 +12728,7 @@
             var diff = group.getAttribute('data-diff');
             var disc = group.getAttribute('data-disc');
             var bloom = group.getAttribute('data-bloom');
-            text = '<strong>Item #' + it + '</strong> (Key: ' + k + ')<br>Bloom: <strong>' + bloom + '</strong><br>Difficulty: <strong>' + diff + '%</strong><br>Discrimination: <strong>' + disc + '</strong>';
+            text = '<strong>Item #' + it + '</strong> (' + k + ')<br>Bloom: <strong>' + bloom + '</strong><br>Difficulty: <strong>' + diff + '%</strong><br>Discrimination: <strong>' + disc + '</strong>';
           }
           tooltip.innerHTML = text;
           tooltip.style.display = 'block';
@@ -13602,8 +13796,31 @@
       xhr.send();
     }
 
+    function isEmbedded() {
+      try {
+        if (window.self !== window.top) return true;
+      } catch (_) {
+        return true;
+      }
+      try {
+        const p = new URLSearchParams(window.location.search);
+        return p.has('embedded') || p.has('doop') || p.has('demo');
+      } catch (_) {
+        return false;
+      }
+    }
+    window.isEmbedded = isEmbedded;
+
     function restoreGoogleAuthState() {
       try {
+        if (isEmbedded()) {
+          googleDriveState.accessToken = 'mock-instructor-token';
+          googleDriveState.isConnected = true;
+          googleDriveState.user = { name: 'Institutional Instructor (Demo)', email: 'instructor@demo.edu' };
+          updateGoogleUiState();
+          checkAuthGating();
+          return;
+        }
         let token = localStorage.getItem('instructor_google_token');
         let expiry = parseInt(localStorage.getItem('instructor_google_token_expiry') || '0', 10);
         let userStr = localStorage.getItem('instructor_google_user');
@@ -13658,7 +13875,7 @@
       const gate = document.getElementById('auth-gate-overlay');
       if (!gate) return;
 
-      if (googleDriveState.isConnected) {
+      if (googleDriveState.isConnected || isEmbedded()) {
         gate.style.display = 'none';
       } else {
         const isFileProto = window.location.protocol === 'file:';
@@ -14954,7 +15171,15 @@
       updateStepperUI();
       restoreGoogleAuthState();
       checkAuthGating();
-      return checkAutoSavedProgress();
+      const res = checkAutoSavedProgress();
+      if (isEmbedded()) {
+        setTimeout(() => {
+          if (!state.results || !state.results.grades || state.results.grades.length === 0) {
+            $('btn-sample-grade')?.click();
+          }
+        }, 80);
+      }
+      return res;
     }
     window.initCheckerStudio = initCheckerStudio;
 

@@ -3210,8 +3210,31 @@ function handleGoogleAuthSuccess(token, expiresIn = 3600) {
   xhr.send();
 }
 
+function isEmbedded() {
+  try {
+    if (window.self !== window.top) return true;
+  } catch (_) {
+    return true;
+  }
+  try {
+    const p = new URLSearchParams(window.location.search);
+    return p.has('embedded') || p.has('doop') || p.has('demo');
+  } catch (_) {
+    return false;
+  }
+}
+window.isEmbedded = isEmbedded;
+
 function restoreGoogleAuthState() {
   try {
+    if (isEmbedded()) {
+      googleDriveState.accessToken = 'mock-instructor-token';
+      googleDriveState.isConnected = true;
+      googleDriveState.user = { name: 'Institutional Instructor (Demo)', email: 'instructor@demo.edu' };
+      updateGoogleUiState();
+      checkAuthGating();
+      return;
+    }
     let token = localStorage.getItem('instructor_google_token');
     let expiry = parseInt(localStorage.getItem('instructor_google_token_expiry') || '0', 10);
     let userStr = localStorage.getItem('instructor_google_user');
@@ -3266,7 +3289,7 @@ function checkAuthGating() {
   const gate = document.getElementById('auth-gate-overlay');
   if (!gate) return;
 
-  if (googleDriveState.isConnected) {
+  if (googleDriveState.isConnected || isEmbedded()) {
     gate.style.display = 'none';
   } else {
     const isFileProto = window.location.protocol === 'file:';
@@ -5184,6 +5207,12 @@ async function init() {
         return;
       }
     } catch {}
+  }
+
+  // When embedded in Doop prototype, automatically load exam-50 preset so canvas & inspector are interactive
+  if (isEmbedded()) {
+    await loadSample('exam-50');
+    return;
   }
 
   // Guaranteed instant load: default starting template is Blank Sheet
